@@ -1,0 +1,50 @@
+{
+    "manifest_version": 3,
+    "name": "BPMN differ for Gitlab",
+    "version": "0.6",
+    "description": "BPMN 2.0 schemas visual differ for Gitlab",
+    "content_scripts": [
+        {
+            "matches": [
+                "https://*/*",
+                "http://*/*"
+            ],
+            "js": [
+                "utils.js",
+                "main.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "activeTab"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [               
+                "utils.js",    
+                "differ.js",
+            
+                "libs/bpmn-js/bpmn-modeler.production.min.js",
+                "libs/bpmn-js/assets/bpmn-js.css",
+                "libs/bpmn-js/assets/diagram-js.css",
+                "libs/bpmn-js/assets/bpmn-font/css/bpmn-codes.css",
+                "libs/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css",
+                "libs/bpmn-js/assets/bpmn-font/css/bpmn.css",
+                "libs/bpmn-js/assets/bpmn-font/font/bpmn.eot",
+                "libs/bpmn-js/assets/bpmn-font/font/bpmn.svg",
+                "libs/bpmn-js/assets/bpmn-font/font/bpmn.ttf",
+                "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff",
+                "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff2",
+
+                "libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js",
+                "libs/bpmn-js-properties-panel/assets/element-templates.css",
+                "libs/bpmn-js-properties-panel/assets/properties-panel.css",
+
+                "libs/camunda-bpmn-moddle/resources/camunda.json"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}
