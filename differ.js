@@ -400,6 +400,10 @@ const CONNECTOR_TAG_NAMES = [
 
 const IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
 
+/**
+ * key: diff name mask
+ * value: property group name
+ */
 const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['name', 'General'],
 
@@ -425,7 +429,12 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['bpmn:condition', 'Condition'],
 
     ['camunda:in', 'In mappings'],
+    ['camunda:in/source', 'In mappings'],
+    ['camunda:in/target', 'In mappings'],
+
     ['camunda:out', 'Out mappings'],
+    ['camunda:out/source', 'Out mappings'],
+    ['camunda:out/target', 'Out mappings'],
 
     ['camunda:inputParameter', 'Inputs'],
     ['camunda:outputParameter', 'Outputs'],
@@ -449,6 +458,16 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     // because there is no property group to highlight
     ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP]
 ]);
+
+function findDiffPropertyGroup(diff) {
+    const res = DIFF_TO_PROPERTY_GROUP_MAP.get(diff);
+    if (res) {
+        return res;
+    }
+
+    const diffShort = diff.slice(diff.indexOf("/") + 1);
+    return DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
+}
 
 function isNodeRow(node) {
     return ROW_TAG_NAMES.includes(node.tagName);
@@ -498,7 +517,7 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
             if (diffs) {
                 // console.debug(`nodes with id '${id}' have diffs: `, diffs);
                 for (const diff of diffs) {
-                    const diffPropGroup = DIFF_TO_PROPERTY_GROUP_MAP.get(diff);
+                    const diffPropGroup = findDiffPropertyGroup(diff);
                     if (diffPropGroup) {
                         if (diffPropGroup === IGNORED_DIFF_PROPERTY_GROUP) {
                             continue;
@@ -673,8 +692,8 @@ function compareNodesAttributes(nodeA, nodeB) {
     const nodeBAttrs = Array.from(nodeB.attributes);
     const diffs = [];
 
-    getAttributesDiffs(diffs, nodeAAttrs, nodeBAttrs);
-    getAttributesDiffs(diffs, nodeBAttrs, nodeAAttrs);
+    getAttributesDiffs(diffs, nodeA.tagName, nodeAAttrs, nodeBAttrs);
+    getAttributesDiffs(diffs, nodeB.tagName, nodeBAttrs, nodeAAttrs);
 
     if (diffs.length > 0) {
         return diffs;
@@ -683,7 +702,7 @@ function compareNodesAttributes(nodeA, nodeB) {
     }
 }
 
-function getAttributesDiffs(diffs, nodeAAttrs, nodeBAttrs) {
+function getAttributesDiffs(diffs, nodeATagName, nodeAAttrs, nodeBAttrs) {
     // checks that all attributes of nodeA exist in nodeB and have the same value
     for (const attrA of nodeAAttrs) {
         const attName = attrA.name;
@@ -703,7 +722,7 @@ function getAttributesDiffs(diffs, nodeAAttrs, nodeBAttrs) {
         const attrB = nodeBAttrs.find(a => a.name === attName);
         if (!attrB || attrA.value !== attrB.value) {
             if (!diffs.includes(attName)) {
-                diffs.push(attName);
+                diffs.push(nodeATagName + "/" + attName);
             }
         }
     }
