@@ -33,8 +33,14 @@ function findSelectedFilePath(dataPathElems) {
     for (const elem of dataPathElems) {
         if (elem.classList.contains('is-active')) {
             filePath = elem.getAttribute('data-path');
-            break;
+            if (filePath) {
+                break;
+            }
         }
+    }
+    if (!filePath) {
+        console.log('cannot get file path from data-path element');
+        return null;
     }
     if (!filePath.endsWith('.bpmn')) {
         console.debug('selected file is not bpmn');
