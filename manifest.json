@@ -10,8 +10,7 @@
             ],
             "js": [
                 "main.js",
-                "utils.js",
-                "differ.js"
+                "utils.js"
             ]
         }
     ],
