@@ -1,14 +1,26 @@
 const BUTTON_ID = 'btn_77844bf3d4e842caa0d88194431197c0';
 const MSG_ID = 'msg_71e23e639965407fb9c87f100a56c898';
 
+const SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
+const SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
+
 let camundaBpmnModdle = null;
 
 
 async function isDiffsTabActive() {
     // wait for the href will updated
     await delay(200);
-    // console.debug('href: ' + window.location.href);
-    return window.location.href.includes('/diffs');
+    const href = window.location.href;
+    // console.debug('href: ' + href);
+    return href.includes('/-/merge_requests/') && href.includes('/diffs');
+}
+
+async function isMasterBpmnFileShowing() {
+    // wait for the href will updated
+    await delay(200);
+    const href = window.location.href;
+    // console.debug('href: ' + href);
+    return href.includes('/-/blob/master/') && href.endsWith('.bpmn');
 }
 
 function getProjectUrl() {
@@ -62,14 +74,14 @@ function findDiffHeadSha() {
     }
 }
 
-function addButtonToPage(onButtonClickFunc) {
+function addButtonToPage(buttonText, parentContainerSelector, appendAtTheEnd, onButtonClickFunc) {
     // removing the button again because sometimes two buttons appear
     removeElement(BUTTON_ID);
 
     const button = document.createElement('button');
     button.id = BUTTON_ID + '-btn';
     button.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    button.textContent = 'Show diff';
+    button.textContent = buttonText;
     button.addEventListener('mouseup', onButtonClickFunc);
 
     const buttonContainer = document.createElement('div');
@@ -77,8 +89,16 @@ function addButtonToPage(onButtonClickFunc) {
     buttonContainer.className = 'gl-display-flex';
     buttonContainer.appendChild(button);
 
-    const parentContainer = document.querySelector('#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div');
-    parentContainer.appendChild(buttonContainer);
+    const parentContainer = document.querySelector(parentContainerSelector);
+    if (!parentContainer) {
+        console.error('Cannot find button parent container by selector', parentContainerSelector);
+        return;
+    }
+    if (appendAtTheEnd) {
+        parentContainer.appendChild(buttonContainer);
+    } else {
+        parentContainer.prepend(buttonContainer);
+    }
 }
 
 async function addStylesheet(fileName, doc) {
@@ -133,8 +153,8 @@ function getTitle(fileName) {
     return fileName.replace(/(.{31})/g, "$1 ");
 }
 
-async function openDiff(params) {
-    console.debug('opening diff...');
+async function openDiffer(params) {
+    console.debug('opening differ...');
     const newWindow = window.open('about:blank');
     console.debug('setting title...');
     newWindow.document.title = getTitle(params.fileName);
@@ -147,7 +167,7 @@ async function openDiff(params) {
     }
     console.debug('sending message', msg);
     newWindow.postMessage(msg, '*');
-    console.debug('opening diff...done');
+    console.debug('opening differ...done');
 }
 
 async function main(event) {
@@ -158,16 +178,30 @@ async function main(event) {
     }
 
     if (event.target.id && event.target.id.startsWith(BUTTON_ID)) {
-        console.debug('click on the diff button is ignored');
+        console.debug('click on the plugin button is ignored');
         return;
     }
     removeElement(BUTTON_ID);
 
-    const tabActive = await isDiffsTabActive();
-    if (!tabActive) {
-        console.debug('diff tab is not active');
+    const diffsTabActive = await isDiffsTabActive();
+    if (diffsTabActive) {
+        console.debug('diffs tab is active');
+        await addShowDiffButton();
         return;
     }
+    console.debug('diffs tab is not active');
+
+    const masterBpmnFileShowing = await isMasterBpmnFileShowing();
+    if (masterBpmnFileShowing) {
+        await addShowMasterButton();
+        return;
+    }
+    console.debug('master bpmn file is not showing');
+
+}
+
+async function addShowDiffButton() {
+    console.debug('adding show diff button...');
 
     const projectUrl = getProjectUrl();
     if (projectUrl == null) {
@@ -208,8 +242,51 @@ async function main(event) {
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
     };
+    addButtonToPage(
+        'Show schema diff',
+        SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR,
+        true,
+        () => openDiffer(params)
+    );
+}
 
-    addButtonToPage(() => openDiff(params));
+function getBpmnFilePathFromUrl() {
+    const href = window.location.href;
+    const startIndex = href.substring(0, href.indexOf('/-/')).length + '/-/blob/master/'.length;
+    return href.substring(startIndex);
+}
+
+async function addShowMasterButton() {
+    console.debug('adding show master button...');
+
+    const projectUrl = getProjectUrl();
+    if (projectUrl == null) {
+        console.error('projectUrl not found');
+        return;
+    }
+
+    const filePath = getBpmnFilePathFromUrl();
+    if (filePath == null) {
+        console.warn('cannot get bpmn file path from url', window.location.href);
+        return;
+    }
+    const fileName = getFileNameFromPath(filePath);
+
+    await loadCamundaBpmnModdle();
+
+    const params = {
+        projectUrl: projectUrl,
+        diffHeadSha: null,
+        filePath: filePath,
+        fileName: fileName,
+        camundaBpmnModdle: camundaBpmnModdle
+    };
+    addButtonToPage(
+        'Show schema',
+        SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR,
+        false,
+        () => openDiffer(params)
+    );
 }
 
 window.onload = main;

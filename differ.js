@@ -152,28 +152,31 @@ function createHeader(parentElem) {
     cellBranchButton.style.minWidth = '130px';
     row.appendChild(cellBranchButton);
 
-    const switchButton = document.createElement('button');
-    switchButton.textContent = 'Switch branch';
-    switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    switchButton.style.margin = '5px';
-    switchButton.addEventListener('click', (event) => {
-        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) { // current Master - switch to MR
-            if (mrBpmnXml) {
-                showBpmnMr();
-            } else {
-                // may be this bpmn-schema was removed
-                alertBpmnSchemaNotExist(MR_BRANCH_NAME);
+    // show the switch branch button only if MR hash is defined
+    if (diffHeadSha) {
+        const switchButton = document.createElement('button');
+        switchButton.textContent = 'Switch branch';
+        switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+        switchButton.style.margin = '5px';
+        switchButton.addEventListener('click', (event) => {
+            if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) { // current Master - switch to MR
+                if (mrBpmnXml) {
+                    showBpmnMr();
+                } else {
+                    // may be this bpmn-schema was removed
+                    alertBpmnSchemaNotExist(MR_BRANCH_NAME);
+                }
+            } else { // current MR - try to switch to Master
+                if (masterBpmnXml) {
+                    showBpmnMaster();
+                } else {
+                    // may be this bpmn-schema is new
+                    alertBpmnSchemaNotExist(MASTER_BRANCH_NAME);
+                }
             }
-        } else { // current MR - try to switch to Master
-            if (masterBpmnXml) {
-                showBpmnMaster();
-            } else {
-                // may be this bpmn-schema is new
-                alertBpmnSchemaNotExist(MASTER_BRANCH_NAME);
-            }
-        }
-    });
-    cellBranchButton.appendChild(switchButton);
+        });
+        cellBranchButton.appendChild(switchButton);
+    }
 
     // fit viewport button
     const cellFitViewportButton = document.createElement('td');
@@ -248,9 +251,10 @@ function addCanvasEventHandlers(canvas) {
 
 function handleCanvasWheelEvent(event) {
     if (event.ctrlKey) {
-        const delta = event.deltaY > 0 ? -0.05 : 0.05;
+        const delta = event.deltaY > 0 ? -0.03 : 0.03;
         const zoomLevel = bpmnJSCanvas.zoom() + delta;
         if (zoomLevel > 0) {
+            console.debug('zoom = ' + zoomLevel);
             bpmnJSCanvas.zoom(zoomLevel);
         }
         event.preventDefault();
@@ -293,8 +297,10 @@ function fitViewport(force = false) {
     if (needToFit && !isViewportAlreadyFitted() || force) {
         bpmnJSCanvas.zoom('fit-viewport');
         if (needToFit) {
-            const deltaY = 100 * bpmnJSCanvas.zoom();
+            const deltaY = 100 * bpmnJSCanvas.zoom() - 20;
             bpmnJSCanvas.scroll({ dy: deltaY });
+
+            bpmnJSCanvas.zoom(bpmnJSCanvas.zoom() - 0.005);
         }
     }
     canvasElem.setAttribute('fitted', 'true');
@@ -423,6 +429,8 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
 
     ['camunda:delegateExpression', 'Implementation'],
     ['camunda:expression', 'Implementation'],
+    ['camunda:type', 'Implementation'],
+    ['camunda:topic', 'Implementation'],
 
     ['bpmn:conditionExpression', 'Condition'],
     ['camunda:variableName', 'Condition'],
@@ -814,13 +822,17 @@ function resetHighlightedDiffPropGroup() {
 }
 
 async function loadBpmnXml() {
-    const masterFileUrl = `${projectUrl}/-/raw/master/${filePath}`;
     masterBpmnXml = null;
+    const masterFileUrl = `${projectUrl}/-/raw/master/${filePath}`;
     masterBpmnXml = await loadFileContent(masterFileUrl, false);
 
-    const mrFileUrl = `${projectUrl}/-/raw/${diffHeadSha}/${filePath}`;
     mrBpmnXml = null;
-    mrBpmnXml = await loadFileContent(mrFileUrl, false);
+    if (diffHeadSha) {
+        const mrFileUrl = `${projectUrl}/-/raw/${diffHeadSha}/${filePath}`;
+        mrBpmnXml = await loadFileContent(mrFileUrl, false);
+    } else {
+        console.debug('diffHeadSha is undefined');
+    }
 }
 
 function hideModelerPallete() {
