@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.6",
+    "version": "0.7",
     "description": "BPMN 2.0 schemas visual differ for Gitlab",
     "content_scripts": [
         {

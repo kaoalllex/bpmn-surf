@@ -1,8 +1,11 @@
 const MSG_ID = 'msg_71e23e639965407fb9c87f100a56c898';
 
-const BPMN_DIV_ID = 'bpmnDiv_12345bf3d4e842caa0d88194431197c0'
-const BPMN_CANVAS_ID = 'bpmnCanvas_12345bf3d4e842caa0d88194431197c0'
-const BPMN_PROPS_ID = 'bpmnProps_12345bf3d4e842caa0d88194431197c0'
+const BPMN_DIV_ID = 'bpmnDiv_12345bf3d4e842caa0d88194431197c0';
+const BPMN_CANVAS_ID = 'bpmnCanvas_12345bf3d4e842caa0d88194431197c0';
+const BPMN_PROPS_ID = 'bpmnProps_12345bf3d4e842caa0d88194431197c0';
+
+let bpmnPropsCell = null;
+let isBpmnPropsCellHidden = false;
 
 const MASTER_BRANCH_NAME = 'Master';
 const MR_BRANCH_NAME = 'MR';
@@ -68,48 +71,42 @@ function createBpmnDiv() {
 
     const row1 = document.createElement('tr');
     const row2 = document.createElement('tr');
+    row2.style.height = '100%';
     table.appendChild(row1);
     table.appendChild(row2);
     bpmnDiv.appendChild(table);
 
     //--- header
-    const cell11 = document.createElement('td');
-    cell11.setAttribute('align', 'right');
-    row1.appendChild(cell11);
-    createHeader(cell11);
+    const headerCell = document.createElement('td');
+    headerCell.setAttribute('align', 'right');
+    row1.appendChild(headerCell);
+    createHeader(headerCell);
 
-    //--- buttons
-    const cell12 = document.createElement('td');
-    cell12.setAttribute('align', 'right');
-    row1.appendChild(cell12);
-    createButtonClose(cell12);
+    //--- canvas & props
+    const canvasPropsTable = document.createElement('table');
+    canvasPropsTable.style.width = '100%';
+    canvasPropsTable.style.height = '100%';
+    row2.appendChild(canvasPropsTable);
+    const tableCanvasPropsRow = document.createElement('tr');
+    canvasPropsTable.appendChild(tableCanvasPropsRow);
 
     //--- canvas
-    const cell21 = document.createElement('td');
-    cell21.id = BPMN_CANVAS_ID;
-    cell21.style.height = '100%';
-    cell21.style.visibility = 'hidden'; // initially the canvas is hidden
-    row2.appendChild(cell21);
-    canvasElem = cell21;
+    const canvasCell = document.createElement('td');
+    canvasCell.id = BPMN_CANVAS_ID;
+    canvasCell.style.height = '100%';
+    canvasCell.style.width = '100%';
+    canvasCell.style.visibility = 'hidden'; // initially the canvas is hidden
+    tableCanvasPropsRow.appendChild(canvasCell);
+    canvasElem = canvasCell;
     addCanvasEventHandlers(canvasElem);
 
     //--- properties
-    const cell22 = document.createElement('td');
-    cell22.id = BPMN_PROPS_ID;
-    cell22.style.height = '100%';
-    cell22.style.width = '300px';
-    row2.appendChild(cell22);
-}
-
-function createButtonClose(parentElem) {
-    const btnClose = document.createElement('button');
-    btnClose.textContent = 'Close';
-    btnClose.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    btnClose.addEventListener('click', () => {
-        window.close();
-    });
-    btnClose.style.margin = '5px';
-    parentElem.appendChild(btnClose);
+    bpmnPropsCell = document.createElement('td');
+    bpmnPropsCell.id = BPMN_PROPS_ID;
+    bpmnPropsCell.style.height = '100%';
+    bpmnPropsCell.style.width = '300px';
+    bpmnPropsCell.style.minWidth = '300px';
+    tableCanvasPropsRow.appendChild(bpmnPropsCell);
 }
 
 function createHeader(parentElem) {
@@ -208,6 +205,34 @@ function createHeader(parentElem) {
         }
     });
     cellDownloadButton.appendChild(downloadButton);
+
+    // hide/show props button
+    const cellHideShowPropsButton = document.createElement('td');
+    cellHideShowPropsButton.style.minWidth = '300px';
+    cellHideShowPropsButton.style.textAlign = 'right';
+    row.appendChild(cellHideShowPropsButton);
+
+    const hideShowPropsButton = document.createElement('button');
+    hideShowPropsButton.textContent = 'Hide properties';
+    hideShowPropsButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    hideShowPropsButton.style.width = '130px';
+    hideShowPropsButton.style.margin = '5px';
+    hideShowPropsButton.addEventListener('click', () => {
+        if (isBpmnPropsCellHidden) {
+            hideShowPropsButton.textContent = 'Hide properties';
+            bpmnPropsCell.style.width = '300px';
+            bpmnPropsCell.style.display = 'block';
+            isBpmnPropsCellHidden = false;
+        } else {
+            hideShowPropsButton.textContent = 'Show properties';
+            bpmnPropsCell.style.display = 'none';
+            isBpmnPropsCellHidden = true;
+        }
+        // doesn't always work the first time so call fitViewport twice
+        fitViewport(true);
+        fitViewport(true);
+    });
+    cellHideShowPropsButton.appendChild(hideShowPropsButton);
 }
 
 function setBranchName(branchName) {
