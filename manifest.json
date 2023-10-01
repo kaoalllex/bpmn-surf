@@ -6,12 +6,12 @@
     "content_scripts": [
         {
             "matches": [
-                "https://*/*",
-                "http://*/*"
+                "https://*/*"
             ],
             "js": [
+                "main.js",
                 "utils.js",
-                "main.js"
+                "differ.js"
             ]
         }
     ],
@@ -20,7 +20,8 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": [               
+            "resources": [         
+                "main.js",      
                 "utils.js",    
                 "differ.js",
             

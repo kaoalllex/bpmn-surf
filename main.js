@@ -152,6 +152,11 @@ async function openDiff(params) {
 
 async function main(event) {
     console.debug('start...');
+    if (!window.location.href.includes('gitlab')) {
+        console.debug('it is not gitlab page');
+        return;
+    }
+
     if (event.target.id && event.target.id.startsWith(BUTTON_ID)) {
         console.debug('click on the diff button is ignored');
         return;
