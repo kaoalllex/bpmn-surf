@@ -47,6 +47,8 @@ let nodeIdToDiffsMap = new Map();
 let highlightedPropGroups = null;
 let highlightedPropGroupElems = null;
 
+// map: elem id -> [current branch condition, other branch condition]
+let nodeIdToConditions = new Map();
 
 function createBpmnDiv() {
     const bpmnDiv = document.createElement('div');
@@ -279,7 +281,7 @@ function handleCanvasWheelEvent(event) {
         const delta = event.deltaY > 0 ? -0.03 : 0.03;
         const zoomLevel = bpmnJSCanvas.zoom() + delta;
         if (zoomLevel > 0) {
-            console.debug('zoom = ' + zoomLevel);
+            // console.debug('zoom = ' + zoomLevel);
             bpmnJSCanvas.zoom(zoomLevel);
         }
         event.preventDefault();
@@ -483,6 +485,8 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
 
     ['camunda:properties', 'Extension properties'],
 
+    ['camunda:formField', 'Form fields'],
+
     ['messageRef', 'Message'],
 
     ['bpmn:documentation', 'Documentation'],
@@ -530,6 +534,7 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
     changedShapeIds = [];
     changedRowIds = [];
     nodeIdToDiffsMap.clear();
+    nodeIdToConditions.clear();
 
     for (const myNode of myNodesWithIdAttr) {
         if (isFormFieldProperty(myNode)) {
@@ -568,6 +573,13 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
 
                 if (isNodeRow(myNode)) {
                     changedRowIds.push(id);
+
+                    if (myNode.tagName === 'bpmn:sequenceFlow') {
+                        nodeIdToConditions.set(
+                            id,
+                            [myNode.childNodes[1].textContent, otherNode.childNodes[1].textContent]
+                        );
+                    }
                 } else {
                     changedShapeIds.push(id);
                 }
@@ -579,6 +591,7 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
     // console.debug('missingRowIds', missingRowIds);
     // console.debug('changedShapeIds', changedShapeIds);
     // console.debug('changedRowIds', changedRowIds);
+    // console.debug('nodeIdToConditions', nodeIdToConditions);
 
     paintDiffs(diffTypeForMissing, missingShapeIds, missingRowIds);
     paintDiffs(DiffType.CHANGE, changedShapeIds, changedRowIds);
@@ -797,7 +810,200 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
 async function onSelectedElementChanged(elemId) {
     selectedElementId = elemId.replace(/_label$/, "");
     await hideSchemaEditorControls();
+    if (!selectedElementId) {
+        return;
+    }
     highlightDiffPropGroup();
+    showConditionExpression();
+}
+
+function showConditionExpression() {
+    const elem = bpmnJSElementRegistry.get(selectedElementId);
+    if (elem.type !== 'bpmn:SequenceFlow') {
+        return;
+    }
+    const conditionExpressionElem = document.querySelector('#bio-properties-panel-conditionExpression');
+    if (!conditionExpressionElem) {
+        return;
+    }
+    // hide native element
+    conditionExpressionElem.style.display = 'none';
+
+    // add new
+    const div = document.createElement('div');
+    div.className = 'properties-condition';
+    conditionExpressionElem.parentElement.appendChild(div);
+    drawFormattedCondition(div, conditionExpressionElem);
+}
+
+function drawFormattedCondition(parentElem, conditionExpressionElem) {
+    const conditions = nodeIdToConditions.get(selectedElementId);
+    if (conditions) { // when conparing master and mr branches
+        const myCondParts = formatCondition(conditions[0]);
+        const otherCondParts = formatCondition(conditions[1]);
+    
+        for (const part of myCondParts) {
+            const exists = otherCondParts.includes(part);
+            drawConditionPart(parentElem, part, exists);
+        }
+    } else { // when viewing master branch only
+        const myCondParts = formatCondition(conditionExpressionElem.value);
+        for (const part of myCondParts) {
+            drawConditionPart(parentElem, part, true);
+        }
+    }
+}
+
+function drawConditionPart(parentElem, part, exists) {
+    const elem = document.createElement('div');
+    elem.style.whiteSpace = 'pre';
+    elem.textContent = part;
+    if (!exists) {
+        let color = null;
+        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
+            color = '#ff8888'; // the 'delete' color for master
+        } else {
+            color = '#88ff88'; // the 'add' color for mr
+        }
+        elem.style.backgroundColor = color;
+    }
+    parentElem.appendChild(elem);
+}
+
+function formatCondition(condition) {
+    // console.debug('formatCondition', condition);
+
+    // TODO: extract this logic to separate class
+    const resultArr = [];
+    const symbolArr = [];
+    let indentSize = 0;
+    let andOpStarted = false;
+    let orOpStarted = false;
+    let starting = true;
+    let funcParenthesis = false;
+    let insideString = false;
+    let escapeFound = false;
+
+    for (let i = 0; i < condition.length; i++) {
+        const symbol = condition[i];
+
+        if (insideString && symbol !== '"' && symbol !== '\\') {
+            symbolArr.push(symbol);
+            continue;
+        }
+
+        switch (symbol) {
+            case '{':
+                symbolArr.push(symbol);
+                indentSize += 1;
+                flushString(resultArr, symbolArr, indentSize);
+                starting = true;
+                break;
+
+            case '}':
+                indentSize -= 1;
+                flushString(resultArr, symbolArr, indentSize);
+                starting = true;
+                symbolArr.push(symbol);
+                starting = false;
+                break;
+
+            case '(':
+                symbolArr.push(symbol);
+                if (starting) {
+                    indentSize += 1;
+                    flushString(resultArr, symbolArr, indentSize);
+                    starting = true;
+                } else {
+                    funcParenthesis = true;
+                }
+                break;
+
+            case ')':
+                if (funcParenthesis) {
+                    symbolArr.push(symbol);
+                    funcParenthesis = false;
+                } else {
+                    indentSize -= 1;
+                    flushString(resultArr, symbolArr, indentSize);
+                    starting = true;
+                    symbolArr.push(symbol);
+                    starting = false;
+                }
+                break;
+
+            case '&':
+                symbolArr.push(symbol);
+                if (andOpStarted) { // second &
+                    flushString(resultArr, symbolArr, indentSize);
+                    starting = true;
+                    andOpStarted = false;
+                } else { // first &
+                    andOpStarted = true;
+                }
+                break;
+
+            case '|':
+                symbolArr.push(symbol);
+                if (orOpStarted) { // second |
+                    flushString(resultArr, symbolArr, indentSize);
+                    starting = true;
+                    orOpStarted = false;
+                } else { // first |
+                    orOpStarted = true;
+                }
+                break;
+
+            case '"':
+                symbolArr.push(symbol);
+                if (escapeFound) {
+                    escapeFound = false;
+                } else {
+                    if (insideString) {
+                        insideString = false;
+                    } else {
+                        insideString = true;
+                    }
+                }
+                break;
+
+            case '\\':
+                symbolArr.push(symbol);
+                if (escapeFound) {
+                    escapeFound = false;
+                } else {
+                    escapeFound = true;
+                }
+                break;
+
+            case ' ':
+                if (starting) {
+                    break;
+                }
+            // else no break and go to default branch
+
+            default:
+                symbolArr.push(symbol);
+                andOpStarted = false;
+                orOpStarted = false;
+                starting = false;
+                escapeFound = false;
+        }
+    }
+    if (symbolArr.length > 0) {
+        flushString(resultArr, symbolArr, indentSize);
+    }
+
+    return resultArr;
+}
+
+function flushString(resultArr, symbolArr, indentSize) {
+    resultArr.push(symbolArr.join(''));
+
+    symbolArr.length = 0;
+    for (let i = 0; i < indentSize; i++) {
+        symbolArr.push(...'  ');
+    }
 }
 
 async function hideSchemaEditorControls() {
@@ -809,10 +1015,6 @@ async function hideSchemaEditorControls() {
 }
 
 async function highlightDiffPropGroup() {
-    if (!selectedElementId) {
-        return;
-    }
-
     resetHighlightedDiffPropGroup();
 
     const diffPropGroups = nodeIdToDiffsMap.get(selectedElementId);

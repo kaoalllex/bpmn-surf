@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.7",
+    "version": "0.8",
     "description": "BPMN 2.0 schemas visual differ for Gitlab",
     "content_scripts": [
         {
@@ -23,6 +23,7 @@
                 "main.js",      
                 "utils.js",    
                 "differ.js",
+                "styles.css",
             
                 "libs/bpmn-js/bpmn-modeler.production.min.js",
                 "libs/bpmn-js/assets/bpmn-js.css",

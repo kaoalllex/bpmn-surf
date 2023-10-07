@@ -135,6 +135,7 @@ async function loadScripts(doc) {
     await addStylesheet('libs/bpmn-js-properties-panel/assets/properties-panel.css', doc);
     await addScript('libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js', doc);
 
+    await addStylesheet('styles.css', doc);
     await addScript('utils.js', doc);
     await addScript('differ.js', doc);
 }
