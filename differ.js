@@ -632,34 +632,61 @@ function compareNodes(parentNode, nodeA, nodeB) {
 
     if (isSubProcess(nodeA)) {
         // do not compare children of subprocesses (they will be compared separately)
+        // except 'multiInstanceLoopCharacteristics' and 'extensionElements' nodes
+        const milcDiffs = compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:multiInstanceLoopCharacteristics');
+        diffs = concatDiffs(diffs, milcDiffs);
+        const extDiffs = compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:extensionElements');
+        diffs = concatDiffs(diffs, extDiffs);
         return diffs;
     }
 
     if (nodeA.childNodes.length !== nodeB.childNodes.length) {
         const childrenDiffs = findChildrenDiffs(nodeA, nodeB);
-        if (childrenDiffs) {
-            if (diffs) {
-                diffs = diffs.concat(childrenDiffs);
-            } else {
-                diffs = childrenDiffs;
-            }
-        }
+        diffs = concatDiffs(diffs, childrenDiffs);
     } else {
         for (let i = 0; i < nodeA.childNodes.length; i++) {
             const childA = nodeA.childNodes[i];
             const childB = nodeB.childNodes[i];
             const nodeDiffs = compareNodes(nodeA, childA, childB);
-            if (nodeDiffs) {
-                if (diffs) {
-                    diffs = diffs.concat(nodeDiffs);
-                } else {
-                    diffs = nodeDiffs;
-                }
-            }
+            diffs = concatDiffs(diffs, nodeDiffs);
         }
     }
 
     return diffs;
+}
+
+function concatDiffs(diffs, newDiffs) {
+    if (!newDiffs) {
+        return diffs;
+    }
+    if (diffs) {
+        return diffs.concat(newDiffs);
+    }
+    return newDiffs;
+}
+
+function compareChildNodesWithTagName(nodeA, nodeB, tagName) {
+    const childA = findChildNodeByTagName(nodeA, tagName);
+    const childB = findChildNodeByTagName(nodeB, tagName);
+    if (childA && childB) {
+        return compareNodes(nodeA, childA, childB);
+    }
+    if (childA) {
+        return nodeToDiffs(childA);
+    }
+    if (childB) {
+        return nodeToDiffs(childB);
+    }
+    return null;
+}
+
+function findChildNodeByTagName(node, tagName) {
+    for (child of node.childNodes) {
+        if (child.tagName === tagName) {
+            return child;
+        }
+    }
+    return null;
 }
 
 function findChildrenDiffs(nodeA, nodeB) {
@@ -841,7 +868,7 @@ function drawFormattedCondition(parentElem, conditionExpressionElem) {
     if (conditions) { // when conparing master and mr branches
         const myCondParts = formatCondition(conditions[0]);
         const otherCondParts = formatCondition(conditions[1]);
-    
+
         for (const part of myCondParts) {
             const exists = otherCondParts.includes(part);
             drawConditionPart(parentElem, part, exists);
