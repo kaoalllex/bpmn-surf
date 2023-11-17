@@ -866,7 +866,7 @@ function showConditionExpression() {
 
     // add new expression container, previously delete a possible duplicate
     removeElement(BPMN_PROPS_CONDITION_ID);
-    
+
     const div = document.createElement('div');
     div.id = BPMN_PROPS_CONDITION_ID;
     div.className = 'properties-condition';

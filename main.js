@@ -250,7 +250,7 @@ async function getMasterCommitId(projectUrl, mrCommitId) {
 
     const masterCommitInfo = await loadFileContent(getMasterCommitInfoUrl, true);
 
-    // ищем в этом списке комит MR-а
+    // find MR commit id among master's commits
     const parser = new DOMParser();
     const masterCommitInfoDoc = parser.parseFromString(masterCommitInfo, 'text/xml');
     const entryNodeArr = Array.from(masterCommitInfoDoc.getElementsByTagName('entry'));
@@ -275,7 +275,7 @@ async function getMasterCommitId(projectUrl, mrCommitId) {
     const masterCommitEntry = entryNodeArr[masterCommitEntryIndex];
     const masterCommitEntryIdElemText = masterCommitEntry.querySelector('id').textContent;
 
-    const masterCommitId = masterCommitEntryIdElemText.substring(masterCommitEntryIdElemText.lastIndexOf("/") + 1);
+    const masterCommitId = masterCommitEntryIdElemText.substring(masterCommitEntryIdElemText.lastIndexOf('/') + 1);
     console.debug('master commit id: ' + masterCommitId);
 
     return masterCommitId;
