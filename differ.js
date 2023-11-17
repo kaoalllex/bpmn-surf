@@ -1,8 +1,10 @@
 const MSG_ID = 'msg_71e23e639965407fb9c87f100a56c898';
+const DEFAULT_MASTER_COMMIT_ID = 'master';
 
 const BPMN_DIV_ID = 'bpmnDiv_12345bf3d4e842caa0d88194431197c0';
 const BPMN_CANVAS_ID = 'bpmnCanvas_12345bf3d4e842caa0d88194431197c0';
 const BPMN_PROPS_ID = 'bpmnProps_12345bf3d4e842caa0d88194431197c0';
+const BPMN_PROPS_CONDITION_ID = 'bpmnPropsCondition_12345bf3d4e842caa0d88194431197c0';
 
 let bpmnPropsCell = null;
 let isBpmnPropsCellHidden = false;
@@ -13,7 +15,8 @@ const MASTER_BRANCH_COLOR = 'darkred';
 const MR_BRANCH_COLOR = 'darkblue';
 
 let projectUrl = null;
-let diffHeadSha = null;
+let mrCommitId = null;
+let masterCommitId = null;
 let filePath = null;
 let fileName = null;
 
@@ -106,8 +109,8 @@ function createBpmnDiv() {
     bpmnPropsCell = document.createElement('td');
     bpmnPropsCell.id = BPMN_PROPS_ID;
     bpmnPropsCell.style.height = '100%';
-    bpmnPropsCell.style.width = '300px';
     bpmnPropsCell.style.minWidth = '300px';
+    bpmnPropsCell.style.maxWidth = '600px';
     tableCanvasPropsRow.appendChild(bpmnPropsCell);
 }
 
@@ -152,7 +155,7 @@ function createHeader(parentElem) {
     row.appendChild(cellBranchButton);
 
     // show the switch branch button only if MR hash is defined
-    if (diffHeadSha) {
+    if (mrCommitId) {
         const switchButton = document.createElement('button');
         switchButton.textContent = 'Switch branch';
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
@@ -222,7 +225,6 @@ function createHeader(parentElem) {
     hideShowPropsButton.addEventListener('click', () => {
         if (isBpmnPropsCellHidden) {
             hideShowPropsButton.textContent = 'Hide properties';
-            bpmnPropsCell.style.width = '300px';
             bpmnPropsCell.style.display = 'block';
             isBpmnPropsCellHidden = false;
         } else {
@@ -474,6 +476,8 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['camunda:inputParameter', 'Inputs'],
     ['camunda:outputParameter', 'Outputs'],
 
+    ['bpmn:escalationEventDefinition', 'Escalation'],
+
     ['camunda:executionListener', 'Execution listeners'],
 
     ['bpmn:timeDuration', 'Timer'],
@@ -486,6 +490,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['camunda:properties', 'Extension properties'],
 
     ['camunda:formField', 'Form fields'],
+    ['camunda:formField/label', 'Form fields'],
 
     ['messageRef', 'Message'],
 
@@ -493,7 +498,10 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
 
     // properties to be ignored
     // because there is no property group to highlight
-    ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP]
+    ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP],
+
+    // todo: select the title of the properties panel
+    ['bpmn:startEvent/isInterrupting', IGNORED_DIFF_PROPERTY_GROUP],
 ]);
 
 function findDiffPropertyGroup(diff) {
@@ -853,11 +861,14 @@ function showConditionExpression() {
     if (!conditionExpressionElem) {
         return;
     }
-    // hide native element
+    // hide native expression container
     conditionExpressionElem.style.display = 'none';
 
-    // add new
+    // add new expression container, previously delete a possible duplicate
+    removeElement(BPMN_PROPS_CONDITION_ID);
+    
     const div = document.createElement('div');
+    div.id = BPMN_PROPS_CONDITION_ID;
     div.className = 'properties-condition';
     conditionExpressionElem.parentElement.appendChild(div);
     drawFormattedCondition(div, conditionExpressionElem);
@@ -865,7 +876,7 @@ function showConditionExpression() {
 
 function drawFormattedCondition(parentElem, conditionExpressionElem) {
     const conditions = nodeIdToConditions.get(selectedElementId);
-    if (conditions) { // when conparing master and mr branches
+    if (conditions) { // when comparing master and mr branches
         const myCondParts = formatCondition(conditions[0]);
         const otherCondParts = formatCondition(conditions[1]);
 
@@ -1075,18 +1086,9 @@ function resetHighlightedDiffPropGroup() {
     }
 }
 
-async function loadBpmnXml() {
-    masterBpmnXml = null;
-    const masterFileUrl = `${projectUrl}/-/raw/master/${filePath}`;
-    masterBpmnXml = await loadFileContent(masterFileUrl, false);
-
-    mrBpmnXml = null;
-    if (diffHeadSha) {
-        const mrFileUrl = `${projectUrl}/-/raw/${diffHeadSha}/${filePath}`;
-        mrBpmnXml = await loadFileContent(mrFileUrl, false);
-    } else {
-        console.debug('diffHeadSha is undefined');
-    }
+async function loadBpmnXml(commitId) {
+    const fileUrl = `${projectUrl}/-/raw/${commitId}/${filePath}`;
+    return await loadFileContent(fileUrl, false);
 }
 
 function hideModelerPallete() {
@@ -1109,10 +1111,11 @@ async function setPropertiesPanelContainerMaxHeight() {
 }
 
 function initDiff(params) {
-    projectUrl = params.projectUrl;
-    diffHeadSha = params.diffHeadSha;
-    filePath = params.filePath;
-    fileName = params.fileName;
+    projectUrl = requireDefined(params.projectUrl, 'projectUrl');
+    mrCommitId = params.mrCommitId; // may be undefined when showing schema from master
+    masterCommitId = requireDefined(params.masterCommitId, 'masterCommitId');
+    filePath = requireDefined(params.filePath, 'filePath');
+    fileName = requireDefined(params.fileName, 'fileName');
 
     bpmnPropertiesPanelModule = window.BpmnJSPropertiesPanel.BpmnPropertiesPanelModule;
     bpmnPropertiesProviderModule = window.BpmnJSPropertiesPanel.BpmnPropertiesProviderModule;
@@ -1162,10 +1165,19 @@ async function showDiff(params) {
 
     hideModelerPallete();
 
-    console.debug('show diff: loading bpmn xml...');
-    await loadBpmnXml();
-    console.debug('show diff: showing bpmn xml...');
+    console.debug('show diff: loading master bpmn xml...');
+    masterBpmnXml = null;
+    masterBpmnXml = await loadBpmnXml(masterCommitId);
 
+    console.debug('show diff: loading mr bpmn xml...');
+    mrBpmnXml = null;
+    if (mrCommitId) {
+        mrBpmnXml = await loadBpmnXml(mrCommitId);
+    } else {
+        console.debug('mrCommitId is undefined');
+    }
+
+    console.debug('show diff: showing bpmn xml files...');
     if (mrBpmnXml) {
         showBpmnMr();
     } else {

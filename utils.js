@@ -45,3 +45,10 @@ async function findElementWithDelay(searchFunction, tries = 10, delayMs = 150) {
     }
     return null;
 }
+
+function requireDefined(arg, argName) {
+    if (!arg) {
+        throw new Error(`${argName} is undefined`);
+    }
+    return arg;
+}

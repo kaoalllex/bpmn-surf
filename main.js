@@ -1,5 +1,6 @@
 const BUTTON_ID = 'btn_77844bf3d4e842caa0d88194431197c0';
 const MSG_ID = 'msg_71e23e639965407fb9c87f100a56c898';
+const DEFAULT_MASTER_COMMIT_ID = 'master';
 
 const SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
 const SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
@@ -26,6 +27,7 @@ async function isMasterBpmnFileShowing() {
 function getProjectUrl() {
     const href = window.location.href;
     const res = href.substring(0, href.indexOf('/-/'));
+    // console.debug('project url: ' + res);
     return res;
 }
 
@@ -64,13 +66,22 @@ function findSelectedFilePath(dataPathElems) {
 function findDiffHeadSha() {
     const elem = document.getElementById('js-vue-mr-discussions');
     if (!elem) {
+        console.debug('js-vue-mr-discussions not found');
         return null;
     }
     const data = elem.getAttribute('data-noteable-data');
+    if (!data) {
+        console.debug('att data-noteable-data not found');
+        return null;
+    }
     const matches = /"diff_head_sha":"([0-9a-f]+)"/g.exec(data);
     if (matches && matches.length >= 2) {
         const res = matches[1];
+        console.debug('diffHeadSha: ' + res);
         return res;
+    } else {
+        console.debug('diffHeadSha not found by regex');
+        return null;
     }
 }
 
@@ -171,48 +182,18 @@ async function openDiffer(params) {
     console.debug('opening differ...done');
 }
 
-async function main(event) {
-    console.debug('start...');
-    if (!window.location.href.includes('gitlab')) {
-        console.debug('it is not gitlab page');
-        return;
-    }
-
-    if (event.target.id && event.target.id.startsWith(BUTTON_ID)) {
-        console.debug('click on the plugin button is ignored');
-        return;
-    }
-    removeElement(BUTTON_ID);
-
-    const diffsTabActive = await isDiffsTabActive();
-    if (diffsTabActive) {
-        console.debug('diffs tab is active');
-        await addShowDiffButton();
-        return;
-    }
-    console.debug('diffs tab is not active');
-
-    const masterBpmnFileShowing = await isMasterBpmnFileShowing();
-    if (masterBpmnFileShowing) {
-        await addShowMasterButton();
-        return;
-    }
-    console.debug('master bpmn file is not showing');
-
-}
-
 async function addShowDiffButton() {
     console.debug('adding show diff button...');
 
     const projectUrl = getProjectUrl();
     if (projectUrl == null) {
-        console.error('projectUrl not found');
+        console.error('cannot get project url');
         return;
     }
 
     const dataPathElems = await findDataPathElements();
     if (!dataPathElems) {
-        console.log('cannot find data-path element!');
+        console.log('cannot find data-path element');
         // TODO: re-send event?
         return;
     }
@@ -224,21 +205,31 @@ async function addShowDiffButton() {
     }
     const fileName = getFileNameFromPath(filePath);
 
-    const diffHeadSha = findDiffHeadSha();
-    if (diffHeadSha == null) {
-        console.log('diff-head-sha not found');
+    const mrCommitId = await getMrCommitId();
+    if (mrCommitId) {
+        console.debug('mr commit id: ' + mrCommitId);
+    }
+    else {
+        console.log('mr commit id not found');
         // Sometimes, when opening the MR for the first time,
-        // the element that holds the diff hash is not loaded in the DOM
-        // and cannot be found. But reloading the page helps!
+        // the element that holds the diff hash (mrCommitId) is not loaded in the DOM
+        // and cannot be found. But reloading the page helps (sometimes)
         location.reload();
         return;
+    }
+
+    const masterCommitId = await getMasterCommitId(projectUrl, mrCommitId);
+    if (!masterCommitId) {
+        console.warn('master commit id not found!');
+        // go on: will use lastest master commit in differ
     }
 
     await loadCamundaBpmnModdle();
 
     const params = {
         projectUrl: projectUrl,
-        diffHeadSha: diffHeadSha,
+        mrCommitId: mrCommitId,
+        masterCommitId: masterCommitId,
         filePath: filePath,
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
@@ -249,6 +240,89 @@ async function addShowDiffButton() {
         true,
         () => openDiffer(params)
     );
+}
+
+async function getMasterCommitId(projectUrl, mrCommitId) {
+    console.debug('getting master commit id...');
+
+    const getMasterCommitInfoUrl = projectUrl + '/-/commits/master?format=atom';
+    // console.debug('master commit info url: ' + getMasterCommitInfoUrl);
+
+    const masterCommitInfo = await loadFileContent(getMasterCommitInfoUrl, true);
+
+    // ищем в этом списке комит MR-а
+    const parser = new DOMParser();
+    const masterCommitInfoDoc = parser.parseFromString(masterCommitInfo, 'text/xml');
+    const entryNodeArr = Array.from(masterCommitInfoDoc.getElementsByTagName('entry'));
+
+    const mrCommitEntryIndex = entryNodeArr.findIndex(entry => {
+        const idElement = entry.querySelector('id');
+        return idElement && idElement.textContent.includes(mrCommitId);
+    });
+    if (mrCommitEntryIndex === -1) {
+        console.debug('MR is not merged');
+        return DEFAULT_MASTER_COMMIT_ID;
+    }
+
+    console.debug('MR is already merged!');
+
+    const masterCommitEntryIndex = mrCommitEntryIndex + 1;
+    if (masterCommitEntryIndex >= entryNodeArr.length) {
+        console.warn('masterCommitEntryIndex is out of range! array length: ' + entryNodeArr.length);
+        return null;
+    }
+
+    const masterCommitEntry = entryNodeArr[masterCommitEntryIndex];
+    const masterCommitEntryIdElemText = masterCommitEntry.querySelector('id').textContent;
+
+    const masterCommitId = masterCommitEntryIdElemText.substring(masterCommitEntryIdElemText.lastIndexOf("/") + 1);
+    console.debug('master commit id: ' + masterCommitId);
+
+    return masterCommitId;
+}
+
+/**
+ * Getting mrCommitId by different strategies
+ */
+async function getMrCommitId() {
+    console.debug('getting mr last commit id...');
+    const commitId = await getMrLastCommitId();
+    if (commitId) {
+        return commitId;
+    }
+
+    console.debug('finding diff head sha...');
+    const diffHeadSha = findDiffHeadSha();
+    if (diffHeadSha) {
+        return diffHeadSha;
+    }
+
+    // maybe some another strategy...
+
+    return null;
+}
+
+async function getMrLastCommitId() {
+    // get url for loading MR commits info
+    // the url format is: <projectUrl>/-/merge_requests/<MR number>/commits.json
+    // but now the current href is <projectUrl>/-/merge_requests/<MR number>/diffs[#hash]
+    const href = window.location.href;
+    const getMrCommitInfoUrl = href.substring(0, href.indexOf('/diffs')) + '/commits.json';
+    // console.debug('mr commit info url: ' + getMrCommitInfoUrl);
+
+    const mrCommitInfo = await loadFileContent(getMrCommitInfoUrl, true);
+
+    // find the first occurance of 'commit_id=' substring
+    // this will be the hash of the latest commit in this branch (the number of commits can be more than one)
+    const regex = /commit_id=([a-fA-F0-9]+)/;
+    const match = mrCommitInfo.match(regex);
+    if (!match || match.length < 2) {
+        console.warn('cannot find mr last commit id in commits info!', mrCommitInfo);
+        return null;
+    }
+    const commitId = match[1];
+    console.debug('mr last commit id: ' + commitId);
+    return commitId;
 }
 
 function getBpmnFilePathFromUrl() {
@@ -277,7 +351,8 @@ async function addShowMasterButton() {
 
     const params = {
         projectUrl: projectUrl,
-        diffHeadSha: null,
+        mrCommitId: null,
+        masterCommitId: DEFAULT_MASTER_COMMIT_ID,
         filePath: filePath,
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
@@ -290,7 +365,38 @@ async function addShowMasterButton() {
     );
 }
 
+async function main(event) {
+    console.debug('start...');
+    if (!window.location.href.includes('gitlab')) {
+        console.debug('it is not gitlab page');
+        return;
+    }
+
+    if (event && event.target.id && event.target.id.startsWith(BUTTON_ID)) {
+        console.debug('click on the plugin button is ignored');
+        return;
+    }
+    removeElement(BUTTON_ID);
+
+    const diffsTabActive = await isDiffsTabActive();
+    if (diffsTabActive) {
+        console.debug('diffs tab is active');
+        await addShowDiffButton();
+        return;
+    }
+    console.debug('diffs tab is not active');
+
+    const masterBpmnFileShowing = await isMasterBpmnFileShowing();
+    if (masterBpmnFileShowing) {
+        await addShowMasterButton();
+        return;
+    }
+    console.debug('master bpmn file is not showing');
+
+}
+
 window.onload = main;
+
 // catches 'mouseup' rather than 'click' because 
 // the click event sometimes doesn't appear when clicking on a tab
 document.body.addEventListener('mouseup', main);

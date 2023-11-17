@@ -9,8 +9,8 @@
                 "https://*/*"
             ],
             "js": [
-                "main.js",
-                "utils.js"
+                "utils.js",
+                "main.js"
             ]
         }
     ],
