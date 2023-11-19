@@ -32,7 +32,7 @@ function getProjectUrl() {
 }
 
 async function findDataPathElements() {
-    return await findElementWithDelay(function () {
+    return await doWithAttempts(function () {
         const res = document.querySelectorAll('[data-path]');
         if (res && res.length > 0) {
             return res;
@@ -53,7 +53,7 @@ function findSelectedFilePath(dataPathElems) {
         }
     }
     if (!filePath) {
-        console.log('cannot get file path from data-path element');
+        console.debug('cannot get file path from data-path element');
         return null;
     }
     if (!filePath.endsWith('.bpmn')) {
@@ -182,18 +182,12 @@ async function openDiffer(params) {
     console.debug('opening differ...done');
 }
 
-async function addShowDiffButton() {
+async function addShowDiffButton(projectUrl) {
     console.debug('adding show diff button...');
-
-    const projectUrl = getProjectUrl();
-    if (projectUrl == null) {
-        console.error('cannot get project url');
-        return;
-    }
 
     const dataPathElems = await findDataPathElements();
     if (!dataPathElems) {
-        console.log('cannot find data-path element');
+        console.info('cannot find data-path element');
         // TODO: re-send event?
         return;
     }
@@ -210,7 +204,7 @@ async function addShowDiffButton() {
         console.debug('mr commit id: ' + mrCommitId);
     }
     else {
-        console.log('mr commit id not found');
+        console.info('mr commit id not found');
         // Sometimes, when opening the MR for the first time,
         // the element that holds the diff hash (mrCommitId) is not loaded in the DOM
         // and cannot be found. But reloading the page helps (sometimes)
@@ -220,7 +214,7 @@ async function addShowDiffButton() {
 
     const masterCommitId = await getMasterCommitId(projectUrl, mrCommitId);
     if (!masterCommitId) {
-        console.warn('master commit id not found!');
+        console.info('master commit id not found!');
         // go on: will use lastest master commit in differ
     }
 
@@ -310,6 +304,7 @@ async function getMrLastCommitId() {
     const getMrCommitInfoUrl = href.substring(0, href.indexOf('/diffs')) + '/commits.json';
     // console.debug('mr commit info url: ' + getMrCommitInfoUrl);
 
+    // TODO: do not load mr commit info data every time - do it once on startup
     const mrCommitInfo = await loadFileContent(getMrCommitInfoUrl, true);
 
     // find the first occurance of 'commit_id=' substring
@@ -331,14 +326,8 @@ function getBpmnFilePathFromUrl() {
     return href.substring(startIndex);
 }
 
-async function addShowMasterButton() {
+async function addShowMasterButton(projectUrl) {
     console.debug('adding show master button...');
-
-    const projectUrl = getProjectUrl();
-    if (projectUrl == null) {
-        console.error('projectUrl not found');
-        return;
-    }
 
     const filePath = getBpmnFilePathFromUrl();
     if (filePath == null) {
@@ -365,7 +354,7 @@ async function addShowMasterButton() {
     );
 }
 
-async function main(event) {
+async function start(event) {
     console.debug('start...');
     if (!window.location.href.includes('gitlab')) {
         console.debug('it is not gitlab page');
@@ -378,25 +367,37 @@ async function main(event) {
     }
     removeElement(BUTTON_ID);
 
+    const projectUrl = getProjectUrl();
+    if (projectUrl == null) {
+        console.error('cannot get project url');
+        return;
+    }
+
     const diffsTabActive = await isDiffsTabActive();
     if (diffsTabActive) {
         console.debug('diffs tab is active');
-        await addShowDiffButton();
+        await addShowDiffButton(projectUrl);
         return;
     }
     console.debug('diffs tab is not active');
 
     const masterBpmnFileShowing = await isMasterBpmnFileShowing();
     if (masterBpmnFileShowing) {
-        await addShowMasterButton();
+        await addShowMasterButton(projectUrl);
         return;
     }
     console.debug('master bpmn file is not showing');
 
 }
 
-window.onload = main;
+function main() {
+    appendTimeToConsoleLogs();
 
-// catches 'mouseup' rather than 'click' because 
-// the click event sometimes doesn't appear when clicking on a tab
-document.body.addEventListener('mouseup', main);
+    window.onload = start;
+
+    // catches 'mouseup' rather than 'click' because 
+    // the click event sometimes doesn't appear when clicking on a tab
+    document.body.addEventListener('mouseup', start);
+}
+
+main();

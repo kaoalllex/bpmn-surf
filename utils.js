@@ -35,11 +35,11 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function findElementWithDelay(searchFunction, tries = 10, delayMs = 150) {
-    for (let index = 0; index < tries; index++) {
-        var element = searchFunction();
-        if (element) {
-            return element;
+async function doWithAttempts(action, attempts = 10, delayMs = 150) {
+    for (let index = 0; index < attempts; index++) {
+        var res = action();
+        if (res) {
+            return res;
         }
         await delay(delayMs);
     }
@@ -51,4 +51,23 @@ function requireDefined(arg, argName) {
         throw new Error(`${argName} is undefined`);
     }
     return arg;
+}
+
+function appendTimeToConsoleLogs() {
+    const formatter = new Intl.DateTimeFormat('en', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false,
+        fractionalSecondDigits: 3
+    });
+    const handler = {
+        apply: function (target, thisArg, argArray) {
+            const ts = formatter.format(new Date());
+            target.apply(console, [`${ts}:`, ...argArray]);
+        }
+    };
+
+    console.debug = new Proxy(console.debug, handler);
+    console.info = new Proxy(console.info, handler);
+    console.warn = new Proxy(console.warn, handler);
+    console.error = new Proxy(console.error, handler);
 }

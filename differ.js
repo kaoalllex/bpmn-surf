@@ -500,7 +500,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     // because there is no property group to highlight
     ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP],
 
-    // todo: select the title of the properties panel
+    // TODO: select the title of the properties panel
     ['bpmn:startEvent/isInterrupting', IGNORED_DIFF_PROPERTY_GROUP],
 ]);
 
@@ -1061,7 +1061,7 @@ async function highlightDiffPropGroup() {
         highlightedPropGroupElems = [];
 
         for (const diffPropGroup of highlightedPropGroups) {
-            const elem = await findElementWithDelay(function () {
+            const elem = await doWithAttempts(function () {
                 const e = document.querySelector(`.bio-properties-panel-group-header-title[title="${diffPropGroup}"]`);
                 if (!e) {
                     return null;
@@ -1100,7 +1100,7 @@ function hideModelerPallete() {
 }
 
 async function setPropertiesPanelContainerMaxHeight() {
-    const panelContainer = await findElementWithDelay(function () {
+    const panelContainer = await doWithAttempts(function () {
         return document.querySelector('.bio-properties-panel-scroll-container');
     });
     if (!panelContainer) {
@@ -1194,12 +1194,18 @@ async function showDiff(params) {
     console.debug('show diff: ready!');
 }
 
-window.addEventListener('message', async function (msg) {
-    console.debug('message received', msg);
-    if (msg.origin !== window.origin || msg.data.id !== MSG_ID) {
-        console.debug(`skip message: msg.origin = ${msg.origin}; msg.data.id = ${msg.data.id}`);
-        return;
-    }
-    console.debug('showing diff...');
-    await showDiff(msg.data.params);
-});
+function main() {
+    appendTimeToConsoleLogs();
+
+    window.addEventListener('message', async function (msg) {
+        console.debug('message received', msg);
+        if (msg.origin !== window.origin || msg.data.id !== MSG_ID) {
+            console.debug(`skip message: msg.origin = ${msg.origin}; msg.data.id = ${msg.data.id}`);
+            return;
+        }
+        console.debug('showing diff...');
+        await showDiff(msg.data.params);
+    });
+}
+
+main();
