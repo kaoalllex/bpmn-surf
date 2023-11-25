@@ -21,7 +21,7 @@ async function isMasterBpmnFileShowing() {
     await delay(200);
     const href = window.location.href;
     // console.debug('href: ' + href);
-    return href.includes('/-/blob/master/') && href.endsWith('.bpmn');
+    return href.includes('/-/blob/') && href.endsWith('.bpmn');
 }
 
 function getProjectUrl() {
@@ -320,28 +320,30 @@ async function getMrLastCommitId() {
     return commitId;
 }
 
-function getBpmnFilePathFromUrl() {
-    const href = window.location.href;
-    const startIndex = href.substring(0, href.indexOf('/-/')).length + '/-/blob/master/'.length;
-    return href.substring(startIndex);
-}
-
 async function addShowMasterButton(projectUrl) {
     console.debug('adding show master button...');
 
-    const filePath = getBpmnFilePathFromUrl();
-    if (filePath == null) {
-        console.warn('cannot get bpmn file path from url', window.location.href);
+    const regex = /\/-\/blob\/([a-f0-9]+|master)\/(.*)/;
+    const match = window.location.href.match(regex);
+    console.debug('match: ', match);
+    if (!match || match.length < 3) {
+        console.warn('cannot get master commit id and bpmn file path from url', window.location.href);
         return;
     }
+    const masterCommitId = match[1];
+    const filePath = match[2];
     const fileName = getFileNameFromPath(filePath);
+
+    console.debug('masterCommitId: ' + masterCommitId);
+    console.debug('filePath: ' + filePath);
+    console.debug('fileName: ' + fileName);
 
     await loadCamundaBpmnModdle();
 
     const params = {
         projectUrl: projectUrl,
         mrCommitId: null,
-        masterCommitId: DEFAULT_MASTER_COMMIT_ID,
+        masterCommitId: masterCommitId,
         filePath: filePath,
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle

@@ -383,6 +383,8 @@ function selectElementById() {
 }
 
 async function showBpmnMaster() {
+    console.debug('showing master bpmn xml file...');
+    requireDefined(masterBpmnXml, 'masterBpmnXml');
     await showBpmn(masterBpmnXml);
     setBranchName(MASTER_BRANCH_NAME);
 
@@ -394,6 +396,8 @@ async function showBpmnMaster() {
 }
 
 async function showBpmnMr() {
+    console.debug('showing mr bpmn xml file...');
+    requireDefined(mrBpmnXml, 'mrBpmnXml');
     await showBpmn(mrBpmnXml);
     setBranchName(MR_BRANCH_NAME);
 
@@ -1088,6 +1092,7 @@ function resetHighlightedDiffPropGroup() {
 
 async function loadBpmnXml(commitId) {
     const fileUrl = `${projectUrl}/-/raw/${commitId}/${filePath}`;
+    console.debug('loading bpmn xml from: ' + fileUrl);
     return await loadFileContent(fileUrl, false);
 }
 
@@ -1126,10 +1131,10 @@ function initDiff(params) {
 async function showDiff(params) {
     console.debug('diff params: ', params);
     initDiff(params);
-    console.debug('show diff: init done');
+    console.debug('init done');
 
     createBpmnDiv();
-    console.debug('show diff: bpmn div created');
+    console.debug('bpmn div created');
 
     bpmnJS = new BpmnJS({
         container: '#' + BPMN_CANVAS_ID,
@@ -1148,7 +1153,7 @@ async function showDiff(params) {
             camunda: camundaBpmnModdle
         }
     });
-    console.debug('show diff: bpmn js created');
+    console.debug('bpmn js created');
 
     bpmnJSCanvas = bpmnJS.get('canvas');
     bpmnJSElementRegistry = bpmnJS.get('elementRegistry');
@@ -1165,33 +1170,32 @@ async function showDiff(params) {
 
     hideModelerPallete();
 
-    console.debug('show diff: loading master bpmn xml...');
+    console.debug('loading master bpmn xml...');
     masterBpmnXml = null;
     masterBpmnXml = await loadBpmnXml(masterCommitId);
 
-    console.debug('show diff: loading mr bpmn xml...');
+    console.debug('loading mr bpmn xml...');
     mrBpmnXml = null;
     if (mrCommitId) {
         mrBpmnXml = await loadBpmnXml(mrCommitId);
     } else {
-        console.debug('mrCommitId is undefined');
+        console.debug('mr commit id is undefined');
     }
 
-    console.debug('show diff: showing bpmn xml files...');
     if (mrBpmnXml) {
-        showBpmnMr();
+        await showBpmnMr();
     } else {
-        showBpmnMaster();
+        await showBpmnMaster();
     }
 
-    console.debug('show diff: making canvas visible...');
     // show canvas after the differ is completely rendered
+    console.debug('making canvas visible...');
     canvasElem.style.visibility = 'visible';
 
     // set max-height of the properties panel container to enable scrollbar display when needed
     await setPropertiesPanelContainerMaxHeight();
 
-    console.debug('show diff: ready!');
+    console.debug('ready!');
 }
 
 function main() {
