@@ -239,7 +239,7 @@ async function addShowDiffButton(projectUrl) {
 async function getMasterCommitId(projectUrl, mrCommitId) {
     console.debug('getting master commit id...');
 
-    const getMasterCommitInfoUrl = projectUrl + '/-/commits/master?format=atom';
+    const getMasterCommitInfoUrl = projectUrl + '/-/commits/master?format=atom&limit=100';
     // console.debug('master commit info url: ' + getMasterCommitInfoUrl);
 
     const masterCommitInfo = await loadFileContent(getMasterCommitInfoUrl, true);
