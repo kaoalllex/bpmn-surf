@@ -15,3 +15,10 @@
     align-items: start;
     white-space: nowrap;
 }
+
+.djs-element.highlight-diff .djs-outline {
+    visibility: visible;
+
+    stroke: hsl(180, 100%, 70%);
+    stroke-width: 3px;
+}

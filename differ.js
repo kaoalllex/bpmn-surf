@@ -476,6 +476,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['camunda:out', 'Out mappings'],
     ['camunda:out/source', 'Out mappings'],
     ['camunda:out/target', 'Out mappings'],
+    ['camunda:out/sourceExpression', 'Out mappings'],
 
     ['camunda:inputParameter', 'Inputs'],
     ['camunda:outputParameter', 'Outputs'],
@@ -822,6 +823,7 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
     if (shapeIdList.length > 0) {
         const shapes = shapeIdList.map(id => bpmnJSElementRegistry.get(id));
         bpmnJSModeling.setColor(shapes, { fill: diffType.shapeColor });
+        highlightCanvasElements(shapes);
 
         // paint the TextAnnotation elements because setColor() does not work for them
         for (const shape of shapes) {
@@ -843,6 +845,21 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
     if (rowIdList.length > 0) {
         const rows = rowIdList.map(id => bpmnJSElementRegistry.get(id));
         bpmnJSModeling.setColor(rows, { stroke: diffType.rowColor });
+        highlightCanvasElements(rows);
+    }
+}
+
+function highlightCanvasElements(elements) {
+    for (const elem of elements) {
+        // skip some elements
+        if (elem.type === 'bpmn:Association') {
+            continue;
+        }
+        try {
+            bpmnJSCanvas.addMarker(elem, 'highlight-diff');
+        } catch (error) {
+            // some elements does not have property `id` so addMarker() throw error
+        }
     }
 }
 
