@@ -9,10 +9,17 @@ const BPMN_PROPS_CONDITION_ID = 'bpmnPropsCondition_12345bf3d4e842caa0d881944311
 let bpmnPropsCell = null;
 let isBpmnPropsCellHidden = false;
 
+let isHighlightEnabled = false;
+
 const MASTER_BRANCH_NAME = 'Master';
 const MR_BRANCH_NAME = 'MR';
 const MASTER_BRANCH_COLOR = 'darkred';
 const MR_BRANCH_COLOR = 'darkblue';
+
+const MIN_VIEWPORT_ZOOM = 0.1;
+const MAX_VIEWPORT_ZOOM = 3.0;
+const IN_OUT_DELTA_VIEWPORT_ZOOM = 0.15;
+const WHEEL_DELTA_VIEWPORT_ZOOM = 0.03;
 
 let projectUrl = null;
 let mrCommitId = null;
@@ -41,6 +48,8 @@ let mrBpmnXml = null;
 let branchNameTextElement = null;
 let branchNameSpanElement = null;
 
+let missingShapeIds = [];
+let missingRowIds = [];
 let changedShapeIds = [];
 let changedRowIds = [];
 
@@ -116,7 +125,7 @@ function createBpmnDiv() {
 
 function createHeader(parentElem) {
     const table = document.createElement('table');
-    // table.border = 5;
+    // table.border = 3;
     table.style.width = '100%';
     parentElem.appendChild(table);
 
@@ -125,7 +134,6 @@ function createHeader(parentElem) {
 
     // file name
     const cellFileName = document.createElement('td');
-    cellFileName.style.width = '100%';
     row.appendChild(cellFileName);
 
     const fileNameSpan = document.createElement('span');
@@ -133,6 +141,25 @@ function createHeader(parentElem) {
     fileNameSpan.style.fontWeight = 'bold';
     fileNameSpan.appendChild(document.createTextNode(fileName));
     cellFileName.appendChild(fileNameSpan);
+
+    // download file button
+    const cellDownloadButton = document.createElement('td');
+    cellDownloadButton.style.width = '100%';
+    row.appendChild(cellDownloadButton);
+
+    const downloadButton = document.createElement('button');
+    downloadButton.style.width = '90px';
+    downloadButton.textContent = 'Download';
+    downloadButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    downloadButton.style.margin = '3px';
+    downloadButton.addEventListener('click', (event) => {
+        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
+            downloadBpmnFile(masterBpmnXml, MASTER_BRANCH_NAME);
+        } else {
+            downloadBpmnFile(mrBpmnXml, MR_BRANCH_NAME);
+        }
+    });
+    cellDownloadButton.appendChild(downloadButton);
 
     // branch name
     const cellBranchName = document.createElement('td');
@@ -151,15 +178,16 @@ function createHeader(parentElem) {
 
     // switch branch button
     const cellBranchButton = document.createElement('td');
-    cellBranchButton.style.minWidth = '130px';
+    cellBranchButton.style.minWidth = '70px';
     row.appendChild(cellBranchButton);
 
     // show the switch branch button only if MR hash is defined
     if (mrCommitId) {
         const switchButton = document.createElement('button');
-        switchButton.textContent = 'Switch branch';
+        switchButton.style.width = '90px';
+        switchButton.textContent = 'Switch';
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        switchButton.style.margin = '5px';
+        switchButton.style.margin = '3px';
         switchButton.addEventListener('click', (event) => {
             if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) { // current Master - switch to MR
                 if (mrBpmnXml) {
@@ -180,36 +208,60 @@ function createHeader(parentElem) {
         cellBranchButton.appendChild(switchButton);
     }
 
-    // fit viewport button
-    const cellFitViewportButton = document.createElement('td');
-    cellFitViewportButton.style.minWidth = '110px';
-    row.appendChild(cellFitViewportButton);
+    // View
+    const cellView = document.createElement('td');
+    cellView.style.minWidth = '450px';
+    cellView.style.textAlign = "right";
+    row.appendChild(cellView);
 
-    const fitViewportButton = document.createElement('button');
-    fitViewportButton.textContent = 'Fit viewport';
-    fitViewportButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    fitViewportButton.style.margin = '5px';
-    fitViewportButton.addEventListener('click', (event) => {
+    cellView.appendChild(document.createTextNode('View: '));
+
+    const fitButton = document.createElement('button');
+    fitButton.style.width = '80px';
+    fitButton.textContent = 'Fit';
+    fitButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    fitButton.style.margin = '3px';
+    fitButton.addEventListener('click', (event) => {
         fitViewport(true);
     });
-    cellFitViewportButton.appendChild(fitViewportButton);
+    cellView.appendChild(fitButton);
 
-    // download file button
-    const cellDownloadButton = document.createElement('td');
-    row.appendChild(cellDownloadButton);
-
-    const downloadButton = document.createElement('button');
-    downloadButton.textContent = 'Download';
-    downloadButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    downloadButton.style.margin = '5px';
-    downloadButton.addEventListener('click', (event) => {
-        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
-            downloadBpmnFile(masterBpmnXml, MASTER_BRANCH_NAME);
-        } else {
-            downloadBpmnFile(mrBpmnXml, MR_BRANCH_NAME);
-        }
+    const zoomInButton = document.createElement('button');
+    zoomInButton.style.width = '90px';
+    zoomInButton.textContent = 'Zoom In';
+    zoomInButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    zoomInButton.style.margin = '3px';
+    zoomInButton.addEventListener('click', (event) => {
+        changeViewportZoom(IN_OUT_DELTA_VIEWPORT_ZOOM);
     });
-    cellDownloadButton.appendChild(downloadButton);
+    cellView.appendChild(zoomInButton);
+
+    const zoomOutButton = document.createElement('button');
+    zoomOutButton.style.width = '90px';
+    zoomOutButton.textContent = 'Zoom Out';
+    zoomOutButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    zoomOutButton.style.margin = '3px';
+    zoomOutButton.addEventListener('click', (event) => {
+        changeViewportZoom(-IN_OUT_DELTA_VIEWPORT_ZOOM);
+    });
+    cellView.appendChild(zoomOutButton);
+
+    const highlightButton = document.createElement('button');
+    highlightButton.style.width = '110px';
+    highlightButton.textContent = 'Highlight On';
+    highlightButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    highlightButton.style.margin = '3px';
+    highlightButton.addEventListener('click', (event) => {
+        if (isHighlightEnabled) {
+            highlightButton.textContent = 'Highlight On';
+            isHighlightEnabled = false;
+        } else {
+            highlightButton.textContent = 'Highlight Off';
+            isHighlightEnabled = true;
+        }
+        switchHighlighting();
+    });
+    cellView.appendChild(highlightButton);
 
     // hide/show props button
     const cellHideShowPropsButton = document.createElement('td');
@@ -221,7 +273,7 @@ function createHeader(parentElem) {
     hideShowPropsButton.textContent = 'Hide properties';
     hideShowPropsButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     hideShowPropsButton.style.width = '130px';
-    hideShowPropsButton.style.margin = '5px';
+    hideShowPropsButton.style.margin = '3px';
     hideShowPropsButton.addEventListener('click', () => {
         if (isBpmnPropsCellHidden) {
             hideShowPropsButton.textContent = 'Hide properties';
@@ -272,22 +324,10 @@ function downloadBpmnFile(fileContent, branchName) {
 }
 
 function addCanvasEventHandlers(canvas) {
-    canvas.addEventListener('wheel', handleCanvasWheelEvent);
     canvas.addEventListener('mousedown', handleCanvasMouseDown);
     canvas.addEventListener('mouseup', handleCanvasMouseUp);
     canvas.addEventListener('mousemove', handleCanvasMouseMove);
-}
-
-function handleCanvasWheelEvent(event) {
-    if (event.ctrlKey) {
-        const delta = event.deltaY > 0 ? -0.03 : 0.03;
-        const zoomLevel = bpmnJSCanvas.zoom() + delta;
-        if (zoomLevel > 0) {
-            // console.debug('zoom = ' + zoomLevel);
-            bpmnJSCanvas.zoom(zoomLevel);
-        }
-        event.preventDefault();
-    }
+    canvas.addEventListener('wheel', handleCanvasWheelEvent);
 }
 
 function handleCanvasMouseDown(event) {
@@ -318,6 +358,14 @@ function handleCanvasMouseMove(event) {
     }
 }
 
+function handleCanvasWheelEvent(event) {
+    if (event.ctrlKey) {
+        const delta = event.deltaY > 0 ? -WHEEL_DELTA_VIEWPORT_ZOOM : WHEEL_DELTA_VIEWPORT_ZOOM;
+        changeViewportZoom(delta);
+        event.preventDefault();
+    }
+}
+
 function fitViewport(force = false) {
     const viewbox = bpmnJSCanvas.viewbox();
     // console.debug(viewbox);
@@ -328,8 +376,7 @@ function fitViewport(force = false) {
         if (needToFit) {
             const deltaY = 100 * bpmnJSCanvas.zoom() - 20;
             bpmnJSCanvas.scroll({ dy: deltaY });
-
-            bpmnJSCanvas.zoom(bpmnJSCanvas.zoom() - 0.005);
+            changeViewportZoom(-0.005);
         }
     }
     canvasElem.setAttribute('fitted', 'true');
@@ -339,13 +386,27 @@ function isViewportAlreadyFitted() {
     return canvasElem.hasAttribute('fitted');
 }
 
+function changeViewportZoom(delta) {
+    const currentZoom = bpmnJSCanvas.zoom();
+    // console.debug('current zoom = ' + currentZoom + '; delta = ' + delta);
+    let newZoom = currentZoom + delta;
+    if (newZoom < MIN_VIEWPORT_ZOOM) {
+        newZoom = MIN_VIEWPORT_ZOOM;
+    }
+    else if (newZoom > MAX_VIEWPORT_ZOOM) {
+        newZoom = MAX_VIEWPORT_ZOOM;
+    }
+    // console.debug('new zoom = ' + newZoom);
+    bpmnJSCanvas.zoom(newZoom);
+}
+
 async function showBpmnInternal(bpmnXml) {
     try {
         const result = await bpmnJS.importXML(bpmnXml);
         // const { warnings } = result;
-        // console.debug('Bpmn-schema loaded succesfully', warnings);
+        // console.debug('bpmn schema loaded succesfully', warnings);
     } catch (err) {
-        console.error('Bpmn-schema loading error', err);
+        console.error('bpmn schema loading error', err);
         return;
     }
 
@@ -544,8 +605,8 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
 
     const otherDoc = parseXml(otherXml);
 
-    const missingShapeIds = [];
-    const missingRowIds = [];
+    missingShapeIds = [];
+    missingRowIds = [];
     changedShapeIds = [];
     changedRowIds = [];
     nodeIdToDiffsMap.clear();
@@ -612,6 +673,8 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
 
     paintDiffs(diffTypeForMissing, missingShapeIds, missingRowIds);
     paintDiffs(DiffType.CHANGE, changedShapeIds, changedRowIds);
+
+    highlightShapesAndRows();
 }
 
 /**
@@ -829,7 +892,6 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
             .map(id => bpmnJSElementRegistry.get(id))
             .filter(item => item);
         bpmnJSModeling.setColor(shapes, { fill: diffType.shapeColor });
-        //highlightCanvasElements(shapes);
 
         // paint the TextAnnotation elements because setColor() does not work for them
         for (const shape of shapes) {
@@ -853,27 +915,64 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
             .map(id => bpmnJSElementRegistry.get(id))
             .filter(item => item);
         bpmnJSModeling.setColor(rows, { stroke: diffType.rowColor });
-        //highlightCanvasElements(rows);
     }
 }
 
-function highlightCanvasElements(elements) {
-    for (const elem of elements) {
-        // skip some elements
-        if (elem.type === 'bpmn:Association') {
-            continue;
-        }
-        addElementMarker(elem, 'highlight-diff-big');
+let highlightingTimeoutId = null;
 
-        // TODO: наверное стоит весь цикл запихнуть в setTimeout, чтобы таймаут был один,
-        //  а не много мелких таймаутов
-        setTimeout(() => addElementMarker(elem, 'highlight-diff'), 1000);
+const HIGHLIGHTING_MARKER = 'highlight-diff';
+const BIG_HIGHLIGHTING_MARKER = 'highlight-diff-big';
+
+function switchHighlighting() {
+    // console.debug('isHighlightEnabled = ' + isHighlightEnabled);
+
+    const elems = getShapesAndRowsElements();
+
+    if (isHighlightEnabled) {
+        elems.forEach(elem => addElementMarker(elem, BIG_HIGHLIGHTING_MARKER));
+        highlightingTimeoutId = setTimeout(() => {
+            elems.forEach(elem => {
+                removeElementMarker(elem, BIG_HIGHLIGHTING_MARKER);
+                addElementMarker(elem, HIGHLIGHTING_MARKER);
+            });
+        }, 2000);
+    } else {
+        if (highlightingTimeoutId) {
+            clearTimeout(highlightingTimeoutId);
+        }
+        elems.forEach(elem => {
+            removeElementMarker(elem, BIG_HIGHLIGHTING_MARKER);
+            removeElementMarker(elem, HIGHLIGHTING_MARKER);
+        });
     }
+}
+
+function highlightShapesAndRows() {
+    if (!isHighlightEnabled) {
+        return;
+    }
+
+    const elems = getShapesAndRowsElements();
+    elems.forEach(elem => addElementMarker(elem, HIGHLIGHTING_MARKER));
+}
+
+function getShapesAndRowsElements() {
+    return [...missingShapeIds, ...missingRowIds, ...changedShapeIds, ...changedRowIds]
+        .map(id => bpmnJSElementRegistry.get(id))
+        .filter(elem => elem && elem.type !== 'bpmn:Association');
 }
 
 function addElementMarker(element, marker) {
     try {
         bpmnJSCanvas.addMarker(element, marker);
+    } catch (error) {
+        // some elements does not have property `id` so addMarker() throw error
+    }
+}
+
+function removeElementMarker(element, marker) {
+    try {
+        bpmnJSCanvas.removeMarker(element, marker);
     } catch (error) {
         // some elements does not have property `id` so addMarker() throw error
     }
@@ -1133,7 +1232,7 @@ function hideModelerPallete() {
     try {
         document.getElementsByClassName('djs-palette')[0].style.display = 'none';
     } catch (error) {
-        console.warn('Modeler pallete not found: ', error);
+        console.warn('modeler pallete not found', error);
     }
 }
 
@@ -1142,7 +1241,7 @@ async function setPropertiesPanelContainerMaxHeight() {
         return document.querySelector('.bio-properties-panel-scroll-container');
     });
     if (!panelContainer) {
-        console.warn('cnnot find properties panel container');
+        console.warn('cannot find properties panel container');
         return;
     }
     panelContainer.style.maxHeight = panelContainer.offsetHeight;
