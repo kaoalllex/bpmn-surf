@@ -7,6 +7,9 @@ const SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-w
 
 let camundaBpmnModdle = null;
 
+let mrLastCommitId = null;
+let masterCommitEntries = null;
+
 
 async function isDiffsTabActive() {
     // wait for the href will updated
@@ -64,6 +67,8 @@ function findSelectedFilePath(dataPathElems) {
 }
 
 function findDiffHeadSha() {
+    console.debug('finding diff head sha...');
+
     const elem = document.getElementById('js-vue-mr-discussions');
     if (!elem) {
         console.debug('js-vue-mr-discussions not found');
@@ -239,20 +244,8 @@ async function addShowDiffButton(projectUrl) {
 async function getMasterCommitId(projectUrl, mrCommitId) {
     console.debug('getting master commit id...');
 
-    const getMasterCommitInfoUrl = projectUrl + '/-/commits/master?format=atom&limit=100';
-    // console.debug('master commit info url: ' + getMasterCommitInfoUrl);
-
-    const masterCommitInfo = await loadFileContent(getMasterCommitInfoUrl, true);
-
-    // find MR commit id among master's commits
-    const parser = new DOMParser();
-    const masterCommitInfoDoc = parser.parseFromString(masterCommitInfo, 'text/xml');
-    const entryNodeArr = Array.from(masterCommitInfoDoc.getElementsByTagName('entry'));
-
-    const mrCommitEntryIndex = entryNodeArr.findIndex(entry => {
-        const idElement = entry.querySelector('id');
-        return idElement && idElement.textContent.includes(mrCommitId);
-    });
+    await loadMasterCommitInfo(projectUrl);
+    const mrCommitEntryIndex = findMasterCommitEntryById(mrCommitId);
     if (mrCommitEntryIndex === -1) {
         console.debug('MR is not merged');
         return DEFAULT_MASTER_COMMIT_ID;
@@ -261,12 +254,12 @@ async function getMasterCommitId(projectUrl, mrCommitId) {
     console.debug('MR is already merged!');
 
     const masterCommitEntryIndex = mrCommitEntryIndex + 1;
-    if (masterCommitEntryIndex >= entryNodeArr.length) {
-        console.warn('masterCommitEntryIndex is out of range! array length: ' + entryNodeArr.length);
+    if (masterCommitEntryIndex >= masterCommitEntries.length) {
+        console.warn('masterCommitEntryIndex is out of range! array length: ' + masterCommitEntries.length);
         return null;
     }
 
-    const masterCommitEntry = entryNodeArr[masterCommitEntryIndex];
+    const masterCommitEntry = masterCommitEntries[masterCommitEntryIndex];
     const masterCommitEntryIdElemText = masterCommitEntry.querySelector('id').textContent;
 
     const masterCommitId = masterCommitEntryIdElemText.substring(masterCommitEntryIdElemText.lastIndexOf('/') + 1);
@@ -275,17 +268,45 @@ async function getMasterCommitId(projectUrl, mrCommitId) {
     return masterCommitId;
 }
 
+async function loadMasterCommitInfo(projectUrl) {
+    console.debug('loading master commit entries...');
+    if (masterCommitEntries) {
+        console.debug('loading master commit entries...done (use cache)');
+        return;
+    }
+
+    const getMasterCommitInfoUrl = projectUrl + '/-/commits/master?format=atom&limit=100';
+    // console.debug('master commit info url: ' + getMasterCommitInfoUrl);
+
+    const masterCommitInfo = await loadFileContent(getMasterCommitInfoUrl, true);
+
+    // find MR commit id among master's commits
+    const parser = new DOMParser();
+    const masterCommitInfoDoc = parser.parseFromString(masterCommitInfo, 'text/xml');
+    masterCommitEntries = Array.from(masterCommitInfoDoc.getElementsByTagName('entry'));
+    console.debug('loading master commit entries...done');
+}
+
+function findMasterCommitEntryById(commitId) {
+    if (!masterCommitEntries) {
+        console.warn('master commit entries is undefined');
+        return -1;
+    }
+    return masterCommitEntries.findIndex(entry => {
+        const idElement = entry.querySelector('id');
+        return idElement && idElement.textContent.includes(commitId);
+    });
+}
+
 /**
  * Getting mrCommitId by different strategies
  */
 async function getMrCommitId() {
-    console.debug('getting mr last commit id...');
     const commitId = await getMrLastCommitId();
     if (commitId) {
         return commitId;
     }
 
-    console.debug('finding diff head sha...');
     const diffHeadSha = findDiffHeadSha();
     if (diffHeadSha) {
         return diffHeadSha;
@@ -297,6 +318,13 @@ async function getMrCommitId() {
 }
 
 async function getMrLastCommitId() {
+    console.debug('getting mr last commit id...');
+
+    if (mrLastCommitId) {
+        console.debug('mr last commit id (from cache): ' + mrLastCommitId);
+        return mrLastCommitId;
+    }
+
     // get url for loading MR commits info
     // the url format is: <projectUrl>/-/merge_requests/<MR number>/commits.json
     // but now the current href is <projectUrl>/-/merge_requests/<MR number>/diffs[#hash]
@@ -304,7 +332,6 @@ async function getMrLastCommitId() {
     const getMrCommitInfoUrl = href.substring(0, href.indexOf('/diffs')) + '/commits.json';
     // console.debug('mr commit info url: ' + getMrCommitInfoUrl);
 
-    // TODO: do not load mr commit info data every time - do it once on startup
     const mrCommitInfo = await loadFileContent(getMrCommitInfoUrl, true);
 
     // find the first occurance of 'commit_id=' substring
@@ -315,9 +342,9 @@ async function getMrLastCommitId() {
         console.warn('cannot find mr last commit id in commits info!', mrCommitInfo);
         return null;
     }
-    const commitId = match[1];
-    console.debug('mr last commit id: ' + commitId);
-    return commitId;
+    mrLastCommitId = match[1];
+    console.debug('mr last commit id: ' + mrLastCommitId);
+    return mrLastCommitId;
 }
 
 async function addShowMasterButton(projectUrl) {

@@ -378,7 +378,6 @@ function selectElementById() {
     const elem = bpmnJSElementRegistry.get(selectedElementId);
     if (elem) {
         bpmnJSSelection.select(elem);
-
     }
 }
 
@@ -468,10 +467,12 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['bpmn:conditionExpression', 'Condition'],
     ['camunda:variableName', 'Condition'],
     ['bpmn:condition', 'Condition'],
+    ['bpmn:conditionalEventDefinition', 'Condition'],
 
     ['camunda:in', 'In mappings'],
     ['camunda:in/source', 'In mappings'],
     ['camunda:in/target', 'In mappings'],
+    ['camunda:in/sourceExpression', 'In mappings'],
 
     ['camunda:out', 'Out mappings'],
     ['camunda:out/source', 'Out mappings'],
@@ -498,6 +499,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['camunda:formField/label', 'Form fields'],
 
     ['messageRef', 'Message'],
+    ['bpmn:messageEventDefinition', 'Message'],
 
     ['bpmn:documentation', 'Documentation'],
 
@@ -587,7 +589,9 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
                 if (isNodeRow(myNode)) {
                     changedRowIds.push(id);
 
-                    if (myNode.tagName === 'bpmn:sequenceFlow') {
+                    if (myNode.tagName === 'bpmn:sequenceFlow' &&
+                        myNode.childNodes.length > 1 &&
+                        otherNode.childNodes.length > 1) {
                         nodeIdToConditions.set(
                             id,
                             [myNode.childNodes[1].textContent, otherNode.childNodes[1].textContent]
@@ -821,9 +825,11 @@ function parseXml(xml) {
 
 function paintDiffs(diffType, shapeIdList, rowIdList) {
     if (shapeIdList.length > 0) {
-        const shapes = shapeIdList.map(id => bpmnJSElementRegistry.get(id));
+        const shapes = shapeIdList
+            .map(id => bpmnJSElementRegistry.get(id))
+            .filter(item => item);
         bpmnJSModeling.setColor(shapes, { fill: diffType.shapeColor });
-        highlightCanvasElements(shapes);
+        //highlightCanvasElements(shapes);
 
         // paint the TextAnnotation elements because setColor() does not work for them
         for (const shape of shapes) {
@@ -843,9 +849,11 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
         }
     }
     if (rowIdList.length > 0) {
-        const rows = rowIdList.map(id => bpmnJSElementRegistry.get(id));
+        const rows = rowIdList
+            .map(id => bpmnJSElementRegistry.get(id))
+            .filter(item => item);
         bpmnJSModeling.setColor(rows, { stroke: diffType.rowColor });
-        highlightCanvasElements(rows);
+        //highlightCanvasElements(rows);
     }
 }
 
@@ -855,11 +863,19 @@ function highlightCanvasElements(elements) {
         if (elem.type === 'bpmn:Association') {
             continue;
         }
-        try {
-            bpmnJSCanvas.addMarker(elem, 'highlight-diff');
-        } catch (error) {
-            // some elements does not have property `id` so addMarker() throw error
-        }
+        addElementMarker(elem, 'highlight-diff-big');
+
+        // TODO: наверное стоит весь цикл запихнуть в setTimeout, чтобы таймаут был один,
+        //  а не много мелких таймаутов
+        setTimeout(() => addElementMarker(elem, 'highlight-diff'), 1000);
+    }
+}
+
+function addElementMarker(element, marker) {
+    try {
+        bpmnJSCanvas.addMarker(element, marker);
+    } catch (error) {
+        // some elements does not have property `id` so addMarker() throw error
     }
 }
 
