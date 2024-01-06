@@ -1,4 +1,4 @@
-const MSG_ID = 'msg_71e23e639965407fb9c87f100a56c898';
+const MSG_BPMN_ID = 'msg_bpmn_71e23e639965407fb9c87f100a56c898';
 const DEFAULT_MASTER_COMMIT_ID = 'master';
 
 const BPMN_DIV_ID = 'bpmnDiv_12345bf3d4e842caa0d88194431197c0';
@@ -154,9 +154,9 @@ function createHeader(parentElem) {
     downloadButton.style.margin = '3px';
     downloadButton.addEventListener('click', (event) => {
         if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
-            downloadBpmnFile(masterBpmnXml, MASTER_BRANCH_NAME);
+            downloadBranchFile(masterBpmnXml, MASTER_BRANCH_NAME);
         } else {
-            downloadBpmnFile(mrBpmnXml, MR_BRANCH_NAME);
+            downloadBranchFile(mrBpmnXml, MR_BRANCH_NAME);
         }
     });
     cellDownloadButton.appendChild(downloadButton);
@@ -193,15 +193,15 @@ function createHeader(parentElem) {
                 if (mrBpmnXml) {
                     showBpmnMr();
                 } else {
-                    // may be this bpmn-schema was removed
-                    alertBpmnSchemaNotExist(MR_BRANCH_NAME);
+                    // may be this file was removed
+                    alertFileNotExistInBranch(MR_BRANCH_NAME);
                 }
             } else { // current MR - try to switch to Master
                 if (masterBpmnXml) {
                     showBpmnMaster();
                 } else {
-                    // may be this bpmn-schema is new
-                    alertBpmnSchemaNotExist(MASTER_BRANCH_NAME);
+                    // may be this file is new
+                    alertFileNotExistInBranch(MASTER_BRANCH_NAME);
                 }
             }
         });
@@ -301,13 +301,13 @@ function setBranchName(branchName) {
     }
 }
 
-function alertBpmnSchemaNotExist(branchName) {
-    alert(`BPMN schema does not exist in the ${branchName} branch`);
+function alertFileNotExistInBranch(branchName) {
+    alert(`File does not exist in the ${branchName} branch`);
 }
 
-function downloadBpmnFile(fileContent, branchName) {
+function downloadBranchFile(fileContent, branchName) {
     if (!fileContent) {
-        alertBpmnSchemaNotExist(branchName);
+        alertFileNotExistInBranch(branchName);
         return;
     }
     const blob = new Blob([fileContent], { type: 'application/octet-stream' });
@@ -550,6 +550,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['bpmn:timeDuration', 'Timer'],
 
     ['calledElement', 'Called element'],
+    ['businessKey', 'Called element'],
 
     ['camunda:jobPriority', 'Job execution'],
     ['camunda:failedJobRetryTimeCycle', 'Job execution'],
@@ -926,7 +927,7 @@ const BIG_HIGHLIGHTING_MARKER = 'highlight-diff-big';
 function switchHighlighting() {
     // console.debug('isHighlightEnabled = ' + isHighlightEnabled);
 
-    const elems = getShapesAndRowsElements();
+    const elems = getShapesAndRowsElementsForHighlighting();
 
     if (isHighlightEnabled) {
         elems.forEach(elem => addElementMarker(elem, BIG_HIGHLIGHTING_MARKER));
@@ -952,11 +953,11 @@ function highlightShapesAndRows() {
         return;
     }
 
-    const elems = getShapesAndRowsElements();
+    const elems = getShapesAndRowsElementsForHighlighting();
     elems.forEach(elem => addElementMarker(elem, HIGHLIGHTING_MARKER));
 }
 
-function getShapesAndRowsElements() {
+function getShapesAndRowsElementsForHighlighting() {
     return [...missingShapeIds, ...missingRowIds, ...changedShapeIds, ...changedRowIds]
         .map(id => bpmnJSElementRegistry.get(id))
         .filter(elem => elem && elem.type !== 'bpmn:Association');
@@ -986,6 +987,36 @@ async function onSelectedElementChanged(elemId) {
     }
     highlightDiffPropGroup();
     showConditionExpression();
+    // test();
+}
+
+function test() {
+    const elem = bpmnJSElementRegistry.get(selectedElementId);
+    if (elem.type !== 'bpmn:ServiceTask') {
+        return;
+    }
+    try {
+        const svg = bpmnJSCanvas.getGraphics(elem);
+        const visual = svg.firstElementChild;
+        // const rect = svg.firstElementChild.firstElementChild;
+        // console.log('rect', rect);
+
+        const pathElems = visual.querySelectorAll('path');
+        pathElems.forEach(function (elem) {
+            elem.style.stroke = '#2222ff';
+            elem.style.strokeWidth = '2';
+            elem.style.pointerEvents = 'auto';
+            elem.style.cursor = 'pointer';
+            elem.addEventListener('click', handleClick);
+        });
+
+    } catch (error) {
+        console.log('error', error);
+    }
+}
+
+function handleClick() {
+    console.info('?????');
 }
 
 function showConditionExpression() {
@@ -1247,7 +1278,7 @@ async function setPropertiesPanelContainerMaxHeight() {
     panelContainer.style.maxHeight = panelContainer.offsetHeight;
 }
 
-function initDiff(params) {
+function initBpmnDiff(params) {
     projectUrl = requireDefined(params.projectUrl, 'projectUrl');
     mrCommitId = params.mrCommitId; // may be undefined when showing schema from master
     masterCommitId = requireDefined(params.masterCommitId, 'masterCommitId');
@@ -1260,9 +1291,9 @@ function initDiff(params) {
     camundaBpmnModdle = params.camundaBpmnModdle;
 }
 
-async function showDiff(params) {
+async function showBpmnDiff(params) {
     console.debug('diff params: ', params);
-    initDiff(params);
+    initBpmnDiff(params);
     console.debug('init done');
 
     createBpmnDiv();
@@ -1335,12 +1366,12 @@ function main() {
 
     window.addEventListener('message', async function (msg) {
         console.debug('message received', msg);
-        if (msg.origin !== window.origin || msg.data.id !== MSG_ID) {
+        if (msg.origin !== window.origin || msg.data.id !== MSG_BPMN_ID) {
             console.debug(`skip message: msg.origin = ${msg.origin}; msg.data.id = ${msg.data.id}`);
             return;
         }
-        console.debug('showing diff...');
-        await showDiff(msg.data.params);
+        console.debug('showing bpmn differ...');
+        await showBpmnDiff(msg.data.params);
     });
 }
 

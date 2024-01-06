@@ -6,17 +6,17 @@
 
   var n,
     l$1,
-    u$1,
-    t$2,
-    o$2,
+    u$2,
+    i$2,
+    o$1,
     r$1,
-    f$1,
+    f$2,
     e$1,
     c$1 = {},
     s$1 = [],
     a$1 = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i,
-    v$1 = Array.isArray;
-  function h$1(n, l) {
+    h$1 = Array.isArray;
+  function v$1(n, l) {
     for (var u in l) n[u] = l[u];
     return n;
   }
@@ -24,20 +24,20 @@
     var l = n.parentNode;
     l && l.removeChild(n);
   }
-  function y$1(l, u, i) {
-    var t,
+  function y$1(l, u, t) {
+    var i,
       o,
       r,
       f = {};
-    for (r in u) "key" == r ? t = u[r] : "ref" == r ? o = u[r] : f[r] = u[r];
-    if (arguments.length > 2 && (f.children = arguments.length > 3 ? n.call(arguments, 2) : i), "function" == typeof l && null != l.defaultProps) for (r in l.defaultProps) void 0 === f[r] && (f[r] = l.defaultProps[r]);
-    return d$1(l, f, t, o, null);
+    for (r in u) "key" == r ? i = u[r] : "ref" == r ? o = u[r] : f[r] = u[r];
+    if (arguments.length > 2 && (f.children = arguments.length > 3 ? n.call(arguments, 2) : t), "function" == typeof l && null != l.defaultProps) for (r in l.defaultProps) void 0 === f[r] && (f[r] = l.defaultProps[r]);
+    return d$1(l, f, i, o, null);
   }
-  function d$1(n, i, t, o, r) {
+  function d$1(n, t, i, o, r) {
     var f = {
       type: n,
-      props: i,
-      key: t,
+      props: t,
+      key: i,
       ref: o,
       __k: null,
       __: null,
@@ -45,170 +45,180 @@
       __e: null,
       __d: void 0,
       __c: null,
-      __h: null,
       constructor: void 0,
-      __v: null == r ? ++u$1 : r
+      __v: null == r ? ++u$2 : r,
+      __i: -1,
+      __u: 0
     };
     return null == r && null != l$1.vnode && l$1.vnode(f), f;
   }
-  function _$2() {
+  function _$1() {
     return {
       current: null
     };
   }
-  function k$2(n) {
+  function g$2(n) {
     return n.children;
   }
   function b$1(n, l) {
     this.props = n, this.context = l;
   }
-  function g$2(n, l) {
-    if (null == l) return n.__ ? g$2(n.__, n.__.__k.indexOf(n) + 1) : null;
+  function m$1(n, l) {
+    if (null == l) return n.__ ? m$1(n.__, n.__i + 1) : null;
     for (var u; l < n.__k.length; l++) if (null != (u = n.__k[l]) && null != u.__e) return u.__e;
-    return "function" == typeof n.type ? g$2(n) : null;
+    return "function" == typeof n.type ? m$1(n) : null;
   }
-  function m$1(n) {
+  function k$2(n) {
     var l, u;
     if (null != (n = n.__) && null != n.__c) {
       for (n.__e = n.__c.base = null, l = 0; l < n.__k.length; l++) if (null != (u = n.__k[l]) && null != u.__e) {
         n.__e = n.__c.base = u.__e;
         break;
       }
-      return m$1(n);
+      return k$2(n);
     }
   }
   function w$2(n) {
-    (!n.__d && (n.__d = !0) && t$2.push(n) && !x$2.__r++ || o$2 !== l$1.debounceRendering) && ((o$2 = l$1.debounceRendering) || r$1)(x$2);
+    (!n.__d && (n.__d = !0) && i$2.push(n) && !x$2.__r++ || o$1 !== l$1.debounceRendering) && ((o$1 = l$1.debounceRendering) || r$1)(x$2);
   }
   function x$2() {
-    var n, l, u, i, o, r, e, c;
-    for (t$2.sort(f$1); n = t$2.shift();) n.__d && (l = t$2.length, i = void 0, o = void 0, e = (r = (u = n).__v).__e, (c = u.__P) && (i = [], (o = h$1({}, r)).__v = r.__v + 1, L$1(c, r, o, u.__n, void 0 !== c.ownerSVGElement, null != r.__h ? [e] : null, i, null == e ? g$2(r) : e, r.__h), M$1(i, r), r.__e != e && m$1(r)), t$2.length > l && t$2.sort(f$1));
+    var n, u, t, o, r, e, c, s, a;
+    for (i$2.sort(f$2); n = i$2.shift();) n.__d && (u = i$2.length, o = void 0, e = (r = (t = n).__v).__e, s = [], a = [], (c = t.__P) && ((o = v$1({}, r)).__v = r.__v + 1, l$1.vnode && l$1.vnode(o), L$1(c, o, r, t.__n, void 0 !== c.ownerSVGElement, 32 & r.__u ? [e] : null, s, null == e ? m$1(r) : e, !!(32 & r.__u), a), o.__.__k[o.__i] = o, M$1(s, o, a), o.__e != e && k$2(o)), i$2.length > u && i$2.sort(f$2));
     x$2.__r = 0;
   }
-  function P$1(n, l, u, i, t, o, r, f, e, a) {
-    var h,
+  function C$2(n, l, u, t, i, o, r, f, e, a, h) {
+    var v,
       p,
       y,
+      d,
       _,
-      b,
-      m,
-      w,
-      x = i && i.__k || s$1,
-      P = x.length;
-    for (u.__k = [], h = 0; h < l.length; h++) if (null != (_ = u.__k[h] = null == (_ = l[h]) || "boolean" == typeof _ || "function" == typeof _ ? null : "string" == typeof _ || "number" == typeof _ || "bigint" == typeof _ ? d$1(null, _, null, null, _) : v$1(_) ? d$1(k$2, {
-      children: _
-    }, null, null, null) : _.__b > 0 ? d$1(_.type, _.props, _.key, _.ref ? _.ref : null, _.__v) : _)) {
-      if (_.__ = u, _.__b = u.__b + 1, null === (y = x[h]) || y && _.key == y.key && _.type === y.type) x[h] = void 0;else for (p = 0; p < P; p++) {
-        if ((y = x[p]) && _.key == y.key && _.type === y.type) {
-          x[p] = void 0;
-          break;
-        }
-        y = null;
-      }
-      L$1(n, _, y = y || c$1, t, o, r, f, e, a), b = _.__e, (p = _.ref) && y.ref != p && (w || (w = []), y.ref && w.push(y.ref, null, _), w.push(p, _.__c || b, _)), null != b ? (null == m && (m = b), "function" == typeof _.type && _.__k === y.__k ? _.__d = e = C$2(_, e, n) : e = $$1(n, _, y, x, b, e), "function" == typeof u.type && (u.__d = e)) : e && y.__e == e && e.parentNode != n && (e = g$2(y));
+      g = t && t.__k || s$1,
+      b = l.length;
+    for (u.__d = e, P$1(u, l, g), e = u.__d, v = 0; v < b; v++) null != (y = u.__k[v]) && "boolean" != typeof y && "function" != typeof y && (p = -1 === y.__i ? c$1 : g[y.__i] || c$1, y.__i = v, L$1(n, y, p, i, o, r, f, e, a, h), d = y.__e, y.ref && p.ref != y.ref && (p.ref && z$2(p.ref, null, y), h.push(y.ref, y.__c || d, y)), null == _ && null != d && (_ = d), 65536 & y.__u || p.__k === y.__k ? e = S(y, e, n) : "function" == typeof y.type && void 0 !== y.__d ? e = y.__d : d && (e = d.nextSibling), y.__d = void 0, y.__u &= -196609);
+    u.__d = e, u.__e = _;
+  }
+  function P$1(n, l, u) {
+    var t,
+      i,
+      o,
+      r,
+      f,
+      e = l.length,
+      c = u.length,
+      s = c,
+      a = 0;
+    for (n.__k = [], t = 0; t < e; t++) null != (i = n.__k[t] = null == (i = l[t]) || "boolean" == typeof i || "function" == typeof i ? null : "string" == typeof i || "number" == typeof i || "bigint" == typeof i || i.constructor == String ? d$1(null, i, null, null, i) : h$1(i) ? d$1(g$2, {
+      children: i
+    }, null, null, null) : void 0 === i.constructor && i.__b > 0 ? d$1(i.type, i.props, i.key, i.ref ? i.ref : null, i.__v) : i) ? (i.__ = n, i.__b = n.__b + 1, f = H$1(i, u, r = t + a, s), i.__i = f, o = null, -1 !== f && (s--, (o = u[f]) && (o.__u |= 131072)), null == o || null === o.__v ? (-1 == f && a--, "function" != typeof i.type && (i.__u |= 65536)) : f !== r && (f === r + 1 ? a++ : f > r ? s > e - r ? a += f - r : a-- : a = f < r && f == r - 1 ? f - r : 0, f !== t + a && (i.__u |= 65536))) : (o = u[t]) && null == o.key && o.__e && (o.__e == n.__d && (n.__d = m$1(o)), N$1(o, o, !1), u[t] = null, s--);
+    if (s) for (t = 0; t < c; t++) null != (o = u[t]) && 0 == (131072 & o.__u) && (o.__e == n.__d && (n.__d = m$1(o)), N$1(o, o));
+  }
+  function S(n, l, u) {
+    var t, i;
+    if ("function" == typeof n.type) {
+      for (t = n.__k, i = 0; t && i < t.length; i++) t[i] && (t[i].__ = n, l = S(t[i], l, u));
+      return l;
     }
-    for (u.__e = m, h = P; h--;) null != x[h] && ("function" == typeof u.type && null != x[h].__e && x[h].__e == u.__d && (u.__d = A$2(i).nextSibling), q$2(x[h], x[h]));
-    if (w) for (h = 0; h < w.length; h++) O$1(w[h], w[++h], w[++h]);
+    return n.__e != l && (u.insertBefore(n.__e, l || null), l = n.__e), l && l.nextSibling;
   }
-  function C$2(n, l, u) {
-    for (var i, t = n.__k, o = 0; t && o < t.length; o++) (i = t[o]) && (i.__ = n, l = "function" == typeof i.type ? C$2(i, l, u) : $$1(u, i, i, t, i.__e, l));
-    return l;
-  }
-  function S(n, l) {
-    return l = l || [], null == n || "boolean" == typeof n || (v$1(n) ? n.some(function (n) {
-      S(n, l);
+  function $$1(n, l) {
+    return l = l || [], null == n || "boolean" == typeof n || (h$1(n) ? n.some(function (n) {
+      $$1(n, l);
     }) : l.push(n)), l;
   }
-  function $$1(n, l, u, i, t, o) {
-    var r, f, e;
-    if (void 0 !== l.__d) r = l.__d, l.__d = void 0;else if (null == u || t != o || null == t.parentNode) n: if (null == o || o.parentNode !== n) n.appendChild(t), r = null;else {
-      for (f = o, e = 0; (f = f.nextSibling) && e < i.length; e += 1) if (f == t) break n;
-      n.insertBefore(t, o), r = o;
+  function H$1(n, l, u, t) {
+    var i = n.key,
+      o = n.type,
+      r = u - 1,
+      f = u + 1,
+      e = l[u];
+    if (null === e || e && i == e.key && o === e.type) return u;
+    if (t > (null != e && 0 == (131072 & e.__u) ? 1 : 0)) for (; r >= 0 || f < l.length;) {
+      if (r >= 0) {
+        if ((e = l[r]) && 0 == (131072 & e.__u) && i == e.key && o === e.type) return r;
+        r--;
+      }
+      if (f < l.length) {
+        if ((e = l[f]) && 0 == (131072 & e.__u) && i == e.key && o === e.type) return f;
+        f++;
+      }
     }
-    return void 0 !== r ? r : t.nextSibling;
-  }
-  function A$2(n) {
-    var l, u, i;
-    if (null == n.type || "string" == typeof n.type) return n.__e;
-    if (n.__k) for (l = n.__k.length - 1; l >= 0; l--) if ((u = n.__k[l]) && (i = A$2(u))) return i;
-    return null;
-  }
-  function H$1(n, l, u, i, t) {
-    var o;
-    for (o in u) "children" === o || "key" === o || o in l || T$2(n, o, null, u[o], i);
-    for (o in l) t && "function" != typeof l[o] || "children" === o || "key" === o || "value" === o || "checked" === o || u[o] === l[o] || T$2(n, o, l[o], u[o], i);
+    return -1;
   }
   function I$1(n, l, u) {
     "-" === l[0] ? n.setProperty(l, null == u ? "" : u) : n[l] = null == u ? "" : "number" != typeof u || a$1.test(l) ? u : u + "px";
   }
-  function T$2(n, l, u, i, t) {
+  function T$2(n, l, u, t, i) {
     var o;
     n: if ("style" === l) {
       if ("string" == typeof u) n.style.cssText = u;else {
-        if ("string" == typeof i && (n.style.cssText = i = ""), i) for (l in i) u && l in u || I$1(n.style, l, "");
-        if (u) for (l in u) i && u[l] === i[l] || I$1(n.style, l, u[l]);
+        if ("string" == typeof t && (n.style.cssText = t = ""), t) for (l in t) u && l in u || I$1(n.style, l, "");
+        if (u) for (l in u) t && u[l] === t[l] || I$1(n.style, l, u[l]);
       }
-    } else if ("o" === l[0] && "n" === l[1]) o = l !== (l = l.replace(/Capture$/, "")), l = l.toLowerCase() in n ? l.toLowerCase().slice(2) : l.slice(2), n.l || (n.l = {}), n.l[l + o] = u, u ? i || n.addEventListener(l, o ? z$2 : j$2, o) : n.removeEventListener(l, o ? z$2 : j$2, o);else if ("dangerouslySetInnerHTML" !== l) {
-      if (t) l = l.replace(/xlink(H|:h)/, "h").replace(/sName$/, "s");else if ("width" !== l && "height" !== l && "href" !== l && "list" !== l && "form" !== l && "tabIndex" !== l && "download" !== l && "rowSpan" !== l && "colSpan" !== l && l in n) try {
+    } else if ("o" === l[0] && "n" === l[1]) o = l !== (l = l.replace(/(PointerCapture)$|Capture$/, "$1")), l = l.toLowerCase() in n ? l.toLowerCase().slice(2) : l.slice(2), n.l || (n.l = {}), n.l[l + o] = u, u ? t ? u.u = t.u : (u.u = Date.now(), n.addEventListener(l, o ? D$1 : A$2, o)) : n.removeEventListener(l, o ? D$1 : A$2, o);else {
+      if (i) l = l.replace(/xlink(H|:h)/, "h").replace(/sName$/, "s");else if ("width" !== l && "height" !== l && "href" !== l && "list" !== l && "form" !== l && "tabIndex" !== l && "download" !== l && "rowSpan" !== l && "colSpan" !== l && "role" !== l && l in n) try {
         n[l] = null == u ? "" : u;
         break n;
       } catch (n) {}
       "function" == typeof u || (null == u || !1 === u && "-" !== l[4] ? n.removeAttribute(l) : n.setAttribute(l, u));
     }
   }
-  function j$2(n) {
-    return this.l[n.type + !1](l$1.event ? l$1.event(n) : n);
+  function A$2(n) {
+    var u = this.l[n.type + !1];
+    if (n.t) {
+      if (n.t <= u.u) return;
+    } else n.t = Date.now();
+    return u(l$1.event ? l$1.event(n) : n);
   }
-  function z$2(n) {
+  function D$1(n) {
     return this.l[n.type + !0](l$1.event ? l$1.event(n) : n);
   }
-  function L$1(n, u, i, t, o, r, f, e, c) {
-    var s,
-      a,
+  function L$1(n, u, t, i, o, r, f, e, c, s) {
+    var a,
       p,
       y,
       d,
       _,
-      g,
       m,
+      k,
       w,
       x,
-      C,
+      P,
       S,
       $,
-      A,
       H,
-      I = u.type;
+      I,
+      T,
+      A = u.type;
     if (void 0 !== u.constructor) return null;
-    null != i.__h && (c = i.__h, e = u.__e = i.__e, u.__h = null, r = [e]), (s = l$1.__b) && s(u);
-    try {
-      n: if ("function" == typeof I) {
-        if (m = u.props, w = (s = I.contextType) && t[s.__c], x = s ? w ? w.props.value : s.__ : t, i.__c ? g = (a = u.__c = i.__c).__ = a.__E : ("prototype" in I && I.prototype.render ? u.__c = a = new I(m, x) : (u.__c = a = new b$1(m, x), a.constructor = I, a.render = B$2), w && w.sub(a), a.props = m, a.state || (a.state = {}), a.context = x, a.__n = t, p = a.__d = !0, a.__h = [], a._sb = []), null == a.__s && (a.__s = a.state), null != I.getDerivedStateFromProps && (a.__s == a.state && (a.__s = h$1({}, a.__s)), h$1(a.__s, I.getDerivedStateFromProps(m, a.__s))), y = a.props, d = a.state, a.__v = u, p) null == I.getDerivedStateFromProps && null != a.componentWillMount && a.componentWillMount(), null != a.componentDidMount && a.__h.push(a.componentDidMount);else {
-          if (null == I.getDerivedStateFromProps && m !== y && null != a.componentWillReceiveProps && a.componentWillReceiveProps(m, x), !a.__e && null != a.shouldComponentUpdate && !1 === a.shouldComponentUpdate(m, a.__s, x) || u.__v === i.__v) {
-            for (u.__v !== i.__v && (a.props = m, a.state = a.__s, a.__d = !1), a.__e = !1, u.__e = i.__e, u.__k = i.__k, u.__k.forEach(function (n) {
-              n && (n.__ = u);
-            }), C = 0; C < a._sb.length; C++) a.__h.push(a._sb[C]);
-            a._sb = [], a.__h.length && f.push(a);
-            break n;
-          }
-          null != a.componentWillUpdate && a.componentWillUpdate(m, a.__s, x), null != a.componentDidUpdate && a.__h.push(function () {
-            a.componentDidUpdate(y, d, _);
-          });
+    128 & t.__u && (c = !!(32 & t.__u), r = [e = u.__e = t.__e]), (a = l$1.__b) && a(u);
+    n: if ("function" == typeof A) try {
+      if (w = u.props, x = (a = A.contextType) && i[a.__c], P = a ? x ? x.props.value : a.__ : i, t.__c ? k = (p = u.__c = t.__c).__ = p.__E : ("prototype" in A && A.prototype.render ? u.__c = p = new A(w, P) : (u.__c = p = new b$1(w, P), p.constructor = A, p.render = O$1), x && x.sub(p), p.props = w, p.state || (p.state = {}), p.context = P, p.__n = i, y = p.__d = !0, p.__h = [], p._sb = []), null == p.__s && (p.__s = p.state), null != A.getDerivedStateFromProps && (p.__s == p.state && (p.__s = v$1({}, p.__s)), v$1(p.__s, A.getDerivedStateFromProps(w, p.__s))), d = p.props, _ = p.state, p.__v = u, y) null == A.getDerivedStateFromProps && null != p.componentWillMount && p.componentWillMount(), null != p.componentDidMount && p.__h.push(p.componentDidMount);else {
+        if (null == A.getDerivedStateFromProps && w !== d && null != p.componentWillReceiveProps && p.componentWillReceiveProps(w, P), !p.__e && (null != p.shouldComponentUpdate && !1 === p.shouldComponentUpdate(w, p.__s, P) || u.__v === t.__v)) {
+          for (u.__v !== t.__v && (p.props = w, p.state = p.__s, p.__d = !1), u.__e = t.__e, u.__k = t.__k, u.__k.forEach(function (n) {
+            n && (n.__ = u);
+          }), S = 0; S < p._sb.length; S++) p.__h.push(p._sb[S]);
+          p._sb = [], p.__h.length && f.push(p);
+          break n;
         }
-        if (a.context = x, a.props = m, a.__P = n, S = l$1.__r, $ = 0, "prototype" in I && I.prototype.render) {
-          for (a.state = a.__s, a.__d = !1, S && S(u), s = a.render(a.props, a.state, a.context), A = 0; A < a._sb.length; A++) a.__h.push(a._sb[A]);
-          a._sb = [];
-        } else do {
-          a.__d = !1, S && S(u), s = a.render(a.props, a.state, a.context), a.state = a.__s;
-        } while (a.__d && ++$ < 25);
-        a.state = a.__s, null != a.getChildContext && (t = h$1(h$1({}, t), a.getChildContext())), p || null == a.getSnapshotBeforeUpdate || (_ = a.getSnapshotBeforeUpdate(y, d)), P$1(n, v$1(H = null != s && s.type === k$2 && null == s.key ? s.props.children : s) ? H : [H], u, i, t, o, r, f, e, c), a.base = u.__e, u.__h = null, a.__h.length && f.push(a), g && (a.__E = a.__ = null), a.__e = !1;
-      } else null == r && u.__v === i.__v ? (u.__k = i.__k, u.__e = i.__e) : u.__e = N$1(i.__e, u, i, t, o, r, f, c);
-      (s = l$1.diffed) && s(u);
+        null != p.componentWillUpdate && p.componentWillUpdate(w, p.__s, P), null != p.componentDidUpdate && p.__h.push(function () {
+          p.componentDidUpdate(d, _, m);
+        });
+      }
+      if (p.context = P, p.props = w, p.__P = n, p.__e = !1, $ = l$1.__r, H = 0, "prototype" in A && A.prototype.render) {
+        for (p.state = p.__s, p.__d = !1, $ && $(u), a = p.render(p.props, p.state, p.context), I = 0; I < p._sb.length; I++) p.__h.push(p._sb[I]);
+        p._sb = [];
+      } else do {
+        p.__d = !1, $ && $(u), a = p.render(p.props, p.state, p.context), p.state = p.__s;
+      } while (p.__d && ++H < 25);
+      p.state = p.__s, null != p.getChildContext && (i = v$1(v$1({}, i), p.getChildContext())), y || null == p.getSnapshotBeforeUpdate || (m = p.getSnapshotBeforeUpdate(d, _)), C$2(n, h$1(T = null != a && a.type === g$2 && null == a.key ? a.props.children : a) ? T : [T], u, t, i, o, r, f, e, c, s), p.base = u.__e, u.__u &= -161, p.__h.length && f.push(p), k && (p.__E = p.__ = null);
     } catch (n) {
-      u.__v = null, (c || null != r) && (u.__e = e, u.__h = !!c, r[r.indexOf(e)] = null), l$1.__e(n, u, i);
-    }
+      u.__v = null, c || null != r ? (u.__e = e, u.__u |= c ? 160 : 32, r[r.indexOf(e)] = null) : (u.__e = t.__e, u.__k = t.__k), l$1.__e(n, u, t);
+    } else null == r && u.__v === t.__v ? (u.__k = t.__k, u.__e = t.__e) : u.__e = j$2(t.__e, u, t, i, o, r, f, c, s);
+    (a = l$1.diffed) && a(u);
   }
-  function M$1(n, u) {
+  function M$1(n, u, t) {
+    u.__d = void 0;
+    for (var i = 0; i < t.length; i++) z$2(t[i], t[++i], t[++i]);
     l$1.__c && l$1.__c(u, n), n.some(function (u) {
       try {
         n = u.__h, u.__h = [], n.some(function (n) {
@@ -219,72 +229,74 @@
       }
     });
   }
-  function N$1(l, u, i, t, o, r, f, e) {
-    var s,
-      a,
-      h,
-      y = i.props,
-      d = u.props,
-      _ = u.type,
-      k = 0;
-    if ("svg" === _ && (o = !0), null != r) for (; k < r.length; k++) if ((s = r[k]) && "setAttribute" in s == !!_ && (_ ? s.localName === _ : 3 === s.nodeType)) {
-      l = s, r[k] = null;
+  function j$2(l, u, t, i, o, r, f, e, s) {
+    var a,
+      v,
+      y,
+      d,
+      _,
+      g,
+      b,
+      k = t.props,
+      w = u.props,
+      x = u.type;
+    if ("svg" === x && (o = !0), null != r) for (a = 0; a < r.length; a++) if ((_ = r[a]) && "setAttribute" in _ == !!x && (x ? _.localName === x : 3 === _.nodeType)) {
+      l = _, r[a] = null;
       break;
     }
     if (null == l) {
-      if (null === _) return document.createTextNode(d);
-      l = o ? document.createElementNS("http://www.w3.org/2000/svg", _) : document.createElement(_, d.is && d), r = null, e = !1;
+      if (null === x) return document.createTextNode(w);
+      l = o ? document.createElementNS("http://www.w3.org/2000/svg", x) : document.createElement(x, w.is && w), r = null, e = !1;
     }
-    if (null === _) y === d || e && l.data === d || (l.data = d);else {
-      if (r = r && n.call(l.childNodes), a = (y = i.props || c$1).dangerouslySetInnerHTML, h = d.dangerouslySetInnerHTML, !e) {
-        if (null != r) for (y = {}, k = 0; k < l.attributes.length; k++) y[l.attributes[k].name] = l.attributes[k].value;
-        (h || a) && (h && (a && h.__html == a.__html || h.__html === l.innerHTML) || (l.innerHTML = h && h.__html || ""));
-      }
-      if (H$1(l, d, y, o, e), h) u.__k = [];else if (P$1(l, v$1(k = u.props.children) ? k : [k], u, i, t, o && "foreignObject" !== _, r, f, r ? r[0] : i.__k && g$2(i, 0), e), null != r) for (k = r.length; k--;) null != r[k] && p$1(r[k]);
-      e || ("value" in d && void 0 !== (k = d.value) && (k !== l.value || "progress" === _ && !k || "option" === _ && k !== y.value) && T$2(l, "value", k, y.value, !1), "checked" in d && void 0 !== (k = d.checked) && k !== l.checked && T$2(l, "checked", k, y.checked, !1));
+    if (null === x) k === w || e && l.data === w || (l.data = w);else {
+      if (r = r && n.call(l.childNodes), k = t.props || c$1, !e && null != r) for (k = {}, a = 0; a < l.attributes.length; a++) k[(_ = l.attributes[a]).name] = _.value;
+      for (a in k) _ = k[a], "children" == a || ("dangerouslySetInnerHTML" == a ? y = _ : "key" === a || a in w || T$2(l, a, null, _, o));
+      for (a in w) _ = w[a], "children" == a ? d = _ : "dangerouslySetInnerHTML" == a ? v = _ : "value" == a ? g = _ : "checked" == a ? b = _ : "key" === a || e && "function" != typeof _ || k[a] === _ || T$2(l, a, _, k[a], o);
+      if (v) e || y && (v.__html === y.__html || v.__html === l.innerHTML) || (l.innerHTML = v.__html), u.__k = [];else if (y && (l.innerHTML = ""), C$2(l, h$1(d) ? d : [d], u, t, i, o && "foreignObject" !== x, r, f, r ? r[0] : t.__k && m$1(t, 0), e, s), null != r) for (a = r.length; a--;) null != r[a] && p$1(r[a]);
+      e || (a = "value", void 0 !== g && (g !== l[a] || "progress" === x && !g || "option" === x && g !== k[a]) && T$2(l, a, g, k[a], !1), a = "checked", void 0 !== b && b !== l[a] && T$2(l, a, b, k[a], !1));
     }
     return l;
   }
-  function O$1(n, u, i) {
+  function z$2(n, u, t) {
     try {
       "function" == typeof n ? n(u) : n.current = u;
     } catch (n) {
-      l$1.__e(n, i);
+      l$1.__e(n, t);
     }
   }
-  function q$2(n, u, i) {
-    var t, o;
-    if (l$1.unmount && l$1.unmount(n), (t = n.ref) && (t.current && t.current !== n.__e || O$1(t, null, u)), null != (t = n.__c)) {
-      if (t.componentWillUnmount) try {
-        t.componentWillUnmount();
+  function N$1(n, u, t) {
+    var i, o;
+    if (l$1.unmount && l$1.unmount(n), (i = n.ref) && (i.current && i.current !== n.__e || z$2(i, null, u)), null != (i = n.__c)) {
+      if (i.componentWillUnmount) try {
+        i.componentWillUnmount();
       } catch (n) {
         l$1.__e(n, u);
       }
-      t.base = t.__P = null, n.__c = void 0;
+      i.base = i.__P = null, n.__c = void 0;
     }
-    if (t = n.__k) for (o = 0; o < t.length; o++) t[o] && q$2(t[o], u, i || "function" != typeof n.type);
-    i || null == n.__e || p$1(n.__e), n.__ = n.__e = n.__d = void 0;
+    if (i = n.__k) for (o = 0; o < i.length; o++) i[o] && N$1(i[o], u, t || "function" != typeof n.type);
+    t || null == n.__e || p$1(n.__e), n.__ = n.__e = n.__d = void 0;
   }
-  function B$2(n, l, u) {
+  function O$1(n, l, u) {
     return this.constructor(n, u);
   }
-  function D$1(u, i, t) {
-    var o, r, f;
-    l$1.__ && l$1.__(u, i), r = (o = "function" == typeof t) ? null : t && t.__k || i.__k, f = [], L$1(i, u = (!o && t || i).__k = y$1(k$2, null, [u]), r || c$1, c$1, void 0 !== i.ownerSVGElement, !o && t ? [t] : r ? null : i.firstChild ? n.call(i.childNodes) : null, f, !o && t ? t : r ? r.__e : i.firstChild, o), M$1(f, u);
+  function q$2(u, t, i) {
+    var o, r, f, e;
+    l$1.__ && l$1.__(u, t), r = (o = "function" == typeof i) ? null : i && i.__k || t.__k, f = [], e = [], L$1(t, u = (!o && i || t).__k = y$1(g$2, null, [u]), r || c$1, c$1, void 0 !== t.ownerSVGElement, !o && i ? [i] : r ? null : t.firstChild ? n.call(t.childNodes) : null, f, !o && i ? i : r ? r.__e : t.firstChild, o, e), M$1(f, u, e);
   }
-  function E$1(n, l) {
-    D$1(n, l, E$1);
+  function B$2(n, l) {
+    q$2(n, l, B$2);
   }
-  function F$2(l, u, i) {
-    var t,
+  function E$1(l, u, t) {
+    var i,
       o,
       r,
       f,
-      e = h$1({}, l.props);
-    for (r in l.type && l.type.defaultProps && (f = l.type.defaultProps), u) "key" == r ? t = u[r] : "ref" == r ? o = u[r] : e[r] = void 0 === u[r] && void 0 !== f ? f[r] : u[r];
-    return arguments.length > 2 && (e.children = arguments.length > 3 ? n.call(arguments, 2) : i), d$1(l.type, e, t || l.key, o || l.ref, null);
+      e = v$1({}, l.props);
+    for (r in l.type && l.type.defaultProps && (f = l.type.defaultProps), u) "key" == r ? i = u[r] : "ref" == r ? o = u[r] : e[r] = void 0 === u[r] && void 0 !== f ? f[r] : u[r];
+    return arguments.length > 2 && (e.children = arguments.length > 3 ? n.call(arguments, 2) : t), d$1(l.type, e, i || l.key, o || l.ref, null);
   }
-  function G$1(n, l) {
+  function F$2(n, l) {
     var u = {
       __c: l = "__cC" + e$1++,
       __: n,
@@ -292,9 +304,9 @@
         return n.children(l);
       },
       Provider: function (n) {
-        var u, i;
-        return this.getChildContext || (u = [], (i = {})[l] = this, this.getChildContext = function () {
-          return i;
+        var u, t;
+        return this.getChildContext || (u = [], (t = {})[l] = this, this.getChildContext = function () {
+          return t;
         }, this.shouldComponentUpdate = function (n) {
           this.props.value !== n.value && u.some(function (n) {
             n.__e = !0, w$2(n);
@@ -311,29 +323,29 @@
     return u.Provider.__ = u.Consumer.contextType = u;
   }
   n = s$1.slice, l$1 = {
-    __e: function (n, l, u, i) {
-      for (var t, o, r; l = l.__;) if ((t = l.__c) && !t.__) try {
-        if ((o = t.constructor) && null != o.getDerivedStateFromError && (t.setState(o.getDerivedStateFromError(n)), r = t.__d), null != t.componentDidCatch && (t.componentDidCatch(n, i || {}), r = t.__d), r) return t.__E = t;
+    __e: function (n, l, u, t) {
+      for (var i, o, r; l = l.__;) if ((i = l.__c) && !i.__) try {
+        if ((o = i.constructor) && null != o.getDerivedStateFromError && (i.setState(o.getDerivedStateFromError(n)), r = i.__d), null != i.componentDidCatch && (i.componentDidCatch(n, t || {}), r = i.__d), r) return i.__E = i;
       } catch (l) {
         n = l;
       }
       throw n;
     }
-  }, u$1 = 0, b$1.prototype.setState = function (n, l) {
+  }, u$2 = 0, b$1.prototype.setState = function (n, l) {
     var u;
-    u = null != this.__s && this.__s !== this.state ? this.__s : this.__s = h$1({}, this.state), "function" == typeof n && (n = n(h$1({}, u), this.props)), n && h$1(u, n), null != n && this.__v && (l && this._sb.push(l), w$2(this));
+    u = null != this.__s && this.__s !== this.state ? this.__s : this.__s = v$1({}, this.state), "function" == typeof n && (n = n(v$1({}, u), this.props)), n && v$1(u, n), null != n && this.__v && (l && this._sb.push(l), w$2(this));
   }, b$1.prototype.forceUpdate = function (n) {
     this.__v && (this.__e = !0, n && this.__h.push(n), w$2(this));
-  }, b$1.prototype.render = k$2, t$2 = [], r$1 = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, f$1 = function (n, l) {
+  }, b$1.prototype.render = g$2, i$2 = [], r$1 = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, f$2 = function (n, l) {
     return n.__v.__b - l.__v.__b;
   }, x$2.__r = 0, e$1 = 0;
 
   var t$1,
     r,
-    u,
+    u$1,
     i$1,
-    o$1 = 0,
-    f = [],
+    o = 0,
+    f$1 = [],
     c = [],
     e = l$1.__b,
     a = l$1.__r,
@@ -341,7 +353,7 @@
     l = l$1.__c,
     m = l$1.unmount;
   function d(t, u) {
-    l$1.__h && l$1.__h(r, t, o$1 || u), o$1 = 0;
+    l$1.__h && l$1.__h(r, t, o || u), o = 0;
     var i = r.__H || (r.__H = {
       __: [],
       __h: []
@@ -351,7 +363,7 @@
     }), i.__[t];
   }
   function h(n) {
-    return o$1 = 1, s(B$1, n);
+    return o = 1, s(B$1, n);
   }
   function s(n, u, i) {
     var o = d(t$1++, 2);
@@ -397,15 +409,15 @@
     var o = d(t$1++, 4);
     !l$1.__s && z$1(o.__H, i) && (o.__ = u, o.i = i, r.__h.push(o));
   }
-  function _$1(n) {
-    return o$1 = 5, F$1(function () {
+  function _(n) {
+    return o = 5, F$1(function () {
       return {
         current: n
       };
     }, []);
   }
   function A$1(n, t, r) {
-    o$1 = 6, y(function () {
+    o = 6, y(function () {
       return "function" == typeof n ? (n(t()), function () {
         return n(null);
       }) : n ? (n.current = t(), function () {
@@ -418,7 +430,7 @@
     return z$1(u.__H, r) ? (u.__V = n(), u.i = r, u.__h = n, u.__V) : u.__;
   }
   function T$1(n, t) {
-    return o$1 = 8, F$1(function () {
+    return o = 8, F$1(function () {
       return n;
     }, t);
   }
@@ -440,7 +452,7 @@
     return n.__;
   }
   function b() {
-    for (var t; t = f.shift();) if (t.__P && t.__H) try {
+    for (var t; t = f$1.shift();) if (t.__P && t.__H) try {
       t.__H.__h.forEach(k$1), t.__H.__h.forEach(w$1), t.__H.__h = [];
     } catch (r) {
       t.__H.__h = [], l$1.__e(r, t.__v);
@@ -451,15 +463,15 @@
   }, l$1.__r = function (n) {
     a && a(n), t$1 = 0;
     var i = (r = n.__c).__H;
-    i && (u === r ? (i.__h = [], r.__h = [], i.__.forEach(function (n) {
+    i && (u$1 === r ? (i.__h = [], r.__h = [], i.__.forEach(function (n) {
       n.__N && (n.__ = n.__N), n.__V = c, n.__N = n.i = void 0;
-    })) : (i.__h.forEach(k$1), i.__h.forEach(w$1), i.__h = [], t$1 = 0)), u = r;
+    })) : (i.__h.forEach(k$1), i.__h.forEach(w$1), i.__h = [], t$1 = 0)), u$1 = r;
   }, l$1.diffed = function (t) {
     v && v(t);
     var o = t.__c;
-    o && o.__H && (o.__H.__h.length && (1 !== f.push(o) && i$1 === l$1.requestAnimationFrame || ((i$1 = l$1.requestAnimationFrame) || j$1)(b)), o.__H.__.forEach(function (n) {
+    o && o.__H && (o.__H.__h.length && (1 !== f$1.push(o) && i$1 === l$1.requestAnimationFrame || ((i$1 = l$1.requestAnimationFrame) || j$1)(b)), o.__H.__.forEach(function (n) {
       n.i && (n.__H = n.i), n.__V !== c && (n.__ = n.__V), n.i = void 0, n.__V = c;
-    })), u = r = null;
+    })), u$1 = r = null;
   }, l$1.__c = function (t, r) {
     r.some(function (t) {
       try {
@@ -1275,13 +1287,10 @@
     for (var r in t) if ("__source" !== r && n[r] !== t[r]) return !0;
     return !1;
   }
-  function E(n, t) {
-    return n === t && (0 !== n || 1 / n == 1 / t) || n != n && t != t;
-  }
-  function w(n) {
+  function E(n) {
     this.props = n;
   }
-  function x(n, e) {
+  function w(n, e) {
     function r(n) {
       var t = this.props.ref,
         r = t == n.ref;
@@ -1292,63 +1301,63 @@
     }
     return u.displayName = "Memo(" + (n.displayName || n.name) + ")", u.prototype.isReactComponent = !0, u.__f = !0, u;
   }
-  (w.prototype = new b$1()).isPureReactComponent = !0, w.prototype.shouldComponentUpdate = function (n, t) {
+  (E.prototype = new b$1()).isPureReactComponent = !0, E.prototype.shouldComponentUpdate = function (n, t) {
     return C$1(this.props, n) || C$1(this.state, t);
   };
-  var R = l$1.__b;
+  var x = l$1.__b;
   l$1.__b = function (n) {
-    n.type && n.type.__f && n.ref && (n.props.ref = n.ref, n.ref = null), R && R(n);
+    n.type && n.type.__f && n.ref && (n.props.ref = n.ref, n.ref = null), x && x(n);
   };
-  var N = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.forward_ref") || 3911;
-  function k(n) {
+  var R = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.forward_ref") || 3911;
+  function N(n) {
     function t(t) {
       var e = g({}, t);
       return delete e.ref, n(e, t.ref || null);
     }
-    return t.$$typeof = N, t.render = t, t.prototype.isReactComponent = t.__f = !0, t.displayName = "ForwardRef(" + (n.displayName || n.name) + ")", t;
+    return t.$$typeof = R, t.render = t, t.prototype.isReactComponent = t.__f = !0, t.displayName = "ForwardRef(" + (n.displayName || n.name) + ")", t;
   }
-  var A = function (n, t) {
-      return null == n ? null : S(S(n).map(t));
+  var k = function (n, t) {
+      return null == n ? null : $$1($$1(n).map(t));
     },
-    O = {
-      map: A,
-      forEach: A,
+    A = {
+      map: k,
+      forEach: k,
       count: function (n) {
-        return n ? S(n).length : 0;
+        return n ? $$1(n).length : 0;
       },
       only: function (n) {
-        var t = S(n);
+        var t = $$1(n);
         if (1 !== t.length) throw "Children.only";
         return t[0];
       },
-      toArray: S
+      toArray: $$1
     },
-    T = l$1.__e;
+    O = l$1.__e;
   l$1.__e = function (n, t, e, r) {
     if (n.then) for (var u, o = t; o = o.__;) if ((u = o.__c) && u.__c) return null == t.__e && (t.__e = e.__e, t.__k = e.__k), u.__c(n, t);
-    T(n, t, e, r);
+    O(n, t, e, r);
   };
-  var I = l$1.unmount;
-  function L(n, t, e) {
+  var T = l$1.unmount;
+  function F(n, t, e) {
     return n && (n.__c && n.__c.__H && (n.__c.__H.__.forEach(function (n) {
       "function" == typeof n.__c && n.__c();
     }), n.__c.__H = null), null != (n = g({}, n)).__c && (n.__c.__P === e && (n.__c.__P = t), n.__c = null), n.__k = n.__k && n.__k.map(function (n) {
-      return L(n, t, e);
+      return F(n, t, e);
     })), n;
   }
-  function U(n, t, e) {
-    return n && (n.__v = null, n.__k = n.__k && n.__k.map(function (n) {
-      return U(n, t, e);
-    }), n.__c && n.__c.__P === t && (n.__e && e.insertBefore(n.__e, n.__d), n.__c.__e = !0, n.__c.__P = e)), n;
+  function I(n, t, e) {
+    return n && e && (n.__v = null, n.__k = n.__k && n.__k.map(function (n) {
+      return I(n, t, e);
+    }), n.__c && n.__c.__P === t && (n.__e && e.appendChild(n.__e), n.__c.__e = !0, n.__c.__P = e)), n;
   }
-  function D() {
+  function L() {
     this.__u = 0, this.t = null, this.__b = null;
   }
-  function F(n) {
+  function U(n) {
     var t = n.__.__c;
     return t && t.__a && t.__a(n);
   }
-  function M(n) {
+  function D(n) {
     var e, r, u;
     function o(o) {
       if (e || (e = n()).then(function (n) {
@@ -1361,70 +1370,69 @@
     }
     return o.displayName = "Lazy", o.__f = !0, o;
   }
-  function V() {
+  function M() {
     this.u = null, this.o = null;
   }
   l$1.unmount = function (n) {
     var t = n.__c;
-    t && t.__R && t.__R(), t && !0 === n.__h && (n.type = null), I && I(n);
-  }, (D.prototype = new b$1()).__c = function (n, t) {
+    t && t.__R && t.__R(), t && 32 & n.__u && (n.type = null), T && T(n);
+  }, (L.prototype = new b$1()).__c = function (n, t) {
     var e = t.__c,
       r = this;
     null == r.t && (r.t = []), r.t.push(e);
-    var u = F(r.__v),
+    var u = U(r.__v),
       o = !1,
       i = function () {
         o || (o = !0, e.__R = null, u ? u(l) : l());
       };
     e.__R = i;
     var l = function () {
-        if (! --r.__u) {
-          if (r.state.__a) {
-            var n = r.state.__a;
-            r.__v.__k[0] = U(n, n.__c.__P, n.__c.__O);
-          }
-          var t;
-          for (r.setState({
-            __a: r.__b = null
-          }); t = r.t.pop();) t.forceUpdate();
+      if (! --r.__u) {
+        if (r.state.__a) {
+          var n = r.state.__a;
+          r.__v.__k[0] = I(n, n.__c.__P, n.__c.__O);
         }
-      },
-      c = !0 === t.__h;
-    r.__u++ || c || r.setState({
+        var t;
+        for (r.setState({
+          __a: r.__b = null
+        }); t = r.t.pop();) t.forceUpdate();
+      }
+    };
+    r.__u++ || 32 & t.__u || r.setState({
       __a: r.__b = r.__v.__k[0]
     }), n.then(i, i);
-  }, D.prototype.componentWillUnmount = function () {
+  }, L.prototype.componentWillUnmount = function () {
     this.t = [];
-  }, D.prototype.render = function (n, e) {
+  }, L.prototype.render = function (n, e) {
     if (this.__b) {
       if (this.__v.__k) {
         var r = document.createElement("div"),
           o = this.__v.__k[0].__c;
-        this.__v.__k[0] = L(this.__b, r, o.__O = o.__P);
+        this.__v.__k[0] = F(this.__b, r, o.__O = o.__P);
       }
       this.__b = null;
     }
-    var i = e.__a && y$1(k$2, null, n.fallback);
-    return i && (i.__h = null), [y$1(k$2, null, e.__a ? null : n.children), i];
+    var i = e.__a && y$1(g$2, null, n.fallback);
+    return i && (i.__u &= -33), [y$1(g$2, null, e.__a ? null : n.children), i];
   };
-  var W = function (n, t, e) {
+  var V = function (n, t, e) {
     if (++e[1] === e[0] && n.o.delete(t), n.props.revealOrder && ("t" !== n.props.revealOrder[0] || !n.o.size)) for (e = n.u; e;) {
       for (; e.length > 3;) e.pop()();
       if (e[1] < e[0]) break;
       n.u = e = e[2];
     }
   };
-  function P(n) {
+  function W(n) {
     return this.getChildContext = function () {
       return n.context;
     }, n.children;
   }
-  function j(n) {
+  function P(n) {
     var e = this,
       r = n.i;
     e.componentWillUnmount = function () {
-      D$1(null, e.l), e.l = null, e.i = null;
-    }, e.i && e.i !== r && e.componentWillUnmount(), n.__v ? (e.l || (e.i = r, e.l = {
+      q$2(null, e.l), e.l = null, e.i = null;
+    }, e.i && e.i !== r && e.componentWillUnmount(), e.l || (e.i = r, e.l = {
       nodeType: 1,
       parentNode: r,
       childNodes: [],
@@ -1437,52 +1445,52 @@
       removeChild: function (n) {
         this.childNodes.splice(this.childNodes.indexOf(n) >>> 1, 1), e.i.removeChild(n);
       }
-    }), D$1(y$1(P, {
+    }), q$2(y$1(W, {
       context: e.context
-    }, n.__v), e.l)) : e.l && e.componentWillUnmount();
+    }, n.__v), e.l);
   }
-  function z(n, e) {
-    var r = y$1(j, {
+  function j(n, e) {
+    var r = y$1(P, {
       __v: n,
       i: e
     });
     return r.containerInfo = e, r;
   }
-  (V.prototype = new b$1()).__a = function (n) {
+  (M.prototype = new b$1()).__a = function (n) {
     var t = this,
-      e = F(t.__v),
+      e = U(t.__v),
       r = t.o.get(n);
     return r[0]++, function (u) {
       var o = function () {
-        t.props.revealOrder ? (r.push(u), W(t, n, r)) : u();
+        t.props.revealOrder ? (r.push(u), V(t, n, r)) : u();
       };
       e ? e(o) : o();
     };
-  }, V.prototype.render = function (n) {
+  }, M.prototype.render = function (n) {
     this.u = null, this.o = new Map();
-    var t = S(n.children);
+    var t = $$1(n.children);
     n.revealOrder && "b" === n.revealOrder[0] && t.reverse();
     for (var e = t.length; e--;) this.o.set(t[e], this.u = [1, 0, this.u]);
     return n.children;
-  }, V.prototype.componentDidUpdate = V.prototype.componentDidMount = function () {
+  }, M.prototype.componentDidUpdate = M.prototype.componentDidMount = function () {
     var n = this;
     this.o.forEach(function (t, e) {
-      W(n, e, t);
+      V(n, e, t);
     });
   };
-  var B = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.element") || 60103,
-    H = /^(?:accent|alignment|arabic|baseline|cap|clip(?!PathU)|color|dominant|fill|flood|font|glyph(?!R)|horiz|image(!S)|letter|lighting|marker(?!H|W|U)|overline|paint|pointer|shape|stop|strikethrough|stroke|text(?!L)|transform|underline|unicode|units|v|vector|vert|word|writing|x(?!C))[A-Z]/,
-    Z = /^on(Ani|Tra|Tou|BeforeInp|Compo)/,
-    Y = /[A-Z0-9]/g,
-    $ = "undefined" != typeof document,
-    q = function (n) {
+  var z = "undefined" != typeof Symbol && Symbol.for && Symbol.for("react.element") || 60103,
+    B = /^(?:accent|alignment|arabic|baseline|cap|clip(?!PathU)|color|dominant|fill|flood|font|glyph(?!R)|horiz|image(!S)|letter|lighting|marker(?!H|W|U)|overline|paint|pointer|shape|stop|strikethrough|stroke|text(?!L)|transform|underline|unicode|units|v|vector|vert|word|writing|x(?!C))[A-Z]/,
+    H = /^on(Ani|Tra|Tou|BeforeInp|Compo)/,
+    Z = /[A-Z0-9]/g,
+    Y = "undefined" != typeof document,
+    $ = function (n) {
       return ("undefined" != typeof Symbol && "symbol" == typeof Symbol() ? /fil|che|rad/ : /fil|che|ra/).test(n);
     };
-  function G(n, t, e) {
-    return null == t.__k && (t.textContent = ""), D$1(n, t), "function" == typeof e && e(), n ? n.__c : null;
+  function q(n, t, e) {
+    return null == t.__k && (t.textContent = ""), q$2(n, t), "function" == typeof e && e(), n ? n.__c : null;
   }
-  function J(n, t, e) {
-    return E$1(n, t), "function" == typeof e && e(), n ? n.__c : null;
+  function G(n, t, e) {
+    return B$2(n, t), "function" == typeof e && e(), n ? n.__c : null;
   }
   b$1.prototype.isReactComponent = {}, ["componentWillMount", "componentWillReceiveProps", "componentWillUpdate"].forEach(function (t) {
     Object.defineProperty(b$1.prototype, t, {
@@ -1499,26 +1507,26 @@
       }
     });
   });
-  var K = l$1.event;
-  function Q() {}
-  function X() {
+  var J = l$1.event;
+  function K() {}
+  function Q() {
     return this.cancelBubble;
   }
-  function nn() {
+  function X() {
     return this.defaultPrevented;
   }
   l$1.event = function (n) {
-    return K && (n = K(n)), n.persist = Q, n.isPropagationStopped = X, n.isDefaultPrevented = nn, n.nativeEvent = n;
+    return J && (n = J(n)), n.persist = K, n.isPropagationStopped = Q, n.isDefaultPrevented = X, n.nativeEvent = n;
   };
-  var tn,
-    en = {
+  var nn,
+    tn = {
       enumerable: !1,
       configurable: !0,
       get: function () {
         return this.class;
       }
     },
-    rn = l$1.vnode;
+    en = l$1.vnode;
   l$1.vnode = function (n) {
     "string" == typeof n.type && function (n) {
       var t = n.props,
@@ -1526,49 +1534,52 @@
         u = {};
       for (var o in t) {
         var i = t[o];
-        if (!("value" === o && "defaultValue" in t && null == i || $ && "children" === o && "noscript" === e || "class" === o || "className" === o)) {
+        if (!("value" === o && "defaultValue" in t && null == i || Y && "children" === o && "noscript" === e || "class" === o || "className" === o)) {
           var l = o.toLowerCase();
-          "defaultValue" === o && "value" in t && null == t.value ? o = "value" : "download" === o && !0 === i ? i = "" : "ondoubleclick" === l ? o = "ondblclick" : "onchange" !== l || "input" !== e && "textarea" !== e || q(t.type) ? "onfocus" === l ? o = "onfocusin" : "onblur" === l ? o = "onfocusout" : Z.test(o) ? o = l : -1 === e.indexOf("-") && H.test(o) ? o = o.replace(Y, "-$&").toLowerCase() : null === i && (i = void 0) : l = o = "oninput", "oninput" === l && u[o = l] && (o = "oninputCapture"), u[o] = i;
+          "defaultValue" === o && "value" in t && null == t.value ? o = "value" : "download" === o && !0 === i ? i = "" : "ondoubleclick" === l ? o = "ondblclick" : "onchange" !== l || "input" !== e && "textarea" !== e || $(t.type) ? "onfocus" === l ? o = "onfocusin" : "onblur" === l ? o = "onfocusout" : H.test(o) ? o = l : -1 === e.indexOf("-") && B.test(o) ? o = o.replace(Z, "-$&").toLowerCase() : null === i && (i = void 0) : l = o = "oninput", "oninput" === l && u[o = l] && (o = "oninputCapture"), u[o] = i;
         }
       }
-      "select" == e && u.multiple && Array.isArray(u.value) && (u.value = S(t.children).forEach(function (n) {
+      "select" == e && u.multiple && Array.isArray(u.value) && (u.value = $$1(t.children).forEach(function (n) {
         n.props.selected = -1 != u.value.indexOf(n.props.value);
-      })), "select" == e && null != u.defaultValue && (u.value = S(t.children).forEach(function (n) {
+      })), "select" == e && null != u.defaultValue && (u.value = $$1(t.children).forEach(function (n) {
         n.props.selected = u.multiple ? -1 != u.defaultValue.indexOf(n.props.value) : u.defaultValue == n.props.value;
-      })), t.class && !t.className ? (u.class = t.class, Object.defineProperty(u, "className", en)) : (t.className && !t.class || t.class && t.className) && (u.class = u.className = t.className), n.props = u;
-    }(n), n.$$typeof = B, rn && rn(n);
+      })), t.class && !t.className ? (u.class = t.class, Object.defineProperty(u, "className", tn)) : (t.className && !t.class || t.class && t.className) && (u.class = u.className = t.className), n.props = u;
+    }(n), n.$$typeof = z, en && en(n);
   };
-  var un = l$1.__r;
+  var rn = l$1.__r;
   l$1.__r = function (n) {
-    un && un(n), tn = n.__c;
+    rn && rn(n), nn = n.__c;
   };
-  var on = l$1.diffed;
+  var un = l$1.diffed;
   l$1.diffed = function (n) {
-    on && on(n);
+    un && un(n);
     var t = n.props,
       e = n.__e;
-    null != e && "textarea" === n.type && "value" in t && t.value !== e.value && (e.value = null == t.value ? "" : t.value), tn = null;
+    null != e && "textarea" === n.type && "value" in t && t.value !== e.value && (e.value = null == t.value ? "" : t.value), nn = null;
   };
-  var ln = {
+  var on = {
       ReactCurrentDispatcher: {
         current: {
           readContext: function (n) {
-            return tn.__n[n.__c].props.value;
+            return nn.__n[n.__c].props.value;
           }
         }
       }
     };
-  function fn(n) {
+  function cn(n) {
     return y$1.bind(null, n);
   }
+  function fn(n) {
+    return !!n && n.$$typeof === z;
+  }
   function an(n) {
-    return !!n && n.$$typeof === B;
+    return fn(n) && n.type === g$2;
   }
   function sn(n) {
-    return an(n) ? F$2.apply(null, arguments) : n;
+    return fn(n) ? E$1.apply(null, arguments) : n;
   }
   function hn(n) {
-    return !!n.__k && (D$1(null, n), !0);
+    return !!n.__k && (q$2(null, n), !0);
   }
   function vn(n) {
     return n && (n.base || 1 === n.nodeType && n) || null;
@@ -1579,7 +1590,7 @@
     pn = function (n, t) {
       return n(t);
     },
-    mn = k$2;
+    mn = g$2;
   function yn(n) {
     n();
   }
@@ -1589,8 +1600,9 @@
   function bn() {
     return [!1, yn];
   }
-  var Sn = y;
-  function gn(n, t) {
+  var Sn = y,
+    gn = fn;
+  function Cn(n, t) {
     var e = t(),
       r = h({
         h: {
@@ -1601,20 +1613,32 @@
       u = r[0].h,
       o = r[1];
     return y(function () {
-      u.__ = e, u.v = t, E(u.__, t()) || o({
+      u.__ = e, u.v = t, En(u) && o({
         h: u
       });
     }, [n, e, t]), p(function () {
-      return E(u.__, u.v()) || o({
+      return En(u) && o({
         h: u
       }), n(function () {
-        E(u.__, u.v()) || o({
+        En(u) && o({
           h: u
         });
       });
     }, [n]), e;
   }
-  var Cn = {
+  function En(n) {
+    var t,
+      e,
+      r = n.v,
+      u = n.__;
+    try {
+      var o = r();
+      return !((t = u) === (e = o) && (0 !== t || 1 / t == 1 / e) || t != t && e != e);
+    } catch (n) {
+      return !0;
+    }
+  }
+  var wn = {
     useState: h,
     useId: V$1,
     useReducer: s,
@@ -1623,66 +1647,69 @@
     useInsertionEffect: Sn,
     useTransition: bn,
     useDeferredValue: _n,
-    useSyncExternalStore: gn,
+    useSyncExternalStore: Cn,
     startTransition: yn,
-    useRef: _$1,
+    useRef: _,
     useImperativeHandle: A$1,
     useMemo: F$1,
     useCallback: T$1,
     useContext: q$1,
     useDebugValue: x$1,
     version: "17.0.2",
-    Children: O,
-    render: G,
-    hydrate: J,
+    Children: A,
+    render: q,
+    hydrate: G,
     unmountComponentAtNode: hn,
-    createPortal: z,
+    createPortal: j,
     createElement: y$1,
-    createContext: G$1,
-    createFactory: fn,
+    createContext: F$2,
+    createFactory: cn,
     cloneElement: sn,
-    createRef: _$2,
-    Fragment: k$2,
-    isValidElement: an,
+    createRef: _$1,
+    Fragment: g$2,
+    isValidElement: fn,
+    isElement: gn,
+    isFragment: an,
     findDOMNode: vn,
     Component: b$1,
-    PureComponent: w,
-    memo: x,
-    forwardRef: k,
+    PureComponent: E,
+    memo: w,
+    forwardRef: N,
     flushSync: pn,
     unstable_batchedUpdates: dn,
     StrictMode: mn,
-    Suspense: D,
-    SuspenseList: V,
-    lazy: M,
-    __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: ln
+    Suspense: L,
+    SuspenseList: M,
+    lazy: D,
+    __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: on
   };
 
-  var _ = 0;
-  function o(o, e, n, t, f, l) {
-    var s,
-      u,
-      a = {};
-    for (u in e) "ref" == u ? s = e[u] : a[u] = e[u];
-    var i = {
-      type: o,
-      props: a,
+  var f = 0;
+  function u(e, t, n, o, i, u) {
+    var a,
+      c,
+      p = {};
+    for (c in t) "ref" == c ? a = t[c] : p[c] = t[c];
+    var l = {
+      type: e,
+      props: p,
       key: n,
-      ref: s,
+      ref: a,
       __k: null,
       __: null,
       __b: 0,
       __e: null,
       __d: void 0,
       __c: null,
-      __h: null,
       constructor: void 0,
-      __v: --_,
-      __source: f,
-      __self: l
+      __v: --f,
+      __i: -1,
+      __u: 0,
+      __source: i,
+      __self: u
     };
-    if ("function" == typeof o && (s = o.defaultProps)) for (u in s) void 0 === a[u] && (a[u] = s[u]);
-    return l$1.vnode && l$1.vnode(i), i;
+    if ("function" == typeof e && (a = e.defaultProps)) for (c in a) void 0 === p[c] && (p[c] = a[c]);
+    return l$1.vnode && l$1.vnode(l), l;
   }
 
   function getDefaultExportFromCjs (x) {
@@ -1695,10 +1722,7 @@
   	if (typeof f == "function") {
   		var a = function a () {
   			if (this instanceof a) {
-  				var args = [null];
-  				args.push.apply(args, arguments);
-  				var Ctor = Function.bind.apply(f, args);
-  				return new Ctor();
+          return Reflect.construct(f, arguments, this.constructor);
   			}
   			return f.apply(this, arguments);
   		};
@@ -1933,9 +1957,9 @@
     return el.querySelector(selector);
   }
 
-  // FIXME profile adding a per-Tree TreeNode cache, validating it by
-  // parent pointer
-  /// The default maximum length of a `TreeBuffer` node.
+  /**
+  The default maximum length of a `TreeBuffer` node.
+  */
   const DefaultBufferLength = 1024;
   let nextPropID = 0;
   let Range$1 = class Range {
@@ -1944,11 +1968,15 @@
       this.to = to;
     }
   };
-  /// Each [node type](#common.NodeType) or [individual tree](#common.Tree)
-  /// can have metadata associated with it in props. Instances of this
-  /// class represent prop names.
+  /**
+  Each [node type](#common.NodeType) or [individual tree](#common.Tree)
+  can have metadata associated with it in props. Instances of this
+  class represent prop names.
+  */
   class NodeProp {
-    /// Create a new node prop type.
+    /**
+    Create a new node prop type.
+    */
     constructor(config = {}) {
       this.id = nextPropID++;
       this.perNode = !!config.perNode;
@@ -1956,13 +1984,15 @@
         throw new Error("This node type doesn't define a deserialize function");
       });
     }
-    /// This is meant to be used with
-    /// [`NodeSet.extend`](#common.NodeSet.extend) or
-    /// [`LRParser.configure`](#lr.ParserConfig.props) to compute
-    /// prop values for each node type in the set. Takes a [match
-    /// object](#common.NodeType^match) or function that returns undefined
-    /// if the node type doesn't get this prop, and the prop's value if
-    /// it does.
+    /**
+    This is meant to be used with
+    [`NodeSet.extend`](#common.NodeSet.extend) or
+    [`LRParser.configure`](#lr.ParserConfig.props) to compute
+    prop values for each node type in the set. Takes a [match
+    object](#common.NodeType^match) or function that returns undefined
+    if the node type doesn't get this prop, and the prop's value if
+    it does.
+    */
     add(match) {
       if (this.perNode) throw new RangeError("Can't add per-node props to node types");
       if (typeof match != "function") match = NodeType.match(match);
@@ -1972,89 +2002,129 @@
       };
     }
   }
-  /// Prop that is used to describe matching delimiters. For opening
-  /// delimiters, this holds an array of node names (written as a
-  /// space-separated string when declaring this prop in a grammar)
-  /// for the node types of closing delimiters that match it.
+  /**
+  Prop that is used to describe matching delimiters. For opening
+  delimiters, this holds an array of node names (written as a
+  space-separated string when declaring this prop in a grammar)
+  for the node types of closing delimiters that match it.
+  */
   NodeProp.closedBy = new NodeProp({
     deserialize: str => str.split(" ")
   });
-  /// The inverse of [`closedBy`](#common.NodeProp^closedBy). This is
-  /// attached to closing delimiters, holding an array of node names
-  /// of types of matching opening delimiters.
+  /**
+  The inverse of [`closedBy`](#common.NodeProp^closedBy). This is
+  attached to closing delimiters, holding an array of node names
+  of types of matching opening delimiters.
+  */
   NodeProp.openedBy = new NodeProp({
     deserialize: str => str.split(" ")
   });
-  /// Used to assign node types to groups (for example, all node
-  /// types that represent an expression could be tagged with an
-  /// `"Expression"` group).
+  /**
+  Used to assign node types to groups (for example, all node
+  types that represent an expression could be tagged with an
+  `"Expression"` group).
+  */
   NodeProp.group = new NodeProp({
     deserialize: str => str.split(" ")
   });
-  /// The hash of the [context](#lr.ContextTracker.constructor)
-  /// that the node was parsed in, if any. Used to limit reuse of
-  /// contextual nodes.
+  /**
+  The hash of the [context](#lr.ContextTracker.constructor)
+  that the node was parsed in, if any. Used to limit reuse of
+  contextual nodes.
+  */
   NodeProp.contextHash = new NodeProp({
     perNode: true
   });
-  /// The distance beyond the end of the node that the tokenizer
-  /// looked ahead for any of the tokens inside the node. (The LR
-  /// parser only stores this when it is larger than 25, for
-  /// efficiency reasons.)
+  /**
+  The distance beyond the end of the node that the tokenizer
+  looked ahead for any of the tokens inside the node. (The LR
+  parser only stores this when it is larger than 25, for
+  efficiency reasons.)
+  */
   NodeProp.lookAhead = new NodeProp({
     perNode: true
   });
-  /// This per-node prop is used to replace a given node, or part of a
-  /// node, with another tree. This is useful to include trees from
-  /// different languages in mixed-language parsers.
+  /**
+  This per-node prop is used to replace a given node, or part of a
+  node, with another tree. This is useful to include trees from
+  different languages in mixed-language parsers.
+  */
   NodeProp.mounted = new NodeProp({
     perNode: true
   });
-  /// A mounted tree, which can be [stored](#common.NodeProp^mounted) on
-  /// a tree node to indicate that parts of its content are
-  /// represented by another tree.
+  /**
+  A mounted tree, which can be [stored](#common.NodeProp^mounted) on
+  a tree node to indicate that parts of its content are
+  represented by another tree.
+  */
   class MountedTree {
     constructor(
-    /// The inner tree.
+    /**
+    The inner tree.
+    */
     tree,
-    /// If this is null, this tree replaces the entire node (it will
-    /// be included in the regular iteration instead of its host
-    /// node). If not, only the given ranges are considered to be
-    /// covered by this tree. This is used for trees that are mixed in
-    /// a way that isn't strictly hierarchical. Such mounted trees are
-    /// only entered by [`resolveInner`](#common.Tree.resolveInner)
-    /// and [`enter`](#common.SyntaxNode.enter).
+    /**
+    If this is null, this tree replaces the entire node (it will
+    be included in the regular iteration instead of its host
+    node). If not, only the given ranges are considered to be
+    covered by this tree. This is used for trees that are mixed in
+    a way that isn't strictly hierarchical. Such mounted trees are
+    only entered by [`resolveInner`](#common.Tree.resolveInner)
+    and [`enter`](#common.SyntaxNode.enter).
+    */
     overlay,
-    /// The parser used to create this subtree.
+    /**
+    The parser used to create this subtree.
+    */
     parser) {
       this.tree = tree;
       this.overlay = overlay;
       this.parser = parser;
     }
+    /**
+    @internal
+    */
+    static get(tree) {
+      return tree && tree.props && tree.props[NodeProp.mounted.id];
+    }
   }
   const noProps = Object.create(null);
-  /// Each node in a syntax tree has a node type associated with it.
+  /**
+  Each node in a syntax tree has a node type associated with it.
+  */
   class NodeType {
-    /// @internal
+    /**
+    @internal
+    */
     constructor(
-    /// The name of the node type. Not necessarily unique, but if the
-    /// grammar was written properly, different node types with the
-    /// same name within a node set should play the same semantic
-    /// role.
+    /**
+    The name of the node type. Not necessarily unique, but if the
+    grammar was written properly, different node types with the
+    same name within a node set should play the same semantic
+    role.
+    */
     name,
-    /// @internal
+    /**
+    @internal
+    */
     props,
-    /// The id of this node in its set. Corresponds to the term ids
-    /// used in the parser.
+    /**
+    The id of this node in its set. Corresponds to the term ids
+    used in the parser.
+    */
     id,
-    /// @internal
+    /**
+    @internal
+    */
     flags = 0) {
       this.name = name;
       this.props = props;
       this.id = id;
       this.flags = flags;
     }
-    /// Define a node type.
+    /**
+    Define a node type.
+    */
     static define(spec) {
       let props = spec.props && spec.props.length ? Object.create(null) : noProps;
       let flags = (spec.top ? 1 /* NodeFlag.Top */ : 0) | (spec.skipped ? 2 /* NodeFlag.Skipped */ : 0) | (spec.error ? 4 /* NodeFlag.Error */ : 0) | (spec.name == null ? 8 /* NodeFlag.Anonymous */ : 0);
@@ -2068,30 +2138,42 @@
       }
       return type;
     }
-    /// Retrieves a node prop for this type. Will return `undefined` if
-    /// the prop isn't present on this node.
+    /**
+    Retrieves a node prop for this type. Will return `undefined` if
+    the prop isn't present on this node.
+    */
     prop(prop) {
       return this.props[prop.id];
     }
-    /// True when this is the top node of a grammar.
+    /**
+    True when this is the top node of a grammar.
+    */
     get isTop() {
       return (this.flags & 1 /* NodeFlag.Top */) > 0;
     }
-    /// True when this node is produced by a skip rule.
+    /**
+    True when this node is produced by a skip rule.
+    */
     get isSkipped() {
       return (this.flags & 2 /* NodeFlag.Skipped */) > 0;
     }
-    /// Indicates whether this is an error node.
+    /**
+    Indicates whether this is an error node.
+    */
     get isError() {
       return (this.flags & 4 /* NodeFlag.Error */) > 0;
     }
-    /// When true, this node type doesn't correspond to a user-declared
-    /// named node, for example because it is used to cache repetition.
+    /**
+    When true, this node type doesn't correspond to a user-declared
+    named node, for example because it is used to cache repetition.
+    */
     get isAnonymous() {
       return (this.flags & 8 /* NodeFlag.Anonymous */) > 0;
     }
-    /// Returns true when this node's name or one of its
-    /// [groups](#common.NodeProp^group) matches the given string.
+    /**
+    Returns true when this node's name or one of its
+    [groups](#common.NodeProp^group) matches the given string.
+    */
     is(name) {
       if (typeof name == 'string') {
         if (this.name == name) return true;
@@ -2100,12 +2182,14 @@
       }
       return this.id == name;
     }
-    /// Create a function from node types to arbitrary values by
-    /// specifying an object whose property names are node or
-    /// [group](#common.NodeProp^group) names. Often useful with
-    /// [`NodeProp.add`](#common.NodeProp.add). You can put multiple
-    /// names, separated by spaces, in a single property name to map
-    /// multiple node names to a single value.
+    /**
+    Create a function from node types to arbitrary values by
+    specifying an object whose property names are node or
+    [group](#common.NodeProp^group) names. Often useful with
+    [`NodeProp.add`](#common.NodeProp.add). You can put multiple
+    names, separated by spaces, in a single property name to map
+    multiple node names to a single value.
+    */
     static match(map) {
       let direct = Object.create(null);
       for (let prop in map) for (let name of prop.split(" ")) direct[name] = map[prop];
@@ -2117,27 +2201,37 @@
       };
     }
   }
-  /// An empty dummy node type to use when no actual type is available.
+  /**
+  An empty dummy node type to use when no actual type is available.
+  */
   NodeType.none = new NodeType("", Object.create(null), 0, 8 /* NodeFlag.Anonymous */);
-  /// A node set holds a collection of node types. It is used to
-  /// compactly represent trees by storing their type ids, rather than a
-  /// full pointer to the type object, in a numeric array. Each parser
-  /// [has](#lr.LRParser.nodeSet) a node set, and [tree
-  /// buffers](#common.TreeBuffer) can only store collections of nodes
-  /// from the same set. A set can have a maximum of 2**16 (65536) node
-  /// types in it, so that the ids fit into 16-bit typed array slots.
+  /**
+  A node set holds a collection of node types. It is used to
+  compactly represent trees by storing their type ids, rather than a
+  full pointer to the type object, in a numeric array. Each parser
+  [has](#lr.LRParser.nodeSet) a node set, and [tree
+  buffers](#common.TreeBuffer) can only store collections of nodes
+  from the same set. A set can have a maximum of 2**16 (65536) node
+  types in it, so that the ids fit into 16-bit typed array slots.
+  */
   class NodeSet {
-    /// Create a set with the given types. The `id` property of each
-    /// type should correspond to its position within the array.
+    /**
+    Create a set with the given types. The `id` property of each
+    type should correspond to its position within the array.
+    */
     constructor(
-    /// The node types in this set, by id.
+    /**
+    The node types in this set, by id.
+    */
     types) {
       this.types = types;
       for (let i = 0; i < types.length; i++) if (types[i].id != i) throw new RangeError("Node type ids should correspond to array positions when creating a node set");
     }
-    /// Create a copy of this set with some node properties added. The
-    /// arguments to this method can be created with
-    /// [`NodeProp.add`](#common.NodeProp.add).
+    /**
+    Create a copy of this set with some node properties added. The
+    arguments to this method can be created with
+    [`NodeProp.add`](#common.NodeProp.add).
+    */
     extend(...props) {
       let newTypes = [];
       for (let type of this.types) {
@@ -2156,70 +2250,98 @@
   }
   const CachedNode = new WeakMap(),
     CachedInnerNode = new WeakMap();
-  /// Options that control iteration. Can be combined with the `|`
-  /// operator to enable multiple ones.
+  /**
+  Options that control iteration. Can be combined with the `|`
+  operator to enable multiple ones.
+  */
   var IterMode;
   (function (IterMode) {
-    /// When enabled, iteration will only visit [`Tree`](#common.Tree)
-    /// objects, not nodes packed into
-    /// [`TreeBuffer`](#common.TreeBuffer)s.
+    /**
+    When enabled, iteration will only visit [`Tree`](#common.Tree)
+    objects, not nodes packed into
+    [`TreeBuffer`](#common.TreeBuffer)s.
+    */
     IterMode[IterMode["ExcludeBuffers"] = 1] = "ExcludeBuffers";
-    /// Enable this to make iteration include anonymous nodes (such as
-    /// the nodes that wrap repeated grammar constructs into a balanced
-    /// tree).
+    /**
+    Enable this to make iteration include anonymous nodes (such as
+    the nodes that wrap repeated grammar constructs into a balanced
+    tree).
+    */
     IterMode[IterMode["IncludeAnonymous"] = 2] = "IncludeAnonymous";
-    /// By default, regular [mounted](#common.NodeProp^mounted) nodes
-    /// replace their base node in iteration. Enable this to ignore them
-    /// instead.
+    /**
+    By default, regular [mounted](#common.NodeProp^mounted) nodes
+    replace their base node in iteration. Enable this to ignore them
+    instead.
+    */
     IterMode[IterMode["IgnoreMounts"] = 4] = "IgnoreMounts";
-    /// This option only applies in
-    /// [`enter`](#common.SyntaxNode.enter)-style methods. It tells the
-    /// library to not enter mounted overlays if one covers the given
-    /// position.
+    /**
+    This option only applies in
+    [`enter`](#common.SyntaxNode.enter)-style methods. It tells the
+    library to not enter mounted overlays if one covers the given
+    position.
+    */
     IterMode[IterMode["IgnoreOverlays"] = 8] = "IgnoreOverlays";
   })(IterMode || (IterMode = {}));
-  /// A piece of syntax tree. There are two ways to approach these
-  /// trees: the way they are actually stored in memory, and the
-  /// convenient way.
-  ///
-  /// Syntax trees are stored as a tree of `Tree` and `TreeBuffer`
-  /// objects. By packing detail information into `TreeBuffer` leaf
-  /// nodes, the representation is made a lot more memory-efficient.
-  ///
-  /// However, when you want to actually work with tree nodes, this
-  /// representation is very awkward, so most client code will want to
-  /// use the [`TreeCursor`](#common.TreeCursor) or
-  /// [`SyntaxNode`](#common.SyntaxNode) interface instead, which provides
-  /// a view on some part of this data structure, and can be used to
-  /// move around to adjacent nodes.
+  /**
+  A piece of syntax tree. There are two ways to approach these
+  trees: the way they are actually stored in memory, and the
+  convenient way.
+
+  Syntax trees are stored as a tree of `Tree` and `TreeBuffer`
+  objects. By packing detail information into `TreeBuffer` leaf
+  nodes, the representation is made a lot more memory-efficient.
+
+  However, when you want to actually work with tree nodes, this
+  representation is very awkward, so most client code will want to
+  use the [`TreeCursor`](#common.TreeCursor) or
+  [`SyntaxNode`](#common.SyntaxNode) interface instead, which provides
+  a view on some part of this data structure, and can be used to
+  move around to adjacent nodes.
+  */
   class Tree {
-    /// Construct a new tree. See also [`Tree.build`](#common.Tree^build).
+    /**
+    Construct a new tree. See also [`Tree.build`](#common.Tree^build).
+    */
     constructor(
-    /// The type of the top node.
+    /**
+    The type of the top node.
+    */
     type,
-    /// This node's child nodes.
+    /**
+    This node's child nodes.
+    */
     children,
-    /// The positions (offsets relative to the start of this tree) of
-    /// the children.
+    /**
+    The positions (offsets relative to the start of this tree) of
+    the children.
+    */
     positions,
-    /// The total length of this tree
+    /**
+    The total length of this tree
+    */
     length,
-    /// Per-node [node props](#common.NodeProp) to associate with this node.
+    /**
+    Per-node [node props](#common.NodeProp) to associate with this node.
+    */
     props) {
       this.type = type;
       this.children = children;
       this.positions = positions;
       this.length = length;
-      /// @internal
+      /**
+      @internal
+      */
       this.props = null;
       if (props && props.length) {
         this.props = Object.create(null);
         for (let [prop, value] of props) this.props[typeof prop == "number" ? prop : prop.id] = value;
       }
     }
-    /// @internal
+    /**
+    @internal
+    */
     toString() {
-      let mounted = this.prop(NodeProp.mounted);
+      let mounted = MountedTree.get(this);
       if (mounted && !mounted.overlay) return mounted.tree.toString();
       let children = "";
       for (let ch of this.children) {
@@ -2231,15 +2353,19 @@
       }
       return !this.type.name ? children : (/\W/.test(this.type.name) && !this.type.isError ? JSON.stringify(this.type.name) : this.type.name) + (children.length ? "(" + children + ")" : "");
     }
-    /// Get a [tree cursor](#common.TreeCursor) positioned at the top of
-    /// the tree. Mode can be used to [control](#common.IterMode) which
-    /// nodes the cursor visits.
+    /**
+    Get a [tree cursor](#common.TreeCursor) positioned at the top of
+    the tree. Mode can be used to [control](#common.IterMode) which
+    nodes the cursor visits.
+    */
     cursor(mode = 0) {
       return new TreeCursor(this.topNode, mode);
     }
-    /// Get a [tree cursor](#common.TreeCursor) pointing into this tree
-    /// at the given position and side (see
-    /// [`moveTo`](#common.TreeCursor.moveTo).
+    /**
+    Get a [tree cursor](#common.TreeCursor) pointing into this tree
+    at the given position and side (see
+    [`moveTo`](#common.TreeCursor.moveTo).
+    */
     cursorAt(pos, side = 0, mode = 0) {
       let scope = CachedNode.get(this) || this.topNode;
       let cursor = new TreeCursor(scope);
@@ -2247,40 +2373,58 @@
       CachedNode.set(this, cursor._tree);
       return cursor;
     }
-    /// Get a [syntax node](#common.SyntaxNode) object for the top of the
-    /// tree.
+    /**
+    Get a [syntax node](#common.SyntaxNode) object for the top of the
+    tree.
+    */
     get topNode() {
       return new TreeNode(this, 0, 0, null);
     }
-    /// Get the [syntax node](#common.SyntaxNode) at the given position.
-    /// If `side` is -1, this will move into nodes that end at the
-    /// position. If 1, it'll move into nodes that start at the
-    /// position. With 0, it'll only enter nodes that cover the position
-    /// from both sides.
-    ///
-    /// Note that this will not enter
-    /// [overlays](#common.MountedTree.overlay), and you often want
-    /// [`resolveInner`](#common.Tree.resolveInner) instead.
+    /**
+    Get the [syntax node](#common.SyntaxNode) at the given position.
+    If `side` is -1, this will move into nodes that end at the
+    position. If 1, it'll move into nodes that start at the
+    position. With 0, it'll only enter nodes that cover the position
+    from both sides.
+    
+    Note that this will not enter
+    [overlays](#common.MountedTree.overlay), and you often want
+    [`resolveInner`](#common.Tree.resolveInner) instead.
+    */
     resolve(pos, side = 0) {
       let node = resolveNode(CachedNode.get(this) || this.topNode, pos, side, false);
       CachedNode.set(this, node);
       return node;
     }
-    /// Like [`resolve`](#common.Tree.resolve), but will enter
-    /// [overlaid](#common.MountedTree.overlay) nodes, producing a syntax node
-    /// pointing into the innermost overlaid tree at the given position
-    /// (with parent links going through all parent structure, including
-    /// the host trees).
+    /**
+    Like [`resolve`](#common.Tree.resolve), but will enter
+    [overlaid](#common.MountedTree.overlay) nodes, producing a syntax node
+    pointing into the innermost overlaid tree at the given position
+    (with parent links going through all parent structure, including
+    the host trees).
+    */
     resolveInner(pos, side = 0) {
       let node = resolveNode(CachedInnerNode.get(this) || this.topNode, pos, side, true);
       CachedInnerNode.set(this, node);
       return node;
     }
-    /// Iterate over the tree and its children, calling `enter` for any
-    /// node that touches the `from`/`to` region (if given) before
-    /// running over such a node's children, and `leave` (if given) when
-    /// leaving the node. When `enter` returns `false`, that node will
-    /// not have its children iterated over (or `leave` called).
+    /**
+    In some situations, it can be useful to iterate through all
+    nodes around a position, including those in overlays that don't
+    directly cover the position. This method gives you an iterator
+    that will produce all nodes, from small to big, around the given
+    position.
+    */
+    resolveStack(pos, side = 0) {
+      return stackIterator(this, pos, side);
+    }
+    /**
+    Iterate over the tree and its children, calling `enter` for any
+    node that touches the `from`/`to` region (if given) before
+    running over such a node's children, and `leave` (if given) when
+    leaving the node. When `enter` returns `false`, that node will
+    not have its children iterated over (or `leave` called).
+    */
     iterate(spec) {
       let {
         enter,
@@ -2304,32 +2448,42 @@
         }
       }
     }
-    /// Get the value of the given [node prop](#common.NodeProp) for this
-    /// node. Works with both per-node and per-type props.
+    /**
+    Get the value of the given [node prop](#common.NodeProp) for this
+    node. Works with both per-node and per-type props.
+    */
     prop(prop) {
       return !prop.perNode ? this.type.prop(prop) : this.props ? this.props[prop.id] : undefined;
     }
-    /// Returns the node's [per-node props](#common.NodeProp.perNode) in a
-    /// format that can be passed to the [`Tree`](#common.Tree)
-    /// constructor.
+    /**
+    Returns the node's [per-node props](#common.NodeProp.perNode) in a
+    format that can be passed to the [`Tree`](#common.Tree)
+    constructor.
+    */
     get propValues() {
       let result = [];
       if (this.props) for (let id in this.props) result.push([+id, this.props[id]]);
       return result;
     }
-    /// Balance the direct children of this tree, producing a copy of
-    /// which may have children grouped into subtrees with type
-    /// [`NodeType.none`](#common.NodeType^none).
+    /**
+    Balance the direct children of this tree, producing a copy of
+    which may have children grouped into subtrees with type
+    [`NodeType.none`](#common.NodeType^none).
+    */
     balance(config = {}) {
       return this.children.length <= 8 /* Balance.BranchFactor */ ? this : balanceRange(NodeType.none, this.children, this.positions, 0, this.children.length, 0, this.length, (children, positions, length) => new Tree(this.type, children, positions, length, this.propValues), config.makeTree || ((children, positions, length) => new Tree(NodeType.none, children, positions, length)));
     }
-    /// Build a tree from a postfix-ordered buffer of node information,
-    /// or a cursor over such a buffer.
+    /**
+    Build a tree from a postfix-ordered buffer of node information,
+    or a cursor over such a buffer.
+    */
     static build(data) {
       return buildTree(data);
     }
   }
-  /// The empty tree
+  /**
+  The empty tree
+  */
   Tree.empty = new Tree(NodeType.none, [], [], 0);
   class FlatBufferCursor {
     constructor(buffer, index) {
@@ -2358,28 +2512,42 @@
       return new FlatBufferCursor(this.buffer, this.index);
     }
   }
-  /// Tree buffers contain (type, start, end, endIndex) quads for each
-  /// node. In such a buffer, nodes are stored in prefix order (parents
-  /// before children, with the endIndex of the parent indicating which
-  /// children belong to it).
+  /**
+  Tree buffers contain (type, start, end, endIndex) quads for each
+  node. In such a buffer, nodes are stored in prefix order (parents
+  before children, with the endIndex of the parent indicating which
+  children belong to it).
+  */
   class TreeBuffer {
-    /// Create a tree buffer.
+    /**
+    Create a tree buffer.
+    */
     constructor(
-    /// The buffer's content.
+    /**
+    The buffer's content.
+    */
     buffer,
-    /// The total length of the group of nodes in the buffer.
+    /**
+    The total length of the group of nodes in the buffer.
+    */
     length,
-    /// The node set used in this buffer.
+    /**
+    The node set used in this buffer.
+    */
     set) {
       this.buffer = buffer;
       this.length = length;
       this.set = set;
     }
-    /// @internal
+    /**
+    @internal
+    */
     get type() {
       return NodeType.none;
     }
-    /// @internal
+    /**
+    @internal
+    */
     toString() {
       let result = [];
       for (let index = 0; index < this.buffer.length;) {
@@ -2388,7 +2556,9 @@
       }
       return result.join(",");
     }
-    /// @internal
+    /**
+    @internal
+    */
     childString(index) {
       let id = this.buffer[index],
         endIndex = this.buffer[index + 3];
@@ -2404,7 +2574,9 @@
       }
       return result + "(" + children.join(",") + ")";
     }
-    /// @internal
+    /**
+    @internal
+    */
     findChild(startIndex, endIndex, dir, pos, side) {
       let {
           buffer
@@ -2418,7 +2590,9 @@
       }
       return pick;
     }
-    /// @internal
+    /**
+    @internal
+    */
     slice(startI, endI, from) {
       let b = this.buffer;
       let copy = new Uint16Array(endI - startI),
@@ -2449,20 +2623,6 @@
         return true;
     }
   }
-  function enterUnfinishedNodesBefore(node, pos) {
-    let scan = node.childBefore(pos);
-    while (scan) {
-      let last = scan.lastChild;
-      if (!last || last.to != scan.to) break;
-      if (last.type.isError && last.from == last.to) {
-        node = scan;
-        scan = last.prevSibling;
-      } else {
-        scan = last;
-      }
-    }
-    return node;
-  }
   function resolveNode(node, pos, side, overlays) {
     var _a;
     // Move up to a node that actually holds the position, if possible
@@ -2482,10 +2642,53 @@
       node = inner;
     }
   }
-  class TreeNode {
+  class BaseNode {
+    cursor(mode = 0) {
+      return new TreeCursor(this, mode);
+    }
+    getChild(type, before = null, after = null) {
+      let r = getChildren(this, type, before, after);
+      return r.length ? r[0] : null;
+    }
+    getChildren(type, before = null, after = null) {
+      return getChildren(this, type, before, after);
+    }
+    resolve(pos, side = 0) {
+      return resolveNode(this, pos, side, false);
+    }
+    resolveInner(pos, side = 0) {
+      return resolveNode(this, pos, side, true);
+    }
+    matchContext(context) {
+      return matchNodeContext(this, context);
+    }
+    enterUnfinishedNodesBefore(pos) {
+      let scan = this.childBefore(pos),
+        node = this;
+      while (scan) {
+        let last = scan.lastChild;
+        if (!last || last.to != scan.to) break;
+        if (last.type.isError && last.from == last.to) {
+          node = scan;
+          scan = last.prevSibling;
+        } else {
+          scan = last;
+        }
+      }
+      return node;
+    }
+    get node() {
+      return this;
+    }
+    get next() {
+      return this.parent;
+    }
+  }
+  class TreeNode extends BaseNode {
     constructor(_tree, from,
     // Index in parent node, set to -1 if the node is not a direct child of _parent.node (overlay)
     index, _parent) {
+      super();
       this._tree = _tree;
       this.from = from;
       this.index = index;
@@ -2515,7 +2718,7 @@
             if (index > -1) return new BufferNode(new BufferContext(parent, next, i, start), null, index);
           } else if (mode & IterMode.IncludeAnonymous || !next.type.isAnonymous || hasChild(next)) {
             let mounted;
-            if (!(mode & IterMode.IgnoreMounts) && next.props && (mounted = next.prop(NodeProp.mounted)) && !mounted.overlay) return new TreeNode(mounted.tree, start, i, parent);
+            if (!(mode & IterMode.IgnoreMounts) && (mounted = MountedTree.get(next)) && !mounted.overlay) return new TreeNode(mounted.tree, start, i, parent);
             let inner = new TreeNode(next, start, i, parent);
             return mode & IterMode.IncludeAnonymous || !inner.type.isAnonymous ? inner : inner.nextChild(dir < 0 ? next.children.length - 1 : 0, dir, pos, side);
           }
@@ -2540,7 +2743,7 @@
     }
     enter(pos, side, mode = 0) {
       let mounted;
-      if (!(mode & IterMode.IgnoreOverlays) && (mounted = this._tree.prop(NodeProp.mounted)) && mounted.overlay) {
+      if (!(mode & IterMode.IgnoreOverlays) && (mounted = MountedTree.get(this._tree)) && mounted.overlay) {
         let rPos = pos - this.from;
         for (let {
           from,
@@ -2565,40 +2768,17 @@
     get prevSibling() {
       return this._parent && this.index >= 0 ? this._parent.nextChild(this.index - 1, -1, 0, 4 /* Side.DontCare */) : null;
     }
-    cursor(mode = 0) {
-      return new TreeCursor(this, mode);
-    }
     get tree() {
       return this._tree;
     }
     toTree() {
       return this._tree;
     }
-    resolve(pos, side = 0) {
-      return resolveNode(this, pos, side, false);
-    }
-    resolveInner(pos, side = 0) {
-      return resolveNode(this, pos, side, true);
-    }
-    enterUnfinishedNodesBefore(pos) {
-      return enterUnfinishedNodesBefore(this, pos);
-    }
-    getChild(type, before = null, after = null) {
-      let r = getChildren(this, type, before, after);
-      return r.length ? r[0] : null;
-    }
-    getChildren(type, before = null, after = null) {
-      return getChildren(this, type, before, after);
-    }
-    /// @internal
+    /**
+    @internal
+    */
     toString() {
       return this._tree.toString();
-    }
-    get node() {
-      return this;
-    }
-    matchContext(context) {
-      return matchNodeContext(this, context);
     }
   }
   function getChildren(node, type, before, after) {
@@ -2630,7 +2810,7 @@
       this.start = start;
     }
   }
-  class BufferNode {
+  class BufferNode extends BaseNode {
     get name() {
       return this.type.name;
     }
@@ -2641,6 +2821,7 @@
       return this.context.start + this.context.buffer.buffer[this.index + 2];
     }
     constructor(context, _parent, index) {
+      super();
       this.context = context;
       this._parent = _parent;
       this.index = index;
@@ -2697,9 +2878,6 @@
       return new BufferNode(this.context, this._parent, buffer.findChild(parentStart, this.index, -1, 0, 4 /* Side.DontCare */));
     }
 
-    cursor(mode = 0) {
-      return new TreeCursor(this, mode);
-    }
     get tree() {
       return null;
     }
@@ -2718,49 +2896,87 @@
       }
       return new Tree(this.type, children, positions, this.to - this.from);
     }
-    resolve(pos, side = 0) {
-      return resolveNode(this, pos, side, false);
-    }
-    resolveInner(pos, side = 0) {
-      return resolveNode(this, pos, side, true);
-    }
-    enterUnfinishedNodesBefore(pos) {
-      return enterUnfinishedNodesBefore(this, pos);
-    }
-    /// @internal
+    /**
+    @internal
+    */
     toString() {
       return this.context.buffer.childString(this.index);
     }
-    getChild(type, before = null, after = null) {
-      let r = getChildren(this, type, before, after);
-      return r.length ? r[0] : null;
+  }
+  function iterStack(heads) {
+    if (!heads.length) return null;
+    if (heads.length == 1) return heads[0];
+    let pick = 0,
+      picked = heads[0];
+    for (let i = 1; i < heads.length; i++) {
+      let node = heads[i];
+      if (node.from > picked.from || node.to < picked.to) {
+        picked = node;
+        pick = i;
+      }
     }
-    getChildren(type, before = null, after = null) {
-      return getChildren(this, type, before, after);
+    let next = picked instanceof TreeNode && picked.index < 0 ? null : picked.parent;
+    let newHeads = heads.slice();
+    if (next) newHeads[pick] = next;else newHeads.splice(pick, 1);
+    return new StackIterator(newHeads, picked);
+  }
+  class StackIterator {
+    constructor(heads, node) {
+      this.heads = heads;
+      this.node = node;
     }
-    get node() {
-      return this;
-    }
-    matchContext(context) {
-      return matchNodeContext(this, context);
+    get next() {
+      return iterStack(this.heads);
     }
   }
-  /// A tree cursor object focuses on a given node in a syntax tree, and
-  /// allows you to move to adjacent nodes.
+  function stackIterator(tree, pos, side) {
+    let inner = tree.resolveInner(pos, side),
+      layers = null;
+    for (let scan = inner instanceof TreeNode ? inner : inner.context.parent; scan; scan = scan.parent) {
+      if (scan.index < 0) {
+        // This is an overlay root
+        let parent = scan.parent;
+        (layers || (layers = [inner])).push(parent.resolve(pos, side));
+        scan = parent;
+      } else {
+        let mount = MountedTree.get(scan.tree);
+        // Relevant overlay branching off
+        if (mount && mount.overlay && mount.overlay[0].from <= pos && mount.overlay[mount.overlay.length - 1].to >= pos) {
+          let root = new TreeNode(mount.tree, mount.overlay[0].from + scan.from, 0, null);
+          (layers || (layers = [inner])).push(resolveNode(root, pos, side, false));
+        }
+      }
+    }
+    return layers ? iterStack(layers) : inner;
+  }
+  /**
+  A tree cursor object focuses on a given node in a syntax tree, and
+  allows you to move to adjacent nodes.
+  */
   class TreeCursor {
-    /// Shorthand for `.type.name`.
+    /**
+    Shorthand for `.type.name`.
+    */
     get name() {
       return this.type.name;
     }
-    /// @internal
+    /**
+    @internal
+    */
     constructor(node,
-    /// @internal
+    /**
+    @internal
+    */
     mode = 0) {
       this.mode = mode;
-      /// @internal
+      /**
+      @internal
+      */
       this.buffer = null;
       this.stack = [];
-      /// @internal
+      /**
+      @internal
+      */
       this.index = 0;
       this.bufferNode = null;
       if (node instanceof TreeNode) {
@@ -2801,11 +3017,15 @@
       this.buffer = node.context;
       return this.yieldBuf(node.index, node.type);
     }
-    /// @internal
+    /**
+    @internal
+    */
     toString() {
       return this.buffer ? this.buffer.buffer.childString(this.index) : this._tree.toString();
     }
-    /// @internal
+    /**
+    @internal
+    */
     enterChild(dir, pos, side) {
       if (!this.buffer) return this.yield(this._tree.nextChild(dir < 0 ? this._tree._tree.children.length - 1 : 0, dir, pos, side, this.mode));
       let {
@@ -2816,33 +3036,45 @@
       this.stack.push(this.index);
       return this.yieldBuf(index);
     }
-    /// Move the cursor to this node's first child. When this returns
-    /// false, the node has no child, and the cursor has not been moved.
+    /**
+    Move the cursor to this node's first child. When this returns
+    false, the node has no child, and the cursor has not been moved.
+    */
     firstChild() {
       return this.enterChild(1, 0, 4 /* Side.DontCare */);
     }
-    /// Move the cursor to this node's last child.
+    /**
+    Move the cursor to this node's last child.
+    */
     lastChild() {
       return this.enterChild(-1, 0, 4 /* Side.DontCare */);
     }
-    /// Move the cursor to the first child that ends after `pos`.
+    /**
+    Move the cursor to the first child that ends after `pos`.
+    */
     childAfter(pos) {
       return this.enterChild(1, pos, 2 /* Side.After */);
     }
-    /// Move to the last child that starts before `pos`.
+    /**
+    Move to the last child that starts before `pos`.
+    */
     childBefore(pos) {
       return this.enterChild(-1, pos, -2 /* Side.Before */);
     }
-    /// Move the cursor to the child around `pos`. If side is -1 the
-    /// child may end at that position, when 1 it may start there. This
-    /// will also enter [overlaid](#common.MountedTree.overlay)
-    /// [mounted](#common.NodeProp^mounted) trees unless `overlays` is
-    /// set to false.
+    /**
+    Move the cursor to the child around `pos`. If side is -1 the
+    child may end at that position, when 1 it may start there. This
+    will also enter [overlaid](#common.MountedTree.overlay)
+    [mounted](#common.NodeProp^mounted) trees unless `overlays` is
+    set to false.
+    */
     enter(pos, side, mode = this.mode) {
       if (!this.buffer) return this.yield(this._tree.enter(pos, side, mode));
       return mode & IterMode.ExcludeBuffers ? false : this.enterChild(1, pos, side);
     }
-    /// Move to the node's parent node, if this isn't the top node.
+    /**
+    Move to the node's parent node, if this isn't the top node.
+    */
     parent() {
       if (!this.buffer) return this.yieldNode(this.mode & IterMode.IncludeAnonymous ? this._tree._parent : this._tree.parent);
       if (this.stack.length) return this.yieldBuf(this.stack.pop());
@@ -2850,7 +3082,9 @@
       this.buffer = null;
       return this.yieldNode(parent);
     }
-    /// @internal
+    /**
+    @internal
+    */
     sibling(dir) {
       if (!this.buffer) return !this._tree._parent ? false : this.yield(this._tree.index < 0 ? null : this._tree._parent.nextChild(this._tree.index + dir, dir, 0, 4 /* Side.DontCare */, this.mode));
       let {
@@ -2866,11 +3100,15 @@
       }
       return d < 0 ? this.yield(this.buffer.parent.nextChild(this.buffer.index + dir, dir, 0, 4 /* Side.DontCare */, this.mode)) : false;
     }
-    /// Move to this node's next sibling, if any.
+    /**
+    Move to this node's next sibling, if any.
+    */
     nextSibling() {
       return this.sibling(1);
     }
-    /// Move to this node's previous sibling, if any.
+    /**
+    Move to this node's previous sibling, if any.
+    */
     prevSibling() {
       return this.sibling(-1);
     }
@@ -2914,24 +3152,30 @@
         if (this.atLastNode(dir) || !this.parent()) return false;
       }
     }
-    /// Move to the next node in a
-    /// [pre-order](https://en.wikipedia.org/wiki/Tree_traversal#Pre-order,_NLR)
-    /// traversal, going from a node to its first child or, if the
-    /// current node is empty or `enter` is false, its next sibling or
-    /// the next sibling of the first parent node that has one.
+    /**
+    Move to the next node in a
+    [pre-order](https://en.wikipedia.org/wiki/Tree_traversal#Pre-order,_NLR)
+    traversal, going from a node to its first child or, if the
+    current node is empty or `enter` is false, its next sibling or
+    the next sibling of the first parent node that has one.
+    */
     next(enter = true) {
       return this.move(1, enter);
     }
-    /// Move to the next node in a last-to-first pre-order traveral. A
-    /// node is followed by its last child or, if it has none, its
-    /// previous sibling or the previous sibling of the first parent
-    /// node that has one.
+    /**
+    Move to the next node in a last-to-first pre-order traveral. A
+    node is followed by its last child or, if it has none, its
+    previous sibling or the previous sibling of the first parent
+    node that has one.
+    */
     prev(enter = true) {
       return this.move(-1, enter);
     }
-    /// Move the cursor to the innermost node that covers `pos`. If
-    /// `side` is -1, it will enter nodes that end at `pos`. If it is 1,
-    /// it will enter nodes that start at `pos`.
+    /**
+    Move the cursor to the innermost node that covers `pos`. If
+    `side` is -1, it will enter nodes that end at `pos`. If it is 1,
+    it will enter nodes that start at `pos`.
+    */
     moveTo(pos, side = 0) {
       // Move up to a node that actually holds the position, if possible
       while (this.from == this.to || (side < 1 ? this.from >= pos : this.from > pos) || (side > -1 ? this.to <= pos : this.to < pos)) if (!this.parent()) break;
@@ -2939,8 +3183,10 @@
       while (this.enterChild(1, pos, side)) {}
       return this;
     }
-    /// Get a [syntax node](#common.SyntaxNode) at the cursor's current
-    /// position.
+    /**
+    Get a [syntax node](#common.SyntaxNode) at the cursor's current
+    position.
+    */
     get node() {
       if (!this.buffer) return this._tree;
       let cache = this.bufferNode,
@@ -2960,16 +3206,20 @@
       for (let i = depth; i < this.stack.length; i++) result = new BufferNode(this.buffer, result, this.stack[i]);
       return this.bufferNode = new BufferNode(this.buffer, result, this.index);
     }
-    /// Get the [tree](#common.Tree) that represents the current node, if
-    /// any. Will return null when the node is in a [tree
-    /// buffer](#common.TreeBuffer).
+    /**
+    Get the [tree](#common.Tree) that represents the current node, if
+    any. Will return null when the node is in a [tree
+    buffer](#common.TreeBuffer).
+    */
     get tree() {
       return this.buffer ? null : this._tree._tree;
     }
-    /// Iterate over the current node and all its descendants, calling
-    /// `enter` when entering a node and `leave`, if given, when leaving
-    /// one. When `enter` returns `false`, any children of that node are
-    /// skipped, and `leave` isn't called for it.
+    /**
+    Iterate over the current node and all its descendants, calling
+    `enter` when entering a node and `leave`, if given, when leaving
+    one. When `enter` returns `false`, any children of that node are
+    skipped, and `leave` isn't called for it.
+    */
     iterate(enter, leave) {
       for (let depth = 0;;) {
         let mustLeave = false;
@@ -2991,9 +3241,11 @@
         }
       }
     }
-    /// Test whether the current node matches a given context—a sequence
-    /// of direct parent node names. Empty strings in the context array
-    /// are treated as wildcards.
+    /**
+    Test whether the current node matches a given context—a sequence
+    of direct parent node names. Empty strings in the context array
+    are treated as wildcards.
+    */
     matchContext(context) {
       if (!this.buffer) return matchNodeContext(this.node, context);
       let {
@@ -3287,31 +3539,43 @@
     return (mkTop || mkTree)(localChildren, localPositions, length);
   }
 
-  /// Tree fragments are used during [incremental
-  /// parsing](#common.Parser.startParse) to track parts of old trees
-  /// that can be reused in a new parse. An array of fragments is used
-  /// to track regions of an old tree whose nodes might be reused in new
-  /// parses. Use the static
-  /// [`applyChanges`](#common.TreeFragment^applyChanges) method to
-  /// update fragments for document changes.
+  /**
+  Tree fragments are used during [incremental
+  parsing](#common.Parser.startParse) to track parts of old trees
+  that can be reused in a new parse. An array of fragments is used
+  to track regions of an old tree whose nodes might be reused in new
+  parses. Use the static
+  [`applyChanges`](#common.TreeFragment^applyChanges) method to
+  update fragments for document changes.
+  */
   class TreeFragment {
-    /// Construct a tree fragment. You'll usually want to use
-    /// [`addTree`](#common.TreeFragment^addTree) and
-    /// [`applyChanges`](#common.TreeFragment^applyChanges) instead of
-    /// calling this directly.
+    /**
+    Construct a tree fragment. You'll usually want to use
+    [`addTree`](#common.TreeFragment^addTree) and
+    [`applyChanges`](#common.TreeFragment^applyChanges) instead of
+    calling this directly.
+    */
     constructor(
-    /// The start of the unchanged range pointed to by this fragment.
-    /// This refers to an offset in the _updated_ document (as opposed
-    /// to the original tree).
+    /**
+    The start of the unchanged range pointed to by this fragment.
+    This refers to an offset in the _updated_ document (as opposed
+    to the original tree).
+    */
     from,
-    /// The end of the unchanged range.
+    /**
+    The end of the unchanged range.
+    */
     to,
-    /// The tree that this fragment is based on.
+    /**
+    The tree that this fragment is based on.
+    */
     tree,
-    /// The offset between the fragment's tree and the document that
-    /// this fragment can be used against. Add this when going from
-    /// document to tree positions, subtract it to go from tree to
-    /// document positions.
+    /**
+    The offset between the fragment's tree and the document that
+    this fragment can be used against. Add this when going from
+    document to tree positions, subtract it to go from tree to
+    document positions.
+    */
     offset, openStart = false, openEnd = false) {
       this.from = from;
       this.to = to;
@@ -3319,32 +3583,40 @@
       this.offset = offset;
       this.open = (openStart ? 1 /* Open.Start */ : 0) | (openEnd ? 2 /* Open.End */ : 0);
     }
-    /// Whether the start of the fragment represents the start of a
-    /// parse, or the end of a change. (In the second case, it may not
-    /// be safe to reuse some nodes at the start, depending on the
-    /// parsing algorithm.)
+    /**
+    Whether the start of the fragment represents the start of a
+    parse, or the end of a change. (In the second case, it may not
+    be safe to reuse some nodes at the start, depending on the
+    parsing algorithm.)
+    */
     get openStart() {
       return (this.open & 1 /* Open.Start */) > 0;
     }
-    /// Whether the end of the fragment represents the end of a
-    /// full-document parse, or the start of a change.
+    /**
+    Whether the end of the fragment represents the end of a
+    full-document parse, or the start of a change.
+    */
     get openEnd() {
       return (this.open & 2 /* Open.End */) > 0;
     }
-    /// Create a set of fragments from a freshly parsed tree, or update
-    /// an existing set of fragments by replacing the ones that overlap
-    /// with a tree with content from the new tree. When `partial` is
-    /// true, the parse is treated as incomplete, and the resulting
-    /// fragment has [`openEnd`](#common.TreeFragment.openEnd) set to
-    /// true.
+    /**
+    Create a set of fragments from a freshly parsed tree, or update
+    an existing set of fragments by replacing the ones that overlap
+    with a tree with content from the new tree. When `partial` is
+    true, the parse is treated as incomplete, and the resulting
+    fragment has [`openEnd`](#common.TreeFragment.openEnd) set to
+    true.
+    */
     static addTree(tree, fragments = [], partial = false) {
       let result = [new TreeFragment(0, tree.length, tree, 0, false, partial)];
       for (let f of fragments) if (f.to > tree.length) result.push(f);
       return result;
     }
-    /// Apply a set of edits to an array of fragments, removing or
-    /// splitting fragments as necessary to remove edited ranges, and
-    /// adjusting offsets for fragments that moved.
+    /**
+    Apply a set of edits to an array of fragments, removing or
+    splitting fragments as necessary to remove edited ranges, and
+    adjusting offsets for fragments that moved.
+    */
     static applyChanges(fragments, changes, minGap = 128) {
       if (!changes.length) return fragments;
       let result = [];
@@ -3371,22 +3643,28 @@
       return result;
     }
   }
-  /// A superclass that parsers should extend.
+  /**
+  A superclass that parsers should extend.
+  */
   class Parser {
-    /// Start a parse, returning a [partial parse](#common.PartialParse)
-    /// object. [`fragments`](#common.TreeFragment) can be passed in to
-    /// make the parse incremental.
-    ///
-    /// By default, the entire input is parsed. You can pass `ranges`,
-    /// which should be a sorted array of non-empty, non-overlapping
-    /// ranges, to parse only those ranges. The tree returned in that
-    /// case will start at `ranges[0].from`.
+    /**
+    Start a parse, returning a [partial parse](#common.PartialParse)
+    object. [`fragments`](#common.TreeFragment) can be passed in to
+    make the parse incremental.
+    
+    By default, the entire input is parsed. You can pass `ranges`,
+    which should be a sorted array of non-empty, non-overlapping
+    ranges, to parse only those ranges. The tree returned in that
+    case will start at `ranges[0].from`.
+    */
     startParse(input, fragments, ranges) {
       if (typeof input == "string") input = new StringInput(input);
       ranges = !ranges ? [new Range$1(0, input.length)] : ranges.length ? ranges.map(r => new Range$1(r.from, r.to)) : [new Range$1(0, 0)];
       return this.createParse(input, fragments || [], ranges);
     }
-    /// Run a full parse, returning the resulting tree.
+    /**
+    Run a full parse, returning the resulting tree.
+    */
     parse(input, fragments, ranges) {
       let parse = this.startParse(input, fragments, ranges);
       for (;;) {
@@ -3413,11 +3691,13 @@
     }
   }
 
-  /// Create a parse wrapper that, after the inner parse completes,
-  /// scans its tree for mixed language regions with the `nest`
-  /// function, runs the resulting [inner parses](#common.NestedParse),
-  /// and then [mounts](#common.NodeProp^mounted) their results onto the
-  /// tree.
+  /**
+  Create a parse wrapper that, after the inner parse completes,
+  scans its tree for mixed language regions with the `nest`
+  function, runs the resulting [inner parses](#common.NestedParse),
+  and then [mounts](#common.NodeProp^mounted) their results onto the
+  tree.
+  */
   function parseMixed(nest) {
     return (parse, input, fragments, ranges) => new MixedParse(parse, nest, input, fragments, ranges);
   }
@@ -3785,53 +4065,79 @@
     return result;
   }
 
-  /// A parse stack. These are used internally by the parser to track
-  /// parsing progress. They also provide some properties and methods
-  /// that external code such as a tokenizer can use to get information
-  /// about the parse state.
+  /**
+  A parse stack. These are used internally by the parser to track
+  parsing progress. They also provide some properties and methods
+  that external code such as a tokenizer can use to get information
+  about the parse state.
+  */
   class Stack {
-    /// @internal
+    /**
+    @internal
+    */
     constructor(
-    /// The parse that this stack is part of @internal
+    /**
+    The parse that this stack is part of @internal
+    */
     p,
-    /// Holds state, input pos, buffer index triplets for all but the
-    /// top state @internal
+    /**
+    Holds state, input pos, buffer index triplets for all but the
+    top state @internal
+    */
     stack,
-    /// The current parse state @internal
+    /**
+    The current parse state @internal
+    */
     state,
     // The position at which the next reduce should take place. This
     // can be less than `this.pos` when skipped expressions have been
     // added to the stack (which should be moved outside of the next
     // reduction)
-    /// @internal
+    /**
+    @internal
+    */
     reducePos,
-    /// The input position up to which this stack has parsed.
+    /**
+    The input position up to which this stack has parsed.
+    */
     pos,
-    /// The dynamic score of the stack, including dynamic precedence
-    /// and error-recovery penalties
-    /// @internal
+    /**
+    The dynamic score of the stack, including dynamic precedence
+    and error-recovery penalties
+    @internal
+    */
     score,
     // The output buffer. Holds (type, start, end, size) quads
     // representing nodes created by the parser, where `size` is
     // amount of buffer array entries covered by this node.
-    /// @internal
+    /**
+    @internal
+    */
     buffer,
     // The base offset of the buffer. When stacks are split, the split
     // instance shared the buffer history with its parent up to
     // `bufferBase`, which is the absolute offset (including the
     // offset of previous splits) into the buffer at which this stack
     // starts writing.
-    /// @internal
+    /**
+    @internal
+    */
     bufferBase,
-    /// @internal
+    /**
+    @internal
+    */
     curContext,
-    /// @internal
+    /**
+    @internal
+    */
     lookAhead = 0,
     // A parent stack from which this was split off, if any. This is
     // set up so that it always points to a stack that has some
     // additional buffer content, never to a stack with an equal
     // `bufferBase`.
-    /// @internal
+    /**
+    @internal
+    */
     parent) {
       this.p = p;
       this.stack = stack;
@@ -3845,32 +4151,42 @@
       this.lookAhead = lookAhead;
       this.parent = parent;
     }
-    /// @internal
+    /**
+    @internal
+    */
     toString() {
       return `[${this.stack.filter((_, i) => i % 3 == 0).concat(this.state)}]@${this.pos}${this.score ? "!" + this.score : ""}`;
     }
     // Start an empty stack
-    /// @internal
+    /**
+    @internal
+    */
     static start(p, state, pos = 0) {
       let cx = p.parser.context;
       return new Stack(p, [], state, pos, pos, 0, [], 0, cx ? new StackContext(cx, cx.start) : null, 0, null);
     }
-    /// The stack's current [context](#lr.ContextTracker) value, if
-    /// any. Its type will depend on the context tracker's type
-    /// parameter, or it will be `null` if there is no context
-    /// tracker.
+    /**
+    The stack's current [context](#lr.ContextTracker) value, if
+    any. Its type will depend on the context tracker's type
+    parameter, or it will be `null` if there is no context
+    tracker.
+    */
     get context() {
       return this.curContext ? this.curContext.context : null;
     }
     // Push a state onto the stack, tracking its start position as well
     // as the buffer base at that point.
-    /// @internal
+    /**
+    @internal
+    */
     pushState(state, start) {
       this.stack.push(this.state, start, this.bufferBase + this.buffer.length);
       this.state = state;
     }
     // Apply a reduce action
-    /// @internal
+    /**
+    @internal
+    */
     reduce(action) {
       var _a;
       let depth = action >> 19 /* Action.ReduceDepthShift */,
@@ -3926,7 +4242,9 @@
       this.reduceContext(type, start);
     }
     // Shift a value into the buffer
-    /// @internal
+    /**
+    @internal
+    */
     storeNode(term, start, end, size = 4, isReduce = false) {
       if (term == 0 /* Term.Err */ && (!this.stack.length || this.stack[this.stack.length - 1] < this.buffer.length + this.bufferBase)) {
         // Try to omit/merge adjacent error nodes
@@ -3966,9 +4284,10 @@
       }
     }
     // Apply a shift action
-    /// @internal
-    shift(action, next, nextEnd) {
-      let start = this.pos;
+    /**
+    @internal
+    */
+    shift(action, type, start, end) {
       if (action & 131072 /* Action.GotoFlag */) {
         this.pushState(action & 65535 /* Action.ValueMask */, this.pos);
       } else if ((action & 262144 /* Action.StayFlag */) == 0) {
@@ -3977,27 +4296,31 @@
           {
             parser
           } = this.p;
-        if (nextEnd > this.pos || next <= parser.maxNode) {
-          this.pos = nextEnd;
-          if (!parser.stateFlag(nextState, 1 /* StateFlag.Skipped */)) this.reducePos = nextEnd;
+        if (end > this.pos || type <= parser.maxNode) {
+          this.pos = end;
+          if (!parser.stateFlag(nextState, 1 /* StateFlag.Skipped */)) this.reducePos = end;
         }
         this.pushState(nextState, start);
-        this.shiftContext(next, start);
-        if (next <= parser.maxNode) this.buffer.push(next, start, nextEnd, 4);
+        this.shiftContext(type, start);
+        if (type <= parser.maxNode) this.buffer.push(type, start, end, 4);
       } else {
         // Shift-and-stay, which means this is a skipped token
-        this.pos = nextEnd;
-        this.shiftContext(next, start);
-        if (next <= this.p.parser.maxNode) this.buffer.push(next, start, nextEnd, 4);
+        this.pos = end;
+        this.shiftContext(type, start);
+        if (type <= this.p.parser.maxNode) this.buffer.push(type, start, end, 4);
       }
     }
     // Apply an action
-    /// @internal
-    apply(action, next, nextEnd) {
-      if (action & 65536 /* Action.ReduceFlag */) this.reduce(action);else this.shift(action, next, nextEnd);
+    /**
+    @internal
+    */
+    apply(action, next, nextStart, nextEnd) {
+      if (action & 65536 /* Action.ReduceFlag */) this.reduce(action);else this.shift(action, next, nextStart, nextEnd);
     }
     // Add a prebuilt (reused) node into the buffer.
-    /// @internal
+    /**
+    @internal
+    */
     useNode(value, next) {
       let index = this.p.reused.length - 1;
       if (index < 0 || this.p.reused[index] != value) {
@@ -4013,7 +4336,9 @@
     // Split the stack. Due to the buffer sharing and the fact
     // that `this.stack` tends to stay quite shallow, this isn't very
     // expensive.
-    /// @internal
+    /**
+    @internal
+    */
     split() {
       let parent = this;
       let off = parent.buffer.length;
@@ -4029,7 +4354,9 @@
       return new Stack(this.p, this.stack.slice(), this.state, this.reducePos, this.pos, this.score, buffer, base, this.curContext, this.lookAhead, parent);
     }
     // Try to recover from an error by 'deleting' (ignoring) one token.
-    /// @internal
+    /**
+    @internal
+    */
     recoverByDelete(next, nextEnd) {
       let isNode = next <= this.p.parser.maxNode;
       if (isNode) this.storeNode(next, this.pos, nextEnd, 4);
@@ -4037,10 +4364,12 @@
       this.pos = this.reducePos = nextEnd;
       this.score -= 190 /* Recover.Delete */;
     }
-    /// Check if the given term would be able to be shifted (optionally
-    /// after some reductions) on this stack. This can be useful for
-    /// external tokenizers that want to make sure they only provide a
-    /// given token when it applies.
+    /**
+    Check if the given term would be able to be shifted (optionally
+    after some reductions) on this stack. This can be useful for
+    external tokenizers that want to make sure they only provide a
+    given token when it applies.
+    */
     canShift(term) {
       for (let sim = new SimulatedStack(this);;) {
         let action = this.p.parser.stateSlot(sim.state, 4 /* ParseState.DefaultReduce */) || this.p.parser.hasAction(sim.state, term);
@@ -4051,7 +4380,9 @@
     }
     // Apply up to Recover.MaxNext recovery actions that conceptually
     // inserts some missing token or rule.
-    /// @internal
+    /**
+    @internal
+    */
     recoverByInsert(next) {
       if (this.stack.length >= 300 /* Recover.MaxInsertStackDepth */) return [];
       let nextStates = this.p.parser.nextStates(this.state);
@@ -4074,6 +4405,7 @@
         stack.pushState(s, this.pos);
         stack.storeNode(0 /* Term.Err */, stack.pos, stack.pos, 4, true);
         stack.shiftContext(nextStates[i], this.pos);
+        stack.reducePos = this.pos;
         stack.score -= 200 /* Recover.Insert */;
         result.push(stack);
       }
@@ -4081,7 +4413,9 @@
     }
     // Force a reduce, if possible. Return false if that can't
     // be done.
-    /// @internal
+    /**
+    @internal
+    */
     forceReduce() {
       let {
         parser
@@ -4105,9 +4439,11 @@
       this.reduce(reduce);
       return true;
     }
-    /// Try to scan through the automaton to find some kind of reduction
-    /// that can be applied. Used when the regular ForcedReduce field
-    /// isn't a valid action. @internal
+    /**
+    Try to scan through the automaton to find some kind of reduction
+    that can be applied. Used when the regular ForcedReduce field
+    isn't a valid action. @internal
+    */
     findForcedReduction() {
       let {
           parser
@@ -4132,7 +4468,9 @@
       };
       return explore(this.state, 0);
     }
-    /// @internal
+    /**
+    @internal
+    */
     forceAll() {
       while (!this.p.parser.stateFlag(this.state, 2 /* StateFlag.Accepting */)) {
         if (!this.forceReduce()) {
@@ -4142,9 +4480,11 @@
       }
       return this;
     }
-    /// Check whether this state has no further actions (assumed to be a direct descendant of the
-    /// top state, since any other states must be able to continue
-    /// somehow). @internal
+    /**
+    Check whether this state has no further actions (assumed to be a direct descendant of the
+    top state, since any other states must be able to continue
+    somehow). @internal
+    */
     get deadEnd() {
       if (this.stack.length != 3) return false;
       let {
@@ -4152,25 +4492,34 @@
       } = this.p;
       return parser.data[parser.stateSlot(this.state, 1 /* ParseState.Actions */)] == 65535 /* Seq.End */ && !parser.stateSlot(this.state, 4 /* ParseState.DefaultReduce */);
     }
-    /// Restart the stack (put it back in its start state). Only safe
-    /// when this.stack.length == 3 (state is directly below the top
-    /// state). @internal
+    /**
+    Restart the stack (put it back in its start state). Only safe
+    when this.stack.length == 3 (state is directly below the top
+    state). @internal
+    */
     restart() {
+      this.storeNode(0 /* Term.Err */, this.pos, this.pos, 4, true);
       this.state = this.stack[0];
       this.stack.length = 0;
     }
-    /// @internal
+    /**
+    @internal
+    */
     sameState(other) {
       if (this.state != other.state || this.stack.length != other.stack.length) return false;
       for (let i = 0; i < this.stack.length; i += 3) if (this.stack[i] != other.stack[i]) return false;
       return true;
     }
-    /// Get the parser used by this stack.
+    /**
+    Get the parser used by this stack.
+    */
     get parser() {
       return this.p.parser;
     }
-    /// Test whether a given dialect (by numeric ID, as exported from
-    /// the terms file) is enabled.
+    /**
+    Test whether a given dialect (by numeric ID, as exported from
+    the terms file) is enabled.
+    */
     dialectEnabled(dialectID) {
       return this.p.parser.dialect.flags[dialectID];
     }
@@ -4180,12 +4529,16 @@
     reduceContext(term, start) {
       if (this.curContext) this.updateContext(this.curContext.tracker.reduce(this.curContext.context, term, this, this.p.stream.reset(start)));
     }
-    /// @internal
+    /**
+    @internal
+    */
     emitContext() {
       let last = this.buffer.length - 1;
       if (last < 0 || this.buffer[last] != -3) this.buffer.push(this.curContext.hash, this.pos, this.pos, -3);
     }
-    /// @internal
+    /**
+    @internal
+    */
     emitLookAhead() {
       let last = this.buffer.length - 1;
       if (last < 0 || this.buffer[last] != -4) this.buffer.push(this.lookAhead, this.pos, this.pos, -4);
@@ -4197,14 +4550,18 @@
         this.curContext = newCx;
       }
     }
-    /// @internal
+    /**
+    @internal
+    */
     setLookAhead(lookAhead) {
       if (lookAhead > this.lookAhead) {
         this.emitLookAhead();
         this.lookAhead = lookAhead;
       }
     }
-    /// @internal
+    /**
+    @internal
+    */
     close() {
       if (this.curContext && this.curContext.tracker.strict) this.emitContext();
       if (this.lookAhead > 0) this.emitLookAhead();
@@ -4217,16 +4574,6 @@
       this.hash = tracker.strict ? tracker.hash(context) : 0;
     }
   }
-  var Recover;
-  (function (Recover) {
-    Recover[Recover["Insert"] = 200] = "Insert";
-    Recover[Recover["Delete"] = 190] = "Delete";
-    Recover[Recover["Reduce"] = 100] = "Reduce";
-    Recover[Recover["MaxNext"] = 4] = "MaxNext";
-    Recover[Recover["MaxInsertStackDepth"] = 300] = "MaxInsertStackDepth";
-    Recover[Recover["DampenInsertStackDepth"] = 120] = "DampenInsertStackDepth";
-    Recover[Recover["MinBigReduction"] = 2000] = "MinBigReduction";
-  })(Recover || (Recover = {}));
   // Used to cheaply run some reductions to scan ahead without mutating
   // an entire stack
   class SimulatedStack {
@@ -4335,30 +4682,48 @@
     }
   }
   const nullToken = new CachedToken();
-  /// [Tokenizers](#lr.ExternalTokenizer) interact with the input
-  /// through this interface. It presents the input as a stream of
-  /// characters, tracking lookahead and hiding the complexity of
-  /// [ranges](#common.Parser.parse^ranges) from tokenizer code.
+  /**
+  [Tokenizers](#lr.ExternalTokenizer) interact with the input
+  through this interface. It presents the input as a stream of
+  characters, tracking lookahead and hiding the complexity of
+  [ranges](#common.Parser.parse^ranges) from tokenizer code.
+  */
   class InputStream {
-    /// @internal
+    /**
+    @internal
+    */
     constructor(
-    /// @internal
+    /**
+    @internal
+    */
     input,
-    /// @internal
+    /**
+    @internal
+    */
     ranges) {
       this.input = input;
       this.ranges = ranges;
-      /// @internal
+      /**
+      @internal
+      */
       this.chunk = "";
-      /// @internal
+      /**
+      @internal
+      */
       this.chunkOff = 0;
-      /// Backup chunk
+      /**
+      Backup chunk
+      */
       this.chunk2 = "";
       this.chunk2Pos = 0;
-      /// The character code of the next code unit in the input, or -1
-      /// when the stream is at the end of the input.
+      /**
+      The character code of the next code unit in the input, or -1
+      when the stream is at the end of the input.
+      */
       this.next = -1;
-      /// @internal
+      /**
+      @internal
+      */
       this.token = nullToken;
       this.rangeIndex = 0;
       this.pos = this.chunkPos = ranges[0].from;
@@ -4366,7 +4731,9 @@
       this.end = ranges[ranges.length - 1].to;
       this.readNext();
     }
-    /// @internal
+    /**
+    @internal
+    */
     resolveOffset(offset, assoc) {
       let range = this.range,
         index = this.rangeIndex;
@@ -4385,21 +4752,25 @@
       }
       return pos;
     }
-    /// @internal
+    /**
+    @internal
+    */
     clipPos(pos) {
       if (pos >= this.range.from && pos < this.range.to) return pos;
       for (let range of this.ranges) if (range.to > pos) return Math.max(pos, range.from);
       return this.end;
     }
-    /// Look at a code unit near the stream position. `.peek(0)` equals
-    /// `.next`, `.peek(-1)` gives you the previous character, and so
-    /// on.
-    ///
-    /// Note that looking around during tokenizing creates dependencies
-    /// on potentially far-away content, which may reduce the
-    /// effectiveness incremental parsing—when looking forward—or even
-    /// cause invalid reparses when looking backward more than 25 code
-    /// units, since the library does not track lookbehind.
+    /**
+    Look at a code unit near the stream position. `.peek(0)` equals
+    `.next`, `.peek(-1)` gives you the previous character, and so
+    on.
+    
+    Note that looking around during tokenizing creates dependencies
+    on potentially far-away content, which may reduce the
+    effectiveness incremental parsing—when looking forward—or even
+    cause invalid reparses when looking backward more than 25 code
+    units, since the library does not track lookbehind.
+    */
     peek(offset) {
       let idx = this.chunkOff + offset,
         pos,
@@ -4425,9 +4796,11 @@
       if (pos >= this.token.lookAhead) this.token.lookAhead = pos + 1;
       return result;
     }
-    /// Accept a token. By default, the end of the token is set to the
-    /// current stream position, but you can pass an offset (relative to
-    /// the stream position) to change that.
+    /**
+    Accept a token. By default, the end of the token is set to the
+    current stream position, but you can pass an offset (relative to
+    the stream position) to change that.
+    */
     acceptToken(token, endOffset = 0) {
       let end = endOffset ? this.resolveOffset(endOffset, -1) : this.pos;
       if (end == null || end < this.token.start) throw new RangeError("Token end out of bounds");
@@ -4462,8 +4835,10 @@
       }
       return this.next = this.chunk.charCodeAt(this.chunkOff);
     }
-    /// Move the stream forward N (defaults to 1) code units. Returns
-    /// the new value of [`next`](#lr.InputStream.next).
+    /**
+    Move the stream forward N (defaults to 1) code units. Returns
+    the new value of [`next`](#lr.InputStream.next).
+    */
     advance(n = 1) {
       this.chunkOff += n;
       while (this.pos + n >= this.range.to) {
@@ -4482,7 +4857,9 @@
       this.chunk = "";
       return this.next = -1;
     }
-    /// @internal
+    /**
+    @internal
+    */
     reset(pos, token) {
       if (token) {
         this.token = token;
@@ -4510,7 +4887,9 @@
       }
       return this;
     }
-    /// @internal
+    /**
+    @internal
+    */
     read(from, to) {
       if (from >= this.chunkPos && to <= this.chunkPos + this.chunk.length) return this.chunk.slice(from - this.chunkPos, to - this.chunkPos);
       if (from >= this.chunk2Pos && to <= this.chunk2Pos + this.chunk2.length) return this.chunk2.slice(from - this.chunk2Pos, to - this.chunk2Pos);
@@ -4523,7 +4902,9 @@
       return result;
     }
   }
-  /// @internal
+  /**
+  @internal
+  */
   class TokenGroup {
     constructor(data, id) {
       this.data = data;
@@ -4538,16 +4919,22 @@
   }
   TokenGroup.prototype.contextual = TokenGroup.prototype.fallback = TokenGroup.prototype.extend = false;
   TokenGroup.prototype.fallback = TokenGroup.prototype.extend = false;
-  /// `@external tokens` declarations in the grammar should resolve to
-  /// an instance of this class.
+  /**
+  `@external tokens` declarations in the grammar should resolve to
+  an instance of this class.
+  */
   class ExternalTokenizer {
-    /// Create a tokenizer. The first argument is the function that,
-    /// given an input stream, scans for the types of tokens it
-    /// recognizes at the stream's position, and calls
-    /// [`acceptToken`](#lr.InputStream.acceptToken) when it finds
-    /// one.
+    /**
+    Create a tokenizer. The first argument is the function that,
+    given an input stream, scans for the types of tokens it
+    recognizes at the stream's position, and calls
+    [`acceptToken`](#lr.InputStream.acceptToken) when it finds
+    one.
+    */
     constructor(
-    /// @internal
+    /**
+    @internal
+    */
     token, options = {}) {
       this.token = token;
       this.contextual = !!options.contextual;
@@ -4629,10 +5016,6 @@
   // Environment variable used to control console output
   const verbose = typeof process != "undefined" && process.env && /\bparse\b/.test(process.env.LOG);
   let stackIDs = null;
-  var Safety;
-  (function (Safety) {
-    Safety[Safety["Margin"] = 25] = "Margin";
-  })(Safety || (Safety = {}));
   function cutAt(tree, pos, side) {
     let cursor = tree.cursor(IterMode.IncludeAnonymous);
     cursor.moveTo(pos);
@@ -4841,25 +5224,6 @@
       return index;
     }
   }
-  var Rec;
-  (function (Rec) {
-    Rec[Rec["Distance"] = 5] = "Distance";
-    Rec[Rec["MaxRemainingPerStep"] = 3] = "MaxRemainingPerStep";
-    // When two stacks have been running independently long enough to
-    // add this many elements to their buffers, prune one.
-    Rec[Rec["MinBufferLengthPrune"] = 500] = "MinBufferLengthPrune";
-    Rec[Rec["ForceReduceLimit"] = 10] = "ForceReduceLimit";
-    // Once a stack reaches this depth (in .stack.length) force-reduce
-    // it back to CutTo to avoid creating trees that overflow the stack
-    // on recursive traversal.
-    Rec[Rec["CutDepth"] = 15000] = "CutDepth";
-    Rec[Rec["CutTo"] = 9000] = "CutTo";
-    Rec[Rec["MaxLeftAssociativeReductionCount"] = 300] = "MaxLeftAssociativeReductionCount";
-    // The maximum number of non-recovering stacks to explore (to avoid
-    // getting bogged down with exponentially multiplying stacks in
-    // ambiguous content)
-    Rec[Rec["MaxStackCount"] = 12] = "MaxStackCount";
-  })(Rec || (Rec = {}));
   class Parse {
     constructor(parser, input, fragments, ranges) {
       this.parser = parser;
@@ -4934,7 +5298,10 @@
       }
       if (!newStacks.length) {
         let finished = stopped && findFinished(stopped);
-        if (finished) return this.stackToTree(finished);
+        if (finished) {
+          if (verbose) console.log("Finish with " + this.stackID(finished));
+          return this.stackToTree(finished);
+        }
         if (this.parser.strict) {
           if (verbose && stopped) console.log("Stuck with token " + (this.tokens.mainToken ? this.parser.getName(this.tokens.mainToken.value) : "none"));
           throw new SyntaxError("No parse at " + pos);
@@ -4944,7 +5311,10 @@
 
       if (this.recovering && stopped) {
         let finished = this.stoppedAt != null && stopped[0].pos > this.stoppedAt ? stopped[0] : this.runRecovery(stopped, stoppedTokens, newStacks);
-        if (finished) return this.stackToTree(finished.forceAll());
+        if (finished) {
+          if (verbose) console.log("Force-finish " + this.stackID(finished));
+          return this.stackToTree(finished.forceAll());
+        }
       }
       if (this.recovering) {
         let maxRemaining = this.recovering == 1 ? 1 : this.recovering * 3 /* Rec.MaxRemainingPerStep */;
@@ -5014,8 +5384,8 @@
         if (verbose) console.log(base + this.stackID(stack) + ` (via always-reduce ${parser.getName(defaultReduce & 65535 /* Action.ValueMask */)})`);
         return true;
       }
-      if (stack.stack.length >= 15000 /* Rec.CutDepth */) {
-        while (stack.stack.length > 9000 /* Rec.CutTo */ && stack.forceReduce()) {}
+      if (stack.stack.length >= 9000 /* Rec.CutDepth */) {
+        while (stack.stack.length > 6000 /* Rec.CutTo */ && stack.forceReduce()) {}
       }
       let actions = this.tokens.getActions(stack);
       for (let i = 0; i < actions.length;) {
@@ -5024,7 +5394,8 @@
           end = actions[i++];
         let last = i == actions.length || !split;
         let localStack = last ? stack : stack.split();
-        localStack.apply(action, term, end);
+        let main = this.tokens.mainToken;
+        localStack.apply(action, term, main ? main.start : localStack.pos, end);
         if (verbose) console.log(base + this.stackID(localStack) + ` (via ${(action & 65536 /* Action.ReduceFlag */) == 0 ? "shift" : `reduce of ${parser.getName(action & 65535 /* Action.ValueMask */)}`} for ${parser.getName(term)} @ ${start}${localStack == stack ? "" : ", split"})`);
         if (last) return true;else if (localStack.pos > start) stacks.push(localStack);else split.push(localStack);
       }
@@ -5127,18 +5498,22 @@
     }
   }
   const id = x => x;
-  /// Context trackers are used to track stateful context (such as
-  /// indentation in the Python grammar, or parent elements in the XML
-  /// grammar) needed by external tokenizers. You declare them in a
-  /// grammar file as `@context exportName from "module"`.
-  ///
-  /// Context values should be immutable, and can be updated (replaced)
-  /// on shift or reduce actions.
-  ///
-  /// The export used in a `@context` declaration should be of this
-  /// type.
+  /**
+  Context trackers are used to track stateful context (such as
+  indentation in the Python grammar, or parent elements in the XML
+  grammar) needed by external tokenizers. You declare them in a
+  grammar file as `@context exportName from "module"`.
+
+  Context values should be immutable, and can be updated (replaced)
+  on shift or reduce actions.
+
+  The export used in a `@context` declaration should be of this
+  type.
+  */
   class ContextTracker {
-    /// Define a context tracker.
+    /**
+    Define a context tracker.
+    */
     constructor(spec) {
       this.start = spec.start;
       this.shift = spec.shift || id;
@@ -5148,14 +5523,20 @@
       this.strict = spec.strict !== false;
     }
   }
-  /// Holds the parse tables for a given grammar, as generated by
-  /// `lezer-generator`, and provides [methods](#common.Parser) to parse
-  /// content with.
+  /**
+  Holds the parse tables for a given grammar, as generated by
+  `lezer-generator`, and provides [methods](#common.Parser) to parse
+  content with.
+  */
   class LRParser extends Parser {
-    /// @internal
+    /**
+    @internal
+    */
     constructor(spec) {
       super();
-      /// @internal
+      /**
+      @internal
+      */
       this.wrappers = [];
       if (spec.version != 14 /* File.Version */) throw new RangeError(`Parser version (${spec.version}) doesn't match runtime version (${14 /* File.Version */})`);
       let nodeNames = spec.nodeNames.split(" ");
@@ -5217,7 +5598,9 @@
       for (let w of this.wrappers) parse = w(parse, input, fragments, ranges);
       return parse;
     }
-    /// Get a goto table entry @internal
+    /**
+    Get a goto table entry @internal
+    */
     getGoto(state, term, loose = false) {
       let table = this.goto;
       if (term >= table[0]) return -1;
@@ -5230,7 +5613,9 @@
         if (last) return -1;
       }
     }
-    /// Check if this state has an action for a given terminal @internal
+    /**
+    Check if this state has an action for a given terminal @internal
+    */
     hasAction(state, terminal) {
       let data = this.data;
       for (let set = 0; set < 2; set++) {
@@ -5243,19 +5628,27 @@
       }
       return 0;
     }
-    /// @internal
+    /**
+    @internal
+    */
     stateSlot(state, slot) {
       return this.states[state * 6 /* ParseState.Size */ + slot];
     }
-    /// @internal
+    /**
+    @internal
+    */
     stateFlag(state, flag) {
       return (this.stateSlot(state, 0 /* ParseState.Flags */) & flag) > 0;
     }
-    /// @internal
+    /**
+    @internal
+    */
     validAction(state, action) {
       return !!this.allActions(state, a => a == action ? true : null);
     }
-    /// @internal
+    /**
+    @internal
+    */
     allActions(state, action) {
       let deflt = this.stateSlot(state, 4 /* ParseState.DefaultReduce */);
       let result = deflt ? action(deflt) : undefined;
@@ -5267,8 +5660,10 @@
       }
       return result;
     }
-    /// Get the states that can follow this one through shift actions or
-    /// goto jumps. @internal
+    /**
+    Get the states that can follow this one through shift actions or
+    goto jumps. @internal
+    */
     nextStates(state) {
       let result = [];
       for (let i = this.stateSlot(state, 1 /* ParseState.Actions */);; i += 3) {
@@ -5282,9 +5677,11 @@
       }
       return result;
     }
-    /// Configure the parser. Returns a new parser instance that has the
-    /// given settings modified. Settings not provided in `config` are
-    /// kept from the original parser.
+    /**
+    Configure the parser. Returns a new parser instance that has the
+    given settings modified. Settings not provided in `config` are
+    kept from the original parser.
+    */
     configure(config) {
       // Hideous reflection-based kludge to make it easy to create a
       // slightly modified copy of a parser.
@@ -5318,33 +5715,45 @@
       if (config.bufferLength != null) copy.bufferLength = config.bufferLength;
       return copy;
     }
-    /// Tells you whether any [parse wrappers](#lr.ParserConfig.wrap)
-    /// are registered for this parser.
+    /**
+    Tells you whether any [parse wrappers](#lr.ParserConfig.wrap)
+    are registered for this parser.
+    */
     hasWrappers() {
       return this.wrappers.length > 0;
     }
-    /// Returns the name associated with a given term. This will only
-    /// work for all terms when the parser was generated with the
-    /// `--names` option. By default, only the names of tagged terms are
-    /// stored.
+    /**
+    Returns the name associated with a given term. This will only
+    work for all terms when the parser was generated with the
+    `--names` option. By default, only the names of tagged terms are
+    stored.
+    */
     getName(term) {
       return this.termNames ? this.termNames[term] : String(term <= this.maxNode && this.nodeSet.types[term].name || term);
     }
-    /// The eof term id is always allocated directly after the node
-    /// types. @internal
+    /**
+    The eof term id is always allocated directly after the node
+    types. @internal
+    */
     get eofTerm() {
       return this.maxNode + 1;
     }
-    /// The type of top node produced by the parser.
+    /**
+    The type of top node produced by the parser.
+    */
     get topNode() {
       return this.nodeSet.types[this.top[1]];
     }
-    /// @internal
+    /**
+    @internal
+    */
     dynamicPrecedence(term) {
       let prec = this.dynamicPrecedences;
       return prec == null ? 0 : prec[term] || 0;
     }
-    /// @internal
+    /**
+    @internal
+    */
     parseDialect(dialect) {
       let values = Object.keys(this.dialects),
         flags = values.map(() => false);
@@ -5358,8 +5767,10 @@
       }
       return new Dialect(dialect, flags, disabled);
     }
-    /// Used by the output of the parser generator. Not available to
-    /// user code. @hide
+    /**
+    Used by the output of the parser generator. Not available to
+    user code. @hide
+    */
     static deserialize(spec) {
       return new LRParser(spec);
     }
@@ -6294,60 +6705,60 @@
   }]);
 
   // This file was generated by lezer-generator. You probably shouldn't edit it.
-  const propertyIdentifier$1 = 120,
-    identifier$1 = 121,
-    nameIdentifier$1 = 122,
-    insertSemi$1 = 123,
-    expression0$1 = 127,
-    ForExpression$1 = 4,
-    forExpressionStart$1 = 130,
-    ForInExpression$1 = 7,
-    Name$5 = 8,
-    Identifier$1 = 9,
-    AdditionalIdentifier$1 = 10,
-    forExpressionBodyStart$1 = 138,
-    IfExpression$1 = 19,
-    ifExpressionStart$1 = 139,
-    QuantifiedExpression$1 = 23,
-    quantifiedExpressionStart$1 = 140,
-    QuantifiedInExpression$1 = 27,
-    PositiveUnaryTest$1 = 37,
-    ArithmeticExpression$1 = 41,
-    arithmeticPlusStart$1 = 144,
-    arithmeticTimesStart$1 = 145,
-    arithmeticExpStart$1 = 146,
-    arithmeticUnaryStart$1 = 147,
-    VariableName$2 = 47,
-    PathExpression$1 = 67,
-    pathExpressionStart$1 = 152,
-    FilterExpression$1 = 69,
-    filterExpressionStart$1 = 153,
-    FunctionInvocation$1 = 71,
-    functionInvocationStart$1 = 154,
-    ParameterName$1 = 75,
-    nil$1 = 159,
-    NumericLiteral$1 = 78,
-    StringLiteral$1 = 79,
-    BooleanLiteral$1 = 80,
-    List$2 = 88,
-    listStart$1 = 170,
-    FunctionDefinition$1 = 89,
-    functionDefinitionStart$1 = 172,
-    Context$1 = 96,
-    contextStart$1 = 174,
-    ContextEntry$1 = 97,
-    PropertyName$1 = 99,
-    PropertyIdentifier$1 = 100;
+  const propertyIdentifier = 120,
+    identifier = 121,
+    nameIdentifier = 122,
+    insertSemi = 123,
+    expression0 = 127,
+    ForExpression = 4,
+    forExpressionStart = 130,
+    ForInExpression = 7,
+    Name$4 = 8,
+    Identifier = 9,
+    AdditionalIdentifier = 10,
+    forExpressionBodyStart = 138,
+    IfExpression = 19,
+    ifExpressionStart = 139,
+    QuantifiedExpression = 23,
+    quantifiedExpressionStart = 140,
+    QuantifiedInExpression = 27,
+    PositiveUnaryTest = 37,
+    ArithmeticExpression = 41,
+    arithmeticPlusStart = 144,
+    arithmeticTimesStart = 145,
+    arithmeticExpStart = 146,
+    arithmeticUnaryStart = 147,
+    VariableName$1 = 47,
+    PathExpression = 67,
+    pathExpressionStart = 152,
+    FilterExpression = 69,
+    filterExpressionStart = 153,
+    FunctionInvocation = 71,
+    functionInvocationStart = 154,
+    ParameterName = 75,
+    nil = 159,
+    NumericLiteral = 78,
+    StringLiteral = 79,
+    BooleanLiteral = 80,
+    List$1 = 88,
+    listStart = 170,
+    FunctionDefinition = 89,
+    functionDefinitionStart = 172,
+    Context = 96,
+    contextStart = 174,
+    ContextEntry = 97,
+    PropertyName = 99,
+    PropertyIdentifier = 100;
 
   /* global console,process */
 
-  const LOG_PARSE$1 = typeof process != 'undefined' && process.env && /\bfparse(:dbg)?\b/.test(process.env.LOG);
-  const LOG_PARSE_DEBUG$1 = typeof process != 'undefined' && process.env && /\bfparse:dbg\b/.test(process.env.LOG);
-  const LOG_VARS$1 = typeof process != 'undefined' && process.env && /\bcontext\b/.test(process.env.LOG);
-  const spaceChars$1 = [9, 11, 12, 32, 133, 160, 5760, 8192, 8193, 8194, 8195, 8196, 8197, 8198, 8199, 8200, 8201, 8202, 8232, 8233, 8239, 8287, 12288];
-  const newlineChars$1 = chars$1('\n\r');
+  const LOG_PARSE = typeof process != 'undefined' && process.env && /\bfparse(:dbg)?\b/.test(process.env.LOG);
+  const LOG_PARSE_DEBUG = typeof process != 'undefined' && process.env && /\bfparse:dbg\b/.test(process.env.LOG);
+  const LOG_VARS = typeof process != 'undefined' && process.env && /\bcontext\b/.test(process.env.LOG);
+  const spaceChars = [9, 11, 12, 32, 133, 160, 5760, 8192, 8193, 8194, 8195, 8196, 8197, 8198, 8199, 8200, 8201, 8202, 8232, 8233, 8239, 8287, 12288];
+  const newlineChars = chars('\n\r');
   const asterix = '*'.charCodeAt(0);
-  const additionalNameChars$1 = chars$1("'./-+*^");
+  const additionalNameChars = chars("'./-+*^");
 
   /**
    * @typedef { VariableContext | any } ContextValue
@@ -6357,7 +6768,7 @@
    * @param { string } str
    * @return { number[] }
    */
-  function chars$1(str) {
+  function chars(str) {
     return Array.from(str).map(s => s.charCodeAt(0));
   }
 
@@ -6365,27 +6776,27 @@
    * @param { number } ch
    * @return { boolean }
    */
-  function isStartChar$1(ch) {
+  function isStartChar(ch) {
     return ch === 63 // ?
     || ch === 95 // _
     || ch >= 65 && ch <= 90 // A-Z
     || ch >= 97 && ch <= 122 // a-z
-    || ch >= 161 && !isPartChar$1(ch) && !isSpace$1(ch);
+    || ch >= 161 && !isPartChar(ch) && !isSpace(ch);
   }
 
   /**
    * @param { number } ch
    * @return { boolean }
    */
-  function isAdditional$1(ch) {
-    return additionalNameChars$1.includes(ch);
+  function isAdditional(ch) {
+    return additionalNameChars.includes(ch);
   }
 
   /**
    * @param { number } ch
    * @return { boolean }
    */
-  function isPartChar$1(ch) {
+  function isPartChar(ch) {
     return ch >= 48 && ch <= 57 // 0-9
     || ch === 0xB7 || ch >= 0x0300 && ch <= 0x036F || ch >= 0x203F && ch <= 0x2040;
   }
@@ -6394,12 +6805,12 @@
    * @param { number } ch
    * @return { boolean }
    */
-  function isSpace$1(ch) {
-    return spaceChars$1.includes(ch);
+  function isSpace(ch) {
+    return spaceChars.includes(ch);
   }
 
   // eslint-disable-next-line
-  function indent$1(str, spaces) {
+  function indent(str, spaces) {
     return spaces.concat(str.split(/\n/g).join('\n' + spaces));
   }
 
@@ -6409,7 +6820,7 @@
    *
    * @return { { token: string, offset: number } | null }
    */
-  function parseAdditionalSymbol$1(input, offset = 0) {
+  function parseAdditionalSymbol(input, offset = 0) {
     const next = input.peek(offset);
     if (next === asterix && input.peek(offset + 1) === asterix) {
       return {
@@ -6417,7 +6828,7 @@
         token: '**'
       };
     }
-    if (isAdditional$1(next)) {
+    if (isAdditional(next)) {
       return {
         offset: 1,
         token: String.fromCharCode(next)
@@ -6433,10 +6844,10 @@
    *
    * @return { { token: string, offset: number } | null }
    */
-  function parseIdentifier$1(input, offset = 0, namePart = false) {
+  function parseIdentifier(input, offset = 0, namePart = false) {
     for (let inside = false, chars = [], i = 0;; i++) {
       const next = input.peek(offset + i);
-      if (isStartChar$1(next) || (inside || namePart) && isPartChar$1(next)) {
+      if (isStartChar(next) || (inside || namePart) && isPartChar(next)) {
         if (!inside) {
           inside = true;
         }
@@ -6459,10 +6870,10 @@
    *
    * @return { { token: string, offset: number } | null }
    */
-  function parseSpaces$1(input, offset) {
+  function parseSpaces(input, offset) {
     for (let inside = false, i = 0;; i++) {
       let next = input.peek(offset + i);
-      if (isSpace$1(next)) {
+      if (isSpace(next)) {
         if (!inside) {
           inside = true;
         }
@@ -6486,13 +6897,13 @@
    *
    * @return { { token: string, offset: number, term: number } | null }
    */
-  function parseName$1(input, variables) {
+  function parseName(input, variables) {
     const contextKeys = variables.contextKeys();
     const start = variables.tokens;
     for (let i = 0, tokens = [], nextMatch = null;;) {
       const namePart = start.length + tokens.length > 0;
       const maybeSpace = tokens.length > 0;
-      const match = parseIdentifier$1(input, i, namePart) || namePart && parseAdditionalSymbol$1(input, i) || maybeSpace && parseSpaces$1(input, i);
+      const match = parseIdentifier(input, i, namePart) || namePart && parseAdditionalSymbol(input, i) || maybeSpace && parseSpaces(input, i);
 
       // match is required
       if (!match) {
@@ -6513,10 +6924,10 @@
         nextMatch = {
           token,
           offset: token.length,
-          term: nameIdentifier$1
+          term: nameIdentifier
         };
       }
-      if (dateTimeIdentifiers$1.some(el => el === name)) {
+      if (dateTimeIdentifiers.some(el => el === name)) {
         const token = tokens[0];
 
         // parse date time identifiers as normal
@@ -6526,91 +6937,91 @@
         nextMatch = {
           token,
           offset: token.length,
-          term: identifier$1
+          term: identifier
         };
       }
-      if (!contextKeys.some(el => el.startsWith(name)) && !dateTimeIdentifiers$1.some(el => el.startsWith(name))) {
+      if (!contextKeys.some(el => el.startsWith(name)) && !dateTimeIdentifiers.some(el => el.startsWith(name))) {
         return nextMatch;
       }
     }
   }
-  const identifiersMap$1 = {
-    [identifier$1]: 'identifier',
-    [nameIdentifier$1]: 'nameIdentifier'
+  const identifiersMap = {
+    [identifier]: 'identifier',
+    [nameIdentifier]: 'nameIdentifier'
   };
-  const identifiers$1 = new ExternalTokenizer((input, stack) => {
-    LOG_PARSE_DEBUG$1 && console.log('%s: T <identifier | nameIdentifier>', input.pos);
-    const nameMatch = parseName$1(input, stack.context);
+  const identifiers = new ExternalTokenizer((input, stack) => {
+    LOG_PARSE_DEBUG && console.log('%s: T <identifier | nameIdentifier>', input.pos);
+    const nameMatch = parseName(input, stack.context);
     const start = stack.context.tokens;
-    const match = nameMatch || parseIdentifier$1(input, 0, start.length > 0);
+    const match = nameMatch || parseIdentifier(input, 0, start.length > 0);
     if (match) {
       input.advance(match.offset);
-      input.acceptToken(nameMatch ? nameMatch.term : identifier$1);
-      LOG_PARSE$1 && console.log('%s: MATCH <%s> <%s>', input.pos, nameMatch ? identifiersMap$1[nameMatch.term] : 'identifier', match.token);
+      input.acceptToken(nameMatch ? nameMatch.term : identifier);
+      LOG_PARSE && console.log('%s: MATCH <%s> <%s>', input.pos, nameMatch ? identifiersMap[nameMatch.term] : 'identifier', match.token);
     }
   }, {
     contextual: true
   });
-  const propertyIdentifiers$1 = new ExternalTokenizer((input, stack) => {
-    LOG_PARSE_DEBUG$1 && console.log('%s: T <propertyIdentifier>', input.pos);
+  const propertyIdentifiers = new ExternalTokenizer((input, stack) => {
+    LOG_PARSE_DEBUG && console.log('%s: T <propertyIdentifier>', input.pos);
     const start = stack.context.tokens;
-    const match = parseIdentifier$1(input, 0, start.length > 0);
+    const match = parseIdentifier(input, 0, start.length > 0);
     if (match) {
       input.advance(match.offset);
-      input.acceptToken(propertyIdentifier$1);
-      LOG_PARSE$1 && console.log('%s: MATCH <propertyIdentifier> <%s>', input.pos, match.token);
+      input.acceptToken(propertyIdentifier);
+      LOG_PARSE && console.log('%s: MATCH <propertyIdentifier> <%s>', input.pos, match.token);
     }
   });
-  const insertSemicolon$1 = new ExternalTokenizer((input, stack) => {
-    LOG_PARSE_DEBUG$1 && console.log('%s: T <insertSemi>', input.pos);
+  const insertSemicolon = new ExternalTokenizer((input, stack) => {
+    LOG_PARSE_DEBUG && console.log('%s: T <insertSemi>', input.pos);
     let offset;
     let insert = false;
     for (offset = 0;; offset++) {
       const char = input.peek(offset);
-      if (spaceChars$1.includes(char)) {
+      if (spaceChars.includes(char)) {
         continue;
       }
-      if (newlineChars$1.includes(char)) {
+      if (newlineChars.includes(char)) {
         insert = true;
       }
       break;
     }
     if (insert) {
-      const identifier = parseIdentifier$1(input, offset + 1);
-      const spaces = parseSpaces$1(input, offset + 1);
+      const identifier = parseIdentifier(input, offset + 1);
+      const spaces = parseSpaces(input, offset + 1);
       if (spaces || identifier && /^(then|else|return|satisfies)$/.test(identifier.token)) {
         return;
       }
-      LOG_PARSE$1 && console.log('%s: MATCH <insertSemi>', input.pos);
-      input.acceptToken(insertSemi$1);
+      LOG_PARSE && console.log('%s: MATCH <insertSemi>', input.pos);
+      input.acceptToken(insertSemi);
     }
   });
-  const prefixedContextStarts$1 = {
-    [functionInvocationStart$1]: 'FunctionInvocation',
-    [filterExpressionStart$1]: 'FilterExpression',
-    [pathExpressionStart$1]: 'PathExpression'
+  const prefixedContextStarts = {
+    [functionInvocationStart]: 'FunctionInvocation',
+    [filterExpressionStart]: 'FilterExpression',
+    [pathExpressionStart]: 'PathExpression'
   };
-  const contextStarts$1 = {
-    [contextStart$1]: 'Context',
-    [functionDefinitionStart$1]: 'FunctionDefinition',
-    [forExpressionStart$1]: 'ForExpression',
-    [listStart$1]: 'List',
-    [ifExpressionStart$1]: 'IfExpression',
-    [quantifiedExpressionStart$1]: 'QuantifiedExpression'
+  const contextStarts = {
+    [contextStart]: 'Context',
+    [functionDefinitionStart]: 'FunctionDefinition',
+    [forExpressionStart]: 'ForExpression',
+    [listStart]: 'List',
+    [ifExpressionStart]: 'IfExpression',
+    [quantifiedExpressionStart]: 'QuantifiedExpression'
   };
-  const contextEnds$1 = {
-    [Context$1]: 'Context',
-    [FunctionDefinition$1]: 'FunctionDefinition',
-    [ForExpression$1]: 'ForExpression',
-    [List$2]: 'List',
-    [IfExpression$1]: 'IfExpression',
-    [QuantifiedExpression$1]: 'QuantifiedExpression',
-    [PathExpression$1]: 'PathExpression',
-    [FunctionInvocation$1]: 'FunctionInvocation',
-    [FilterExpression$1]: 'FilterExpression',
-    [ArithmeticExpression$1]: 'ArithmeticExpression'
+  const contextEnds = {
+    [Context]: 'Context',
+    [FunctionDefinition]: 'FunctionDefinition',
+    [ForExpression]: 'ForExpression',
+    [List$1]: 'List',
+    [IfExpression]: 'IfExpression',
+    [QuantifiedExpression]: 'QuantifiedExpression',
+    [PathExpression]: 'PathExpression',
+    [FunctionInvocation]: 'FunctionInvocation',
+    [FilterExpression]: 'FilterExpression',
+    [ArithmeticExpression]: 'ArithmeticExpression'
   };
-  let ValueProducer$1 = class ValueProducer {
+  class ValueProducer {
     /**
      * @param { Function } fn
      */
@@ -6629,14 +7040,14 @@
     static of(fn) {
       return new ValueProducer(fn);
     }
-  };
-  const dateTimeLiterals$1 = {
+  }
+  const dateTimeLiterals = {
     'date and time': 1,
     'date': 1,
     'time': 1,
     'duration': 1
   };
-  const dateTimeIdentifiers$1 = Object.keys(dateTimeLiterals$1);
+  const dateTimeIdentifiers = Object.keys(dateTimeLiterals);
 
   /**
    * A basic key-value store to hold context values.
@@ -6702,7 +7113,7 @@
      * @returns {Boolean}
      */
     static isAtomic(value) {
-      return !value || value instanceof this || value instanceof ValueProducer$1 || typeof value !== 'object';
+      return !value || value instanceof this || value instanceof ValueProducer || typeof value !== 'object';
     }
 
     /**
@@ -6732,7 +7143,7 @@
       return new this(merged);
     }
   }
-  let Variables$1 = class Variables {
+  class Variables {
     constructor({
       name = 'Expressions',
       tokens = [],
@@ -6755,25 +7166,25 @@
         name,
         parent: this
       });
-      LOG_VARS$1 && console.log('[%s] enter', childScope.path, childScope.context);
+      LOG_VARS && console.log('[%s] enter', childScope.path, childScope.context);
       return childScope;
     }
     exitScope(str) {
       if (!this.parent) {
-        LOG_VARS$1 && console.log('[%s] NO exit %o\n%s', this.path, this.context, indent$1(str, '  '));
+        LOG_VARS && console.log('[%s] NO exit %o\n%s', this.path, this.context, indent(str, '  '));
         return this;
       }
-      LOG_VARS$1 && console.log('[%s] exit %o\n%s', this.path, this.context, indent$1(str, '  '));
+      LOG_VARS && console.log('[%s] exit %o\n%s', this.path, this.context, indent(str, '  '));
       return this.parent.pushChild(this);
     }
     token(part) {
-      LOG_VARS$1 && console.log('[%s] token <%s> + <%s>', this.path, this.tokens.join(' '), part);
+      LOG_VARS && console.log('[%s] token <%s> + <%s>', this.path, this.tokens.join(' '), part);
       return this.assign({
         tokens: [...this.tokens, part]
       });
     }
     literal(value) {
-      LOG_VARS$1 && console.log('[%s] literal %o', this.path, value);
+      LOG_VARS && console.log('[%s] literal %o', this.path, value);
       return this.pushChild(this.of({
         name: 'Literal',
         value
@@ -6786,7 +7197,7 @@
      * @return {any}
      */
     computedValue() {
-      for (let scope = this;; scope = last$1(scope.children)) {
+      for (let scope = this;; scope = last(scope.children)) {
         if (!scope) {
           return null;
         }
@@ -6796,7 +7207,7 @@
       }
     }
     contextKeys() {
-      return this.context.getKeys().map(normalizeContextKey$1);
+      return this.context.getKeys().map(normalizeContextKey);
     }
     get path() {
       return this.parent?.path?.concat(' > ', this.name) || this.name;
@@ -6809,13 +7220,13 @@
      * @return { any } value
      */
     get(variable) {
-      const names = [variable, variable && normalizeContextKey$1(variable)];
-      const contextKey = this.context.getKeys().find(key => names.includes(normalizeContextKey$1(key)));
+      const names = [variable, variable && normalizeContextKey(variable)];
+      const contextKey = this.context.getKeys().find(key => names.includes(normalizeContextKey(key)));
       if (typeof contextKey === 'undefined') {
         return undefined;
       }
       const val = this.context.get(contextKey);
-      if (val instanceof ValueProducer$1) {
+      if (val instanceof ValueProducer) {
         return val.get(this);
       } else {
         return val;
@@ -6833,7 +7244,7 @@
         value: this.get(variable),
         raw: variable
       });
-      LOG_VARS$1 && console.log('[%s] resolve name <%s=%s>', variableScope.path, variable, this.get(variable));
+      LOG_VARS && console.log('[%s] resolve name <%s=%s>', variableScope.path, variable, this.get(variable));
       return parentScope.pushChild(variableScope);
     }
     pushChild(child) {
@@ -6858,7 +7269,7 @@
         throw Error('no tokens to declare name');
       }
       const variableName = this.tokens.join(' ');
-      LOG_VARS$1 && console.log('[%s] declareName <%s>', this.path, variableName);
+      LOG_VARS && console.log('[%s] declareName <%s>', this.path, variableName);
       return this.assign({
         tokens: []
       }).pushChild(this.of({
@@ -6868,10 +7279,10 @@
     }
     define(name, value) {
       if (typeof name !== 'string') {
-        LOG_VARS$1 && console.log('[%s] no define <%s=%s>', this.path, name, value);
+        LOG_VARS && console.log('[%s] no define <%s=%s>', this.path, name, value);
         return this;
       }
-      LOG_VARS$1 && console.log('[%s] define <%s=%s>', this.path, name, value);
+      LOG_VARS && console.log('[%s] define <%s=%s>', this.path, name, value);
       const context = this.context.set(name, value);
       return this.assign({
         context
@@ -6928,14 +7339,14 @@
         raw
       });
     }
-  };
+  }
 
   /**
    * @param { string } name
    *
    * @return { string } normalizedName
    */
-  function normalizeContextKey$1(name) {
+  function normalizeContextKey(name) {
     return name.replace(/\s*([./\-'+]|\*\*?)\s*/g, ' $1 ').replace(/\s{2,}/g, ' ').trim();
   }
 
@@ -6947,7 +7358,7 @@
    * @param { string } code
    * @return { Variables }
    */
-  function wrap$1(variables, scopeName, code) {
+  function wrap(variables, scopeName, code) {
     const parts = variables.children.filter(c => c.name !== scopeName);
     const children = variables.children.filter(c => c.name === scopeName);
     const namePart = parts[0];
@@ -6965,43 +7376,43 @@
    *
    * @return { ContextTracker<Variables> }
    */
-  function trackVariables$1(context = {}, Context = VariableContext) {
-    const start = Variables$1.of({
+  function trackVariables(context = {}, Context = VariableContext) {
+    const start = Variables.of({
       context: Context.of(context)
     });
     return new ContextTracker({
       start,
       reduce(variables, term, stack, input) {
-        if (term === IfExpression$1) {
+        if (term === IfExpression) {
           const [thenPart, elsePart] = variables.children.slice(-2);
           variables = variables.assign({
             value: Context.of(thenPart?.computedValue(), elsePart?.computedValue())
           });
         }
-        if (term === List$2) {
+        if (term === List$1) {
           variables = variables.assign({
             value: Context.of(...variables.children.map(c => c?.computedValue()))
           });
         }
-        if (term === FilterExpression$1) {
+        if (term === FilterExpression) {
           const [sourcePart, _] = variables.children.slice(-2);
           variables = variables.assign({
             value: sourcePart?.computedValue()
           });
         }
-        if (term === FunctionInvocation$1) {
+        if (term === FunctionInvocation) {
           const [name, ...args] = variables.children;
 
           // preserve type information through `get value(context, key)` utility
           if (name?.raw === 'get value') {
-            variables = getContextValue$1(variables, args);
+            variables = getContextValue(variables, args);
           }
         }
-        const start = contextStarts$1[term];
+        const start = contextStarts[term];
         if (start) {
           return variables.enterScope(start);
         }
-        const prefixedStart = prefixedContextStarts$1[term];
+        const prefixedStart = prefixedContextStarts[term];
 
         // pull <expression> into new <prefixedStart> context
         if (prefixedStart) {
@@ -7010,12 +7421,12 @@
             context: currentContext
           } = variables;
           const children = currentChildren.slice(0, -1);
-          const lastChild = last$1(currentChildren);
+          const lastChild = last(currentChildren);
           let newContext = null;
-          if (term === pathExpressionStart$1) {
+          if (term === pathExpressionStart) {
             newContext = Context.of(lastChild?.computedValue());
           }
-          if (term === filterExpressionStart$1) {
+          if (term === filterExpressionStart) {
             newContext = Context.of(currentContext, lastChild?.computedValue()).set('item', lastChild?.computedValue());
           }
           return variables.assign({
@@ -7025,73 +7436,73 @@
           });
         }
         const code = input.read(input.pos, stack.pos);
-        const end = contextEnds$1[term];
+        const end = contextEnds[term];
         if (end) {
           return variables.exitScope(code);
         }
-        if (term === ContextEntry$1) {
+        if (term === ContextEntry) {
           const parts = variables.children.filter(c => c.name !== 'ContextEntry');
           const name = parts[0];
-          const value = last$1(parts);
-          return wrap$1(variables, 'ContextEntry', code).assign({
+          const value = last(parts);
+          return wrap(variables, 'ContextEntry', code).assign({
             value: Context.of(variables.value).set(name.computedValue(), value?.computedValue())
           });
         }
-        if (term === ForInExpression$1 || term === QuantifiedInExpression$1) {
-          return wrap$1(variables, 'InExpression', code);
+        if (term === ForInExpression || term === QuantifiedInExpression) {
+          return wrap(variables, 'InExpression', code);
         }
 
         // define <partial> within ForExpression body
-        if (term === forExpressionBodyStart$1) {
-          return variables.define('partial', ValueProducer$1.of(variables => {
-            return last$1(variables.children)?.computedValue();
+        if (term === forExpressionBodyStart) {
+          return variables.define('partial', ValueProducer.of(variables => {
+            return last(variables.children)?.computedValue();
           }));
         }
-        if (term === ParameterName$1) {
-          const name = last$1(variables.children).computedValue();
+        if (term === ParameterName) {
+          const name = last(variables.children).computedValue();
 
           // TODO: attach type information
           return variables.define(name, 1);
         }
 
         // pull <expression> into ArithmeticExpression child
-        if (term === arithmeticPlusStart$1 || term === arithmeticTimesStart$1 || term === arithmeticExpStart$1) {
+        if (term === arithmeticPlusStart || term === arithmeticTimesStart || term === arithmeticExpStart) {
           const children = variables.children.slice(0, -1);
-          const lastChild = last$1(variables.children);
+          const lastChild = last(variables.children);
           return variables.assign({
             children
           }).enterScope('ArithmeticExpression').pushChild(lastChild);
         }
-        if (term === arithmeticUnaryStart$1) {
+        if (term === arithmeticUnaryStart) {
           return variables.enterScope('ArithmeticExpression');
         }
-        if (term === Identifier$1 || term === AdditionalIdentifier$1 || term === PropertyIdentifier$1) {
+        if (term === Identifier || term === AdditionalIdentifier || term === PropertyIdentifier) {
           return variables.token(code);
         }
-        if (term === StringLiteral$1) {
+        if (term === StringLiteral) {
           return variables.literal(code.replace(/^"|"$/g, ''));
         }
-        if (term === BooleanLiteral$1) {
+        if (term === BooleanLiteral) {
           return variables.literal(code === 'true' ? true : false);
         }
-        if (term === NumericLiteral$1) {
+        if (term === NumericLiteral) {
           return variables.literal(parseFloat(code));
         }
-        if (term === nil$1) {
+        if (term === nil) {
           return variables.literal(null);
         }
-        if (term === VariableName$2) {
+        if (term === VariableName$1) {
           return variables.resolveName();
         }
-        if (term === Name$5 || term === PropertyName$1) {
+        if (term === Name$4 || term === PropertyName) {
           return variables.declareName();
         }
-        if (term === expression0$1 || term === PositiveUnaryTest$1) {
+        if (term === expression0 || term === PositiveUnaryTest) {
           if (variables.tokens.length > 0) {
             throw new Error('uncleared name');
           }
         }
-        if (term === expression0$1) {
+        if (term === expression0) {
           let parent = variables;
           while (parent.parent) {
             parent = parent.exitScope(code);
@@ -7102,18 +7513,18 @@
       }
     });
   }
-  const variableTracker$1 = trackVariables$1({});
+  const variableTracker = trackVariables({});
 
   // helpers //////////////
 
-  function getContextValue$1(variables, args) {
+  function getContextValue(variables, args) {
     if (!args.length) {
       return variables.assign({
         value: null
       });
     }
     if (args[0].name === 'Name') {
-      args = extractNamedArgs$1(args, ['m', 'key']);
+      args = extractNamedArgs(args, ['m', 'key']);
     }
     if (args.length !== 2) {
       return variables.assign({
@@ -7129,12 +7540,12 @@
       });
     }
     return variables.assign({
-      value: [normalizeContextKey$1(keyValue), keyValue].reduce((value, keyValue) => {
+      value: [normalizeContextKey(keyValue), keyValue].reduce((value, keyValue) => {
         return contextValue.get(keyValue) || value;
       }, null)
     });
   }
-  function extractNamedArgs$1(args, argNames) {
+  function extractNamedArgs(args, argNames) {
     const context = {};
     for (let i = 0; i < args.length; i += 2) {
       const [name, value] = args.slice(i, i + 2);
@@ -7142,10 +7553,10 @@
     }
     return argNames.map(name => context[name]);
   }
-  function last$1(arr) {
+  function last(arr) {
     return arr[arr.length - 1];
   }
-  const feelHighlighting$1 = styleTags({
+  const feelHighlighting = styleTags({
     StringLiteral: tags$1.string,
     NumericLiteral: tags$1.number,
     BooleanLiteral: tags$1.bool,
@@ -7178,7 +7589,7 @@
   });
 
   // This file was generated by lezer-generator. You probably shouldn't edit it.
-  const spec_identifier$1 = {
+  const spec_identifier = {
     __proto__: null,
     for: 10,
     in: 32,
@@ -7210,20 +7621,20 @@
     external: 184,
     not: 209
   };
-  const parser$3 = LRParser.deserialize({
+  const parser$2 = LRParser.deserialize({
     version: 14,
     states: "DSO`QYOOO`QYOOO$gQYOOOOQU'#Ce'#CeO$qQYO'#C`O%zQYO'#FPOOQQ'#Fe'#FeO&UQYO'#FeO`QYO'#DVOOQU'#Em'#EmO'rQ^O'#D]OOQO'#Fl'#FlO)oQWO'#DuOOQQ'#D|'#D|OOQQ'#D}'#D}OOQQ'#EO'#EOO)tOWO'#ERO)oQWO'#EPOOQQ'#EP'#EPOOQQ'#Fr'#FrOOQQ'#Fp'#FpOOQQ'#Fw'#FwO,iQYO'#FwO.gQYO'#FwOOQQ'#ET'#ETO`QYO'#EVOOQQ'#FR'#FRO0cQ^O'#FRO2YQYO'#EWO2aQWO'#EXOOQP'#GQ'#GQO2fQXO'#E`OOQQ'#F{'#F{OOQQ'#FQ'#FQQOQWOOOOQQ'#FS'#FSOOQQ'#F]'#F]O`QYO'#CoOOQQ'#F^'#F^O$qQYO'#CsO2qQYO'#DvOOQQ'#Fq'#FqO2vQYO'#EQOOQO'#EQ'#EQO`QYO'#EUO`QYO'#ETOOQO'#GO'#GOQ3OQWOOO3TQYO'#DRO3zQWO'#FaOOQO'#DT'#DTO4VQYO'#FeO4^QWOOO5TQYO'#CdO5bQYO'#FUOOQQ'#Cc'#CcO5gQYO'#FTOOQQ'#Cb'#CbO5oQYO,58zO`QYO,59iOOQQ'#Fb'#FbOOQQ'#Fc'#FcOOQQ'#Fd'#FdO`QYO,59qO`QYO,59qO`QYO,59qOOQQ'#Fj'#FjO$qQYO,5:]OOQQ'#Fk'#FkO`QYO,5:_O`QYO,59eO`QYO,59gO`QYO,59iO7_QYO,59iO7fQYO,59rOOQQ,5:h,5:hO7kQYO,59qOOQU-E8k-E8kO9_QYO'#FmOOQQ,5:a,5:aOOQQ,5:m,5:mOOQQ,5:k,5:kO9fQYO,5:qOOQQ,5;m,5;mO9mQYO'#FoO9zQWO,5:rO:PQYO,5:sOOQP'#Ed'#EdO:vQXO'#EcOOQO'#Eb'#EbO:}QWO'#EaO;SQWO'#GRO;[QWO,5:zO;aQYO,59ZO5bQYO'#F`OOQQ'#Cw'#CwO;hQYO'#F_OOQQ'#Cv'#CvO;pQYO,59_O;uQYO,5:bO;zQYO,5:lO<PQYO,5:pO<WQYO,5:oO`QYO'#EvQ3OQWOOO`QYO'#ElO<}QWO,5;{O`QYOOOOQR'#Cf'#CfOOQQ'#Ei'#EiO=wQYO,59OO`QYO,5;pOOQQ'#FX'#FXO$qQYO'#EjO>XQYO,5;oO`QYO1G.fOOQQ'#F['#F[O?OQYO1G/TOAuQYO1G/]OBPQYO1G/]OBZQYO1G/]OOQQ1G/w1G/wOC}QYO1G/yODUQYO1G/POE_QYO1G/ROFhQYO1G/TOGOQYO1G/TOOQQ1G/T1G/TOHnQYO1G/^OIYQ^O'#CdOOQO'#Dy'#DyOJlQWO'#DxOJqQWO'#FnOOQO'#Dw'#DwOOQO'#Dz'#DzOJyQWO,5<XOOQQ'#Fz'#FzOOQQ1G0]1G0]O`QYO'#ErOKOQWO,5<ZOOQQ'#F}'#F}OOQQ1G0^1G0^OKZQWO'#EZOKfQWO'#GPOOQO'#EY'#EYOKnQWO1G0_OOQP'#Et'#EtOKsQXO,5:}O`QYO,5:{OKzQXO'#EuOLSQWO,5<mOOQQ1G0f1G0fO`QYO1G.uO`QYO,5;zO$qQYO'#EkOL[QYO,5;yO`QYO1G.yOLdQYO1G/|OOQO1G0W1G0WO`QYO1G0[OOQO,5;b,5;bOOQO-E8t-E8tOOQO,5;W,5;WOOQO-E8j-E8jOLiQWOOOOQQ-E8g-E8gOLnQYO'#CmOOQQ1G1[1G1[OOQQ,5;U,5;UOOQQ-E8h-E8hOL{QYO7+$QOOQQ7+%e7+%eO`QYO7+$oOMrQWO7+$oOMwQYO'#D[OOQQ'#DZ'#DZO! kQYO'#D^O! pQYO'#D^O! uQYO'#D^O! zQ`O'#DfO!!PQ`O'#DiO!!UQ`O'#DmOOQQ7+$x7+$xO`QYO,5:dO$qQYO'#EqO!!ZQWO,5<YOOQQ1G1s1G1sO!!cQYO,5;^OOQO-E8p-E8pOHnQYO,5:uO$qQYO'#EsO!!pQWO,5<kO!!xQYO7+%yOOQP-E8r-E8rO!#PQYO1G0gOOQO,5;a,5;aOOQO-E8s-E8sO!#ZQYO7+$aO!#bQYO1G1fOOQQ,5;V,5;VOOQQ-E8i-E8iO!#lQYO7+$eOOQO7+%h7+%hO!%aQYO7+%vO`QYO,59XO!%nQYO<<HZOOQQ<<HZ<<HZO$qQYO'#EnO!&wQYO,59vO!(kQYO,59xO!(pQYO,59xO!(uQYO,59xO!(zQYO,5:QO$qQYO,5:TO!)fQbO,5:XO!)mQYO1G0OOOQO,5;],5;]OOQO-E8o-E8oOOQO1G0a1G0aOOQO,5;_,5;_OOQO-E8q-E8qO!)wQYO'#E]OOQQ<<Ie<<IeO`QYO<<IeO`QYO<<G{O!*nQYO'#FkOOQQ'#Fx'#FxOOQQ<<Ib<<IbO!-jQYO1G.sOOQQ,5;Y,5;YOOQQ-E8l-E8lO!-tQYO1G/dOOQQ1G/d1G/dO!-yQbO'#D]O!.[Q`O'#D[O!.gQ`O1G/lO!.lQWO'#DlO!.qQ`O'#FfOOQO'#Dk'#DkO!.yQ`O1G/oOOQO'#Dp'#DpO!/OQ`O'#FhOOQO'#Do'#DoO!/WQ`O1G/sOOQQAN?PAN?PO!/]QYOAN=gOOQQ7+%O7+%OO!0SQ`O,59vOOQQ7+%W7+%WO!(zQYO,5:WO$qQYO'#EoO!0_Q`O,5<QOOQQ7+%Z7+%ZO!(zQYO'#EpO!0gQ`O,5<SO!0oQ`O7+%_OOQO1G/r1G/rOOQO,5;Z,5;ZOOQO-E8m-E8mOOQO,5;[,5;[OOQO-E8n-E8nOHnQYO<<HyOOQQAN>eAN>eO$qQYO'#EnO!(zQYO<<HyO!0tQ`O7+%_O!0yQ`O1G/sO!)fQbO,5:XO!1OQ`O'#Dm",
     stateData: "!1]~O#qOS#rOSPOSQOS~OTsOZVO[UOdtOhvOivOs}OvfO!S{O!T{O!UxO!WzO!b!OO!feO!hgO!oyO!vjO#RnO#mRO#nRO$g]O$h^O$i_O$j`O~OTsO[UOdtOhvOivOs}OvfO!S{O!T{O!UxO!WzO!b!OO!feO!hgO!oyO!vjO#RnO#mRO#nRO$g]O$h^O$i_O$j`O~OZ!TO#[!UO~P!|O#mRO#nRO~OZ!^O[!^O]!_O^!_O_!`O`!kOn!hOp!iOr!]Os!]Ot!jO{!lO!h!fO#y!dOv$`X~O#k#sX$v#sX~P$yO$g!mOT$XXZ$XX[$XXd$XXh$XXi$XXs$XXv$XX!S$XX!T$XX!U$XX!W$XX!b$XX!f$XX!h$XX!o$XX!v$XX#R$XX#m$XX#n$XX$h$XX$i$XX$j$XX~O#mRO#nROZ!PX[!PX]!PX^!PX_!PX`!PXn!PXp!PXr!PXs!PXt!PXv!PX{!PX!h!PX#k!PX#o!PX#y!PX$v!PX#}!PXx!PX!f!PXe!PX#|!PXb!PX#Q!PXf!PXl!PX~Ov!pO~O$h^O~OT$kXT$mXd$kXd$mXh$kXh$mXi$kXi$mXs$kXs$mXv$kXv$mX!S$kX!S$mX!T$kX!T$mX!U$kX!U$mX!W$kX!W$mX!b$kX!b$mX!f$kX!f$mX!h$kX!h$mX!o$kX!o$mX!v$kX!v$mX#R$kX#R$mX$g$kX$g$mX$h$kX$h$mX$i$kX$i$mX$j$kX$j$mX~OZ$kXZ$mX[$kX[$mX#m$kX#m$mX#n$kX#n$mX~P)yOT$kXd$kXh$kXi$kXs$kXv$kX!S$kX!T$kX!U$kX!W$kX!b$kX!f$kX!h$kX!o$kX!v$kX#R$kX$g$kX$h$kX$i$kX$j$kX~OT$pXZ$kXZ$pX[$kX[$pXd$pXh$pXi$pXs$pXv$pX!S$pX!T$pX!U$pX!W$pX!b$pX!f$pX!h$pX!o$pX!v$pX#R$pX#m$kX#m$pX#n$kX#n$pX$g$pX$h$pX$i$pX$j$pX~P-VO#o!uOZ#uX[#uX]#uX^#uX_#uX`#uXn#uXp#uXr#uXs#uXt#uXv#uX{#uX!h#uX#k#uX#y#uX$v#uX#}#uXx#uX!f#uXe#uX#|#uXb#uX#Q#uXf#uXl#uX~O!f$cP~P`Ov!xO~O#l!yO$h^O#Q$uP~Op#VO~Op#WOv!tX~O$v#ZO~O#kuX#}uX$vuXxuX!fuXeuX#|uXbuX#QuXfuXluX~P$yO#}#]O#k$TXx$TX~O#k#ZX~P&UOv#_O~OZ#`O[#`O]#`O^#`O_#`O#mRO#nRO#y#`O#z#`O$ZWX~O`WXxWX#}WX~P4cO`#dO~O#}#eOb#wX~Ob#hO~OTsOZVO[UOdtOhvOivOs}O!S{O!T{O!UxO!WzO!b!OO!feO!hgO!oyO!vjO#RnO#mRO#nRO$g]O$h^O$i_O$j`O~Ov#rO~P5tO|#tO~O{!lO!h!fO#y!dOZya[ya]ya^ya_ya`yanyapyaryasyatyav$`X#kya$vya#}yaxya!fyaeya#|yabya#Qyafyalya~Ox$cP~P`Ox#|O~P$yO#}$OO!f$cXx$cX~P$yO!f$QO~O#mRO#nROx$sP~OZ#`O[#`O]#`O^#`O_#`O#l!yO#y#`O#z#`O~O$Z#VX~P:[O$Z$YO~O#}$ZO#Q$uX~O#Q$]O~Oe$^O~P$yO#}$`Ol$RX~Ol$bO~O!V$cO~O!S$dO~O#|$eO~P$yO#k!wa$v!wa#}!wax!wa!f!wae!wa#|!wab!wa#Q!waf!wal!wa~P$yO#}#]O#k$Tax$Ta~OZ#`O[#`O]#`O^#`O_#`O#mRO#nRO#y#`O#z#`O~O`Wa$ZWaxWa#}Wa~P=YO#}#eOb#wa~OZ!^O[!^O]!_O^!_O_!`O{!lO!h!fO#y!dOv$`X~O`qinqipqirqisqitqi#kqi$vqi#}qixqi!fqieqi#|qibqi#Qqifqilqi~P>aO_!`O{!lO!h!fO#y!dOZyi[yi`yinyipyiryisyityiv$`X#kyi$vyi#}yixyi!fyieyi#|yibyi#Qyifyilyi~O]!_O^!_O~P@XO]yi^yi~P@XO{!lO!h!fO#y!dOZyi[yi]yi^yi_yi`yinyipyiryisyityiv$`X#kyi$vyi#}yixyi!fyieyi#|yibyi#Qyifyilyi~O!f$qO~P$yO`!kOp!iOr!]Os!]Ot!jOnmi#kmi$vmi#}mixmi!fmiemi#|mibmi#Qmifmilmi~P>aO`!kOr!]Os!]Ot!jOnoipoi#koi$voi#}oixoi!foieoi#|oiboi#Qoifoiloi~P>aO`!kOn!hOp$rOr!]Os!]Ot!jO~P>aOTsOZVO[UOdtOhvOivOs}OvfO!S{O!T{O!UxO!WzO!b!OO!feO!hgO!oyO!vjO#RnO#mRO#nRO$g]O$h^O$i_O$j`O~P)yO!R$vO!U$wO!W$xO!Z$yO!^$zO!b${O#mRO#nRO~OZ#aX[#aX]#aX^#aX_#aX`#aXn#aXp#aXr#aXs#aXt#aXv#aXx#aX{#aX!h#aX#m#aX#n#aX#o#aX#y#aX#}#aX~P4cO$Z$}O~O#}%OOx$bX~Ox%QO~O#}$OO!f$cax$ca~O$Z%TOx!}X#}!}X~O#}%UOx$sX~Ox%WO~O$Z#Va~P:[O#l!yO$h^O~O#}$ZO#Q$ua~O#}$`Ol$Ra~O!T%bO~OxrO~O#|%dObaX#}aX~P$yO#kSq$vSq#}SqxSq!fSqeSq#|SqbSq#QSqfSqlSq~P$yOx%fO~O#y%gOZ!OX[!OX]!OX^!OX_!OX`!OXn!OXp!OXr!OXs!OXt!OXv!OX{!OX!h!OX#k!OX$v!OX#}!OXx!OX!f!OXe!OX#|!OXb!OX#Q!OXf!OXl!OX~Op%iO~Op%jO~Op%kO~O![%lO~O![%mO~O![%nO~O#}%OOx$ba~O!f#fa#}#fax#fa~P$yO#}%UOx$sa~O#O%wO~P`O#Q#Ti#}#Ti~P$yOf%xO~P$yOl$Si#}$Si~P$yO#kgq$vgq#}gqxgq!fgqegq#|gqbgq#Qgqfgqlgq~P$yOZ!^O[!^O]!_O^!_O_!`O`!kOn!hOp!iOr!]Os!]Ot!jO{!lO#y!dOv$`X~Ox%zO!f%zO!h%yO~P!$cO`qynqypqyrqysqytqy#kqy$vqy#}qyxqy!fqyeqy#|qybqy#Qqyfqylqy~P>aO#y%gOZ!Oa[!Oa]!Oa^!Oa_!Oa`!Oan!Oap!Oar!Oas!Oat!Oav!Oa{!Oa!h!Oa#k!Oa$v!Oa#}!Oax!Oa!f!Oae!Oa#|!Oab!Oa#Q!Oaf!Oal!Oa~O!S&PO~O!V&PO~O!S&QO~O!R$vO!U$wO!W$xO!Z$yO!^$zO!b&vO#mRO#nRO~O!X$[P~P!(zOx!li#}!li~P$yO#k#PX$v#PX#}#PXx#PX!f#PXe#PX#|#PXb#PX#Q#PXf#PXl#PX~P$yOT$_XZ$_X[$_X]$lX^$lX_$lX`$lXd$_Xh$_Xi$_Xn$lXp$lXr$lXs$_Xt$lXv$_X{$lX!S$_X!T$_X!U$_X!W$_X!b$_X!f$_X!h$_X!o$_X!v$_X#R$_X#k$lX#m$_X#n$_X#y$lX$g$_X$h$_X$i$_X$j$_X$v$lX#}$lXx$lXe$lX#|$lXb$lX#Q$lXf$lXl$lX~Obai#}ai~P$yO!T&`O~O#mRO#nRO!X!PX#y!PX#}!PX~O#y&qO!X!OX#}!OX~O!X&bO~O$Z&cO~O#}&dO!X$YX~O!X&fO~O#}&gO!X$[X~O!X&iO~O#kc!R$vc!R#}c!Rxc!R!fc!Rec!R#|c!Rbc!R#Qc!Rfc!Rlc!R~P$yO#y&qO!X!Oa#}!Oa~O#}&dO!X$Ya~O#}&gO!X$[a~O$]&oO~O$]&rO~O!X&sO~O![&uO~OQP_^$g]#y~",
     goto: "Ff$vPPPP$wP%p%s%y&]'vPPPPPP(PP$wPPP$wPP(S(VP$wP$wP$wPPP(]P(hP$w$wPP(q)W)c)WPPPPPPP)WPP)WP*p*s)WP*y+P$wP$wP$w+W,P,S,Y,PP,b-Z,b,b.Z/SP$w/{$w0t0t1m1pP1vPP0t1|2S.V2WPP2`P2c2j2p2v2|4X4c4i4o4u4{5R5X5_PPPPPPPP5e5n7q8j9c9fPP9jPP9p9s:l;e;h;l;q<^<z=i>bP>eP>i?Y?y@r@x@{$wARARPPPPAzBsBvCo7qCrDkDnEgEjFc!mjOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR![SQ!YSR$n#eS!WS#eS#Qw$`W#v!p!x%O%UT&U%m&d#WXOPQWYilu|}!]!a!b!c!e!g!h!i!j!k#Z#]#_#c#g#r#t$O$Y$^$_$b$e$r$}%T%W%d%g%l%n%w%x&R&c&g&o&q&r&ub!VSw!x#e$`%O%U%m&dU#a!V#b#uR#u!pU#a!V#b#uT$W!z$XR$m#cR#UwQ#SwR%_$`U!RQ#_#rQ#s!kR$h#]QrQQ$j#_R$s#rQ$|#tQ%r%TQ&T%lU&Y%n&g&uQ&j&cT&p&o&rc$u#t%T%l%n&c&g&o&r&u!lkOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xQ#m!eU$t#t%T&oS%}%g&q]&S%l%n&c&g&r&uR&X%mQ&V%mR&k&dQ&]%nR&t&uS&Z%n&uR&m&g!mZOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR#{!pQ#x!pR%p%OS#w!p%OT$S!x%U!mcOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!lcOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xQ!r`T!{o$Z!maOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!mbOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!mhOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!mpOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR$V!xQ$T!xR%s%UQ%v%WR&^%wQ!}oR%Z$ZT!|o$ZS!zo$ZT$W!z$XRrQS#b!V#uR$k#bQ#f!YR$o#fQ$a#SR%`$aQ#^!RR$i#^!vYOPQWilu|}!]!a!b!c!e!g!h!i!j!k!p#Z#]#_#c#g#r#t$O$Y$^$_$b$e$r$}%T%W%d%g%w%x&oS!oY&R_&R%l%n&c&g&q&r&uQ%h$tS&O%h&aR&a&SQ&e&VR&l&eQ&h&ZR&n&hQ%P#xR%q%PQ$P!vR%S$PQ%V$TR%t%VQ$X!zR%X$XQ$[!}R%[$[Q#[!PR$g#[QrOQ!PPR$f#ZUTOP#ZY!QQ!k#]#_#rQ!nWQ!tiS!vl!pQ#PuQ#X|Q#Y}Q#i!]Q#j!aQ#k!bQ#l!cQ#n!gQ#o!hQ#p!iQ#q!jQ$l#cQ$p#gQ%R$OQ%Y$YQ%]$^Q%^$_Q%a$bQ%c$eQ%e$rQ%o$}S%u%W%wQ%|%dR&_%x!mqOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!mSOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR!ZST!XS#eQ#c!WR$_#QR#g![!muOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!mwOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR#TwT#Rw$`V!SQ#_#r!T!aT!Q!t!v#P#X#Y#i#n#o#p#q$l$p%R%Y%]%^%a%c%e%o%u%|&_!V!bT!Q!t!v#P#X#Y#i#j#n#o#p#q$l$p%R%Y%]%^%a%c%e%o%u%|&_!X!cT!Q!t!v#P#X#Y#i#j#k#n#o#p#q$l$p%R%Y%]%^%a%c%e%o%u%|&_!mWOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR&W%mT&[%n&u!]!eT!Q!n!t!v#P#X#Y#i#j#k#l#n#o#p#q$l$p%R%Y%]%^%a%c%e%o%u%|&_!]!gT!Q!n!t!v#P#X#Y#i#j#k#l#n#o#p#q$l$p%R%Y%]%^%a%c%e%o%u%|&_!m[OPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xQ!q[R!saR#y!pQ!wlR#z!p!mdOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%x!m|OPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR%{%c!miOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR#}!t!mlOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR$R!w!mmOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR$U!x!moOPQWilu|}!]!a!b!c!g!h!i!j!k!p#Z#]#_#c#g#r$O$Y$^$_$b$e$r$}%W%d%w%xR#Oo",
     nodeNames: "⚠ LineComment BlockComment Expression ForExpression for InExpressions InExpression Name Identifier Identifier ArithOp ArithOp ArithOp ArithOp ArithOp in IterationContext return IfExpression if then else QuantifiedExpression some every InExpressions InExpression satisfies Disjunction or Conjunction and Comparison CompareOp CompareOp between PositiveUnaryTest ( PositiveUnaryTests ) ArithmeticExpression InstanceOfExpression instance of Type QualifiedName VariableName SpecialType days time duration years months date > ListType list < ContextType context ContextEntryTypes ContextEntryType FunctionType function ArgumentTypes ArgumentType PathExpression ] FilterExpression [ FunctionInvocation SpecialFunctionName NamedParameters NamedParameter ParameterName PositionalParameters null NumericLiteral StringLiteral BooleanLiteral DateTimeLiteral DateTimeConstructor AtLiteral ? SimplePositiveUnaryTest Interval ParenthesizedExpression List FunctionDefinition FormalParameters FormalParameter external FunctionBody } { Context ContextEntry Key Name Identifier Expressions UnaryTests Wildcard not",
     maxTerm: 176,
-    context: variableTracker$1,
+    context: variableTracker,
     nodeProps: [["closedBy", 38, ")", 70, "]", 95, "}"], ["openedBy", 40, "(", 68, "[", 94, "{"], ["group", -5, 77, 78, 79, 80, 81, "Literal"]],
-    propSources: [feelHighlighting$1],
+    propSources: [feelHighlighting],
     skippedNodes: [0, 1, 2],
     repeatNodeCount: 14,
     tokenData: "+l~RuXY#fYZ$ZZ[#f]^$Zpq#fqr$`rs$kwx&cxy&hyz&mz{&r{|'P|}'U}!O'Z!O!P'h!P!Q(Q!Q![){![!]*^!]!^*c!^!_*h!_!`$f!`!a*w!b!c+R!}#O+W#P#Q+]#Q#R&z#o#p+b#q#r+g$f$g#f#BY#BZ#f$IS$I_#f$I|$I}$Z$I}$JO$Z$JT$JU#f$KV$KW#f&FU&FV#f?HT?HU#f~#kY#q~XY#fZ[#fpq#f$f$g#f#BY#BZ#f$IS$I_#f$JT$JU#f$KV$KW#f&FU&FV#f?HT?HU#f~$`O#r~~$cP!_!`$f~$kOr~~$pW$h~OY$kZr$krs%Ys#O$k#O#P%_#P;'S$k;'S;=`&]<%lO$k~%_O$h~~%bRO;'S$k;'S;=`%k;=`O$k~%pX$h~OY$kZr$krs%Ys#O$k#O#P%_#P;'S$k;'S;=`&];=`<%l$k<%lO$k~&`P;=`<%l$k~&hO#z~~&mOv~~&rOx~~&wP^~z{&z~'PO_~~'UO[~~'ZO#}~R'`PZP!`!a'cQ'hO$]Q~'mQ#y~!O!P's!Q!['x~'xO#|~~'}P$g~!Q!['x~(VQ]~z{(]!P!Q)d~(`TOz(]z{(o{;'S(];'S;=`)^<%lO(]~(rVOz(]z{(o{!P(]!P!Q)X!Q;'S(];'S;=`)^<%lO(]~)^OQ~~)aP;=`<%l(]~)iSP~OY)dZ;'S)d;'S;=`)u<%lO)d~)xP;=`<%l)d~*QQ$g~!O!P*W!Q![){~*ZP!Q!['x~*cO$Z~~*hO$v~R*oP![QsP!_!`*rP*wOsPR+OP!XQsP!_!`*r~+WO$j~~+]O!h~~+bO!f~~+gO#R~~+lO#Q~",
-    tokenizers: [propertyIdentifiers$1, identifiers$1, insertSemicolon$1, 0, 1],
+    tokenizers: [propertyIdentifiers, identifiers, insertSemicolon, 0, 1],
     topRules: {
       "Expression": [0, 3],
       "Expressions": [1, 101],
@@ -7236,7 +7647,7 @@
     },
     specialized: [{
       term: 121,
-      get: value => spec_identifier$1[value] || -1
+      get: value => spec_identifier[value] || -1
     }],
     tokenPrec: 2857
   });
@@ -7263,6 +7674,7 @@
     Replace a range of the text with the given content.
     */
     replace(from, to, text) {
+      [from, to] = clip(this, from, to);
       let parts = [];
       this.decompose(0, from, parts, 2 /* Open.To */);
       if (text.length) text.decompose(0, text.length, parts, 1 /* Open.From */ | 2 /* Open.To */);
@@ -7279,6 +7691,7 @@
     Retrieve the text between the given points.
     */
     slice(from, to = this.length) {
+      [from, to] = clip(this, from, to);
       let parts = [];
       this.decompose(from, to, parts, 0);
       return TextNode.from(parts, to - from);
@@ -7405,12 +7818,14 @@
     }
     replace(from, to, text) {
       if (!(text instanceof TextLeaf)) return super.replace(from, to, text);
+      [from, to] = clip(this, from, to);
       let lines = appendText(this.text, appendText(text.text, sliceText(this.text, 0, from)), to);
       let newLen = this.length + text.length - (to - from);
       if (lines.length <= 32 /* Tree.Branch */) return new TextLeaf(lines, newLen);
       return TextNode.from(TextLeaf.split(lines, []), newLen);
     }
     sliceString(from, to = this.length, lineSep = "\n") {
+      [from, to] = clip(this, from, to);
       let result = "";
       for (let pos = 0, i = 0; pos <= to && i < this.text.length; i++) {
         let line = this.text[i],
@@ -7477,6 +7892,7 @@
       }
     }
     replace(from, to, text) {
+      [from, to] = clip(this, from, to);
       if (text.lines < this.lines) for (let i = 0, pos = 0; i < this.children.length; i++) {
         let child = this.children[i],
           end = pos + child.length;
@@ -7498,6 +7914,7 @@
       return super.replace(from, to, text);
     }
     sliceString(from, to = this.length, lineSep = "\n") {
+      [from, to] = clip(this, from, to);
       let result = "";
       for (let i = 0, pos = 0; i < this.children.length && pos <= to; i++) {
         let child = this.children[i],
@@ -7704,7 +8121,10 @@
         lineBreak,
         value
       } = this.inner.next(skip);
-      if (done) {
+      if (done && this.afterBreak) {
+        this.value = "";
+        this.afterBreak = false;
+      } else if (done) {
         this.done = true;
         this.value = "";
       } else if (lineBreak) {
@@ -7770,6 +8190,10 @@
       return this.to - this.from;
     }
   };
+  function clip(text, from, to) {
+    from = Math.max(0, Math.min(text.length, from));
+    return [from, Math.max(from, Math.min(text.length, to))];
+  }
 
   // Compressed representation of the Grapheme_Cluster_Break=Extend
   // information from
@@ -8514,14 +8938,14 @@
     extend it.
     */
     get anchor() {
-      return this.flags & 16 /* RangeFlag.Inverted */ ? this.to : this.from;
+      return this.flags & 32 /* RangeFlag.Inverted */ ? this.to : this.from;
     }
     /**
     The head of the range, which is moved when the range is
     [extended](https://codemirror.net/6/docs/ref/#state.SelectionRange.extend).
     */
     get head() {
-      return this.flags & 16 /* RangeFlag.Inverted */ ? this.from : this.to;
+      return this.flags & 32 /* RangeFlag.Inverted */ ? this.from : this.to;
     }
     /**
     True when `anchor` and `head` are at the same position.
@@ -8536,15 +8960,15 @@
     means no association.
     */
     get assoc() {
-      return this.flags & 4 /* RangeFlag.AssocBefore */ ? -1 : this.flags & 8 /* RangeFlag.AssocAfter */ ? 1 : 0;
+      return this.flags & 8 /* RangeFlag.AssocBefore */ ? -1 : this.flags & 16 /* RangeFlag.AssocAfter */ ? 1 : 0;
     }
     /**
     The bidirectional text level associated with this cursor, if
     any.
     */
     get bidiLevel() {
-      let level = this.flags & 3 /* RangeFlag.BidiLevelMask */;
-      return level == 3 ? null : level;
+      let level = this.flags & 7 /* RangeFlag.BidiLevelMask */;
+      return level == 7 ? null : level;
     }
     /**
     The goal column (stored vertical offset) associated with a
@@ -8553,8 +8977,8 @@
     lines of different length.
     */
     get goalColumn() {
-      let value = this.flags >> 5 /* RangeFlag.GoalColumnOffset */;
-      return value == 33554431 /* RangeFlag.NoGoalColumn */ ? undefined : value;
+      let value = this.flags >> 6 /* RangeFlag.GoalColumnOffset */;
+      return value == 16777215 /* RangeFlag.NoGoalColumn */ ? undefined : value;
     }
     /**
     Map this range through a change, producing a valid range in the
@@ -8713,14 +9137,14 @@
     safely ignore the optional arguments in most situations.
     */
     static cursor(pos, assoc = 0, bidiLevel, goalColumn) {
-      return SelectionRange.create(pos, pos, (assoc == 0 ? 0 : assoc < 0 ? 4 /* RangeFlag.AssocBefore */ : 8 /* RangeFlag.AssocAfter */) | (bidiLevel == null ? 3 : Math.min(2, bidiLevel)) | (goalColumn !== null && goalColumn !== void 0 ? goalColumn : 33554431 /* RangeFlag.NoGoalColumn */) << 5 /* RangeFlag.GoalColumnOffset */);
+      return SelectionRange.create(pos, pos, (assoc == 0 ? 0 : assoc < 0 ? 8 /* RangeFlag.AssocBefore */ : 16 /* RangeFlag.AssocAfter */) | (bidiLevel == null ? 7 : Math.min(6, bidiLevel)) | (goalColumn !== null && goalColumn !== void 0 ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */);
     }
     /**
     Create a selection range.
     */
     static range(anchor, head, goalColumn, bidiLevel) {
-      let flags = (goalColumn !== null && goalColumn !== void 0 ? goalColumn : 33554431 /* RangeFlag.NoGoalColumn */) << 5 /* RangeFlag.GoalColumnOffset */ | (bidiLevel == null ? 3 : Math.min(2, bidiLevel));
-      return head < anchor ? SelectionRange.create(head, anchor, 16 /* RangeFlag.Inverted */ | 8 /* RangeFlag.AssocAfter */ | flags) : SelectionRange.create(anchor, head, (head > anchor ? 4 /* RangeFlag.AssocBefore */ : 0) | flags);
+      let flags = (goalColumn !== null && goalColumn !== void 0 ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */ | (bidiLevel == null ? 7 : Math.min(6, bidiLevel));
+      return head < anchor ? SelectionRange.create(head, anchor, 32 /* RangeFlag.Inverted */ | 16 /* RangeFlag.AssocAfter */ | flags) : SelectionRange.create(anchor, head, (head > anchor ? 8 /* RangeFlag.AssocBefore */ : 0) | flags);
     }
     /**
     @internal
@@ -8755,6 +9179,9 @@
   size](https://codemirror.net/6/docs/ref/#state.EditorState^tabSize), [editor
   attributes](https://codemirror.net/6/docs/ref/#view.EditorView^editorAttributes), and [update
   listeners](https://codemirror.net/6/docs/ref/#view.EditorView^updateListener).
+
+  Note that `Facet` instances can be used anywhere where
+  [`FacetReader`](https://codemirror.net/6/docs/ref/#state.FacetReader) is expected.
   */
   class Facet {
     constructor(
@@ -8780,6 +9207,13 @@
       this.id = nextID++;
       this.default = combine([]);
       this.extensions = typeof enables == "function" ? enables(this) : enables;
+    }
+    /**
+    Returns a facet reader for this facet, which can be used to
+    [read](https://codemirror.net/6/docs/ref/#state.EditorState.facet) it but not to define values for it.
+    */
+    get reader() {
+      return this;
     }
     /**
     Define a new facet.
@@ -9800,7 +10234,8 @@
       } else {
         startValues = tr.startState.values.slice();
       }
-      new EditorState(conf, tr.newDoc, tr.newSelection, startValues, (state, slot) => slot.update(state, tr), tr);
+      let selection = tr.startState.facet(allowMultipleSelections) ? tr.newSelection : tr.newSelection.asSingle();
+      new EditorState(conf, tr.newDoc, selection, startValues, (state, slot) => slot.update(state, tr), tr);
     }
     /**
     Create a [transaction spec](https://codemirror.net/6/docs/ref/#state.TransactionSpec) that
@@ -11367,6 +11802,16 @@
       bottom: win.innerHeight
     };
   }
+  function getScale(elt, rect) {
+    let scaleX = rect.width / elt.offsetWidth;
+    let scaleY = rect.height / elt.offsetHeight;
+    if (scaleX > 0.995 && scaleX < 1.005 || !isFinite(scaleX) || Math.abs(rect.width - elt.offsetWidth) < 1) scaleX = 1;
+    if (scaleY > 0.995 && scaleY < 1.005 || !isFinite(scaleY) || Math.abs(rect.height - elt.offsetHeight) < 1) scaleY = 1;
+    return {
+      scaleX,
+      scaleY
+    };
+  }
   function scrollRectIntoView(dom, rect, side, x, y, xMargin, yMargin, ltr) {
     let doc = dom.ownerDocument,
       win = doc.defaultView || window;
@@ -11375,6 +11820,8 @@
         // Element
         let bounding,
           top = cur == doc.body;
+        let scaleX = 1,
+          scaleY = 1;
         if (top) {
           bounding = windowRect(win);
         } else {
@@ -11384,12 +11831,16 @@
             continue;
           }
           let rect = cur.getBoundingClientRect();
+          ({
+            scaleX,
+            scaleY
+          } = getScale(cur, rect));
           // Make sure scrollbar width isn't included in the rectangle
           bounding = {
             left: rect.left,
-            right: rect.left + cur.clientWidth,
+            right: rect.left + cur.clientWidth * scaleX,
             top: rect.top,
-            bottom: rect.top + cur.clientHeight
+            bottom: rect.top + cur.clientHeight * scaleY
           };
         }
         let moveX = 0,
@@ -11428,13 +11879,13 @@
               movedY = 0;
             if (moveY) {
               let start = cur.scrollTop;
-              cur.scrollTop += moveY;
-              movedY = cur.scrollTop - start;
+              cur.scrollTop += moveY / scaleY;
+              movedY = (cur.scrollTop - start) * scaleY;
             }
             if (moveX) {
               let start = cur.scrollLeft;
-              cur.scrollLeft += moveX;
-              movedX = cur.scrollLeft - start;
+              cur.scrollLeft += moveX / scaleX;
+              movedX = (cur.scrollLeft - start) * scaleX;
             }
             rect = {
               left: rect.left - movedX,
@@ -11603,7 +12054,7 @@
     constructor() {
       this.parent = null;
       this.dom = null;
-      this.flags = 2 /* NodeDirty */;
+      this.flags = 2 /* ViewFlag.NodeDirty */;
     }
 
     get overrideDOMText() {
@@ -11627,18 +12078,18 @@
       return this.posBefore(view) + view.length;
     }
     sync(view, track) {
-      if (this.flags & 2 /* NodeDirty */) {
+      if (this.flags & 2 /* ViewFlag.NodeDirty */) {
         let parent = this.dom;
         let prev = null,
           next;
         for (let child of this.children) {
-          if (child.flags & 7 /* Dirty */) {
+          if (child.flags & 7 /* ViewFlag.Dirty */) {
             if (!child.dom && (next = prev ? prev.nextSibling : parent.firstChild)) {
               let contentView = ContentView.get(next);
               if (!contentView || !contentView.parent && contentView.canReuseDOM(child)) child.reuseDOM(next);
             }
             child.sync(view, track);
-            child.flags &= ~7 /* Dirty */;
+            child.flags &= ~7 /* ViewFlag.Dirty */;
           }
 
           next = prev ? prev.nextSibling : parent.firstChild;
@@ -11653,10 +12104,10 @@
         next = prev ? prev.nextSibling : parent.firstChild;
         if (next && track && track.node == parent) track.written = true;
         while (next) next = rm$1(next);
-      } else if (this.flags & 1 /* ChildDirty */) {
-        for (let child of this.children) if (child.flags & 7 /* Dirty */) {
+      } else if (this.flags & 1 /* ViewFlag.ChildDirty */) {
+        for (let child of this.children) if (child.flags & 7 /* ViewFlag.Dirty */) {
           child.sync(view, track);
-          child.flags &= ~7 /* Dirty */;
+          child.flags &= ~7 /* ViewFlag.Dirty */;
         }
       }
     }
@@ -11716,24 +12167,25 @@
       };
     }
     markDirty(andParent = false) {
-      this.flags |= 2 /* NodeDirty */;
+      this.flags |= 2 /* ViewFlag.NodeDirty */;
       this.markParentsDirty(andParent);
     }
     markParentsDirty(childList) {
       for (let parent = this.parent; parent; parent = parent.parent) {
-        if (childList) parent.flags |= 2 /* NodeDirty */;
-        if (parent.flags & 1 /* ChildDirty */) return;
-        parent.flags |= 1 /* ChildDirty */;
+        if (childList) parent.flags |= 2 /* ViewFlag.NodeDirty */;
+        if (parent.flags & 1 /* ViewFlag.ChildDirty */) return;
+        parent.flags |= 1 /* ViewFlag.ChildDirty */;
         childList = false;
       }
     }
     setParent(parent) {
       if (this.parent != parent) {
         this.parent = parent;
-        if (this.flags & 7 /* Dirty */) this.markParentsDirty(true);
+        if (this.flags & 7 /* ViewFlag.Dirty */) this.markParentsDirty(true);
       }
     }
     setDOM(dom) {
+      if (this.dom == dom) return;
       if (this.dom) this.dom.cmView = null;
       this.dom = dom;
       dom.cmView = this;
@@ -11749,7 +12201,7 @@
       this.markDirty();
       for (let i = from; i < to; i++) {
         let child = this.children[i];
-        if (child.parent == this) child.destroy();
+        if (child.parent == this && children.indexOf(child) < 0) child.destroy();
       }
       this.children.splice(from, to - from, ...children);
       for (let i = 0; i < children.length; i++) children[i].setParent(this);
@@ -11789,7 +12241,7 @@
       return false;
     }
     canReuseDOM(other) {
-      return other.constructor == this.constructor && !((this.flags | other.flags) & 8 /* Composition */);
+      return other.constructor == this.constructor && !((this.flags | other.flags) & 8 /* ViewFlag.Composition */);
     }
     // When this is a zero-length view with a side, this should return a
     // number <= 0 to indicate it is before its position, or a
@@ -11798,6 +12250,7 @@
       return 0;
     }
     destroy() {
+      for (let child of this.children) if (child.parent == this) child.destroy();
       this.parent = null;
     }
   }
@@ -11838,7 +12291,7 @@
     if (toI < children.length) {
       let after = children[toI];
       // Make sure the end of the child after the update is preserved in `after`
-      if (after && toOff < after.length) {
+      if (after && (toOff < after.length || after.breakAfter && (last === null || last === void 0 ? void 0 : last.breakAfter))) {
         // If we're splitting a child, separate part of it to avoid that
         // being mangled when updating the child before the update.
         if (fromI == toI) {
@@ -11852,7 +12305,7 @@
         } else {
           // Remove the start of the after element, if necessary, and
           // add it to `content`.
-          if (toOff) after.merge(0, toOff, null, false, 0, openEnd);
+          if (toOff || after.children.length && !after.children[0].length) after.merge(0, toOff, null, false, 0, openEnd);
           insert.push(after);
         }
       } else if (after === null || after === void 0 ? void 0 : after.breakAfter) {
@@ -11906,91 +12359,6 @@
     for (let view of insert) dLen += view.length;
     parent.length += dLen;
     replaceRange(parent, fromI, fromOff, toI, toOff, insert, 0, openStart, openEnd);
-  }
-  const LineBreakPlaceholder = "\uffff";
-  class DOMReader {
-    constructor(points, state) {
-      this.points = points;
-      this.text = "";
-      this.lineSeparator = state.facet(EditorState.lineSeparator);
-    }
-    append(text) {
-      this.text += text;
-    }
-    lineBreak() {
-      this.text += LineBreakPlaceholder;
-    }
-    readRange(start, end) {
-      if (!start) return this;
-      let parent = start.parentNode;
-      for (let cur = start;;) {
-        this.findPointBefore(parent, cur);
-        let oldLen = this.text.length;
-        this.readNode(cur);
-        let next = cur.nextSibling;
-        if (next == end) break;
-        let view = ContentView.get(cur),
-          nextView = ContentView.get(next);
-        if (view && nextView ? view.breakAfter : (view ? view.breakAfter : isBlockElement(cur)) || isBlockElement(next) && (cur.nodeName != "BR" || cur.cmIgnore) && this.text.length > oldLen) this.lineBreak();
-        cur = next;
-      }
-      this.findPointBefore(parent, end);
-      return this;
-    }
-    readTextNode(node) {
-      let text = node.nodeValue;
-      for (let point of this.points) if (point.node == node) point.pos = this.text.length + Math.min(point.offset, text.length);
-      for (let off = 0, re = this.lineSeparator ? null : /\r\n?|\n/g;;) {
-        let nextBreak = -1,
-          breakSize = 1,
-          m;
-        if (this.lineSeparator) {
-          nextBreak = text.indexOf(this.lineSeparator, off);
-          breakSize = this.lineSeparator.length;
-        } else if (m = re.exec(text)) {
-          nextBreak = m.index;
-          breakSize = m[0].length;
-        }
-        this.append(text.slice(off, nextBreak < 0 ? text.length : nextBreak));
-        if (nextBreak < 0) break;
-        this.lineBreak();
-        if (breakSize > 1) for (let point of this.points) if (point.node == node && point.pos > this.text.length) point.pos -= breakSize - 1;
-        off = nextBreak + breakSize;
-      }
-    }
-    readNode(node) {
-      if (node.cmIgnore) return;
-      let view = ContentView.get(node);
-      let fromView = view && view.overrideDOMText;
-      if (fromView != null) {
-        this.findPointInside(node, fromView.length);
-        for (let i = fromView.iter(); !i.next().done;) {
-          if (i.lineBreak) this.lineBreak();else this.append(i.value);
-        }
-      } else if (node.nodeType == 3) {
-        this.readTextNode(node);
-      } else if (node.nodeName == "BR") {
-        if (node.nextSibling) this.lineBreak();
-      } else if (node.nodeType == 1) {
-        this.readRange(node.firstChild, null);
-      }
-    }
-    findPointBefore(node, next) {
-      for (let point of this.points) if (point.node == node && node.childNodes[point.offset] == next) point.pos = this.text.length;
-    }
-    findPointInside(node, maxLen) {
-      for (let point of this.points) if (node.nodeType == 3 ? point.node == node : node.contains(point.node)) point.pos = this.text.length + Math.min(maxLen, point.offset);
-    }
-  }
-  function isBlockElement(node) {
-    return node.nodeType == 1 && /^(DIV|P|LI|UL|OL|BLOCKQUOTE|DD|DT|H\d|SECTION|PRE)$/.test(node.nodeName);
-  }
-  class DOMPoint {
-    constructor(node, offset) {
-      this.node = node;
-      this.offset = offset;
-      this.pos = -1;
-    }
   }
   let nav = typeof navigator != "undefined" ? navigator : {
     userAgent: "",
@@ -12051,7 +12419,7 @@
       if (dom.nodeType == 3) this.createDOM(dom);
     }
     merge(from, to, source) {
-      if (this.flags & 8 /* Composition */ || source && (!(source instanceof TextView) || this.length - (to - from) + source.length > MaxJoinLen || source.flags & 8 /* Composition */)) return false;
+      if (this.flags & 8 /* ViewFlag.Composition */ || source && (!(source instanceof TextView) || this.length - (to - from) + source.length > MaxJoinLen || source.flags & 8 /* ViewFlag.Composition */)) return false;
       this.text = this.text.slice(0, from) + (source ? source.text : "") + this.text.slice(to);
       this.markDirty();
       return true;
@@ -12060,7 +12428,7 @@
       let result = new TextView(this.text.slice(from));
       this.text = this.text.slice(0, from);
       this.markDirty();
-      result.flags |= this.flags & 8 /* Composition */;
+      result.flags |= this.flags & 8 /* ViewFlag.Composition */;
       return result;
     }
     localPosFromDOM(node, offset) {
@@ -12096,23 +12464,23 @@
       return dom;
     }
     canReuseDOM(other) {
-      return super.canReuseDOM(other) && !((this.flags | other.flags) & 8 /* Composition */);
+      return super.canReuseDOM(other) && !((this.flags | other.flags) & 8 /* ViewFlag.Composition */);
     }
 
     reuseDOM(node) {
       if (node.nodeName == this.mark.tagName.toUpperCase()) {
         this.setDOM(node);
-        this.flags |= 4 /* AttrsDirty */ | 2 /* NodeDirty */;
+        this.flags |= 4 /* ViewFlag.AttrsDirty */ | 2 /* ViewFlag.NodeDirty */;
       }
     }
 
     sync(view, track) {
-      if (!this.dom) this.setDOM(this.setAttrs(document.createElement(this.mark.tagName)));else if (this.flags & 4 /* AttrsDirty */) this.setAttrs(this.dom);
+      if (!this.dom) this.setDOM(this.setAttrs(document.createElement(this.mark.tagName)));else if (this.flags & 4 /* ViewFlag.AttrsDirty */) this.setAttrs(this.dom);
       super.sync(view, track);
     }
     merge(from, to, source, _hasStart, openStart, openEnd) {
       if (source && (!(source instanceof MarkView && source.mark.eq(this.mark)) || from && openStart <= 0 || to < this.length && openEnd <= 0)) return false;
-      mergeChildrenInto(this, from, to, source ? source.children : [], openStart - 1, openEnd - 1);
+      mergeChildrenInto(this, from, to, source ? source.children.slice() : [], openStart - 1, openEnd - 1);
       this.markDirty();
       return true;
     }
@@ -12172,15 +12540,15 @@
   }
   // Also used for collapsed ranges that don't have a placeholder widget!
   class WidgetView extends ContentView {
+    static create(widget, length, side) {
+      return new WidgetView(widget, length, side);
+    }
     constructor(widget, length, side) {
       super();
       this.widget = widget;
       this.length = length;
       this.side = side;
       this.prevWidget = null;
-    }
-    static create(widget, length, side) {
-      return new WidgetView(widget, length, side);
     }
     split(from) {
       let result = WidgetView.create(this.widget, this.length - from, this.side);
@@ -12406,10 +12774,16 @@
     return true;
   }
   function updateAttrs(dom, prev, attrs) {
-    let changed = null;
-    if (prev) for (let name in prev) if (!(attrs && name in attrs)) dom.removeAttribute(changed = name);
-    if (attrs) for (let name in attrs) if (!(prev && prev[name] == attrs[name])) dom.setAttribute(changed = name, attrs[name]);
-    return !!changed;
+    let changed = false;
+    if (prev) for (let name in prev) if (!(attrs && name in attrs)) {
+      changed = true;
+      if (name == "style") dom.style.cssText = "";else dom.removeAttribute(name);
+    }
+    if (attrs) for (let name in attrs) if (!(prev && prev[name] == attrs[name])) {
+      changed = true;
+      if (name == "style") dom.style.cssText = attrs[name];else dom.setAttribute(name, attrs[name]);
+    }
+    return changed;
   }
   function getAttrs(dom) {
     let attrs = Object.create(null);
@@ -12418,6 +12792,247 @@
       attrs[attr.name] = attr.value;
     }
     return attrs;
+  }
+  class LineView extends ContentView {
+    constructor() {
+      super(...arguments);
+      this.children = [];
+      this.length = 0;
+      this.prevAttrs = undefined;
+      this.attrs = null;
+      this.breakAfter = 0;
+    }
+    // Consumes source
+    merge(from, to, source, hasStart, openStart, openEnd) {
+      if (source) {
+        if (!(source instanceof LineView)) return false;
+        if (!this.dom) source.transferDOM(this); // Reuse source.dom when appropriate
+      }
+
+      if (hasStart) this.setDeco(source ? source.attrs : null);
+      mergeChildrenInto(this, from, to, source ? source.children.slice() : [], openStart, openEnd);
+      return true;
+    }
+    split(at) {
+      let end = new LineView();
+      end.breakAfter = this.breakAfter;
+      if (this.length == 0) return end;
+      let {
+        i,
+        off
+      } = this.childPos(at);
+      if (off) {
+        end.append(this.children[i].split(off), 0);
+        this.children[i].merge(off, this.children[i].length, null, false, 0, 0);
+        i++;
+      }
+      for (let j = i; j < this.children.length; j++) end.append(this.children[j], 0);
+      while (i > 0 && this.children[i - 1].length == 0) this.children[--i].destroy();
+      this.children.length = i;
+      this.markDirty();
+      this.length = at;
+      return end;
+    }
+    transferDOM(other) {
+      if (!this.dom) return;
+      this.markDirty();
+      other.setDOM(this.dom);
+      other.prevAttrs = this.prevAttrs === undefined ? this.attrs : this.prevAttrs;
+      this.prevAttrs = undefined;
+      this.dom = null;
+    }
+    setDeco(attrs) {
+      if (!attrsEq(this.attrs, attrs)) {
+        if (this.dom) {
+          this.prevAttrs = this.attrs;
+          this.markDirty();
+        }
+        this.attrs = attrs;
+      }
+    }
+    append(child, openStart) {
+      joinInlineInto(this, child, openStart);
+    }
+    // Only called when building a line view in ContentBuilder
+    addLineDeco(deco) {
+      let attrs = deco.spec.attributes,
+        cls = deco.spec.class;
+      if (attrs) this.attrs = combineAttrs(attrs, this.attrs || {});
+      if (cls) this.attrs = combineAttrs({
+        class: cls
+      }, this.attrs || {});
+    }
+    domAtPos(pos) {
+      return inlineDOMAtPos(this, pos);
+    }
+    reuseDOM(node) {
+      if (node.nodeName == "DIV") {
+        this.setDOM(node);
+        this.flags |= 4 /* ViewFlag.AttrsDirty */ | 2 /* ViewFlag.NodeDirty */;
+      }
+    }
+
+    sync(view, track) {
+      var _a;
+      if (!this.dom) {
+        this.setDOM(document.createElement("div"));
+        this.dom.className = "cm-line";
+        this.prevAttrs = this.attrs ? null : undefined;
+      } else if (this.flags & 4 /* ViewFlag.AttrsDirty */) {
+        clearAttributes(this.dom);
+        this.dom.className = "cm-line";
+        this.prevAttrs = this.attrs ? null : undefined;
+      }
+      if (this.prevAttrs !== undefined) {
+        updateAttrs(this.dom, this.prevAttrs, this.attrs);
+        this.dom.classList.add("cm-line");
+        this.prevAttrs = undefined;
+      }
+      super.sync(view, track);
+      let last = this.dom.lastChild;
+      while (last && ContentView.get(last) instanceof MarkView) last = last.lastChild;
+      if (!last || !this.length || last.nodeName != "BR" && ((_a = ContentView.get(last)) === null || _a === void 0 ? void 0 : _a.isEditable) == false && (!browser.ios || !this.children.some(ch => ch instanceof TextView))) {
+        let hack = document.createElement("BR");
+        hack.cmIgnore = true;
+        this.dom.appendChild(hack);
+      }
+    }
+    measureTextSize() {
+      if (this.children.length == 0 || this.length > 20) return null;
+      let totalWidth = 0,
+        textHeight;
+      for (let child of this.children) {
+        if (!(child instanceof TextView) || /[^ -~]/.test(child.text)) return null;
+        let rects = clientRectsFor(child.dom);
+        if (rects.length != 1) return null;
+        totalWidth += rects[0].width;
+        textHeight = rects[0].height;
+      }
+      return !totalWidth ? null : {
+        lineHeight: this.dom.getBoundingClientRect().height,
+        charWidth: totalWidth / this.length,
+        textHeight
+      };
+    }
+    coordsAt(pos, side) {
+      let rect = coordsInChildren(this, pos, side);
+      // Correct rectangle height for empty lines when the returned
+      // height is larger than the text height.
+      if (!this.children.length && rect && this.parent) {
+        let {
+            heightOracle
+          } = this.parent.view.viewState,
+          height = rect.bottom - rect.top;
+        if (Math.abs(height - heightOracle.lineHeight) < 2 && heightOracle.textHeight < height) {
+          let dist = (height - heightOracle.textHeight) / 2;
+          return {
+            top: rect.top + dist,
+            bottom: rect.bottom - dist,
+            left: rect.left,
+            right: rect.left
+          };
+        }
+      }
+      return rect;
+    }
+    become(_other) {
+      return false;
+    }
+    covers() {
+      return true;
+    }
+    static find(docView, pos) {
+      for (let i = 0, off = 0; i < docView.children.length; i++) {
+        let block = docView.children[i],
+          end = off + block.length;
+        if (end >= pos) {
+          if (block instanceof LineView) return block;
+          if (end > pos) break;
+        }
+        off = end + block.breakAfter;
+      }
+      return null;
+    }
+  }
+  class BlockWidgetView extends ContentView {
+    constructor(widget, length, deco) {
+      super();
+      this.widget = widget;
+      this.length = length;
+      this.deco = deco;
+      this.breakAfter = 0;
+      this.prevWidget = null;
+    }
+    merge(from, to, source, _takeDeco, openStart, openEnd) {
+      if (source && (!(source instanceof BlockWidgetView) || !this.widget.compare(source.widget) || from > 0 && openStart <= 0 || to < this.length && openEnd <= 0)) return false;
+      this.length = from + (source ? source.length : 0) + (this.length - to);
+      return true;
+    }
+    domAtPos(pos) {
+      return pos == 0 ? DOMPos.before(this.dom) : DOMPos.after(this.dom, pos == this.length);
+    }
+    split(at) {
+      let len = this.length - at;
+      this.length = at;
+      let end = new BlockWidgetView(this.widget, len, this.deco);
+      end.breakAfter = this.breakAfter;
+      return end;
+    }
+    get children() {
+      return noChildren;
+    }
+    sync(view) {
+      if (!this.dom || !this.widget.updateDOM(this.dom, view)) {
+        if (this.dom && this.prevWidget) this.prevWidget.destroy(this.dom);
+        this.prevWidget = null;
+        this.setDOM(this.widget.toDOM(view));
+        this.dom.contentEditable = "false";
+      }
+    }
+    get overrideDOMText() {
+      return this.parent ? this.parent.view.state.doc.slice(this.posAtStart, this.posAtEnd) : Text.empty;
+    }
+    domBoundsAround() {
+      return null;
+    }
+    become(other) {
+      if (other instanceof BlockWidgetView && other.widget.constructor == this.widget.constructor) {
+        if (!other.widget.compare(this.widget)) this.markDirty(true);
+        if (this.dom && !this.prevWidget) this.prevWidget = this.widget;
+        this.widget = other.widget;
+        this.length = other.length;
+        this.deco = other.deco;
+        this.breakAfter = other.breakAfter;
+        return true;
+      }
+      return false;
+    }
+    ignoreMutation() {
+      return true;
+    }
+    ignoreEvent(event) {
+      return this.widget.ignoreEvent(event);
+    }
+    get isEditable() {
+      return false;
+    }
+    get isWidget() {
+      return true;
+    }
+    coordsAt(pos, side) {
+      return this.widget.coordsAt(this.dom, pos, side);
+    }
+    destroy() {
+      super.destroy();
+      if (this.dom) this.widget.destroy(this.dom);
+    }
+    covers(side) {
+      let {
+        startSide,
+        endSide
+      } = this.deco;
+      return startSide == endSide ? false : side < 0 ? startSide < 0 : endSide > 0;
+    }
   }
 
   /**
@@ -12583,7 +13198,7 @@
     static widget(spec) {
       let side = Math.max(-10000, Math.min(10000, spec.side || 0)),
         block = !!spec.block;
-      side += block && !spec.inlineOrder ? side > 0 ? 300000000 /* BlockAfter */ : -400000000 /* BlockBefore */ : side > 0 ? 100000000 /* InlineAfter */ : -100000000 /* InlineBefore */;
+      side += block && !spec.inlineOrder ? side > 0 ? 300000000 /* Side.BlockAfter */ : -400000000 /* Side.BlockBefore */ : side > 0 ? 100000000 /* Side.InlineAfter */ : -100000000 /* Side.InlineBefore */;
       return new PointDecoration(spec, side, side, block, spec.widget || null, false);
     }
     /**
@@ -12595,15 +13210,15 @@
         startSide,
         endSide;
       if (spec.isBlockGap) {
-        startSide = -500000000 /* GapStart */;
-        endSide = 400000000 /* GapEnd */;
+        startSide = -500000000 /* Side.GapStart */;
+        endSide = 400000000 /* Side.GapEnd */;
       } else {
         let {
           start,
           end
         } = getInclusive(spec, block);
-        startSide = (start ? block ? -300000000 /* BlockIncStart */ : -1 /* InlineIncStart */ : 500000000 /* NonIncStart */) - 1;
-        endSide = (end ? block ? 200000000 /* BlockIncEnd */ : 1 /* InlineIncEnd */ : -600000000 /* NonIncEnd */) + 1;
+        startSide = (start ? block ? -300000000 /* Side.BlockIncStart */ : -1 /* Side.InlineIncStart */ : 500000000 /* Side.NonIncStart */) - 1;
+        endSide = (end ? block ? 200000000 /* Side.BlockIncEnd */ : 1 /* Side.InlineIncEnd */ : -600000000 /* Side.NonIncEnd */) + 1;
       }
       return new PointDecoration(spec, startSide, endSide, block, spec.widget || null, true);
     }
@@ -12639,7 +13254,7 @@
         start,
         end
       } = getInclusive(spec);
-      super(start ? -1 /* InlineIncStart */ : 500000000 /* NonIncStart */, end ? 1 /* InlineIncEnd */ : -600000000 /* NonIncEnd */, null, spec);
+      super(start ? -1 /* Side.InlineIncStart */ : 500000000 /* Side.NonIncStart */, end ? 1 /* Side.InlineIncEnd */ : -600000000 /* Side.NonIncEnd */, null, spec);
       this.tagName = spec.tagName || "span";
       this.class = spec.class || "";
       this.attrs = spec.attributes || null;
@@ -12656,7 +13271,7 @@
   MarkDecoration.prototype.point = false;
   class LineDecoration extends Decoration {
     constructor(spec) {
-      super(-200000000 /* Line */, -200000000 /* Line */, null, spec);
+      super(-200000000 /* Side.Line */, -200000000 /* Side.Line */, null, spec);
     }
     eq(other) {
       return other instanceof LineDecoration && this.spec.class == other.spec.class && attrsEq(this.spec.attributes, other.spec.attributes);
@@ -12677,7 +13292,7 @@
     }
     // Only relevant when this.block == true
     get type() {
-      return this.startSide < this.endSide ? BlockType.WidgetRange : this.startSide <= 0 ? BlockType.WidgetBefore : BlockType.WidgetAfter;
+      return this.startSide != this.endSide ? BlockType.WidgetRange : this.startSide <= 0 ? BlockType.WidgetBefore : BlockType.WidgetAfter;
     }
     get heightRelevant() {
       return this.block || !!this.widget && (this.widget.estimatedHeight >= 5 || this.widget.lineBreaks > 0);
@@ -12711,240 +13326,6 @@
     let last = ranges.length - 1;
     if (last >= 0 && ranges[last] + margin >= from) ranges[last] = Math.max(ranges[last], to);else ranges.push(from, to);
   }
-  class LineView extends ContentView {
-    constructor() {
-      super(...arguments);
-      this.children = [];
-      this.length = 0;
-      this.prevAttrs = undefined;
-      this.attrs = null;
-      this.breakAfter = 0;
-    }
-    // Consumes source
-    merge(from, to, source, hasStart, openStart, openEnd) {
-      if (source) {
-        if (!(source instanceof LineView)) return false;
-        if (!this.dom) source.transferDOM(this); // Reuse source.dom when appropriate
-      }
-
-      if (hasStart) this.setDeco(source ? source.attrs : null);
-      mergeChildrenInto(this, from, to, source ? source.children : [], openStart, openEnd);
-      return true;
-    }
-    split(at) {
-      let end = new LineView();
-      end.breakAfter = this.breakAfter;
-      if (this.length == 0) return end;
-      let {
-        i,
-        off
-      } = this.childPos(at);
-      if (off) {
-        end.append(this.children[i].split(off), 0);
-        this.children[i].merge(off, this.children[i].length, null, false, 0, 0);
-        i++;
-      }
-      for (let j = i; j < this.children.length; j++) end.append(this.children[j], 0);
-      while (i > 0 && this.children[i - 1].length == 0) this.children[--i].destroy();
-      this.children.length = i;
-      this.markDirty();
-      this.length = at;
-      return end;
-    }
-    transferDOM(other) {
-      if (!this.dom) return;
-      this.markDirty();
-      other.setDOM(this.dom);
-      other.prevAttrs = this.prevAttrs === undefined ? this.attrs : this.prevAttrs;
-      this.prevAttrs = undefined;
-      this.dom = null;
-    }
-    setDeco(attrs) {
-      if (!attrsEq(this.attrs, attrs)) {
-        if (this.dom) {
-          this.prevAttrs = this.attrs;
-          this.markDirty();
-        }
-        this.attrs = attrs;
-      }
-    }
-    append(child, openStart) {
-      joinInlineInto(this, child, openStart);
-    }
-    // Only called when building a line view in ContentBuilder
-    addLineDeco(deco) {
-      let attrs = deco.spec.attributes,
-        cls = deco.spec.class;
-      if (attrs) this.attrs = combineAttrs(attrs, this.attrs || {});
-      if (cls) this.attrs = combineAttrs({
-        class: cls
-      }, this.attrs || {});
-    }
-    domAtPos(pos) {
-      return inlineDOMAtPos(this, pos);
-    }
-    reuseDOM(node) {
-      if (node.nodeName == "DIV") {
-        this.setDOM(node);
-        this.flags |= 4 /* AttrsDirty */ | 2 /* NodeDirty */;
-      }
-    }
-
-    sync(view, track) {
-      var _a;
-      if (!this.dom) {
-        this.setDOM(document.createElement("div"));
-        this.dom.className = "cm-line";
-        this.prevAttrs = this.attrs ? null : undefined;
-      } else if (this.flags & 4 /* AttrsDirty */) {
-        clearAttributes(this.dom);
-        this.dom.className = "cm-line";
-        this.prevAttrs = this.attrs ? null : undefined;
-      }
-      if (this.prevAttrs !== undefined) {
-        updateAttrs(this.dom, this.prevAttrs, this.attrs);
-        this.dom.classList.add("cm-line");
-        this.prevAttrs = undefined;
-      }
-      super.sync(view, track);
-      let last = this.dom.lastChild;
-      while (last && ContentView.get(last) instanceof MarkView) last = last.lastChild;
-      if (!last || !this.length || last.nodeName != "BR" && ((_a = ContentView.get(last)) === null || _a === void 0 ? void 0 : _a.isEditable) == false && (!browser.ios || !this.children.some(ch => ch instanceof TextView))) {
-        let hack = document.createElement("BR");
-        hack.cmIgnore = true;
-        this.dom.appendChild(hack);
-      }
-    }
-    measureTextSize() {
-      if (this.children.length == 0 || this.length > 20) return null;
-      let totalWidth = 0,
-        textHeight;
-      for (let child of this.children) {
-        if (!(child instanceof TextView) || /[^ -~]/.test(child.text)) return null;
-        let rects = clientRectsFor(child.dom);
-        if (rects.length != 1) return null;
-        totalWidth += rects[0].width;
-        textHeight = rects[0].height;
-      }
-      return !totalWidth ? null : {
-        lineHeight: this.dom.getBoundingClientRect().height,
-        charWidth: totalWidth / this.length,
-        textHeight
-      };
-    }
-    coordsAt(pos, side) {
-      let rect = coordsInChildren(this, pos, side);
-      // Correct rectangle height for empty lines when the returned
-      // height is larger than the text height.
-      if (!this.children.length && rect && this.parent) {
-        let {
-            heightOracle
-          } = this.parent.view.viewState,
-          height = rect.bottom - rect.top;
-        if (Math.abs(height - heightOracle.lineHeight) < 2 && heightOracle.textHeight < height) {
-          let dist = (height - heightOracle.textHeight) / 2;
-          return {
-            top: rect.top + dist,
-            bottom: rect.bottom - dist,
-            left: rect.left,
-            right: rect.left
-          };
-        }
-      }
-      return rect;
-    }
-    become(_other) {
-      return false;
-    }
-    get type() {
-      return BlockType.Text;
-    }
-    static find(docView, pos) {
-      for (let i = 0, off = 0; i < docView.children.length; i++) {
-        let block = docView.children[i],
-          end = off + block.length;
-        if (end >= pos) {
-          if (block instanceof LineView) return block;
-          if (end > pos) break;
-        }
-        off = end + block.breakAfter;
-      }
-      return null;
-    }
-  }
-  class BlockWidgetView extends ContentView {
-    constructor(widget, length, type) {
-      super();
-      this.widget = widget;
-      this.length = length;
-      this.type = type;
-      this.breakAfter = 0;
-      this.prevWidget = null;
-    }
-    merge(from, to, source, _takeDeco, openStart, openEnd) {
-      if (source && (!(source instanceof BlockWidgetView) || !this.widget.compare(source.widget) || from > 0 && openStart <= 0 || to < this.length && openEnd <= 0)) return false;
-      this.length = from + (source ? source.length : 0) + (this.length - to);
-      return true;
-    }
-    domAtPos(pos) {
-      return pos == 0 ? DOMPos.before(this.dom) : DOMPos.after(this.dom, pos == this.length);
-    }
-    split(at) {
-      let len = this.length - at;
-      this.length = at;
-      let end = new BlockWidgetView(this.widget, len, this.type);
-      end.breakAfter = this.breakAfter;
-      return end;
-    }
-    get children() {
-      return noChildren;
-    }
-    sync(view) {
-      if (!this.dom || !this.widget.updateDOM(this.dom, view)) {
-        if (this.dom && this.prevWidget) this.prevWidget.destroy(this.dom);
-        this.prevWidget = null;
-        this.setDOM(this.widget.toDOM(view));
-        this.dom.contentEditable = "false";
-      }
-    }
-    get overrideDOMText() {
-      return this.parent ? this.parent.view.state.doc.slice(this.posAtStart, this.posAtEnd) : Text.empty;
-    }
-    domBoundsAround() {
-      return null;
-    }
-    become(other) {
-      if (other instanceof BlockWidgetView && other.widget.constructor == this.widget.constructor) {
-        if (!other.widget.compare(this.widget)) this.markDirty(true);
-        if (this.dom && !this.prevWidget) this.prevWidget = this.widget;
-        this.widget = other.widget;
-        this.length = other.length;
-        this.type = other.type;
-        this.breakAfter = other.breakAfter;
-        return true;
-      }
-      return false;
-    }
-    ignoreMutation() {
-      return true;
-    }
-    ignoreEvent(event) {
-      return this.widget.ignoreEvent(event);
-    }
-    get isEditable() {
-      return false;
-    }
-    get isWidget() {
-      return true;
-    }
-    coordsAt(pos, side) {
-      return this.widget.coordsAt(this.dom, pos, side);
-    }
-    destroy() {
-      super.destroy();
-      if (this.dom) this.widget.destroy(this.dom);
-    }
-  }
   class ContentBuilder {
     constructor(doc, pos, end, disallowBlockEffectsFor) {
       this.doc = doc;
@@ -12954,7 +13335,7 @@
       this.content = [];
       this.curLine = null;
       this.breakAtStart = 0;
-      this.pendingBuffer = 0 /* No */;
+      this.pendingBuffer = 0 /* Buf.No */;
       this.bufferMarks = [];
       // Set to false directly after a widget that covers the position after it
       this.atCursorPos = true;
@@ -12968,7 +13349,7 @@
     posCovered() {
       if (this.content.length == 0) return !this.breakAtStart && this.doc.lineAt(this.pos).from != this.pos;
       let last = this.content[this.content.length - 1];
-      return !last.breakAfter && !(last instanceof BlockWidgetView && last.type == BlockType.WidgetBefore);
+      return !(last.breakAfter || last instanceof BlockWidgetView && last.deco.endSide < 0);
     }
     getLine() {
       if (!this.curLine) {
@@ -12980,7 +13361,7 @@
     flushBuffer(active = this.bufferMarks) {
       if (this.pendingBuffer) {
         this.curLine.append(wrapMarks(new WidgetBufferView(-1), active), active.length);
-        this.pendingBuffer = 0 /* No */;
+        this.pendingBuffer = 0 /* Buf.No */;
       }
     }
 
@@ -12990,8 +13371,8 @@
       this.content.push(view);
     }
     finish(openEnd) {
-      if (this.pendingBuffer && openEnd <= this.bufferMarks.length) this.flushBuffer();else this.pendingBuffer = 0 /* No */;
-      if (!this.posCovered()) this.getLine();
+      if (this.pendingBuffer && openEnd <= this.bufferMarks.length) this.flushBuffer();else this.pendingBuffer = 0 /* Buf.No */;
+      if (!this.posCovered() && !(openEnd && this.content.length && this.content[this.content.length - 1] instanceof BlockWidgetView)) this.getLine();
     }
     buildText(length, active, openStart) {
       while (length > 0) {
@@ -13016,7 +13397,7 @@
             this.textOff = 0;
           }
         }
-        let take = Math.min(this.text.length - this.textOff, length, 512 /* Chunk */);
+        let take = Math.min(this.text.length - this.textOff, length, 512 /* T.Chunk */);
         this.flushBuffer(active.slice(active.length - openStart));
         this.getLine().append(wrapMarks(new TextView(this.text.slice(this.textOff, this.textOff + take)), active), openStart);
         this.atCursorPos = true;
@@ -13038,17 +13419,14 @@
       let len = to - from;
       if (deco instanceof PointDecoration) {
         if (deco.block) {
-          let {
-            type
-          } = deco;
-          if (type == BlockType.WidgetAfter && !this.posCovered()) this.getLine();
-          this.addBlockWidget(new BlockWidgetView(deco.widget || new NullWidget("div"), len, type));
+          if (deco.startSide > 0 && !this.posCovered()) this.getLine();
+          this.addBlockWidget(new BlockWidgetView(deco.widget || new NullWidget("div"), len, deco));
         } else {
           let view = WidgetView.create(deco.widget || new NullWidget("span"), len, len ? 0 : deco.startSide);
           let cursorBefore = this.atCursorPos && !view.isEditable && openStart <= active.length && (from < to || deco.startSide > 0);
           let cursorAfter = !view.isEditable && (from < to || openStart > active.length || deco.startSide <= 0);
           let line = this.getLine();
-          if (this.pendingBuffer == 2 /* IfCursor */ && !cursorBefore && !view.isEditable) this.pendingBuffer = 0 /* No */;
+          if (this.pendingBuffer == 2 /* Buf.IfCursor */ && !cursorBefore && !view.isEditable) this.pendingBuffer = 0 /* Buf.No */;
           this.flushBuffer(active);
           if (cursorBefore) {
             line.append(wrapMarks(new WidgetBufferView(1), active), openStart);
@@ -13056,7 +13434,7 @@
           }
           line.append(wrapMarks(view, active), openStart);
           this.atCursorPos = cursorAfter;
-          this.pendingBuffer = !cursorAfter ? 0 /* No */ : from < to || openStart > active.length ? 1 /* Yes */ : 2 /* IfCursor */;
+          this.pendingBuffer = !cursorAfter ? 0 /* Buf.No */ : from < to || openStart > active.length ? 1 /* Buf.Yes */ : 2 /* Buf.IfCursor */;
           if (this.pendingBuffer) this.bufferMarks = active.slice();
         }
       } else if (this.doc.lineAt(this.pos).from == this.pos) {
@@ -13120,15 +13498,26 @@
     combine: values => values.some(x => x)
   });
   class ScrollTarget {
-    constructor(range, y = "nearest", x = "nearest", yMargin = 5, xMargin = 5) {
+    constructor(range, y = "nearest", x = "nearest", yMargin = 5, xMargin = 5,
+    // This data structure is abused to also store precise scroll
+    // snapshots, instead of a `scrollIntoView` request. When this
+    // flag is `true`, `range` points at a position in the reference
+    // line, `yMargin` holds the difference between the top of that
+    // line and the top of the editor, and `xMargin` holds the
+    // editor's `scrollLeft`.
+    isSnapshot = false) {
       this.range = range;
       this.y = y;
       this.x = x;
       this.yMargin = yMargin;
       this.xMargin = xMargin;
+      this.isSnapshot = isSnapshot;
     }
     map(changes) {
-      return changes.empty ? this : new ScrollTarget(this.range.map(changes), this.y, this.x, this.yMargin, this.xMargin);
+      return changes.empty ? this : new ScrollTarget(this.range.map(changes), this.y, this.x, this.yMargin, this.xMargin, this.isSnapshot);
+    }
+    clip(state) {
+      return this.range.to <= state.doc.length ? this : new ScrollTarget(EditorSelection.cursor(state.doc.length), this.y, this.x, this.yMargin, this.xMargin, this.isSnapshot);
     }
   }
   const scrollIntoView$1 = /*@__PURE__*/StateEffect.define({
@@ -13173,10 +13562,15 @@
     /**
     @internal
     */
-    domEventHandlers, buildExtensions) {
+    domEventHandlers,
+    /**
+    @internal
+    */
+    domEventObservers, buildExtensions) {
       this.id = id;
       this.create = create;
       this.domEventHandlers = domEventHandlers;
+      this.domEventObservers = domEventObservers;
       this.extension = buildExtensions(this);
     }
     /**
@@ -13186,10 +13580,11 @@
     static define(create, spec) {
       const {
         eventHandlers,
+        eventObservers,
         provide,
         decorations: deco
       } = spec || {};
-      return new ViewPlugin(nextPluginID++, create, eventHandlers, plugin => {
+      return new ViewPlugin(nextPluginID++, create, eventHandlers, eventObservers, plugin => {
         let ext = [viewPlugin.of(plugin)];
         if (deco) ext.push(decorations.of(view => {
           let pluginInst = view.plugin(plugin);
@@ -13265,6 +13660,38 @@
   // Provide decorations
   const decorations = /*@__PURE__*/Facet.define();
   const atomicRanges = /*@__PURE__*/Facet.define();
+  const bidiIsolatedRanges = /*@__PURE__*/Facet.define();
+  function getIsolatedRanges(view, from, to) {
+    let isolates = view.state.facet(bidiIsolatedRanges);
+    if (!isolates.length) return isolates;
+    let sets = isolates.map(i => i instanceof Function ? i(view) : i);
+    let result = [];
+    RangeSet.spans(sets, from, to, {
+      point() {},
+      span(from, to, active, open) {
+        let level = result;
+        for (let i = active.length - 1; i >= 0; i--, open--) {
+          let iso = active[i].spec.bidiIsolate,
+            update;
+          if (iso == null) continue;
+          if (open > 0 && level.length && (update = level[level.length - 1]).to == from && update.direction == iso) {
+            update.to = to;
+            level = update.inner;
+          } else {
+            let add = {
+              from,
+              to,
+              direction: iso,
+              inner: []
+            };
+            level.push(add);
+            level = add.inner;
+          }
+        }
+      }
+    });
+    return result;
+  }
   const scrollMargins = /*@__PURE__*/Facet.define();
   function getScrollMargins(view) {
     let left = 0,
@@ -13377,27 +13804,27 @@
     update.
     */
     get viewportChanged() {
-      return (this.flags & 4 /* Viewport */) > 0;
+      return (this.flags & 4 /* UpdateFlag.Viewport */) > 0;
     }
     /**
     Indicates whether the height of a block element in the editor
     changed in this update.
     */
     get heightChanged() {
-      return (this.flags & 2 /* Height */) > 0;
+      return (this.flags & 2 /* UpdateFlag.Height */) > 0;
     }
     /**
     Returns true when the document was modified or the size of the
     editor, or elements within the editor, changed.
     */
     get geometryChanged() {
-      return this.docChanged || (this.flags & (8 /* Geometry */ | 2 /* Height */)) > 0;
+      return this.docChanged || (this.flags & (8 /* UpdateFlag.Geometry */ | 2 /* UpdateFlag.Height */)) > 0;
     }
     /**
     True when this update indicates a focus change.
     */
     get focusChanged() {
-      return (this.flags & 1 /* Focus */) > 0;
+      return (this.flags & 1 /* UpdateFlag.Focus */) > 0;
     }
     /**
     Whether the document changed in this update.
@@ -13459,7 +13886,7 @@
     Brackets[r] = -l;
   }
   function charType(ch) {
-    return ch <= 0xf7 ? LowTypes[ch] : 0x590 <= ch && ch <= 0x5f4 ? 2 /* R */ : 0x600 <= ch && ch <= 0x6f9 ? ArabicTypes[ch - 0x600] : 0x6ee <= ch && ch <= 0x8ac ? 4 /* AL */ : 0x2000 <= ch && ch <= 0x200b ? 256 /* NI */ : 0xfb50 <= ch && ch <= 0xfdff ? 4 /* AL */ : ch == 0x200c ? 256 /* NI */ : 1 /* L */;
+    return ch <= 0xf7 ? LowTypes[ch] : 0x590 <= ch && ch <= 0x5f4 ? 2 /* T.R */ : 0x600 <= ch && ch <= 0x6f9 ? ArabicTypes[ch - 0x600] : 0x6ee <= ch && ch <= 0x8ac ? 4 /* T.AL */ : 0x2000 <= ch && ch <= 0x200c ? 256 /* T.NI */ : 0xfb50 <= ch && ch <= 0xfdff ? 4 /* T.AL */ : 1 /* T.L */;
   }
 
   const BidiRE = /[\u0590-\u05f4\u0600-\u06ff\u0700-\u08ac\ufb50-\ufdff]/;
@@ -13468,6 +13895,12 @@
   (as in left-to-right or right-to-left).
   */
   class BidiSpan {
+    /**
+    The direction of this span.
+    */
+    get dir() {
+      return this.level % 2 ? RTL : LTR;
+    }
     /**
     @internal
     */
@@ -13491,12 +13924,6 @@
       this.from = from;
       this.to = to;
       this.level = level;
-    }
-    /**
-    The direction of this span.
-    */
-    get dir() {
-      return this.level % 2 ? RTL : LTR;
     }
     /**
     @internal
@@ -13523,144 +13950,278 @@
       return maybe;
     }
   }
+  function isolatesEq(a, b) {
+    if (a.length != b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      let iA = a[i],
+        iB = b[i];
+      if (iA.from != iB.from || iA.to != iB.to || iA.direction != iB.direction || !isolatesEq(iA.inner, iB.inner)) return false;
+    }
+    return true;
+  }
   // Reused array of character types
   const types = [];
-  function computeOrder(line, direction) {
-    let len = line.length,
-      outerType = direction == LTR ? 1 /* L */ : 2 /* R */,
-      oppositeType = direction == LTR ? 2 /* R */ : 1 /* L */;
-    if (!line || outerType == 1 /* L */ && !BidiRE.test(line)) return trivialOrder(len);
-    // W1. Examine each non-spacing mark (NSM) in the level run, and
-    // change the type of the NSM to the type of the previous
-    // character. If the NSM is at the start of the level run, it will
-    // get the type of sor.
-    // W2. Search backwards from each instance of a European number
-    // until the first strong type (R, L, AL, or sor) is found. If an
-    // AL is found, change the type of the European number to Arabic
-    // number.
-    // W3. Change all ALs to R.
-    // (Left after this: L, R, EN, AN, ET, CS, NI)
-    for (let i = 0, prev = outerType, prevStrong = outerType; i < len; i++) {
-      let type = charType(line.charCodeAt(i));
-      if (type == 512 /* NSM */) type = prev;else if (type == 8 /* EN */ && prevStrong == 4 /* AL */) type = 16 /* AN */;
-      types[i] = type == 4 /* AL */ ? 2 /* R */ : type;
-      if (type & 7 /* Strong */) prevStrong = type;
-      prev = type;
-    }
-    // W5. A sequence of European terminators adjacent to European
-    // numbers changes to all European numbers.
-    // W6. Otherwise, separators and terminators change to Other
-    // Neutral.
-    // W7. Search backwards from each instance of a European number
-    // until the first strong type (R, L, or sor) is found. If an L is
-    // found, then change the type of the European number to L.
-    // (Left after this: L, R, EN+AN, NI)
-    for (let i = 0, prev = outerType, prevStrong = outerType; i < len; i++) {
-      let type = types[i];
-      if (type == 128 /* CS */) {
-        if (i < len - 1 && prev == types[i + 1] && prev & 24 /* Num */) type = types[i] = prev;else types[i] = 256 /* NI */;
-      } else if (type == 64 /* ET */) {
-        let end = i + 1;
-        while (end < len && types[end] == 64 /* ET */) end++;
-        let replace = i && prev == 8 /* EN */ || end < len && types[end] == 8 /* EN */ ? prevStrong == 1 /* L */ ? 1 /* L */ : 8 /* EN */ : 256 /* NI */;
-        for (let j = i; j < end; j++) types[j] = replace;
-        i = end - 1;
-      } else if (type == 8 /* EN */ && prevStrong == 1 /* L */) {
-        types[i] = 1 /* L */;
+  // Fill in the character types (in `types`) from `from` to `to` and
+  // apply W normalization rules.
+  function computeCharTypes(line, rFrom, rTo, isolates, outerType) {
+    for (let iI = 0; iI <= isolates.length; iI++) {
+      let from = iI ? isolates[iI - 1].to : rFrom,
+        to = iI < isolates.length ? isolates[iI].from : rTo;
+      let prevType = iI ? 256 /* T.NI */ : outerType;
+      // W1. Examine each non-spacing mark (NSM) in the level run, and
+      // change the type of the NSM to the type of the previous
+      // character. If the NSM is at the start of the level run, it will
+      // get the type of sor.
+      // W2. Search backwards from each instance of a European number
+      // until the first strong type (R, L, AL, or sor) is found. If an
+      // AL is found, change the type of the European number to Arabic
+      // number.
+      // W3. Change all ALs to R.
+      // (Left after this: L, R, EN, AN, ET, CS, NI)
+      for (let i = from, prev = prevType, prevStrong = prevType; i < to; i++) {
+        let type = charType(line.charCodeAt(i));
+        if (type == 512 /* T.NSM */) type = prev;else if (type == 8 /* T.EN */ && prevStrong == 4 /* T.AL */) type = 16 /* T.AN */;
+        types[i] = type == 4 /* T.AL */ ? 2 /* T.R */ : type;
+        if (type & 7 /* T.Strong */) prevStrong = type;
+        prev = type;
       }
+      // W5. A sequence of European terminators adjacent to European
+      // numbers changes to all European numbers.
+      // W6. Otherwise, separators and terminators change to Other
+      // Neutral.
+      // W7. Search backwards from each instance of a European number
+      // until the first strong type (R, L, or sor) is found. If an L is
+      // found, then change the type of the European number to L.
+      // (Left after this: L, R, EN+AN, NI)
+      for (let i = from, prev = prevType, prevStrong = prevType; i < to; i++) {
+        let type = types[i];
+        if (type == 128 /* T.CS */) {
+          if (i < to - 1 && prev == types[i + 1] && prev & 24 /* T.Num */) type = types[i] = prev;else types[i] = 256 /* T.NI */;
+        } else if (type == 64 /* T.ET */) {
+          let end = i + 1;
+          while (end < to && types[end] == 64 /* T.ET */) end++;
+          let replace = i && prev == 8 /* T.EN */ || end < rTo && types[end] == 8 /* T.EN */ ? prevStrong == 1 /* T.L */ ? 1 /* T.L */ : 8 /* T.EN */ : 256 /* T.NI */;
+          for (let j = i; j < end; j++) types[j] = replace;
+          i = end - 1;
+        } else if (type == 8 /* T.EN */ && prevStrong == 1 /* T.L */) {
+          types[i] = 1 /* T.L */;
+        }
 
-      prev = type;
-      if (type & 7 /* Strong */) prevStrong = type;
+        prev = type;
+        if (type & 7 /* T.Strong */) prevStrong = type;
+      }
     }
-    // N0. Process bracket pairs in an isolating run sequence
-    // sequentially in the logical order of the text positions of the
-    // opening paired brackets using the logic given below. Within this
-    // scope, bidirectional types EN and AN are treated as R.
-    for (let i = 0, sI = 0, context = 0, ch, br, type; i < len; i++) {
-      // Keeps [startIndex, type, strongSeen] triples for each open
-      // bracket on BracketStack.
-      if (br = Brackets[ch = line.charCodeAt(i)]) {
-        if (br < 0) {
-          // Closing bracket
+  }
+  // Process brackets throughout a run sequence.
+  function processBracketPairs(line, rFrom, rTo, isolates, outerType) {
+    let oppositeType = outerType == 1 /* T.L */ ? 2 /* T.R */ : 1 /* T.L */;
+    for (let iI = 0, sI = 0, context = 0; iI <= isolates.length; iI++) {
+      let from = iI ? isolates[iI - 1].to : rFrom,
+        to = iI < isolates.length ? isolates[iI].from : rTo;
+      // N0. Process bracket pairs in an isolating run sequence
+      // sequentially in the logical order of the text positions of the
+      // opening paired brackets using the logic given below. Within this
+      // scope, bidirectional types EN and AN are treated as R.
+      for (let i = from, ch, br, type; i < to; i++) {
+        // Keeps [startIndex, type, strongSeen] triples for each open
+        // bracket on BracketStack.
+        if (br = Brackets[ch = line.charCodeAt(i)]) {
+          if (br < 0) {
+            // Closing bracket
+            for (let sJ = sI - 3; sJ >= 0; sJ -= 3) {
+              if (BracketStack[sJ + 1] == -br) {
+                let flags = BracketStack[sJ + 2];
+                let type = flags & 2 /* Bracketed.EmbedInside */ ? outerType : !(flags & 4 /* Bracketed.OppositeInside */) ? 0 : flags & 1 /* Bracketed.OppositeBefore */ ? oppositeType : outerType;
+                if (type) types[i] = types[BracketStack[sJ]] = type;
+                sI = sJ;
+                break;
+              }
+            }
+          } else if (BracketStack.length == 189 /* Bracketed.MaxDepth */) {
+            break;
+          } else {
+            BracketStack[sI++] = i;
+            BracketStack[sI++] = ch;
+            BracketStack[sI++] = context;
+          }
+        } else if ((type = types[i]) == 2 /* T.R */ || type == 1 /* T.L */) {
+          let embed = type == outerType;
+          context = embed ? 0 : 1 /* Bracketed.OppositeBefore */;
           for (let sJ = sI - 3; sJ >= 0; sJ -= 3) {
-            if (BracketStack[sJ + 1] == -br) {
-              let flags = BracketStack[sJ + 2];
-              let type = flags & 2 /* EmbedInside */ ? outerType : !(flags & 4 /* OppositeInside */) ? 0 : flags & 1 /* OppositeBefore */ ? oppositeType : outerType;
-              if (type) types[i] = types[BracketStack[sJ]] = type;
-              sI = sJ;
+            let cur = BracketStack[sJ + 2];
+            if (cur & 2 /* Bracketed.EmbedInside */) break;
+            if (embed) {
+              BracketStack[sJ + 2] |= 2 /* Bracketed.EmbedInside */;
+            } else {
+              if (cur & 4 /* Bracketed.OppositeInside */) break;
+              BracketStack[sJ + 2] |= 4 /* Bracketed.OppositeInside */;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function processNeutrals(rFrom, rTo, isolates, outerType) {
+    for (let iI = 0, prev = outerType; iI <= isolates.length; iI++) {
+      let from = iI ? isolates[iI - 1].to : rFrom,
+        to = iI < isolates.length ? isolates[iI].from : rTo;
+      // N1. A sequence of neutrals takes the direction of the
+      // surrounding strong text if the text on both sides has the same
+      // direction. European and Arabic numbers act as if they were R in
+      // terms of their influence on neutrals. Start-of-level-run (sor)
+      // and end-of-level-run (eor) are used at level run boundaries.
+      // N2. Any remaining neutrals take the embedding direction.
+      // (Left after this: L, R, EN+AN)
+      for (let i = from; i < to;) {
+        let type = types[i];
+        if (type == 256 /* T.NI */) {
+          let end = i + 1;
+          for (;;) {
+            if (end == to) {
+              if (iI == isolates.length) break;
+              end = isolates[iI++].to;
+              to = iI < isolates.length ? isolates[iI].from : rTo;
+            } else if (types[end] == 256 /* T.NI */) {
+              end++;
+            } else {
               break;
             }
           }
-        } else if (BracketStack.length == 189 /* MaxDepth */) {
-          break;
+          let beforeL = prev == 1 /* T.L */;
+          let afterL = (end < rTo ? types[end] : outerType) == 1 /* T.L */;
+          let replace = beforeL == afterL ? beforeL ? 1 /* T.L */ : 2 /* T.R */ : outerType;
+          for (let j = end, jI = iI, fromJ = jI ? isolates[jI - 1].to : rFrom; j > i;) {
+            if (j == fromJ) {
+              j = isolates[--jI].from;
+              fromJ = jI ? isolates[jI - 1].to : rFrom;
+            }
+            types[--j] = replace;
+          }
+          i = end;
         } else {
-          BracketStack[sI++] = i;
-          BracketStack[sI++] = ch;
-          BracketStack[sI++] = context;
+          prev = type;
+          i++;
         }
-      } else if ((type = types[i]) == 2 /* R */ || type == 1 /* L */) {
-        let embed = type == outerType;
-        context = embed ? 0 : 1 /* OppositeBefore */;
-        for (let sJ = sI - 3; sJ >= 0; sJ -= 3) {
-          let cur = BracketStack[sJ + 2];
-          if (cur & 2 /* EmbedInside */) break;
-          if (embed) {
-            BracketStack[sJ + 2] |= 2 /* EmbedInside */;
+      }
+    }
+  }
+  // Find the contiguous ranges of character types in a given range, and
+  // emit spans for them. Flip the order of the spans as appropriate
+  // based on the level, and call through to compute the spans for
+  // isolates at the proper point.
+  function emitSpans(line, from, to, level, baseLevel, isolates, order) {
+    let ourType = level % 2 ? 2 /* T.R */ : 1 /* T.L */;
+    if (level % 2 == baseLevel % 2) {
+      // Same dir as base direction, don't flip
+      for (let iCh = from, iI = 0; iCh < to;) {
+        // Scan a section of characters in direction ourType, unless
+        // there's another type of char right after iCh, in which case
+        // we scan a section of other characters (which, if ourType ==
+        // T.L, may contain both T.R and T.AN chars).
+        let sameDir = true,
+          isNum = false;
+        if (iI == isolates.length || iCh < isolates[iI].from) {
+          let next = types[iCh];
+          if (next != ourType) {
+            sameDir = false;
+            isNum = next == 16 /* T.AN */;
+          }
+        }
+        // Holds an array of isolates to pass to a recursive call if we
+        // must recurse (to distinguish T.AN inside an RTL section in
+        // LTR text), null if we can emit directly
+        let recurse = !sameDir && ourType == 1 /* T.L */ ? [] : null;
+        let localLevel = sameDir ? level : level + 1;
+        let iScan = iCh;
+        run: for (;;) {
+          if (iI < isolates.length && iScan == isolates[iI].from) {
+            if (isNum) break run;
+            let iso = isolates[iI];
+            // Scan ahead to verify that there is another char in this dir after the isolate(s)
+            if (!sameDir) for (let upto = iso.to, jI = iI + 1;;) {
+              if (upto == to) break run;
+              if (jI < isolates.length && isolates[jI].from == upto) upto = isolates[jI++].to;else if (types[upto] == ourType) break run;else break;
+            }
+            iI++;
+            if (recurse) {
+              recurse.push(iso);
+            } else {
+              if (iso.from > iCh) order.push(new BidiSpan(iCh, iso.from, localLevel));
+              let dirSwap = iso.direction == LTR != !(localLevel % 2);
+              computeSectionOrder(line, dirSwap ? level + 1 : level, baseLevel, iso.inner, iso.from, iso.to, order);
+              iCh = iso.to;
+            }
+            iScan = iso.to;
+          } else if (iScan == to || (sameDir ? types[iScan] != ourType : types[iScan] == ourType)) {
+            break;
           } else {
-            if (cur & 4 /* OppositeInside */) break;
-            BracketStack[sJ + 2] |= 4 /* OppositeInside */;
+            iScan++;
           }
         }
-      }
-    }
-    // N1. A sequence of neutrals takes the direction of the
-    // surrounding strong text if the text on both sides has the same
-    // direction. European and Arabic numbers act as if they were R in
-    // terms of their influence on neutrals. Start-of-level-run (sor)
-    // and end-of-level-run (eor) are used at level run boundaries.
-    // N2. Any remaining neutrals take the embedding direction.
-    // (Left after this: L, R, EN+AN)
-    for (let i = 0; i < len; i++) {
-      if (types[i] == 256 /* NI */) {
-        let end = i + 1;
-        while (end < len && types[end] == 256 /* NI */) end++;
-        let beforeL = (i ? types[i - 1] : outerType) == 1 /* L */;
-        let afterL = (end < len ? types[end] : outerType) == 1 /* L */;
-        let replace = beforeL == afterL ? beforeL ? 1 /* L */ : 2 /* R */ : outerType;
-        for (let j = i; j < end; j++) types[j] = replace;
-        i = end - 1;
-      }
-    }
-    // Here we depart from the documented algorithm, in order to avoid
-    // building up an actual levels array. Since there are only three
-    // levels (0, 1, 2) in an implementation that doesn't take
-    // explicit embedding into account, we can build up the order on
-    // the fly, without following the level-based algorithm.
-    let order = [];
-    if (outerType == 1 /* L */) {
-      for (let i = 0; i < len;) {
-        let start = i,
-          rtl = types[i++] != 1 /* L */;
-        while (i < len && rtl == (types[i] != 1 /* L */)) i++;
-        if (rtl) {
-          for (let j = i; j > start;) {
-            let end = j,
-              l = types[--j] != 2 /* R */;
-            while (j > start && l == (types[j - 1] != 2 /* R */)) j--;
-            order.push(new BidiSpan(j, end, l ? 2 : 1));
-          }
-        } else {
-          order.push(new BidiSpan(start, i, 0));
-        }
+        if (recurse) emitSpans(line, iCh, iScan, level + 1, baseLevel, recurse, order);else if (iCh < iScan) order.push(new BidiSpan(iCh, iScan, localLevel));
+        iCh = iScan;
       }
     } else {
-      for (let i = 0; i < len;) {
-        let start = i,
-          rtl = types[i++] == 2 /* R */;
-        while (i < len && rtl == (types[i] == 2 /* R */)) i++;
-        order.push(new BidiSpan(start, i, rtl ? 1 : 2));
+      // Iterate in reverse to flip the span order. Same code again, but
+      // going from the back of the section to the front
+      for (let iCh = to, iI = isolates.length; iCh > from;) {
+        let sameDir = true,
+          isNum = false;
+        if (!iI || iCh > isolates[iI - 1].to) {
+          let next = types[iCh - 1];
+          if (next != ourType) {
+            sameDir = false;
+            isNum = next == 16 /* T.AN */;
+          }
+        }
+
+        let recurse = !sameDir && ourType == 1 /* T.L */ ? [] : null;
+        let localLevel = sameDir ? level : level + 1;
+        let iScan = iCh;
+        run: for (;;) {
+          if (iI && iScan == isolates[iI - 1].to) {
+            if (isNum) break run;
+            let iso = isolates[--iI];
+            // Scan ahead to verify that there is another char in this dir after the isolate(s)
+            if (!sameDir) for (let upto = iso.from, jI = iI;;) {
+              if (upto == from) break run;
+              if (jI && isolates[jI - 1].to == upto) upto = isolates[--jI].from;else if (types[upto - 1] == ourType) break run;else break;
+            }
+            if (recurse) {
+              recurse.push(iso);
+            } else {
+              if (iso.to < iCh) order.push(new BidiSpan(iso.to, iCh, localLevel));
+              let dirSwap = iso.direction == LTR != !(localLevel % 2);
+              computeSectionOrder(line, dirSwap ? level + 1 : level, baseLevel, iso.inner, iso.from, iso.to, order);
+              iCh = iso.from;
+            }
+            iScan = iso.from;
+          } else if (iScan == from || (sameDir ? types[iScan - 1] != ourType : types[iScan - 1] == ourType)) {
+            break;
+          } else {
+            iScan--;
+          }
+        }
+        if (recurse) emitSpans(line, iScan, iCh, level + 1, baseLevel, recurse, order);else if (iScan < iCh) order.push(new BidiSpan(iScan, iCh, localLevel));
+        iCh = iScan;
       }
     }
+  }
+  function computeSectionOrder(line, level, baseLevel, isolates, from, to, order) {
+    let outerType = level % 2 ? 2 /* T.R */ : 1 /* T.L */;
+    computeCharTypes(line, from, to, isolates, outerType);
+    processBracketPairs(line, from, to, isolates, outerType);
+    processNeutrals(from, to, isolates, outerType);
+    emitSpans(line, from, to, level, baseLevel, isolates, order);
+  }
+  function computeOrder(line, direction, isolates) {
+    if (!line) return [new BidiSpan(0, 0, direction == RTL ? 1 : 0)];
+    if (direction == LTR && !isolates.length && !BidiRE.test(line)) return trivialOrder(line.length);
+    if (isolates.length) while (line.length > types.length) types[types.length] = 256 /* T.NI */; // Make sure types array has no gaps
+    let order = [],
+      level = direction == LTR ? 0 : 1;
+    computeSectionOrder(line, level, level, isolates, 0, line.length, order);
     return order;
   }
   function trivialOrder(length) {
@@ -13695,18 +14256,22 @@
     let indexForward = forward == (span.dir == dir);
     let nextIndex = findClusterBreak(line.text, startIndex, indexForward);
     movedOver = line.text.slice(Math.min(startIndex, nextIndex), Math.max(startIndex, nextIndex));
-    if (nextIndex != span.side(forward, dir)) return EditorSelection.cursor(nextIndex + line.from, indexForward ? -1 : 1, span.level);
+    if (nextIndex > span.from && nextIndex < span.to) return EditorSelection.cursor(nextIndex + line.from, indexForward ? -1 : 1, span.level);
     let nextSpan = spanI == (forward ? order.length - 1 : 0) ? null : order[spanI + (forward ? 1 : -1)];
     if (!nextSpan && span.level != dir) return EditorSelection.cursor(forward ? line.to : line.from, forward ? -1 : 1, dir);
     if (nextSpan && nextSpan.level < span.level) return EditorSelection.cursor(nextSpan.side(!forward, dir) + line.from, forward ? 1 : -1, nextSpan.level);
     return EditorSelection.cursor(nextIndex + line.from, forward ? -1 : 1, span.level);
   }
   class DocView extends ContentView {
+    get length() {
+      return this.view.state.doc.length;
+    }
     constructor(view) {
       super();
       this.view = view;
       this.decorations = [];
       this.dynamicDecorationMap = [];
+      this.domChanged = null;
       this.hasComposition = null;
       this.markedForComposition = new Set();
       // Track a minimum width for the editor. When measuring sizes in
@@ -13733,11 +14298,9 @@
       this.updateDeco();
       this.updateInner([new ChangedRange(0, 0, 0, view.state.doc.length)], 0, null);
     }
-    get length() {
-      return this.view.state.doc.length;
-    }
     // Update the document view to a given state.
     update(update) {
+      var _a;
       let changedRanges = update.changedRanges;
       if (this.minWidth > 0 && changedRanges.length) {
         if (!changedRanges.every(({
@@ -13750,7 +14313,12 @@
           this.minWidthTo = update.changes.mapPos(this.minWidthTo, 1);
         }
       }
-      let composition = this.view.inputState.composing < 0 ? null : findCompositionRange(this.view, update.changes);
+      let readCompositionAt = -1;
+      if (this.view.inputState.composing >= 0) {
+        if ((_a = this.domChanged) === null || _a === void 0 ? void 0 : _a.newSel) readCompositionAt = this.domChanged.newSel.head;else if (!touchesComposition(update.changes, this.hasComposition) && !update.selectionSet) readCompositionAt = update.state.selection.main.head;
+      }
+      let composition = readCompositionAt > -1 ? findCompositionRange(this.view, update.changes, readCompositionAt) : null;
+      this.domChanged = null;
       if (this.hasComposition) {
         this.markedForComposition.clear();
         let {
@@ -13773,7 +14341,7 @@
         deco = this.updateDeco();
       let decoDiff = findChangedDeco(prevDeco, deco, update.changes);
       changedRanges = ChangedRange.extendWithRanges(changedRanges, decoDiff);
-      if (!(this.flags & 7 /* Dirty */) && changedRanges.length == 0) {
+      if (!(this.flags & 7 /* ViewFlag.Dirty */) && changedRanges.length == 0) {
         return false;
       } else {
         this.updateInner(changedRanges, update.startState.doc.length, composition);
@@ -13794,7 +14362,7 @@
         // messes with the scroll position during DOM mutation (though
         // no relayout is triggered and I cannot imagine how it can
         // recompute the scroll position without a layout)
-        this.dom.style.height = this.view.viewState.contentHeight + "px";
+        this.dom.style.height = this.view.viewState.contentHeight / this.view.scaleY + "px";
         this.dom.style.flexBasis = this.minWidth ? this.minWidth + "px" : "";
         // Chrome will sometimes, when DOM mutations occur directly
         // around the selection, get confused and report a different
@@ -13805,11 +14373,11 @@
           written: false
         } : undefined;
         this.sync(this.view, track);
-        this.flags &= ~7 /* Dirty */;
+        this.flags &= ~7 /* ViewFlag.Dirty */;
         if (track && (track.written || observer.selectionRange.focusNode != track.node)) this.forceSelection = true;
         this.dom.style.height = "";
       });
-      this.markedForComposition.forEach(cView => cView.flags &= ~8 /* Composition */);
+      this.markedForComposition.forEach(cView => cView.flags &= ~8 /* ViewFlag.Composition */);
       let gaps = [];
       if (this.view.viewport.from || this.view.viewport.to < this.view.state.doc.length) for (let child of this.children) if (child instanceof BlockWidgetView && child.widget instanceof BlockGapWidget) gaps.push(child.dom);
       observer.updateGaps(gaps);
@@ -13869,7 +14437,7 @@
     }
     compositionView(composition) {
       let cur = new TextView(composition.text.nodeValue);
-      cur.flags |= 8 /* Composition */;
+      cur.flags |= 8 /* ViewFlag.Composition */;
       for (let {
         deco
       } of composition.marks) cur = new MarkView(deco, [cur], cur.length);
@@ -13879,13 +14447,11 @@
     }
     fixCompositionDOM(composition) {
       let fix = (dom, cView) => {
-        cView.flags |= 8 /* Composition */;
+        cView.flags |= 8 /* ViewFlag.Composition */ | (cView.children.some(c => c.flags & 7 /* ViewFlag.Dirty */) ? 1 /* ViewFlag.ChildDirty */ : 0);
         this.markedForComposition.add(cView);
         let prev = ContentView.get(dom);
-        if (prev != cView) {
-          if (prev) prev.dom = null;
-          cView.setDOM(dom);
-        }
+        if (prev && prev != cView) prev.dom = null;
+        cView.setDOM(dom);
       };
       let pos = this.childPos(composition.range.fromB, 1);
       let cView = this.children[pos.i];
@@ -13906,9 +14472,8 @@
       let force = this.forceSelection;
       this.forceSelection = false;
       let main = this.view.state.selection.main;
-      // FIXME need to handle the case where the selection falls inside a block range
-      let anchor = this.domAtPos(main.anchor);
-      let head = main.empty ? anchor : this.domAtPos(main.head);
+      let anchor = this.moveToLine(this.domAtPos(main.anchor));
+      let head = main.empty ? anchor : this.moveToLine(this.domAtPos(main.head));
       // Always reset on Firefox when next to an uneditable node to
       // avoid invisible cursor bugs (#111)
       if (browser.gecko && main.empty && !this.hasComposition && betweenUneditable(anchor)) {
@@ -13936,13 +14501,13 @@
             // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=1612076
             if (browser.gecko) {
               let nextTo = nextToUneditable(anchor.node, anchor.offset);
-              if (nextTo && nextTo != (1 /* Before */ | 2 /* After */)) {
-                let text = nearbyTextNode(anchor.node, anchor.offset, nextTo == 1 /* Before */ ? 1 : -1);
-                if (text) anchor = new DOMPos(text, nextTo == 1 /* Before */ ? 0 : text.nodeValue.length);
+              if (nextTo && nextTo != (1 /* NextTo.Before */ | 2 /* NextTo.After */)) {
+                let text = nearbyTextNode(anchor.node, anchor.offset, nextTo == 1 /* NextTo.Before */ ? 1 : -1);
+                if (text) anchor = new DOMPos(text.node, text.offset);
               }
             }
             rawSel.collapse(anchor.node, anchor.offset);
-            if (main.bidiLevel != null && domSel.cursorBidiLevel != null) domSel.cursorBidiLevel = main.bidiLevel;
+            if (main.bidiLevel != null && rawSel.caretBidiLevel !== undefined) rawSel.caretBidiLevel = main.bidiLevel;
           } else if (rawSel.extend) {
             // Selection.extend can be used to create an 'inverted' selection
             // (one where the focus is before the anchor), but not all
@@ -14001,6 +14566,24 @@
       let newRange = view.observer.selectionRange;
       if (view.docView.posFromDOM(newRange.anchorNode, newRange.anchorOffset) != cursor.from) sel.collapse(anchorNode, anchorOffset);
     }
+    // If a position is in/near a block widget, move it to a nearby text
+    // line, since we don't want the cursor inside a block widget.
+    moveToLine(pos) {
+      // Block widgets will return positions before/after them, which
+      // are thus directly in the document DOM element.
+      let dom = this.dom,
+        newPos;
+      if (pos.node != dom) return pos;
+      for (let i = pos.offset; !newPos && i < dom.childNodes.length; i++) {
+        let view = ContentView.get(dom.childNodes[i]);
+        if (view instanceof LineView) newPos = view.domAtPos(0);
+      }
+      for (let i = pos.offset - 1; !newPos && i >= 0; i--) {
+        let view = ContentView.get(dom.childNodes[i]);
+        if (view instanceof LineView) newPos = view.domAtPos(view.length);
+      }
+      return newPos ? new DOMPos(newPos.node, newPos.offset, true) : pos;
+    }
     nearest(dom) {
       for (let cur = dom; cur;) {
         let domView = ContentView.get(cur);
@@ -14028,12 +14611,20 @@
       return this.children[i].domAtPos(off);
     }
     coordsAt(pos, side) {
-      for (let off = this.length, i = this.children.length - 1;; i--) {
+      let best = null,
+        bestPos = 0;
+      for (let off = this.length, i = this.children.length - 1; i >= 0; i--) {
         let child = this.children[i],
-          start = off - child.breakAfter - child.length;
-        if (pos > start || pos == start && child.type != BlockType.WidgetBefore && child.type != BlockType.WidgetAfter && (!i || side == 2 || this.children[i - 1].breakAfter || this.children[i - 1].type == BlockType.WidgetBefore && side > -2)) return child.coordsAt(pos - start, side);
+          end = off - child.breakAfter,
+          start = end - child.length;
+        if (end < pos) break;
+        if (start <= pos && (start < pos || child.covers(-1)) && (end > pos || child.covers(1)) && (!best || child instanceof LineView && !(best instanceof LineView && side >= 0))) {
+          best = child;
+          bestPos = start;
+        }
         off = start;
       }
+      return best ? best.coordsAt(pos - bestPos, side) : null;
     }
     coordsForChar(pos) {
       let {
@@ -14057,7 +14648,11 @@
       let end = findClusterBreak(child.text, off);
       if (end == off) return null;
       let rects = textRange(child.dom, off, end).getClientRects();
-      return !rects.length || rects[0].top >= rects[0].bottom ? null : rects[0];
+      for (let i = 0; i < rects.length; i++) {
+        let rect = rects[i];
+        if (i == rects.length - 1 || rect.top < rect.bottom && rect.left < rect.right) return rect;
+      }
+      return null;
     }
     measureVisibleLineHeights(viewport) {
       let result = [],
@@ -14146,7 +14741,7 @@
         let next = i == vs.viewports.length ? null : vs.viewports[i];
         let end = next ? next.from - 1 : this.length;
         if (end > pos) {
-          let height = vs.lineBlockAt(end).bottom - vs.lineBlockAt(pos).top;
+          let height = (vs.lineBlockAt(end).bottom - vs.lineBlockAt(pos).top) / this.view.scaleY;
           deco.push(Decoration.replace({
             widget: new BlockGapWidget(height),
             block: true,
@@ -14168,6 +14763,12 @@
       return this.decorations = [...allDeco, this.computeBlockGapDeco(), this.view.viewState.lineGapDeco];
     }
     scrollIntoView(target) {
+      if (target.isSnapshot) {
+        let ref = this.view.viewState.lineBlockAt(target.range.head);
+        this.view.scrollDOM.scrollTop = ref.top - target.yMargin;
+        this.view.scrollDOM.scrollLeft = target.xMargin;
+        return;
+      }
       let {
         range
       } = target;
@@ -14187,7 +14788,11 @@
         right: rect.right + margins.right,
         bottom: rect.bottom + margins.bottom
       };
-      scrollRectIntoView(this.view.scrollDOM, targetRect, range.head < range.anchor ? -1 : 1, target.x, target.y, target.xMargin, target.yMargin, this.view.textDirection == Direction.LTR);
+      let {
+        offsetWidth,
+        offsetHeight
+      } = this.view.scrollDOM;
+      scrollRectIntoView(this.view.scrollDOM, targetRect, range.head < range.anchor ? -1 : 1, target.x, target.y, Math.max(Math.min(target.xMargin, offsetWidth), -offsetWidth), Math.max(Math.min(target.yMargin, offsetHeight), -offsetHeight), this.view.textDirection == Direction.LTR);
     }
   }
   function betweenUneditable(pos) {
@@ -14214,71 +14819,32 @@
       return this.height;
     }
   }
-  function findCompositionNode(view) {
+  function findCompositionNode(view, headPos) {
     let sel = view.observer.selectionRange;
     let textNode = sel.focusNode && nearbyTextNode(sel.focusNode, sel.focusOffset, 0);
     if (!textNode) return null;
-    let cView = ContentView.get(textNode);
-    let from, to;
-    if (cView instanceof TextView) {
-      from = cView.posAtStart;
-      to = from + cView.length;
-    } else {
-      up: for (let offset = 0, node = textNode;;) {
-        for (let sibling = node.previousSibling, cView; sibling; sibling = sibling.previousSibling) {
-          if (cView = ContentView.get(sibling)) {
-            from = to = cView.posAtEnd + offset;
-            break up;
-          }
-          let reader = new DOMReader([], view.state);
-          reader.readNode(sibling);
-          if (reader.text.indexOf(LineBreakPlaceholder) > -1) return null;
-          offset += reader.text.length;
-        }
-        node = node.parentNode;
-        if (!node) return null;
-        let parentView = ContentView.get(node);
-        if (parentView) {
-          from = to = parentView.posAtStart + offset;
-          break;
-        }
-      }
-    }
+    let from = headPos - textNode.offset;
     return {
       from,
-      to,
-      node: textNode
+      to: from + textNode.node.nodeValue.length,
+      node: textNode.node
     };
   }
-  function findCompositionRange(view, changes) {
-    let found = findCompositionNode(view);
+  function findCompositionRange(view, changes, headPos) {
+    let found = findCompositionNode(view, headPos);
     if (!found) return null;
     let {
-      from: fromA,
-      to: toA,
-      node: textNode
-    } = found;
-    let fromB = changes.mapPos(fromA, -1),
-      toB = changes.mapPos(toA, 1);
-    let text = textNode.nodeValue;
+        node: textNode,
+        from,
+        to
+      } = found,
+      text = textNode.nodeValue;
     // Don't try to preserve multi-line compositions
     if (/[\n\r]/.test(text)) return null;
-    if (toB - fromB != text.length) {
-      // If there is a length mismatch, see if mapping non-inclusively helps
-      let fromB2 = changes.mapPos(fromA, 1),
-        toB2 = changes.mapPos(toA, -1);
-      if (toB2 - fromB2 == text.length) fromB = fromB2, toB = toB2;
-      // See if we can find an instance of the text at either side
-      else if (view.state.doc.sliceString(toB - text.length, toB) == text) fromB = toB - text.length;else if (view.state.doc.sliceString(fromB, fromB + text.length) == text) toB = fromB + text.length;
-      // Not found
-      else return null;
-    }
-    let {
-      main
-    } = view.state.selection;
-    if (view.state.doc.sliceString(fromB, toB) != text || fromB > main.head || toB < main.head) return null;
+    if (view.state.doc.sliceString(found.from, found.to) != text) return null;
+    let inv = changes.invertedDesc;
+    let range = new ChangedRange(inv.mapPos(from), inv.mapPos(to), from, to);
     let marks = [];
-    let range = new ChangedRange(fromA, toA, fromB, toB);
     for (let parent = textNode.parentNode;; parent = parent.parentNode) {
       let parentView = ContentView.get(parent);
       if (parentView instanceof MarkView) marks.push({
@@ -14301,7 +14867,10 @@
   }
   function nearbyTextNode(startNode, startOffset, side) {
     if (side <= 0) for (let node = startNode, offset = startOffset;;) {
-      if (node.nodeType == 3) return node;
+      if (node.nodeType == 3) return {
+        node: node,
+        offset: offset
+      };
       if (node.nodeType == 1 && offset > 0) {
         node = node.childNodes[offset - 1];
         offset = maxOffset(node);
@@ -14310,7 +14879,10 @@
       }
     }
     if (side >= 0) for (let node = startNode, offset = startOffset;;) {
-      if (node.nodeType == 3) return node;
+      if (node.nodeType == 3) return {
+        node: node,
+        offset: offset
+      };
       if (node.nodeType == 1 && offset < node.childNodes.length && side >= 0) {
         node = node.childNodes[offset];
         offset = 0;
@@ -14322,9 +14894,9 @@
   }
   function nextToUneditable(node, offset) {
     if (node.nodeType != 1) return 0;
-    return (offset && node.childNodes[offset - 1].contentEditable == "false" ? 1 /* Before */ : 0) | (offset < node.childNodes.length && node.childNodes[offset].contentEditable == "false" ? 2 /* After */ : 0);
+    return (offset && node.childNodes[offset - 1].contentEditable == "false" ? 1 /* NextTo.Before */ : 0) | (offset < node.childNodes.length && node.childNodes[offset].contentEditable == "false" ? 2 /* NextTo.After */ : 0);
   }
-  class DecorationComparator$1 {
+  let DecorationComparator$1 = class DecorationComparator {
     constructor() {
       this.changes = [];
     }
@@ -14334,7 +14906,7 @@
     comparePoint(from, to) {
       addRange(from, to, this.changes);
     }
-  }
+  };
   function findChangedDeco(a, b, diff) {
     let comp = new DecorationComparator$1();
     RangeSet.compare(a, b, diff, comp);
@@ -14347,6 +14919,13 @@
       }
     }
     return false;
+  }
+  function touchesComposition(changes, composition) {
+    let touched = false;
+    if (composition) changes.iterChangedRanges((from, to) => {
+      if (from < composition.to && to > composition.from) touched = true;
+    });
+    return touched;
   }
   function groupAt(state, pos, bias = 1) {
     let categorize = state.charCategorizer(pos);
@@ -14669,7 +15248,7 @@
     let goal = start.goalColumn,
       startY;
     let rect = view.contentDOM.getBoundingClientRect();
-    let startCoords = view.coordsAtPos(startPos),
+    let startCoords = view.coordsAtPos(startPos, start.assoc || -1),
       docTop = view.documentTop;
     if (startCoords) {
       if (goal == null) goal = startCoords.left - rect.left;
@@ -14687,7 +15266,11 @@
         x: resolvedGoal,
         y: curY
       }, false, dir);
-      if (curY < rect.top || curY > rect.bottom || (dir < 0 ? pos < startPos : pos > startPos)) return EditorSelection.cursor(pos, start.assoc, undefined, goal);
+      if (curY < rect.top || curY > rect.bottom || (dir < 0 ? pos < startPos : pos > startPos)) {
+        let charRect = view.docView.coordsForChar(pos);
+        let assoc = !charRect || curY < charRect.top ? -1 : 1;
+        return EditorSelection.cursor(pos, assoc, undefined, goal);
+      }
     }
   }
   function skipAtomicRanges(atoms, pos, bias) {
@@ -14712,14 +15295,18 @@
 
   // This will also be where dragging info and such goes
   class InputState {
+    setSelectionOrigin(origin) {
+      this.lastSelectionOrigin = origin;
+      this.lastSelectionTime = Date.now();
+    }
     constructor(view) {
+      this.view = view;
       this.lastKeyCode = 0;
       this.lastKeyTime = 0;
       this.lastTouchTime = 0;
       this.lastFocusTime = 0;
       this.lastScrollTop = 0;
       this.lastScrollLeft = 0;
-      this.chromeScrollHack = -1;
       // On iOS, some keys need to have their default behavior happen
       // (after which we retroactively handle them and reset the DOM) to
       // avoid messing up the virtual keyboard state.
@@ -14729,8 +15316,7 @@
       this.lastEscPress = 0;
       this.lastContextMenu = 0;
       this.scrollHandlers = [];
-      this.registeredEvents = [];
-      this.customHandlers = [];
+      this.handlers = Object.create(null);
       // -1 means not in a composition. Otherwise, this counts the number
       // of changes made during the composition. The count is used to
       // avoid treating the start state of the composition, before any
@@ -14751,119 +15337,68 @@
       // the mutation events fire shortly after the compositionend event
       this.compositionPendingChange = false;
       this.mouseSelection = null;
-      let handleEvent = (handler, event) => {
-        if (this.ignoreDuringComposition(event)) return;
-        if (event.type == "keydown" && this.keydown(view, event)) return;
-        if (this.mustFlushObserver(event)) view.observer.forceFlush();
-        if (this.runCustomHandlers(event.type, view, event)) event.preventDefault();else handler(view, event);
-      };
-      for (let type in handlers) {
-        let handler = handlers[type];
-        view.contentDOM.addEventListener(type, event => {
-          if (eventBelongsToEditor(view, event)) handleEvent(handler, event);
-        }, handlerOptions[type]);
-        this.registeredEvents.push(type);
-      }
-      view.scrollDOM.addEventListener("mousedown", event => {
-        if (event.target == view.scrollDOM && event.clientY > view.contentDOM.getBoundingClientRect().bottom) {
-          handleEvent(handlers.mousedown, event);
-          if (!event.defaultPrevented && event.button == 2) {
-            // Make sure the content covers the entire scroller height, in order
-            // to catch a native context menu click below it
-            let start = view.contentDOM.style.minHeight;
-            view.contentDOM.style.minHeight = "100%";
-            setTimeout(() => view.contentDOM.style.minHeight = start, 200);
-          }
-        }
-      });
-      view.scrollDOM.addEventListener("drop", event => {
-        if (event.target == view.scrollDOM && event.clientY > view.contentDOM.getBoundingClientRect().bottom) handleEvent(handlers.drop, event);
-      });
-      if (browser.chrome && browser.chrome_version == 102) {
-        // FIXME remove at some point
-        // On Chrome 102, viewport updates somehow stop wheel-based
-        // scrolling. Turning off pointer events during the scroll seems
-        // to avoid the issue.
-        view.scrollDOM.addEventListener("wheel", () => {
-          if (this.chromeScrollHack < 0) view.contentDOM.style.pointerEvents = "none";else window.clearTimeout(this.chromeScrollHack);
-          this.chromeScrollHack = setTimeout(() => {
-            this.chromeScrollHack = -1;
-            view.contentDOM.style.pointerEvents = "";
-          }, 100);
-        }, {
-          passive: true
-        });
-      }
+      // When a drag from the editor is active, this points at the range
+      // being dragged.
+      this.draggedContent = null;
+      this.handleEvent = this.handleEvent.bind(this);
       this.notifiedFocused = view.hasFocus;
       // On Safari adding an input event handler somehow prevents an
       // issue where the composition vanishes when you press enter.
       if (browser.safari) view.contentDOM.addEventListener("input", () => null);
+      if (browser.gecko) firefoxCopyCutHack(view.contentDOM.ownerDocument);
     }
-    setSelectionOrigin(origin) {
-      this.lastSelectionOrigin = origin;
-      this.lastSelectionTime = Date.now();
+    handleEvent(event) {
+      if (!eventBelongsToEditor(this.view, event) || this.ignoreDuringComposition(event)) return;
+      if (event.type == "keydown" && this.keydown(event)) return;
+      this.runHandlers(event.type, event);
     }
-    ensureHandlers(view, plugins) {
-      var _a;
-      let handlers;
-      this.customHandlers = [];
-      for (let plugin of plugins) if (handlers = (_a = plugin.update(view).spec) === null || _a === void 0 ? void 0 : _a.domEventHandlers) {
-        this.customHandlers.push({
-          plugin: plugin.value,
-          handlers
+    runHandlers(type, event) {
+      let handlers = this.handlers[type];
+      if (handlers) {
+        for (let observer of handlers.observers) observer(this.view, event);
+        for (let handler of handlers.handlers) {
+          if (event.defaultPrevented) break;
+          if (handler(this.view, event)) {
+            event.preventDefault();
+            break;
+          }
+        }
+      }
+    }
+    ensureHandlers(plugins) {
+      let handlers = computeHandlers(plugins),
+        prev = this.handlers,
+        dom = this.view.contentDOM;
+      for (let type in handlers) if (type != "scroll") {
+        let passive = !handlers[type].handlers.length;
+        let exists = prev[type];
+        if (exists && passive != !exists.handlers.length) {
+          dom.removeEventListener(type, this.handleEvent);
+          exists = null;
+        }
+        if (!exists) dom.addEventListener(type, this.handleEvent, {
+          passive
         });
-        for (let type in handlers) if (this.registeredEvents.indexOf(type) < 0 && type != "scroll") {
-          this.registeredEvents.push(type);
-          view.contentDOM.addEventListener(type, event => {
-            if (!eventBelongsToEditor(view, event)) return;
-            if (this.runCustomHandlers(type, view, event)) event.preventDefault();
-          });
-        }
       }
+      for (let type in prev) if (type != "scroll" && !handlers[type]) dom.removeEventListener(type, this.handleEvent);
+      this.handlers = handlers;
     }
-    runCustomHandlers(type, view, event) {
-      for (let set of this.customHandlers) {
-        let handler = set.handlers[type];
-        if (handler) {
-          try {
-            if (handler.call(set.plugin, event, view) || event.defaultPrevented) return true;
-          } catch (e) {
-            logException(view.state, e);
-          }
-        }
-      }
-      return false;
-    }
-    runScrollHandlers(view, event) {
-      this.lastScrollTop = view.scrollDOM.scrollTop;
-      this.lastScrollLeft = view.scrollDOM.scrollLeft;
-      for (let set of this.customHandlers) {
-        let handler = set.handlers.scroll;
-        if (handler) {
-          try {
-            handler.call(set.plugin, event, view);
-          } catch (e) {
-            logException(view.state, e);
-          }
-        }
-      }
-    }
-    keydown(view, event) {
+    keydown(event) {
       // Must always run, even if a custom handler handled the event
       this.lastKeyCode = event.keyCode;
       this.lastKeyTime = Date.now();
       if (event.keyCode == 9 && Date.now() < this.lastEscPress + 2000) return true;
-      if (event.keyCode != 27 && modifierCodes.indexOf(event.keyCode) < 0) view.inputState.lastEscPress = 0;
+      if (event.keyCode != 27 && modifierCodes.indexOf(event.keyCode) < 0) this.view.inputState.lastEscPress = 0;
       // Chrome for Android usually doesn't fire proper key events, but
       // occasionally does, usually surrounded by a bunch of complicated
       // composition changes. When an enter or backspace key event is
       // seen, hold off on handling DOM events for a bit, and then
       // dispatch it.
       if (browser.android && browser.chrome && !event.synthetic && (event.keyCode == 13 || event.keyCode == 8)) {
-        view.observer.delayAndroidKey(event.key, event.keyCode);
+        this.view.observer.delayAndroidKey(event.key, event.keyCode);
         return true;
       }
-      // Prevent the default behavior of Enter on iOS makes the
+      // Preventing the default behavior of Enter on iOS makes the
       // virtual keyboard get stuck in the wrong (lowercase)
       // state. So we let it go through, and then, in
       // applyDOMChange, notify key handlers of it and reset to
@@ -14871,16 +15406,17 @@
       let pending;
       if (browser.ios && !event.synthetic && !event.altKey && !event.metaKey && ((pending = PendingKeys.find(key => key.keyCode == event.keyCode)) && !event.ctrlKey || EmacsyPendingKeys.indexOf(event.key) > -1 && event.ctrlKey && !event.shiftKey)) {
         this.pendingIOSKey = pending || event;
-        setTimeout(() => this.flushIOSKey(view), 250);
+        setTimeout(() => this.flushIOSKey(), 250);
         return true;
       }
+      if (event.keyCode != 229) this.view.observer.forceFlush();
       return false;
     }
-    flushIOSKey(view) {
+    flushIOSKey() {
       let key = this.pendingIOSKey;
       if (!key) return false;
       this.pendingIOSKey = undefined;
-      return dispatchKey(view.contentDOM, key.key, key.keyCode);
+      return dispatchKey(this.view.contentDOM, key.key, key.keyCode);
     }
     ignoreDuringComposition(event) {
       if (!/^key/.test(event.type)) return false;
@@ -14897,20 +15433,50 @@
       }
       return false;
     }
-    mustFlushObserver(event) {
-      return event.type == "keydown" && event.keyCode != 229;
-    }
     startMouseSelection(mouseSelection) {
       if (this.mouseSelection) this.mouseSelection.destroy();
       this.mouseSelection = mouseSelection;
     }
     update(update) {
       if (this.mouseSelection) this.mouseSelection.update(update);
+      if (this.draggedContent && update.docChanged) this.draggedContent = this.draggedContent.map(update.changes);
       if (update.transactions.length) this.lastKeyCode = this.lastSelectionTime = 0;
     }
     destroy() {
       if (this.mouseSelection) this.mouseSelection.destroy();
     }
+  }
+  function bindHandler(plugin, handler) {
+    return (view, event) => {
+      try {
+        return handler.call(plugin, event, view);
+      } catch (e) {
+        logException(view.state, e);
+      }
+    };
+  }
+  function computeHandlers(plugins) {
+    let result = Object.create(null);
+    function record(type) {
+      return result[type] || (result[type] = {
+        observers: [],
+        handlers: []
+      });
+    }
+    for (let plugin of plugins) {
+      let spec = plugin.spec;
+      if (spec && spec.domEventHandlers) for (let type in spec.domEventHandlers) {
+        let f = spec.domEventHandlers[type];
+        if (f) record(type).handlers.push(bindHandler(plugin.value, f));
+      }
+      if (spec && spec.domEventObservers) for (let type in spec.domEventObservers) {
+        let f = spec.domEventObservers[type];
+        if (f) record(type).observers.push(bindHandler(plugin.value, f));
+      }
+    }
+    for (let type in handlers) record(type).handlers.push(handlers[type]);
+    for (let type in observers) record(type).observers.push(observers[type]);
+    return result;
   }
   const PendingKeys = [{
     key: "Backspace",
@@ -14963,10 +15529,7 @@
     start(event) {
       // When clicking outside of the selection, immediately apply the
       // effect of starting the selection
-      if (this.dragging === false) {
-        event.preventDefault();
-        this.select(event);
-      }
+      if (this.dragging === false) this.select(event);
     }
     move(event) {
       var _a;
@@ -14996,7 +15559,7 @@
       let doc = this.view.contentDOM.ownerDocument;
       doc.removeEventListener("mousemove", this.move);
       doc.removeEventListener("mouseup", this.up);
-      this.view.inputState.mouseSelection = null;
+      this.view.inputState.mouseSelection = this.view.inputState.draggedContent = null;
     }
     setScrollSpeed(sx, sy) {
       this.scrollSpeed = {
@@ -15051,7 +15614,6 @@
       this.mustSelect = false;
     }
     update(update) {
-      if (update.docChanged && this.dragging) this.dragging = this.dragging.map(update.changes);
       if (this.style.update(update)) setTimeout(() => this.select(this.lastEvent), 20);
     }
   }
@@ -15086,7 +15648,7 @@
     return true;
   }
   const handlers = /*@__PURE__*/Object.create(null);
-  const handlerOptions = /*@__PURE__*/Object.create(null);
+  const observers = /*@__PURE__*/Object.create(null);
   // This is very crude, but unfortunately both these browsers _pretend_
   // that they have a clipboard API—all the objects and methods are
   // there, they just don't work, and they are hard to test.
@@ -15149,23 +15711,25 @@
       scrollIntoView: true
     });
   }
+  observers.scroll = view => {
+    view.inputState.lastScrollTop = view.scrollDOM.scrollTop;
+    view.inputState.lastScrollLeft = view.scrollDOM.scrollLeft;
+  };
   handlers.keydown = (view, event) => {
     view.inputState.setSelectionOrigin("select");
     if (event.keyCode == 27) view.inputState.lastEscPress = Date.now();
+    return false;
   };
-  handlers.touchstart = (view, e) => {
+  observers.touchstart = (view, e) => {
     view.inputState.lastTouchTime = Date.now();
     view.inputState.setSelectionOrigin("select.pointer");
   };
-  handlers.touchmove = view => {
+  observers.touchmove = view => {
     view.inputState.setSelectionOrigin("select.pointer");
-  };
-  handlerOptions.touchstart = handlerOptions.touchmove = {
-    passive: true
   };
   handlers.mousedown = (view, event) => {
     view.observer.flush();
-    if (view.inputState.lastTouchTime > Date.now() - 2000) return; // Ignore touch interaction
+    if (view.inputState.lastTouchTime > Date.now() - 2000) return false; // Ignore touch interaction
     let style = null;
     for (let makeStyle of view.state.facet(mouseSelectionStyle)) {
       style = makeStyle(view, event);
@@ -15176,8 +15740,13 @@
       let mustFocus = !view.hasFocus;
       view.inputState.startMouseSelection(new MouseSelection(view, event, style, mustFocus));
       if (mustFocus) view.observer.ignore(() => focusPreventScroll(view.contentDOM));
-      if (view.inputState.mouseSelection) view.inputState.mouseSelection.start(event);
+      let mouseSel = view.inputState.mouseSelection;
+      if (mouseSel) {
+        mouseSel.start(event);
+        return mouseSel.dragging === false;
+      }
     }
+    return false;
   };
   function rangeForClick(view, pos, bias, type) {
     if (type == 1) {
@@ -15277,17 +15846,31 @@
   handlers.dragstart = (view, event) => {
     let {
       selection: {
-        main
+        main: range
       }
     } = view.state;
+    if (event.target.draggable) {
+      let cView = view.docView.nearest(event.target);
+      if (cView && cView.isWidget) {
+        let from = cView.posAtStart,
+          to = from + cView.length;
+        if (from >= range.to || to <= range.from) range = EditorSelection.range(from, to);
+      }
+    }
     let {
-      mouseSelection
-    } = view.inputState;
-    if (mouseSelection) mouseSelection.dragging = main;
+      inputState
+    } = view;
+    if (inputState.mouseSelection) inputState.mouseSelection.dragging = true;
+    inputState.draggedContent = range;
     if (event.dataTransfer) {
-      event.dataTransfer.setData("Text", view.state.sliceDoc(main.from, main.to));
+      event.dataTransfer.setData("Text", view.state.sliceDoc(range.from, range.to));
       event.dataTransfer.effectAllowed = "copyMove";
     }
+    return false;
+  };
+  handlers.dragend = view => {
+    view.inputState.draggedContent = null;
+    return false;
   };
   function dropText(view, event, text, direct) {
     if (!text) return;
@@ -15295,13 +15878,12 @@
       x: event.clientX,
       y: event.clientY
     }, false);
-    event.preventDefault();
     let {
-      mouseSelection
+      draggedContent
     } = view.inputState;
-    let del = direct && mouseSelection && mouseSelection.dragging && dragMovesSelection(view, event) ? {
-      from: mouseSelection.dragging.from,
-      to: mouseSelection.dragging.to
+    let del = direct && draggedContent && dragMovesSelection(view, event) ? {
+      from: draggedContent.from,
+      to: draggedContent.to
     } : null;
     let ins = {
       from: dropPos,
@@ -15317,14 +15899,14 @@
       },
       userEvent: del ? "move.drop" : "input.drop"
     });
+    view.inputState.draggedContent = null;
   }
   handlers.drop = (view, event) => {
-    if (!event.dataTransfer) return;
-    if (view.state.readOnly) return event.preventDefault();
+    if (!event.dataTransfer) return false;
+    if (view.state.readOnly) return true;
     let files = event.dataTransfer.files;
     if (files && files.length) {
       // For a file drop, read the file's text.
-      event.preventDefault();
       let text = Array(files.length),
         read = 0;
       let finishFile = () => {
@@ -15339,19 +15921,26 @@
         };
         reader.readAsText(files[i]);
       }
+      return true;
     } else {
-      dropText(view, event, event.dataTransfer.getData("Text"), true);
+      let text = event.dataTransfer.getData("Text");
+      if (text) {
+        dropText(view, event, text, true);
+        return true;
+      }
     }
+    return false;
   };
   handlers.paste = (view, event) => {
-    if (view.state.readOnly) return event.preventDefault();
+    if (view.state.readOnly) return true;
     view.observer.flush();
     let data = brokenClipboardAPI ? null : event.clipboardData;
     if (data) {
       doPaste(view, data.getData("text/plain") || data.getData("text/uri-text"));
-      event.preventDefault();
+      return true;
     } else {
       capturePaste(view);
+      return false;
     }
   };
   function captureCopy(view, text) {
@@ -15409,21 +15998,22 @@
       ranges,
       linewise
     } = copiedRange(view.state);
-    if (!text && !linewise) return;
+    if (!text && !linewise) return false;
     lastLinewiseCopy = linewise ? text : null;
-    let data = brokenClipboardAPI ? null : event.clipboardData;
-    if (data) {
-      event.preventDefault();
-      data.clearData();
-      data.setData("text/plain", text);
-    } else {
-      captureCopy(view, text);
-    }
     if (event.type == "cut" && !view.state.readOnly) view.dispatch({
       changes: ranges,
       scrollIntoView: true,
       userEvent: "delete.cut"
     });
+    let data = brokenClipboardAPI ? null : event.clipboardData;
+    if (data) {
+      data.clearData();
+      data.setData("text/plain", text);
+      return true;
+    } else {
+      captureCopy(view, text);
+      return false;
+    }
   };
   const isFocusChange = /*@__PURE__*/Annotation.define();
   function focusChangeTransaction(state, focus) {
@@ -15446,7 +16036,7 @@
       }
     }, 10);
   }
-  handlers.focus = view => {
+  observers.focus = view => {
     view.inputState.lastFocusTime = Date.now();
     // When focusing reset the scroll position, move it back to where it was
     if (!view.scrollDOM.scrollTop && (view.inputState.lastScrollTop || view.inputState.lastScrollLeft)) {
@@ -15455,18 +16045,18 @@
     }
     updateForFocusChange(view);
   };
-  handlers.blur = view => {
+  observers.blur = view => {
     view.observer.clearSelectionRange();
     updateForFocusChange(view);
   };
-  handlers.compositionstart = handlers.compositionupdate = view => {
+  observers.compositionstart = observers.compositionupdate = view => {
     if (view.inputState.compositionFirstChange == null) view.inputState.compositionFirstChange = true;
     if (view.inputState.composing < 0) {
       // FIXME possibly set a timeout to clear it again on Android
       view.inputState.composing = 0;
     }
   };
-  handlers.compositionend = view => {
+  observers.compositionend = view => {
     view.inputState.composing = -1;
     view.inputState.compositionEndedAt = Date.now();
     view.inputState.compositionPendingKey = true;
@@ -15487,7 +16077,7 @@
       }, 50);
     }
   };
-  handlers.contextmenu = view => {
+  observers.contextmenu = view => {
     view.inputState.lastContextMenu = Date.now();
   };
   handlers.beforeinput = (view, event) => {
@@ -15516,7 +16106,20 @@
         }, 100);
       }
     }
+    return false;
   };
+  const appliedFirefoxHack = /*@__PURE__*/new Set();
+  // In Firefox, when cut/copy handlers are added to the document, that
+  // somehow avoids a bug where those events aren't fired when the
+  // selection is empty. See https://github.com/codemirror/dev/issues/1082
+  // and https://bugzilla.mozilla.org/show_bug.cgi?id=995961
+  function firefoxCopyCutHack(doc) {
+    if (!appliedFirefoxHack.has(doc)) {
+      appliedFirefoxHack.add(doc);
+      doc.addEventListener("copy", () => {});
+      doc.addEventListener("cut", () => {});
+    }
+  }
   const wrappingWhiteSpace = ["pre-wrap", "normal", "pre-line", "break-spaces"];
   class HeightOracle {
     constructor(lineWrapping) {
@@ -15684,16 +16287,16 @@
     // The number of characters covered
     height,
     // Height of this part of the document
-    flags = 2 /* Outdated */) {
+    flags = 2 /* Flag.Outdated */) {
       this.length = length;
       this.height = height;
       this.flags = flags;
     }
     get outdated() {
-      return (this.flags & 2 /* Outdated */) > 0;
+      return (this.flags & 2 /* Flag.Outdated */) > 0;
     }
     set outdated(value) {
-      this.flags = (value ? 2 /* Outdated */ : 0) | this.flags & ~2 /* Outdated */;
+      this.flags = (value ? 2 /* Flag.Outdated */ : 0) | this.flags & ~2 /* Flag.Outdated */;
     }
     setHeight(oracle, height) {
       if (this.height != height) {
@@ -15825,7 +16428,7 @@
     }
     replace(_from, _to, nodes) {
       let node = nodes[0];
-      if (nodes.length == 1 && (node instanceof HeightMapText || node instanceof HeightMapGap && node.flags & 4 /* SingleLine */) && Math.abs(this.length - node.length) < 10) {
+      if (nodes.length == 1 && (node instanceof HeightMapText || node instanceof HeightMapGap && node.flags & 4 /* Flag.SingleLine */) && Math.abs(this.length - node.length) < 10) {
         if (node instanceof HeightMapGap) node = new HeightMapText(node.length, this.height);else node.height = this.height;
         if (!this.outdated) node.outdated = false;
         return node;
@@ -15983,13 +16586,13 @@
   }
   class HeightMapBranch extends HeightMap {
     constructor(left, brk, right) {
-      super(left.length + brk + right.length, left.height + right.height, brk | (left.outdated || right.outdated ? 2 /* Outdated */ : 0));
+      super(left.length + brk + right.length, left.height + right.height, brk | (left.outdated || right.outdated ? 2 /* Flag.Outdated */ : 0));
       this.left = left;
       this.right = right;
       this.size = left.size + right.size;
     }
     get break() {
-      return this.flags & 1 /* Break */;
+      return this.flags & 1 /* Flag.Break */;
     }
     blockAt(height, oracle, top, offset) {
       let mid = top + this.left.height;
@@ -16144,7 +16747,7 @@
     }
     blankContent(from, to) {
       let gap = new HeightMapGap(to - from);
-      if (this.oracle.doc.lineAt(from).to == to) gap.flags |= 4 /* SingleLine */;
+      if (this.oracle.doc.lineAt(from).to == to) gap.flags |= 4 /* Flag.SingleLine */;
       return gap;
     }
     ensureLine() {
@@ -16156,13 +16759,12 @@
       return line;
     }
     addBlock(block) {
-      var _a;
       this.enterLine();
-      let type = (_a = block.deco) === null || _a === void 0 ? void 0 : _a.type;
-      if (type == BlockType.WidgetAfter && !this.isCovered) this.ensureLine();
+      let deco = block.deco;
+      if (deco && deco.startSide > 0 && !this.isCovered) this.ensureLine();
       this.nodes.push(block);
       this.writtenTo = this.pos = this.pos + block.length;
-      if (type != BlockType.WidgetBefore) this.covering = block;
+      if (deco && deco.endSide > 0) this.covering = block;
     }
     addLineDeco(height, breaks, length) {
       let line = this.ensureLine();
@@ -16268,9 +16870,9 @@
       }
       return true;
     }
-    draw(wrapping) {
+    draw(viewState, wrapping) {
       return Decoration.replace({
-        widget: new LineGapWidget(this.size, wrapping)
+        widget: new LineGapWidget(this.size * (wrapping ? viewState.scaleY : viewState.scaleX), wrapping)
       }).range(this.from, this.to);
     }
   }
@@ -16309,14 +16911,18 @@
         bottom: 0
       };
       this.inView = true;
-      this.paddingTop = 0;
-      this.paddingBottom = 0;
-      this.contentDOMWidth = 0;
-      this.contentDOMHeight = 0;
-      this.editorHeight = 0;
-      this.editorWidth = 0;
-      this.scrollTop = 0;
+      this.paddingTop = 0; // Padding above the document, scaled
+      this.paddingBottom = 0; // Padding below the document, scaled
+      this.contentDOMWidth = 0; // contentDOM.getBoundingClientRect().width
+      this.contentDOMHeight = 0; // contentDOM.getBoundingClientRect().height
+      this.editorHeight = 0; // scrollDOM.clientHeight, unscaled
+      this.editorWidth = 0; // scrollDOM.clientWidth, unscaled
+      this.scrollTop = 0; // Last seen scrollDOM.scrollTop, scaled
       this.scrolledToBottom = true;
+      // The CSS-transformation scale of the editor (transformed size /
+      // concrete size)
+      this.scaleX = 1;
+      this.scaleY = 1;
       // The vertical position (document-relative) to which to anchor the
       // scroll position. -1 means anchor to the end of the document.
       this.scrollAnchorPos = 0;
@@ -16350,7 +16956,7 @@
       this.updateViewportLines();
       this.updateForViewport();
       this.lineGaps = this.ensureLineGaps([]);
-      this.lineGapDeco = Decoration.set(this.lineGaps.map(gap => gap.draw(false)));
+      this.lineGapDeco = Decoration.set(this.lineGaps.map(gap => gap.draw(this, false)));
       this.computeVisibleRanges();
     }
     updateForViewport() {
@@ -16372,7 +16978,7 @@
         }
       }
       this.viewports = viewports.sort((a, b) => a.from - b.from);
-      this.scaler = this.heightMap.height <= 7000000 /* MaxDOMHeight */ ? IdScaler : new BigScaler(this.heightOracle, this.heightMap, this.viewports);
+      this.scaler = this.heightMap.height <= 7000000 /* VP.MaxDOMHeight */ ? IdScaler : new BigScaler(this.heightOracle, this.heightMap, this.viewports);
     }
     updateViewportLines() {
       this.viewportLines = [];
@@ -16389,7 +16995,7 @@
       let prevHeight = this.heightMap.height;
       let scrollAnchor = this.scrolledToBottom ? null : this.scrollAnchorAt(this.scrollTop);
       this.heightMap = this.heightMap.applyChanges(this.stateDeco, update.startState.doc, this.heightOracle.setDoc(this.state.doc), heightChanges);
-      if (this.heightMap.height != prevHeight) update.flags |= 2 /* Height */;
+      if (this.heightMap.height != prevHeight) update.flags |= 2 /* UpdateFlag.Height */;
       if (scrollAnchor) {
         this.scrollAnchorPos = update.changes.mapPos(scrollAnchor.from, -1);
         this.scrollAnchorHeight = scrollAnchor.top;
@@ -16399,11 +17005,11 @@
       }
       let viewport = heightChanges.length ? this.mapViewport(this.viewport, update.changes) : this.viewport;
       if (scrollTarget && (scrollTarget.range.head < viewport.from || scrollTarget.range.head > viewport.to) || !this.viewportIsAppropriate(viewport)) viewport = this.getViewport(0, scrollTarget);
-      let updateLines = !update.changes.empty || update.flags & 2 /* Height */ || viewport.from != this.viewport.from || viewport.to != this.viewport.to;
+      let updateLines = !update.changes.empty || update.flags & 2 /* UpdateFlag.Height */ || viewport.from != this.viewport.from || viewport.to != this.viewport.to;
       this.viewport = viewport;
       this.updateForViewport();
       if (updateLines) this.updateViewportLines();
-      if (this.lineGaps.length || this.viewport.to - this.viewport.from > 2000 /* Margin */ << 1) this.updateLineGaps(this.ensureLineGaps(this.mapLineGaps(this.lineGaps, update.changes)));
+      if (this.lineGaps.length || this.viewport.to - this.viewport.from > 2000 /* LG.Margin */ << 1) this.updateLineGaps(this.ensureLineGaps(this.mapLineGaps(this.lineGaps, update.changes)));
       update.flags |= this.computeVisibleRanges();
       if (scrollTarget) this.scrollTarget = scrollTarget;
       if (!this.mustEnforceCursorAssoc && update.selectionSet && update.view.lineWrapping && update.state.selection.main.empty && update.state.selection.main.assoc && !update.state.facet(nativeSelectionHidden)) this.mustEnforceCursorAssoc = true;
@@ -16421,24 +17027,37 @@
       this.mustMeasureContent = false;
       let result = 0,
         bias = 0;
+      if (domRect.width && domRect.height) {
+        let {
+          scaleX,
+          scaleY
+        } = getScale(dom, domRect);
+        if (this.scaleX != scaleX || this.scaleY != scaleY) {
+          this.scaleX = scaleX;
+          this.scaleY = scaleY;
+          result |= 8 /* UpdateFlag.Geometry */;
+          refresh = measureContent = true;
+        }
+      }
       // Vertical padding
-      let paddingTop = parseInt(style.paddingTop) || 0,
-        paddingBottom = parseInt(style.paddingBottom) || 0;
+      let paddingTop = (parseInt(style.paddingTop) || 0) * this.scaleY;
+      let paddingBottom = (parseInt(style.paddingBottom) || 0) * this.scaleY;
       if (this.paddingTop != paddingTop || this.paddingBottom != paddingBottom) {
         this.paddingTop = paddingTop;
         this.paddingBottom = paddingBottom;
-        result |= 8 /* Geometry */ | 2 /* Height */;
+        result |= 8 /* UpdateFlag.Geometry */ | 2 /* UpdateFlag.Height */;
       }
 
       if (this.editorWidth != view.scrollDOM.clientWidth) {
         if (oracle.lineWrapping) measureContent = true;
         this.editorWidth = view.scrollDOM.clientWidth;
-        result |= 8 /* Geometry */;
+        result |= 8 /* UpdateFlag.Geometry */;
       }
 
-      if (this.scrollTop != view.scrollDOM.scrollTop) {
+      let scrollTop = view.scrollDOM.scrollTop * this.scaleY;
+      if (this.scrollTop != scrollTop) {
         this.scrollAnchorHeight = -1;
-        this.scrollTop = view.scrollDOM.scrollTop;
+        this.scrollTop = scrollTop;
       }
       this.scrolledToBottom = isScrolledToBottom(view.scrollDOM);
       // Pixel viewport
@@ -16456,7 +17075,7 @@
       if (this.contentDOMWidth != contentWidth || this.editorHeight != view.scrollDOM.clientHeight) {
         this.contentDOMWidth = domRect.width;
         this.editorHeight = view.scrollDOM.clientHeight;
-        result |= 8 /* Geometry */;
+        result |= 8 /* UpdateFlag.Geometry */;
       }
 
       if (measureContent) {
@@ -16471,7 +17090,7 @@
           refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight, contentWidth / charWidth, lineHeights);
           if (refresh) {
             view.docView.minWidth = 0;
-            result |= 8 /* Geometry */;
+            result |= 8 /* UpdateFlag.Geometry */;
           }
         }
 
@@ -16481,14 +17100,14 @@
           let heights = vp.from == this.viewport.from ? lineHeights : view.docView.measureVisibleLineHeights(vp);
           this.heightMap = (refresh ? HeightMap.empty().applyChanges(this.stateDeco, Text.empty, this.heightOracle, [new ChangedRange(0, 0, 0, view.state.doc.length)]) : this.heightMap).updateHeight(oracle, 0, refresh, new MeasuredHeights(vp.from, heights));
         }
-        if (oracle.heightChanged) result |= 2 /* Height */;
+        if (oracle.heightChanged) result |= 2 /* UpdateFlag.Height */;
       }
 
       let viewportChange = !this.viewportIsAppropriate(this.viewport, bias) || this.scrollTarget && (this.scrollTarget.range.head < this.viewport.from || this.scrollTarget.range.head > this.viewport.to);
       if (viewportChange) this.viewport = this.getViewport(bias, this.scrollTarget);
       this.updateForViewport();
-      if (result & 2 /* Height */ || viewportChange) this.updateViewportLines();
-      if (this.lineGaps.length || this.viewport.to - this.viewport.from > 2000 /* Margin */ << 1) this.updateLineGaps(this.ensureLineGaps(refresh ? [] : this.lineGaps, view));
+      if (result & 2 /* UpdateFlag.Height */ || viewportChange) this.updateViewportLines();
+      if (this.lineGaps.length || this.viewport.to - this.viewport.from > 2000 /* LG.Margin */ << 1) this.updateLineGaps(this.ensureLineGaps(refresh ? [] : this.lineGaps, view));
       result |= this.computeVisibleRanges();
       if (this.mustEnforceCursorAssoc) {
         this.mustEnforceCursorAssoc = false;
@@ -16510,14 +17129,14 @@
       // This will divide VP.Margin between the top and the
       // bottom, depending on the bias (the change in viewport position
       // since the last update). It'll hold a number between 0 and 1
-      let marginTop = 0.5 - Math.max(-0.5, Math.min(0.5, bias / 1000 /* Margin */ / 2));
+      let marginTop = 0.5 - Math.max(-0.5, Math.min(0.5, bias / 1000 /* VP.Margin */ / 2));
       let map = this.heightMap,
         oracle = this.heightOracle;
       let {
         visibleTop,
         visibleBottom
       } = this;
-      let viewport = new Viewport(map.lineAt(visibleTop - marginTop * 1000 /* Margin */, QueryType.ByHeight, oracle, 0, 0).from, map.lineAt(visibleBottom + (1 - marginTop) * 1000 /* Margin */, QueryType.ByHeight, oracle, 0, 0).to);
+      let viewport = new Viewport(map.lineAt(visibleTop - marginTop * 1000 /* VP.Margin */, QueryType.ByHeight, oracle, 0, 0).from, map.lineAt(visibleBottom + (1 - marginTop) * 1000 /* VP.Margin */, QueryType.ByHeight, oracle, 0, 0).to);
       // If scrollTarget is given, make sure the viewport includes that position
       if (scrollTarget) {
         let {
@@ -16528,7 +17147,7 @@
           let block = map.lineAt(head, QueryType.ByPos, oracle, 0, 0),
             topPos;
           if (scrollTarget.y == "center") topPos = (block.top + block.bottom) / 2 - viewHeight / 2;else if (scrollTarget.y == "start" || scrollTarget.y == "nearest" && head < viewport.from) topPos = block.top;else topPos = block.bottom - viewHeight;
-          viewport = new Viewport(map.lineAt(topPos - 1000 /* Margin */ / 2, QueryType.ByHeight, oracle, 0, 0).from, map.lineAt(topPos + viewHeight + 1000 /* Margin */ / 2, QueryType.ByHeight, oracle, 0, 0).to);
+          viewport = new Viewport(map.lineAt(topPos - 1000 /* VP.Margin */ / 2, QueryType.ByHeight, oracle, 0, 0).from, map.lineAt(topPos + viewHeight + 1000 /* VP.Margin */ / 2, QueryType.ByHeight, oracle, 0, 0).to);
         }
       }
       return viewport;
@@ -16555,7 +17174,7 @@
         visibleTop,
         visibleBottom
       } = this;
-      return (from == 0 || top <= visibleTop - Math.max(10 /* MinCoverMargin */, Math.min(-bias, 250 /* MaxCoverMargin */))) && (to == this.state.doc.length || bottom >= visibleBottom + Math.max(10 /* MinCoverMargin */, Math.min(bias, 250 /* MaxCoverMargin */))) && top > visibleTop - 2 * 1000 /* Margin */ && bottom < visibleBottom + 2 * 1000 /* Margin */;
+      return (from == 0 || top <= visibleTop - Math.max(10 /* VP.MinCoverMargin */, Math.min(-bias, 250 /* VP.MaxCoverMargin */))) && (to == this.state.doc.length || bottom >= visibleBottom + Math.max(10 /* VP.MinCoverMargin */, Math.min(bias, 250 /* VP.MaxCoverMargin */))) && top > visibleTop - 2 * 1000 /* VP.Margin */ && bottom < visibleBottom + 2 * 1000 /* VP.Margin */;
     }
 
     mapLineGaps(gaps, changes) {
@@ -16573,7 +17192,7 @@
     // the artifacts this might produce from the user.
     ensureLineGaps(current, mayMeasure) {
       let wrapping = this.heightOracle.lineWrapping;
-      let margin = wrapping ? 10000 /* MarginWrap */ : 2000 /* Margin */,
+      let margin = wrapping ? 10000 /* LG.MarginWrap */ : 2000 /* LG.Margin */,
         halfMargin = margin >> 1,
         doubleMargin = margin << 1;
       // The non-wrapping logic won't work at all in predominantly right-to-left text.
@@ -16586,8 +17205,8 @@
         if (!sel.empty) avoid.push(sel.to);
         for (let pos of avoid) {
           if (pos > from && pos < to) {
-            addGap(from, pos - 10 /* SelectionMargin */, line, structure);
-            addGap(pos + 10 /* SelectionMargin */, to, line, structure);
+            addGap(from, pos - 10 /* LG.SelectionMargin */, line, structure);
+            addGap(pos + 10 /* LG.SelectionMargin */, to, line, structure);
             return;
           }
         }
@@ -16654,7 +17273,7 @@
     updateLineGaps(gaps) {
       if (!LineGap.same(gaps, this.lineGaps)) {
         this.lineGaps = gaps;
-        this.lineGapDeco = Decoration.set(gaps.map(gap => gap.draw(this.heightOracle.lineWrapping)));
+        this.lineGapDeco = Decoration.set(gaps.map(gap => gap.draw(this, this.heightOracle.lineWrapping)));
       }
     }
     computeVisibleRanges() {
@@ -16672,7 +17291,7 @@
       }, 20);
       let changed = ranges.length != this.visibleRanges.length || this.visibleRanges.some((r, i) => r.from != ranges[i].from || r.to != ranges[i].to);
       this.visibleRanges = ranges;
-      return changed ? 4 /* Viewport */ : 0;
+      return changed ? 4 /* UpdateFlag.Viewport */ : 0;
     }
     lineBlockAt(pos) {
       return pos >= this.viewport.from && pos <= this.viewport.to && this.viewportLines.find(b => b.from <= pos && b.to >= pos) || scaleBlock(this.heightMap.lineAt(pos, QueryType.ByPos, this.heightOracle, 0, 0), this.scaler);
@@ -16799,7 +17418,7 @@
           domBottom: 0
         };
       });
-      this.scale = (7000000 /* MaxDOMHeight */ - vpHeight) / (heightMap.height - vpHeight);
+      this.scale = (7000000 /* VP.MaxDOMHeight */ - vpHeight) / (heightMap.height - vpHeight);
       for (let obj of this.viewports) {
         obj.domTop = domBase + (obj.top - base) * this.scale;
         domBase = obj.domBottom = obj.domTop + (obj.bottom - obj.top);
@@ -16890,7 +17509,9 @@
       display: "block",
       whiteSpace: "pre",
       wordWrap: "normal",
+      // https://github.com/codemirror/dev/issues/456
       boxSizing: "border-box",
+      minHeight: "100%",
       padding: "4px 0",
       outline: "none",
       "&[contenteditable=true]": {
@@ -16899,8 +17520,10 @@
     },
     ".cm-lineWrapping": {
       whiteSpace_fallback: "pre-wrap",
+      // For IE
       whiteSpace: "break-spaces",
       wordBreak: "break-word",
+      // For Safari, which doesn't support overflow-wrap: anywhere
       overflowWrap: "anywhere",
       flexShrink: 1
     },
@@ -16975,6 +17598,15 @@
     "&.cm-focused > .cm-scroller > .cm-cursorLayer .cm-cursor": {
       display: "block"
     },
+    ".cm-announced": {
+      position: "fixed",
+      top: "-10000px"
+    },
+    "@media print": {
+      ".cm-announced": {
+        display: "none"
+      }
+    },
     "&light .cm-activeLine": {
       backgroundColor: "#cceeff44"
     },
@@ -17006,6 +17638,7 @@
     },
     ".cm-gutter": {
       display: "flex !important",
+      // Necessary -- prevents margin collapsing
       flexDirection: "column",
       flexShrink: 0,
       boxSizing: "border-box",
@@ -17114,6 +17747,99 @@
       backgroundColor: "inherit"
     }
   }, lightDarkIDs);
+  const LineBreakPlaceholder = "\uffff";
+  class DOMReader {
+    constructor(points, state) {
+      this.points = points;
+      this.text = "";
+      this.lineSeparator = state.facet(EditorState.lineSeparator);
+    }
+    append(text) {
+      this.text += text;
+    }
+    lineBreak() {
+      this.text += LineBreakPlaceholder;
+    }
+    readRange(start, end) {
+      if (!start) return this;
+      let parent = start.parentNode;
+      for (let cur = start;;) {
+        this.findPointBefore(parent, cur);
+        let oldLen = this.text.length;
+        this.readNode(cur);
+        let next = cur.nextSibling;
+        if (next == end) break;
+        let view = ContentView.get(cur),
+          nextView = ContentView.get(next);
+        if (view && nextView ? view.breakAfter : (view ? view.breakAfter : isBlockElement(cur)) || isBlockElement(next) && (cur.nodeName != "BR" || cur.cmIgnore) && this.text.length > oldLen) this.lineBreak();
+        cur = next;
+      }
+      this.findPointBefore(parent, end);
+      return this;
+    }
+    readTextNode(node) {
+      let text = node.nodeValue;
+      for (let point of this.points) if (point.node == node) point.pos = this.text.length + Math.min(point.offset, text.length);
+      for (let off = 0, re = this.lineSeparator ? null : /\r\n?|\n/g;;) {
+        let nextBreak = -1,
+          breakSize = 1,
+          m;
+        if (this.lineSeparator) {
+          nextBreak = text.indexOf(this.lineSeparator, off);
+          breakSize = this.lineSeparator.length;
+        } else if (m = re.exec(text)) {
+          nextBreak = m.index;
+          breakSize = m[0].length;
+        }
+        this.append(text.slice(off, nextBreak < 0 ? text.length : nextBreak));
+        if (nextBreak < 0) break;
+        this.lineBreak();
+        if (breakSize > 1) for (let point of this.points) if (point.node == node && point.pos > this.text.length) point.pos -= breakSize - 1;
+        off = nextBreak + breakSize;
+      }
+    }
+    readNode(node) {
+      if (node.cmIgnore) return;
+      let view = ContentView.get(node);
+      let fromView = view && view.overrideDOMText;
+      if (fromView != null) {
+        this.findPointInside(node, fromView.length);
+        for (let i = fromView.iter(); !i.next().done;) {
+          if (i.lineBreak) this.lineBreak();else this.append(i.value);
+        }
+      } else if (node.nodeType == 3) {
+        this.readTextNode(node);
+      } else if (node.nodeName == "BR") {
+        if (node.nextSibling) this.lineBreak();
+      } else if (node.nodeType == 1) {
+        this.readRange(node.firstChild, null);
+      }
+    }
+    findPointBefore(node, next) {
+      for (let point of this.points) if (point.node == node && node.childNodes[point.offset] == next) point.pos = this.text.length;
+    }
+    findPointInside(node, length) {
+      for (let point of this.points) if (node.nodeType == 3 ? point.node == node : node.contains(point.node)) point.pos = this.text.length + (isAtEnd(node, point.node, point.offset) ? length : 0);
+    }
+  }
+  function isAtEnd(parent, node, offset) {
+    for (;;) {
+      if (!node || offset < maxOffset(node)) return false;
+      if (node == parent) return true;
+      offset = domIndex(node) + 1;
+      node = node.parentNode;
+    }
+  }
+  function isBlockElement(node) {
+    return node.nodeType == 1 && /^(DIV|P|LI|UL|OL|BLOCKQUOTE|DD|DT|H\d|SECTION|PRE)$/.test(node.nodeName);
+  }
+  class DOMPoint {
+    constructor(node, offset) {
+      this.node = node;
+      this.offset = offset;
+      this.pos = -1;
+    }
+  }
   class DOMChange {
     constructor(view, start, end, typeOver) {
       this.typeOver = typeOver;
@@ -17212,78 +17938,19 @@
       };
     }
     if (change) {
-      let startState = view.state;
-      if (browser.ios && view.inputState.flushIOSKey(view)) return true;
+      if (browser.ios && view.inputState.flushIOSKey()) return true;
       // Android browsers don't fire reasonable key events for enter,
       // backspace, or delete. So this detects changes that look like
       // they're caused by those keys, and reinterprets them as key
       // events. (Some of these keys are also handled by beforeinput
       // events and the pendingAndroidKey mechanism, but that's not
       // reliable in all situations.)
-      if (browser.android && (change.from == sel.from && change.to == sel.to && change.insert.length == 1 && change.insert.lines == 2 && dispatchKey(view.contentDOM, "Enter", 13) || (change.from == sel.from - 1 && change.to == sel.to && change.insert.length == 0 || lastKey == 8 && change.insert.length < change.to - change.from) && dispatchKey(view.contentDOM, "Backspace", 8) || change.from == sel.from && change.to == sel.to + 1 && change.insert.length == 0 && dispatchKey(view.contentDOM, "Delete", 46))) return true;
+      if (browser.android && (change.from == sel.from && change.to == sel.to && change.insert.length == 1 && change.insert.lines == 2 && dispatchKey(view.contentDOM, "Enter", 13) || (change.from == sel.from - 1 && change.to == sel.to && change.insert.length == 0 || lastKey == 8 && change.insert.length < change.to - change.from && change.to > sel.head) && dispatchKey(view.contentDOM, "Backspace", 8) || change.from == sel.from && change.to == sel.to + 1 && change.insert.length == 0 && dispatchKey(view.contentDOM, "Delete", 46))) return true;
       let text = change.insert.toString();
-      if (view.state.facet(inputHandler$1).some(h => h(view, change.from, change.to, text))) return true;
       if (view.inputState.composing >= 0) view.inputState.composing++;
-      let tr;
-      if (change.from >= sel.from && change.to <= sel.to && change.to - change.from >= (sel.to - sel.from) / 3 && (!newSel || newSel.main.empty && newSel.main.from == change.from + change.insert.length) && view.inputState.composing < 0) {
-        let before = sel.from < change.from ? startState.sliceDoc(sel.from, change.from) : "";
-        let after = sel.to > change.to ? startState.sliceDoc(change.to, sel.to) : "";
-        tr = startState.replaceSelection(view.state.toText(before + change.insert.sliceString(0, undefined, view.state.lineBreak) + after));
-      } else {
-        let changes = startState.changes(change);
-        let mainSel = newSel && newSel.main.to <= changes.newLength ? newSel.main : undefined;
-        // Try to apply a composition change to all cursors
-        if (startState.selection.ranges.length > 1 && view.inputState.composing >= 0 && change.to <= sel.to && change.to >= sel.to - 10) {
-          let replaced = view.state.sliceDoc(change.from, change.to);
-          let composition = findCompositionNode(view) || view.state.doc.lineAt(sel.head);
-          let offset = sel.to - change.to,
-            size = sel.to - sel.from;
-          tr = startState.changeByRange(range => {
-            if (range.from == sel.from && range.to == sel.to) return {
-              changes,
-              range: mainSel || range.map(changes)
-            };
-            let to = range.to - offset,
-              from = to - replaced.length;
-            if (range.to - range.from != size || view.state.sliceDoc(from, to) != replaced ||
-            // Unfortunately, there's no way to make multiple
-            // changes in the same node work without aborting
-            // composition, so cursors in the composition range are
-            // ignored.
-            composition && range.to >= composition.from && range.from <= composition.to) return {
-              range
-            };
-            let rangeChanges = startState.changes({
-                from,
-                to,
-                insert: change.insert
-              }),
-              selOff = range.to - sel.to;
-            return {
-              changes: rangeChanges,
-              range: !mainSel ? range.map(rangeChanges) : EditorSelection.range(Math.max(0, mainSel.anchor + selOff), Math.max(0, mainSel.head + selOff))
-            };
-          });
-        } else {
-          tr = {
-            changes,
-            selection: mainSel && startState.selection.replaceRange(mainSel)
-          };
-        }
-      }
-      let userEvent = "input.type";
-      if (view.composing || view.inputState.compositionPendingChange && view.inputState.compositionEndedAt > Date.now() - 50) {
-        view.inputState.compositionPendingChange = false;
-        userEvent += ".compose";
-        if (view.inputState.compositionFirstChange) {
-          userEvent += ".start";
-          view.inputState.compositionFirstChange = false;
-        }
-      }
-      view.dispatch(tr, {
-        scrollIntoView: true,
-        userEvent
-      });
+      let defaultTr;
+      let defaultInsert = () => defaultTr || (defaultTr = applyDefaultInsert(view, change, newSel));
+      if (!view.state.facet(inputHandler$1).some(h => h(view, change.from, change.to, text, defaultInsert))) view.dispatch(defaultInsert());
       return true;
     } else if (newSel && !newSel.main.eq(sel)) {
       let scrollIntoView = false,
@@ -17301,6 +17968,80 @@
     } else {
       return false;
     }
+  }
+  function applyDefaultInsert(view, change, newSel) {
+    let tr,
+      startState = view.state,
+      sel = startState.selection.main;
+    if (change.from >= sel.from && change.to <= sel.to && change.to - change.from >= (sel.to - sel.from) / 3 && (!newSel || newSel.main.empty && newSel.main.from == change.from + change.insert.length) && view.inputState.composing < 0) {
+      let before = sel.from < change.from ? startState.sliceDoc(sel.from, change.from) : "";
+      let after = sel.to > change.to ? startState.sliceDoc(change.to, sel.to) : "";
+      tr = startState.replaceSelection(view.state.toText(before + change.insert.sliceString(0, undefined, view.state.lineBreak) + after));
+    } else {
+      let changes = startState.changes(change);
+      let mainSel = newSel && newSel.main.to <= changes.newLength ? newSel.main : undefined;
+      // Try to apply a composition change to all cursors
+      if (startState.selection.ranges.length > 1 && view.inputState.composing >= 0 && change.to <= sel.to && change.to >= sel.to - 10) {
+        let replaced = view.state.sliceDoc(change.from, change.to);
+        let compositionRange,
+          composition = newSel && findCompositionNode(view, newSel.main.head);
+        if (composition) {
+          let dLen = change.insert.length - (change.to - change.from);
+          compositionRange = {
+            from: composition.from,
+            to: composition.to - dLen
+          };
+        } else {
+          compositionRange = view.state.doc.lineAt(sel.head);
+        }
+        let offset = sel.to - change.to,
+          size = sel.to - sel.from;
+        tr = startState.changeByRange(range => {
+          if (range.from == sel.from && range.to == sel.to) return {
+            changes,
+            range: mainSel || range.map(changes)
+          };
+          let to = range.to - offset,
+            from = to - replaced.length;
+          if (range.to - range.from != size || view.state.sliceDoc(from, to) != replaced ||
+          // Unfortunately, there's no way to make multiple
+          // changes in the same node work without aborting
+          // composition, so cursors in the composition range are
+          // ignored.
+          range.to >= compositionRange.from && range.from <= compositionRange.to) return {
+            range
+          };
+          let rangeChanges = startState.changes({
+              from,
+              to,
+              insert: change.insert
+            }),
+            selOff = range.to - sel.to;
+          return {
+            changes: rangeChanges,
+            range: !mainSel ? range.map(rangeChanges) : EditorSelection.range(Math.max(0, mainSel.anchor + selOff), Math.max(0, mainSel.head + selOff))
+          };
+        });
+      } else {
+        tr = {
+          changes,
+          selection: mainSel && startState.selection.replaceRange(mainSel)
+        };
+      }
+    }
+    let userEvent = "input.type";
+    if (view.composing || view.inputState.compositionPendingChange && view.inputState.compositionEndedAt > Date.now() - 50) {
+      view.inputState.compositionPendingChange = false;
+      userEvent += ".compose";
+      if (view.inputState.compositionFirstChange) {
+        userEvent += ".start";
+        view.inputState.compositionFirstChange = false;
+      }
+    }
+    return startState.update(tr, {
+      userEvent,
+      scrollIntoView: true
+    });
   }
   function findDiff(a, b, preferredPos, preferredSide) {
     let minLen = Math.min(a.length, b.length);
@@ -17387,7 +18128,6 @@
       this.scrollTargets = [];
       this.intersection = null;
       this.resizeScroll = null;
-      this.resizeContent = null;
       this.intersecting = false;
       this.gapIntersection = null;
       this.gaps = [];
@@ -17425,8 +18165,6 @@
           if (((_a = this.view.docView) === null || _a === void 0 ? void 0 : _a.lastUpdate) < Date.now() - 75) this.onResize();
         });
         this.resizeScroll.observe(view.scrollDOM);
-        this.resizeContent = new ResizeObserver(() => this.view.requestMeasure());
-        this.resizeContent.observe(view.contentDOM);
       }
       this.addWindowListeners(this.win = view.win);
       this.start();
@@ -17449,7 +18187,7 @@
       this.readSelectionRange();
     }
     onScrollChanged(e) {
-      this.view.inputState.runScrollHandlers(this.view, e);
+      this.view.inputState.runHandlers("scroll", e);
       if (this.intersecting) this.view.measure();
     }
     onScroll(e) {
@@ -17671,7 +18409,11 @@
       if (from > -1) this.lastChange = Date.now();
       this.view.inputState.lastFocusTime = 0;
       this.selectionChanged = false;
-      return new DOMChange(this.view, from, to, typeOver);
+      let change = new DOMChange(this.view, from, to, typeOver);
+      this.view.docView.domChanged = {
+        newSel: change.newSel ? change.newSel.main : null
+      };
+      return change;
     }
     // Apply pending changes, if any
     flush(readSelection = true) {
@@ -17681,7 +18423,10 @@
       if (this.delayedFlush >= 0 || this.delayedAndroidKey) return false;
       if (readSelection) this.readSelectionRange();
       let domChange = this.readChange();
-      if (!domChange) return false;
+      if (!domChange) {
+        this.view.requestMeasure();
+        return false;
+      }
       let startState = this.view.state;
       let handled = applyDOMChange(this.view, domChange);
       // The view wasn't updated
@@ -17692,7 +18437,7 @@
       let cView = this.view.docView.nearest(rec.target);
       if (!cView || cView.ignoreMutation(rec)) return null;
       cView.markDirty(rec.type == "attributes");
-      if (rec.type == "attributes") cView.flags |= 4 /* AttrsDirty */;
+      if (rec.type == "attributes") cView.flags |= 4 /* ViewFlag.AttrsDirty */;
       if (rec.type == "childList") {
         let childBefore = findChild(cView, rec.previousSibling || rec.target.previousSibling, -1);
         let childAfter = findChild(cView, rec.nextSibling || rec.target.nextSibling, 1);
@@ -17731,12 +18476,11 @@
       win.document.removeEventListener("selectionchange", this.onSelectionChange);
     }
     destroy() {
-      var _a, _b, _c, _d;
+      var _a, _b, _c;
       this.stop();
       (_a = this.intersection) === null || _a === void 0 ? void 0 : _a.disconnect();
       (_b = this.gapIntersection) === null || _b === void 0 ? void 0 : _b.disconnect();
       (_c = this.resizeScroll) === null || _c === void 0 ? void 0 : _c.disconnect();
-      (_d = this.resizeContent) === null || _d === void 0 ? void 0 : _d.disconnect();
       for (let dom of this.scrollTargets) dom.removeEventListener("scroll", this.onScroll);
       this.removeWindowListeners(this.win);
       clearTimeout(this.parentCheck);
@@ -17809,57 +18553,6 @@
   */
   class EditorView {
     /**
-    Construct a new view. You'll want to either provide a `parent`
-    option, or put `view.dom` into your document after creating a
-    view, so that the user can see the editor.
-    */
-    constructor(config = {}) {
-      this.plugins = [];
-      this.pluginMap = new Map();
-      this.editorAttrs = {};
-      this.contentAttrs = {};
-      this.bidiCache = [];
-      this.destroyed = false;
-      /**
-      @internal
-      */
-      this.updateState = 2 /* Updating */;
-      /**
-      @internal
-      */
-      this.measureScheduled = -1;
-      /**
-      @internal
-      */
-      this.measureRequests = [];
-      this.contentDOM = document.createElement("div");
-      this.scrollDOM = document.createElement("div");
-      this.scrollDOM.tabIndex = -1;
-      this.scrollDOM.className = "cm-scroller";
-      this.scrollDOM.appendChild(this.contentDOM);
-      this.announceDOM = document.createElement("div");
-      this.announceDOM.style.cssText = "position: fixed; top: -10000px";
-      this.announceDOM.setAttribute("aria-live", "polite");
-      this.dom = document.createElement("div");
-      this.dom.appendChild(this.announceDOM);
-      this.dom.appendChild(this.scrollDOM);
-      this._dispatch = config.dispatch || (tr => this.update([tr]));
-      this.dispatch = this.dispatch.bind(this);
-      this._root = config.root || getRoot$1(config.parent) || document;
-      this.viewState = new ViewState(config.state || EditorState.create(config));
-      this.plugins = this.state.facet(viewPlugin).map(spec => new PluginInstance(spec));
-      for (let plugin of this.plugins) plugin.update(this);
-      this.observer = new DOMObserver(this);
-      this.inputState = new InputState(this);
-      this.inputState.ensureHandlers(this, this.plugins);
-      this.docView = new DocView(this);
-      this.mountStyles();
-      this.updateAttrs();
-      this.updateState = 0 /* Idle */;
-      this.requestMeasure();
-      if (config.parent) config.parent.appendChild(this.dom);
-    }
-    /**
     The current editor state.
     */
     get state() {
@@ -17922,9 +18615,64 @@
     get win() {
       return this.dom.ownerDocument.defaultView || window;
     }
+    /**
+    Construct a new view. You'll want to either provide a `parent`
+    option, or put `view.dom` into your document after creating a
+    view, so that the user can see the editor.
+    */
+    constructor(config = {}) {
+      this.plugins = [];
+      this.pluginMap = new Map();
+      this.editorAttrs = {};
+      this.contentAttrs = {};
+      this.bidiCache = [];
+      this.destroyed = false;
+      /**
+      @internal
+      */
+      this.updateState = 2 /* UpdateState.Updating */;
+      /**
+      @internal
+      */
+      this.measureScheduled = -1;
+      /**
+      @internal
+      */
+      this.measureRequests = [];
+      this.contentDOM = document.createElement("div");
+      this.scrollDOM = document.createElement("div");
+      this.scrollDOM.tabIndex = -1;
+      this.scrollDOM.className = "cm-scroller";
+      this.scrollDOM.appendChild(this.contentDOM);
+      this.announceDOM = document.createElement("div");
+      this.announceDOM.className = "cm-announced";
+      this.announceDOM.setAttribute("aria-live", "polite");
+      this.dom = document.createElement("div");
+      this.dom.appendChild(this.announceDOM);
+      this.dom.appendChild(this.scrollDOM);
+      if (config.parent) config.parent.appendChild(this.dom);
+      let {
+        dispatch
+      } = config;
+      this.dispatchTransactions = config.dispatchTransactions || dispatch && (trs => trs.forEach(tr => dispatch(tr, this))) || (trs => this.update(trs));
+      this.dispatch = this.dispatch.bind(this);
+      this._root = config.root || getRoot$1(config.parent) || document;
+      this.viewState = new ViewState(config.state || EditorState.create(config));
+      if (config.scrollTo && config.scrollTo.is(scrollIntoView$1)) this.viewState.scrollTarget = config.scrollTo.value.clip(this.viewState.state);
+      this.plugins = this.state.facet(viewPlugin).map(spec => new PluginInstance(spec));
+      for (let plugin of this.plugins) plugin.update(this);
+      this.observer = new DOMObserver(this);
+      this.inputState = new InputState(this);
+      this.inputState.ensureHandlers(this.plugins);
+      this.docView = new DocView(this);
+      this.mountStyles();
+      this.updateAttrs();
+      this.updateState = 0 /* UpdateState.Idle */;
+      this.requestMeasure();
+    }
     dispatch(...input) {
-      let tr = input.length == 1 && input[0] instanceof Transaction ? input[0] : this.state.update(...input);
-      this._dispatch(tr, this);
+      let trs = input.length == 1 && input[0] instanceof Transaction ? input : input.length == 1 && Array.isArray(input[0]) ? input[0] : [this.state.update(...input)];
+      this.dispatchTransactions(trs, this);
     }
     /**
     Update the view for the given array of transactions. This will
@@ -17935,7 +18683,7 @@
     as a primitive.
     */
     update(transactions) {
-      if (this.updateState != 0 /* Idle */) throw new Error("Calls to EditorView.update are not allowed while an update is in progress");
+      if (this.updateState != 0 /* UpdateState.Idle */) throw new Error("Calls to EditorView.update are not allowed while an update is in progress");
       let redrawn = false,
         attrsChanged = false,
         update;
@@ -17954,13 +18702,13 @@
       if (transactions.some(tr => tr.annotation(isFocusChange))) {
         this.inputState.notifiedFocused = focus;
         // If a focus-change transaction is being dispatched, set this update flag.
-        focusFlag = 1 /* Focus */;
+        focusFlag = 1 /* UpdateFlag.Focus */;
       } else if (focus != this.inputState.notifiedFocused) {
         this.inputState.notifiedFocused = focus;
         // Schedule a separate focus transaction if necessary, otherwise
         // add a flag to this update
         dispatchFocus = focusChangeTransaction(state, focus);
-        if (!dispatchFocus) focusFlag = 1 /* Focus */;
+        if (!dispatchFocus) focusFlag = 1 /* UpdateFlag.Focus */;
       }
       // If there was a pending DOM change, eagerly read it and try to
       // apply it after the given transactions.
@@ -17981,7 +18729,7 @@
       update.flags |= focusFlag;
       let scrollTarget = this.viewState.scrollTarget;
       try {
-        this.updateState = 2 /* Updating */;
+        this.updateState = 2 /* UpdateState.Updating */;
         for (let tr of transactions) {
           if (scrollTarget) scrollTarget = scrollTarget.map(tr.changes);
           if (tr.scrollIntoView) {
@@ -17990,7 +18738,7 @@
             } = tr.state.selection;
             scrollTarget = new ScrollTarget(main.empty ? main : EditorSelection.cursor(main.head, main.head > main.anchor ? -1 : 1));
           }
-          for (let e of tr.effects) if (e.is(scrollIntoView$1)) scrollTarget = e.value;
+          for (let e of tr.effects) if (e.is(scrollIntoView$1)) scrollTarget = e.value.clip(this.state);
         }
         this.viewState.update(update, scrollTarget);
         this.bidiCache = CachedOrder.update(this.bidiCache, update.changes);
@@ -18004,12 +18752,18 @@
         this.showAnnouncements(transactions);
         this.docView.updateSelection(redrawn, transactions.some(tr => tr.isUserEvent("select.pointer")));
       } finally {
-        this.updateState = 0 /* Idle */;
+        this.updateState = 0 /* UpdateState.Idle */;
       }
 
       if (update.startState.facet(theme$4) != update.state.facet(theme$4)) this.viewState.mustMeasureContent = true;
       if (redrawn || attrsChanged || scrollTarget || this.viewState.mustEnforceCursorAssoc || this.viewState.mustMeasureContent) this.requestMeasure();
-      if (!update.empty) for (let listener of this.state.facet(updateListener)) listener(update);
+      if (!update.empty) for (let listener of this.state.facet(updateListener)) {
+        try {
+          listener(update);
+        } catch (e) {
+          logException(this.state, e, "update listener");
+        }
+      }
       if (dispatchFocus || domChange) Promise.resolve().then(() => {
         if (dispatchFocus && this.state == dispatchFocus.startState) this.dispatch(dispatchFocus);
         if (domChange) {
@@ -18025,12 +18779,12 @@
     [`dispatch`](https://codemirror.net/6/docs/ref/#view.EditorView.dispatch) instead.)
     */
     setState(newState) {
-      if (this.updateState != 0 /* Idle */) throw new Error("Calls to EditorView.setState are not allowed while an update is in progress");
+      if (this.updateState != 0 /* UpdateState.Idle */) throw new Error("Calls to EditorView.setState are not allowed while an update is in progress");
       if (this.destroyed) {
         this.viewState.state = newState;
         return;
       }
-      this.updateState = 2 /* Updating */;
+      this.updateState = 2 /* UpdateState.Updating */;
       let hadFocus = this.hasFocus;
       try {
         for (let plugin of this.plugins) plugin.destroy(this);
@@ -18038,13 +18792,14 @@
         this.plugins = newState.facet(viewPlugin).map(spec => new PluginInstance(spec));
         this.pluginMap.clear();
         for (let plugin of this.plugins) plugin.update(this);
+        this.docView.destroy();
         this.docView = new DocView(this);
-        this.inputState.ensureHandlers(this, this.plugins);
+        this.inputState.ensureHandlers(this.plugins);
         this.mountStyles();
         this.updateAttrs();
         this.bidiCache = [];
       } finally {
-        this.updateState = 0 /* Idle */;
+        this.updateState = 0 /* UpdateState.Idle */;
       }
 
       if (hadFocus) this.focus();
@@ -18068,11 +18823,11 @@
         for (let plugin of this.plugins) if (plugin.mustUpdate != update) plugin.destroy(this);
         this.plugins = newPlugins;
         this.pluginMap.clear();
-        this.inputState.ensureHandlers(this, this.plugins);
       } else {
         for (let p of this.plugins) p.mustUpdate = update;
       }
       for (let i = 0; i < this.plugins.length; i++) this.plugins[i].update(this);
+      if (prevSpecs != specs) this.inputState.ensureHandlers(this.plugins);
     }
     /**
     @internal
@@ -18080,18 +18835,21 @@
     measure(flush = true) {
       if (this.destroyed) return;
       if (this.measureScheduled > -1) this.win.cancelAnimationFrame(this.measureScheduled);
+      if (this.observer.delayedAndroidKey) {
+        this.measureScheduled = -1;
+        this.requestMeasure();
+        return;
+      }
       this.measureScheduled = 0; // Prevent requestMeasure calls from scheduling another animation frame
       if (flush) this.observer.forceFlush();
       let updated = null;
       let sDOM = this.scrollDOM,
-        {
-          scrollTop
-        } = sDOM;
+        scrollTop = sDOM.scrollTop * this.scaleY;
       let {
         scrollAnchorPos,
         scrollAnchorHeight
       } = this.viewState;
-      if (scrollTop != this.viewState.scrollTop) scrollAnchorHeight = -1;
+      if (Math.abs(scrollTop - this.viewState.scrollTop) > 1) scrollAnchorHeight = -1;
       this.viewState.scrollAnchorHeight = -1;
       try {
         for (let i = 0;; i++) {
@@ -18105,7 +18863,7 @@
               scrollAnchorHeight = block.top;
             }
           }
-          this.updateState = 1 /* Measuring */;
+          this.updateState = 1 /* UpdateState.Measuring */;
           let changed = this.viewState.measure(this);
           if (!changed && !this.measureRequests.length && this.viewState.scrollTarget == null) break;
           if (i > 5) {
@@ -18114,7 +18872,7 @@
           }
           let measuring = [];
           // Only run measure requests in this cycle when the viewport didn't change
-          if (!(changed & 4 /* Viewport */)) [this.measureRequests, measuring] = [measuring, this.measureRequests];
+          if (!(changed & 4 /* UpdateFlag.Viewport */)) [this.measureRequests, measuring] = [measuring, this.measureRequests];
           let measured = measuring.map(m => {
             try {
               return m.read(this);
@@ -18127,7 +18885,7 @@
             redrawn = false;
           update.flags |= changed;
           if (!updated) updated = update;else updated.flags |= changed;
-          this.updateState = 2 /* Updating */;
+          this.updateState = 2 /* UpdateState.Updating */;
           if (!update.empty) {
             this.updatePlugins(update);
             this.inputState.update(update);
@@ -18148,12 +18906,14 @@
               if (this.viewState.scrollTarget) {
                 this.docView.scrollIntoView(this.viewState.scrollTarget);
                 this.viewState.scrollTarget = null;
+                scrollAnchorHeight = -1;
                 continue;
               } else {
                 let newAnchorHeight = scrollAnchorPos < 0 ? this.viewState.heightMap.height : this.viewState.lineBlockAt(scrollAnchorPos).top;
                 let diff = newAnchorHeight - scrollAnchorHeight;
                 if (diff > 1 || diff < -1) {
-                  scrollTop = sDOM.scrollTop = scrollTop + diff;
+                  scrollTop = scrollTop + diff;
+                  sDOM.scrollTop = scrollTop / this.scaleY;
                   scrollAnchorHeight = -1;
                   continue;
                 }
@@ -18163,7 +18923,7 @@
           }
         }
       } finally {
-        this.updateState = 0 /* Idle */;
+        this.updateState = 0 /* UpdateState.Idle */;
         this.measureScheduled = -1;
       }
       if (updated && !updated.empty) for (let listener of this.state.facet(updateListener)) listener(updated);
@@ -18211,11 +18971,14 @@
     }
     mountStyles() {
       this.styleModules = this.state.facet(styleModule);
-      StyleModule.mount(this.root, this.styleModules.concat(baseTheme$1$1).reverse());
+      let nonce = this.state.facet(EditorView.cspNonce);
+      StyleModule.mount(this.root, this.styleModules.concat(baseTheme$1$1).reverse(), nonce ? {
+        nonce
+      } : undefined);
     }
     readMeasured() {
-      if (this.updateState == 2 /* Updating */) throw new Error("Reading the editor layout isn't allowed during an update");
-      if (this.updateState == 0 /* Idle */ && this.measureScheduled > -1) this.measure(false);
+      if (this.updateState == 2 /* UpdateState.Updating */) throw new Error("Reading the editor layout isn't allowed during an update");
+      if (this.updateState == 0 /* UpdateState.Idle */ && this.measureScheduled > -1) this.measure(false);
     }
     /**
     Schedule a layout measurement, optionally providing callbacks to
@@ -18265,6 +19028,20 @@
         top: this.viewState.paddingTop,
         bottom: this.viewState.paddingBottom
       };
+    }
+    /**
+    If the editor is transformed with CSS, this provides the scale
+    along the X axis. Otherwise, it will just be 1. Note that
+    transforms other than translation and scaling are not supported.
+    */
+    get scaleX() {
+      return this.viewState.scaleX;
+    }
+    /**
+    Provide the CSS transformed scale along the Y axis.
+    */
+    get scaleY() {
+      return this.viewState.scaleY;
     }
     /**
     Find the text line or block widget at the given vertical
@@ -18473,10 +19250,14 @@
     */
     bidiSpans(line) {
       if (line.length > MaxBidiLine) return trivialOrder(line.length);
-      let dir = this.textDirectionAt(line.from);
-      for (let entry of this.bidiCache) if (entry.from == line.from && entry.dir == dir) return entry.order;
-      let order = computeOrder(line.text, dir);
-      this.bidiCache.push(new CachedOrder(line.from, line.to, dir, order));
+      let dir = this.textDirectionAt(line.from),
+        isolates;
+      for (let entry of this.bidiCache) {
+        if (entry.from == line.from && entry.dir == dir && (entry.fresh || isolatesEq(entry.isolates, isolates = getIsolatedRanges(this, line.from, line.to)))) return entry.order;
+      }
+      if (!isolates) isolates = getIsolatedRanges(this, line.from, line.to);
+      let order = computeOrder(line.text, dir, isolates);
+      this.bidiCache.push(new CachedOrder(line.from, line.to, dir, isolates, true, order));
       return order;
     }
     /**
@@ -18520,6 +19301,7 @@
       for (let plugin of this.plugins) plugin.destroy(this);
       this.plugins = [];
       this.inputState.destroy();
+      this.docView.destroy();
       this.dom.remove();
       this.observer.destroy();
       if (this.measureScheduled > -1) this.win.cancelAnimationFrame(this.measureScheduled);
@@ -18532,6 +19314,26 @@
     */
     static scrollIntoView(pos, options = {}) {
       return scrollIntoView$1.of(new ScrollTarget(typeof pos == "number" ? EditorSelection.cursor(pos) : pos, options.y, options.x, options.yMargin, options.xMargin));
+    }
+    /**
+    Return an effect that resets the editor to its current (at the
+    time this method was called) scroll position. Note that this
+    only affects the editor's own scrollable element, not parents.
+    See also
+    [`EditorViewConfig.scrollTo`](https://codemirror.net/6/docs/ref/#view.EditorViewConfig.scrollTo).
+    
+    The effect should be used with a document identical to the one
+    it was created for. Failing to do so is not an error, but may
+    not scroll to the expected position. You can
+    [map](https://codemirror.net/6/docs/ref/#state.StateEffect.map) the effect to account for changes.
+    */
+    scrollSnapshot() {
+      let {
+        scrollTop,
+        scrollLeft
+      } = this.scrollDOM;
+      let ref = this.viewState.scrollAnchorAt(scrollTop);
+      return scrollIntoView$1.of(new ScrollTarget(EditorSelection.cursor(ref.from), "start", "start", ref.top - scrollTop, scrollLeft, true));
     }
     /**
     Returns an extension that can be used to add DOM event handlers.
@@ -18548,6 +19350,19 @@
     static domEventHandlers(handlers) {
       return ViewPlugin.define(() => ({}), {
         eventHandlers: handlers
+      });
+    }
+    /**
+    Create an extension that registers DOM event observers. Contrary
+    to event [handlers](https://codemirror.net/6/docs/ref/#view.EditorView^domEventHandlers),
+    observers can't be prevented from running by a higher-precedence
+    handler returning true. They also don't prevent other handlers
+    and observers from running when they return true, and should not
+    call `preventDefault`.
+    */
+    static domEventObservers(observers) {
+      return ViewPlugin.define(() => ({}), {
+        eventObservers: observers
       });
     }
     /**
@@ -18609,6 +19424,10 @@
   positions between which the change was found, and the new
   content. When one returns true, no further input handlers are
   called and the default behavior is prevented.
+
+  The `insert` argument can be used to get the default transaction
+  that would be applied for this input. This can be useful when
+  dispatching the custom behavior as a separate transaction.
   */
   EditorView.inputHandler = inputHandler$1;
   /**
@@ -18696,6 +19515,16 @@
   */
   EditorView.atomicRanges = atomicRanges;
   /**
+  When range decorations add a `unicode-bidi: isolate` style, they
+  should also include a
+  [`bidiIsolate`](https://codemirror.net/6/docs/ref/#view.MarkDecorationSpec.bidiIsolate) property
+  in their decoration spec, and be exposed through this facet, so
+  that the editor can compute the proper text order. (Other values
+  for `unicode-bidi`, except of course `normal`, are not
+  supported.)
+  */
+  EditorView.bidiIsolatedRanges = bidiIsolatedRanges;
+  /**
   Facet that allows extensions to provide additional scroll
   margins (space around the sides of the scrolling element that
   should be considered invisible). This can be useful when the
@@ -18710,6 +19539,14 @@
   true.
   */
   EditorView.darkTheme = darkTheme$1;
+  /**
+  Provides a Content Security Policy nonce to use when creating
+  the style sheets for the editor. Holds the empty string when no
+  nonce has been provided.
+  */
+  EditorView.cspNonce = /*@__PURE__*/Facet.define({
+    combine: values => values.length ? values[0] : ""
+  });
   /**
   Facet that provides additional DOM attributes for the editor's
   editable DOM element.
@@ -18740,19 +19577,21 @@
   const MaxBidiLine = 4096;
   const BadMeasure = {};
   class CachedOrder {
-    constructor(from, to, dir, order) {
+    constructor(from, to, dir, isolates, fresh, order) {
       this.from = from;
       this.to = to;
       this.dir = dir;
+      this.isolates = isolates;
+      this.fresh = fresh;
       this.order = order;
     }
     static update(cache, changes) {
-      if (changes.empty) return cache;
+      if (changes.empty && !cache.some(c => c.fresh)) return cache;
       let result = [],
         lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
       for (let i = Math.max(0, cache.length - 10); i < cache.length; i++) {
         let entry = cache[i];
-        if (entry.dir == lastDir && !changes.touchesRange(entry.from, entry.to)) result.push(new CachedOrder(changes.mapPos(entry.from, 1), changes.mapPos(entry.to, -1), entry.dir, entry.order));
+        if (entry.dir == lastDir && !changes.touchesRange(entry.from, entry.to)) result.push(new CachedOrder(changes.mapPos(entry.from, 1), changes.mapPos(entry.to, -1), entry.dir, entry.isolates, false, entry.order));
       }
       return result;
     }
@@ -18944,7 +19783,12 @@
       }
     }
   };
-  if (CanHidePrimary) themeSpec[".cm-line"].caretColor = "transparent !important";
+  if (CanHidePrimary) {
+    themeSpec[".cm-line"].caretColor = "transparent !important";
+    themeSpec[".cm-content"] = {
+      caretColor: "transparent !important"
+    };
+  }
   const Outside = "-10000px";
   class TooltipViewManager {
     constructor(view, facet, createTooltipView) {
@@ -18954,7 +19798,7 @@
       this.tooltips = this.input.filter(t => t);
       this.tooltipViews = this.tooltips.map(createTooltipView);
     }
-    update(update) {
+    update(update, above) {
       var _a;
       let input = update.state.facet(this.facet);
       let tooltips = input.filter(x => x);
@@ -18962,7 +19806,8 @@
         for (let t of this.tooltipViews) if (t.update) t.update(update);
         return false;
       }
-      let tooltipViews = [];
+      let tooltipViews = [],
+        newAbove = above ? [] : null;
       for (let i = 0; i < tooltips.length; i++) {
         let tip = tooltips[i],
           known = -1;
@@ -18973,14 +19818,20 @@
         }
         if (known < 0) {
           tooltipViews[i] = this.createTooltipView(tip);
+          if (newAbove) newAbove[i] = !!tip.above;
         } else {
           let tooltipView = tooltipViews[i] = this.tooltipViews[known];
+          if (newAbove) newAbove[i] = above[known];
           if (tooltipView.update) tooltipView.update(update);
         }
       }
       for (let t of this.tooltipViews) if (tooltipViews.indexOf(t) < 0) {
         t.dom.remove();
         (_a = t.destroy) === null || _a === void 0 ? void 0 : _a.call(t);
+      }
+      if (above) {
+        newAbove.forEach((val, i) => above[i] = val);
+        above.length = newAbove.length;
       }
       this.input = input;
       this.tooltips = tooltips;
@@ -19019,7 +19870,9 @@
   const tooltipPlugin = /*@__PURE__*/ViewPlugin.fromClass(class {
     constructor(view) {
       this.view = view;
+      this.above = [];
       this.inView = true;
+      this.madeAbsolute = false;
       this.lastTransaction = 0;
       this.measureTimeout = -1;
       let config = view.state.facet(tooltipConfig);
@@ -19066,11 +19919,11 @@
     }
     update(update) {
       if (update.transactions.length) this.lastTransaction = Date.now();
-      let updated = this.manager.update(update);
+      let updated = this.manager.update(update, this.above);
       if (updated) this.observeIntersection();
       let shouldMeasure = updated || update.geometryChanged;
       let newConfig = update.state.facet(tooltipConfig);
-      if (newConfig.position != this.position) {
+      if (newConfig.position != this.position && !this.madeAbsolute) {
         this.position = newConfig.position;
         for (let t of this.manager.tooltipViews) t.dom.style.position = this.position;
         shouldMeasure = true;
@@ -19096,6 +19949,7 @@
       }
       tooltipView.dom.style.position = this.position;
       tooltipView.dom.style.top = Outside;
+      tooltipView.dom.style.left = "0px";
       this.container.appendChild(tooltipView.dom);
       if (tooltipView.mount) tooltipView.mount(this.view);
       return tooltipView;
@@ -19107,11 +19961,45 @@
         tooltipView.dom.remove();
         (_a = tooltipView.destroy) === null || _a === void 0 ? void 0 : _a.call(tooltipView);
       }
+      if (this.parent) this.container.remove();
       (_b = this.intersectionObserver) === null || _b === void 0 ? void 0 : _b.disconnect();
       clearTimeout(this.measureTimeout);
     }
     readMeasure() {
       let editor = this.view.dom.getBoundingClientRect();
+      let scaleX = 1,
+        scaleY = 1,
+        makeAbsolute = false;
+      if (this.position == "fixed" && this.manager.tooltipViews.length) {
+        let {
+          dom
+        } = this.manager.tooltipViews[0];
+        if (browser.gecko) {
+          // Firefox sets the element's `offsetParent` to the
+          // transformed element when a transform interferes with fixed
+          // positioning.
+          makeAbsolute = dom.offsetParent != this.container.ownerDocument.body;
+        } else if (dom.style.top == Outside && dom.style.left == "0px") {
+          // On other browsers, we have to awkwardly try and use other
+          // information to detect a transform.
+          let rect = dom.getBoundingClientRect();
+          makeAbsolute = Math.abs(rect.top + 10000) > 1 || Math.abs(rect.left) > 1;
+        }
+      }
+      if (makeAbsolute || this.position == "absolute") {
+        if (this.parent) {
+          let rect = this.parent.getBoundingClientRect();
+          if (rect.width && rect.height) {
+            scaleX = rect.width / this.parent.offsetWidth;
+            scaleY = rect.height / this.parent.offsetHeight;
+          }
+        } else {
+          ({
+            scaleX,
+            scaleY
+          } = this.view.viewState);
+        }
+      }
       return {
         editor,
         parent: this.parent ? this.container.getBoundingClientRect() : editor,
@@ -19122,14 +20010,24 @@
         size: this.manager.tooltipViews.map(({
           dom
         }) => dom.getBoundingClientRect()),
-        space: this.view.state.facet(tooltipConfig).tooltipSpace(this.view)
+        space: this.view.state.facet(tooltipConfig).tooltipSpace(this.view),
+        scaleX,
+        scaleY,
+        makeAbsolute
       };
     }
     writeMeasure(measured) {
       var _a;
+      if (measured.makeAbsolute) {
+        this.madeAbsolute = true;
+        this.position = "absolute";
+        for (let t of this.manager.tooltipViews) t.dom.style.position = "absolute";
+      }
       let {
         editor,
-        space
+        space,
+        scaleX,
+        scaleY
       } = measured;
       let others = [];
       for (let i = 0; i < this.manager.tooltips.length; i++) {
@@ -19146,14 +20044,14 @@
           continue;
         }
         let arrow = tooltip.arrow ? tView.dom.querySelector(".cm-tooltip-arrow") : null;
-        let arrowHeight = arrow ? 7 /* Size */ : 0;
+        let arrowHeight = arrow ? 7 /* Arrow.Size */ : 0;
         let width = size.right - size.left,
           height = (_a = knownHeight.get(tView)) !== null && _a !== void 0 ? _a : size.bottom - size.top;
         let offset = tView.offset || noOffset,
           ltr = this.view.textDirection == Direction.LTR;
-        let left = size.width > space.right - space.left ? ltr ? space.left : space.right - size.width : ltr ? Math.min(pos.left - (arrow ? 14 /* Offset */ : 0) + offset.x, space.right - width) : Math.max(space.left, pos.left - width + (arrow ? 14 /* Offset */ : 0) - offset.x);
-        let above = !!tooltip.above;
-        if (!tooltip.strictSide && (above ? pos.top - (size.bottom - size.top) - offset.y < space.top : pos.bottom + (size.bottom - size.top) + offset.y > space.bottom) && above == space.bottom - pos.bottom > pos.top - space.top) above = !above;
+        let left = size.width > space.right - space.left ? ltr ? space.left : space.right - size.width : ltr ? Math.min(pos.left - (arrow ? 14 /* Arrow.Offset */ : 0) + offset.x, space.right - width) : Math.max(space.left, pos.left - width + (arrow ? 14 /* Arrow.Offset */ : 0) - offset.x);
+        let above = this.above[i];
+        if (!tooltip.strictSide && (above ? pos.top - (size.bottom - size.top) - offset.y < space.top : pos.bottom + (size.bottom - size.top) + offset.y > space.bottom) && above == space.bottom - pos.bottom > pos.top - space.top) above = this.above[i] = !above;
         let spaceVert = (above ? pos.top - space.top : space.bottom - pos.bottom) - arrowHeight;
         if (spaceVert < height && tView.resize !== false) {
           if (spaceVert < this.view.defaultLineHeight) {
@@ -19161,7 +20059,7 @@
             continue;
           }
           knownHeight.set(tView, height);
-          dom.style.height = (height = spaceVert) + "px";
+          dom.style.height = (height = spaceVert) / scaleY + "px";
         } else if (dom.style.height) {
           dom.style.height = "";
         }
@@ -19169,13 +20067,16 @@
         let right = left + width;
         if (tView.overlap !== true) for (let r of others) if (r.left < right && r.right > left && r.top < top + height && r.bottom > top) top = above ? r.top - height - 2 - arrowHeight : r.bottom + arrowHeight + 2;
         if (this.position == "absolute") {
-          dom.style.top = top - measured.parent.top + "px";
-          dom.style.left = left - measured.parent.left + "px";
+          dom.style.top = (top - measured.parent.top) / scaleY + "px";
+          dom.style.left = (left - measured.parent.left) / scaleX + "px";
         } else {
-          dom.style.top = top + "px";
-          dom.style.left = left + "px";
+          dom.style.top = top / scaleY + "px";
+          dom.style.left = left / scaleX + "px";
         }
-        if (arrow) arrow.style.left = `${pos.left + (ltr ? offset.x : -offset.x) - (left + 14 /* Offset */ - 7 /* Size */)}px`;
+        if (arrow) {
+          let arrowLeft = pos.left + (ltr ? offset.x : -offset.x) - (left + 14 /* Arrow.Offset */ - 7 /* Arrow.Size */);
+          arrow.style.left = arrowLeft / scaleX + "px";
+        }
         if (tView.overlap !== true) others.push({
           left,
           top,
@@ -19197,7 +20098,7 @@
       }
     }
   }, {
-    eventHandlers: {
+    eventObservers: {
       scroll() {
         this.maybeMeasure();
       }
@@ -19220,8 +20121,8 @@
       color: "white"
     },
     ".cm-tooltip-arrow": {
-      height: `${7 /* Size */}px`,
-      width: `${7 /* Size */ * 2}px`,
+      height: `${7 /* Arrow.Size */}px`,
+      width: `${7 /* Arrow.Size */ * 2}px`,
       position: "absolute",
       zIndex: -1,
       overflow: "hidden",
@@ -19230,26 +20131,26 @@
         position: "absolute",
         width: 0,
         height: 0,
-        borderLeft: `${7 /* Size */}px solid transparent`,
-        borderRight: `${7 /* Size */}px solid transparent`
+        borderLeft: `${7 /* Arrow.Size */}px solid transparent`,
+        borderRight: `${7 /* Arrow.Size */}px solid transparent`
       },
       ".cm-tooltip-above &": {
-        bottom: `-${7 /* Size */}px`,
+        bottom: `-${7 /* Arrow.Size */}px`,
         "&:before": {
-          borderTop: `${7 /* Size */}px solid #bbb`
+          borderTop: `${7 /* Arrow.Size */}px solid #bbb`
         },
         "&:after": {
-          borderTop: `${7 /* Size */}px solid #f5f5f5`,
+          borderTop: `${7 /* Arrow.Size */}px solid #f5f5f5`,
           bottom: "1px"
         }
       },
       ".cm-tooltip-below &": {
-        top: `-${7 /* Size */}px`,
+        top: `-${7 /* Arrow.Size */}px`,
         "&:before": {
-          borderBottom: `${7 /* Size */}px solid #bbb`
+          borderBottom: `${7 /* Arrow.Size */}px solid #bbb`
         },
         "&:after": {
-          borderBottom: `${7 /* Size */}px solid #f5f5f5`,
+          borderBottom: `${7 /* Arrow.Size */}px solid #f5f5f5`,
           top: "1px"
         }
       }
@@ -19277,16 +20178,16 @@
   });
   const showHoverTooltip = /*@__PURE__*/Facet.define();
   class HoverTooltipHost {
+    // Needs to be static so that host tooltip instances always match
+    static create(view) {
+      return new HoverTooltipHost(view);
+    }
     constructor(view) {
       this.view = view;
       this.mounted = false;
       this.dom = document.createElement("div");
       this.dom.classList.add("cm-tooltip-hover");
       this.manager = new TooltipViewManager(view, showHoverTooltip, t => this.createHostedView(t));
-    }
-    // Needs to be static so that host tooltip instances always match
-    static create(view) {
-      return new HoverTooltipHost(view);
     }
     createHostedView(tooltip) {
       let hostedView = tooltip.create(this.view);
@@ -19313,13 +20214,38 @@
       var _a;
       for (let t of this.manager.tooltipViews) (_a = t.destroy) === null || _a === void 0 ? void 0 : _a.call(t);
     }
+    passProp(name) {
+      let value = undefined;
+      for (let view of this.manager.tooltipViews) {
+        let given = view[name];
+        if (given !== undefined) {
+          if (value === undefined) value = given;else if (value !== given) return undefined;
+        }
+      }
+      return value;
+    }
+    get offset() {
+      return this.passProp("offset");
+    }
+    get getCoords() {
+      return this.passProp("getCoords");
+    }
+    get overlap() {
+      return this.passProp("overlap");
+    }
+    get resize() {
+      return this.passProp("resize");
+    }
   }
   const showHoverTooltipHost = /*@__PURE__*/showTooltip.compute([showHoverTooltip], state => {
     let tooltips = state.facet(showHoverTooltip).filter(t => t);
     if (tooltips.length === 0) return null;
     return {
       pos: Math.min(...tooltips.map(t => t.pos)),
-      end: Math.max(...tooltips.filter(t => t.end != null).map(t => t.end)),
+      end: Math.max(...tooltips.map(t => {
+        var _a;
+        return (_a = t.end) !== null && _a !== void 0 ? _a : t.pos;
+      })),
       create: HoverTooltipHost.create,
       above: tooltips[0].above,
       arrow: tooltips.some(t => t.arrow)
@@ -19364,15 +20290,25 @@
     startHover() {
       clearTimeout(this.restartTimeout);
       let {
+        view,
         lastMove
       } = this;
-      let pos = this.view.contentDOM.contains(lastMove.target) ? this.view.posAtCoords(lastMove) : null;
-      if (pos == null) return;
-      let posCoords = this.view.coordsAtPos(pos);
-      if (posCoords == null || lastMove.y < posCoords.top || lastMove.y > posCoords.bottom || lastMove.x < posCoords.left - this.view.defaultCharacterWidth || lastMove.x > posCoords.right + this.view.defaultCharacterWidth) return;
-      let bidi = this.view.bidiSpans(this.view.state.doc.lineAt(pos)).find(s => s.from <= pos && s.to >= pos);
-      let rtl = bidi && bidi.dir == Direction.RTL ? -1 : 1;
-      let open = this.source(this.view, pos, lastMove.x < posCoords.left ? -rtl : rtl);
+      let desc = view.docView.nearest(lastMove.target);
+      if (!desc) return;
+      let pos,
+        side = 1;
+      if (desc instanceof WidgetView) {
+        pos = desc.posAtStart;
+      } else {
+        pos = view.posAtCoords(lastMove);
+        if (pos == null) return;
+        let posCoords = view.coordsAtPos(pos);
+        if (!posCoords || lastMove.y < posCoords.top || lastMove.y > posCoords.bottom || lastMove.x < posCoords.left - view.defaultCharacterWidth || lastMove.x > posCoords.right + view.defaultCharacterWidth) return;
+        let bidi = view.bidiSpans(view.state.doc.lineAt(pos)).find(s => s.from <= pos && s.to >= pos);
+        let rtl = bidi && bidi.dir == Direction.RTL ? -1 : 1;
+        side = lastMove.x < posCoords.left ? -rtl : rtl;
+      }
+      let open = this.source(view, pos, side);
       if (open === null || open === void 0 ? void 0 : open.then) {
         let pending = this.pending = {
           pos
@@ -19380,16 +20316,21 @@
         open.then(result => {
           if (this.pending == pending) {
             this.pending = null;
-            if (result) this.view.dispatch({
+            if (result) view.dispatch({
               effects: this.setHover.of(result)
             });
           }
-        }, e => logException(this.view.state, e, "hover tooltip"));
+        }, e => logException(view.state, e, "hover tooltip"));
       } else if (open) {
-        this.view.dispatch({
+        view.dispatch({
           effects: this.setHover.of(open)
         });
       }
+    }
+    get tooltip() {
+      let plugin = this.view.plugin(tooltipPlugin);
+      let index = plugin ? plugin.manager.tooltips.findIndex(t => t.create == HoverTooltipHost.create) : -1;
+      return index > -1 ? plugin.manager.tooltipViews[index] : null;
     }
     mousemove(event) {
       var _a;
@@ -19400,13 +20341,16 @@
         time: Date.now()
       };
       if (this.hoverTimeout < 0) this.hoverTimeout = setTimeout(this.checkHover, this.hoverTime);
-      let tooltip = this.active;
-      if (tooltip && !isInTooltip(this.lastMove.target) || this.pending) {
+      let {
+        active,
+        tooltip
+      } = this;
+      if (active && tooltip && !isInTooltip(tooltip.dom, event) || this.pending) {
         let {
             pos
-          } = tooltip || this.pending,
-          end = (_a = tooltip === null || tooltip === void 0 ? void 0 : tooltip.end) !== null && _a !== void 0 ? _a : pos;
-        if (pos == end ? this.view.posAtCoords(this.lastMove) != pos : !isOverRange(this.view, pos, end, event.clientX, event.clientY, 6 /* MaxDist */)) {
+          } = active || this.pending,
+          end = (_a = active === null || active === void 0 ? void 0 : active.end) !== null && _a !== void 0 ? _a : pos;
+        if (pos == end ? this.view.posAtCoords(this.lastMove) != pos : !isOverRange(this.view, pos, end, event.clientX, event.clientY)) {
           this.view.dispatch({
             effects: this.setHover.of(null)
           });
@@ -19414,12 +20358,30 @@
         }
       }
     }
-    mouseleave(e) {
+    mouseleave(event) {
       clearTimeout(this.hoverTimeout);
       this.hoverTimeout = -1;
-      if (this.active && !isInTooltip(e.relatedTarget)) this.view.dispatch({
-        effects: this.setHover.of(null)
-      });
+      let {
+        active
+      } = this;
+      if (active) {
+        let {
+          tooltip
+        } = this;
+        let inTooltip = tooltip && tooltip.dom.contains(event.relatedTarget);
+        if (!inTooltip) this.view.dispatch({
+          effects: this.setHover.of(null)
+        });else this.watchTooltipLeave(tooltip.dom);
+      }
+    }
+    watchTooltipLeave(tooltip) {
+      let watch = event => {
+        tooltip.removeEventListener("mouseleave", watch);
+        if (this.active && !this.view.dom.contains(event.relatedTarget)) this.view.dispatch({
+          effects: this.setHover.of(null)
+        });
+      };
+      tooltip.addEventListener("mouseleave", watch);
     }
     destroy() {
       clearTimeout(this.hoverTimeout);
@@ -19427,24 +20389,20 @@
       this.view.dom.removeEventListener("mousemove", this.mousemove);
     }
   }
-  function isInTooltip(elt) {
-    for (let cur = elt; cur; cur = cur.parentNode) if (cur.nodeType == 1 && cur.classList.contains("cm-tooltip")) return true;
-    return false;
+  const tooltipMargin = 4;
+  function isInTooltip(tooltip, event) {
+    let rect = tooltip.getBoundingClientRect();
+    return event.clientX >= rect.left - tooltipMargin && event.clientX <= rect.right + tooltipMargin && event.clientY >= rect.top - tooltipMargin && event.clientY <= rect.bottom + tooltipMargin;
   }
   function isOverRange(view, from, to, x, y, margin) {
-    let range = document.createRange();
-    let fromDOM = view.domAtPos(from),
-      toDOM = view.domAtPos(to);
-    range.setEnd(toDOM.node, toDOM.offset);
-    range.setStart(fromDOM.node, fromDOM.offset);
-    let rects = range.getClientRects();
-    range.detach();
-    for (let i = 0; i < rects.length; i++) {
-      let rect = rects[i];
-      let dist = Math.max(rect.top - y, y - rect.bottom, rect.left - x, x - rect.right);
-      if (dist <= margin) return true;
-    }
-    return false;
+    let rect = view.scrollDOM.getBoundingClientRect();
+    let docBottom = view.documentTop + view.documentPadding.top + view.contentHeight;
+    if (rect.left > x || rect.right < x || rect.top > y || Math.min(rect.bottom, docBottom) < y) return false;
+    let pos = view.posAtCoords({
+      x,
+      y
+    }, false);
+    return pos >= from && pos <= to;
   }
   /**
   Set up a hover tooltip, which shows up when the pointer hovers
@@ -19483,7 +20441,7 @@
       },
       provide: f => showHoverTooltip.from(f)
     });
-    return [hoverState, ViewPlugin.define(view => new HoverPlugin(view, source, hoverState, setHover, options.hoverTime || 300 /* Time */)), showHoverTooltipHost];
+    return [hoverState, ViewPlugin.define(view => new HoverPlugin(view, source, hoverState, setHover, options.hoverTime || 300 /* Hover.Time */)), showHoverTooltipHost];
   }
   /**
   Get the active tooltip view for a given tooltip, if available.
@@ -19707,7 +20665,7 @@
       this.dom = document.createElement("div");
       this.dom.className = "cm-gutters";
       this.dom.setAttribute("aria-hidden", "true");
-      this.dom.style.minHeight = this.view.contentHeight + "px";
+      this.dom.style.minHeight = this.view.contentHeight / this.view.scaleY + "px";
       this.gutters = view.state.facet(activeGutters).map(conf => new SingleGutterView(view, conf));
       for (let gutter of this.gutters) this.dom.appendChild(gutter.dom);
       this.fixed = !view.state.facet(unfixGutters);
@@ -19759,6 +20717,8 @@
         } else if (line.type == BlockType.Text) {
           advanceCursor(lineClasses, classSet, line.from);
           for (let cx of contexts) cx.line(this.view, line, classSet);
+        } else if (line.widget) {
+          for (let cx of contexts) cx.widget(this.view, line);
         }
       }
       for (let cx of contexts) cx.finish();
@@ -19800,9 +20760,9 @@
       let value = view.plugin(plugin);
       if (!value || value.gutters.length == 0 || !value.fixed) return null;
       return view.textDirection == Direction.LTR ? {
-        left: value.dom.offsetWidth
+        left: value.dom.offsetWidth * view.scaleX
       } : {
-        right: value.dom.offsetWidth
+        right: value.dom.offsetWidth * view.scaleX
       };
     })
   });
@@ -19826,13 +20786,14 @@
       let {
           gutter
         } = this,
-        above = block.top - this.height;
+        above = (block.top - this.height) / view.scaleY,
+        height = block.height / view.scaleY;
       if (this.i == gutter.elements.length) {
-        let newElt = new GutterElement(view, block.height, above, markers);
+        let newElt = new GutterElement(view, height, above, markers);
         gutter.elements.push(newElt);
         gutter.dom.appendChild(newElt.dom);
       } else {
-        gutter.elements[this.i].update(view, block.height, above, markers);
+        gutter.elements[this.i].update(view, height, above, markers);
       }
       this.height = block.bottom;
       this.i++;
@@ -19914,7 +20875,10 @@
       this.update(view, height, above, markers);
     }
     update(view, height, above, markers) {
-      if (this.height != height) this.dom.style.height = (this.height = height) + "px";
+      if (this.height != height) {
+        this.height = height;
+        this.dom.style.height = height + "px";
+      }
       if (this.above != above) this.dom.style.marginTop = (this.above = above) ? above + "px" : "";
       if (!sameMarkers(this.markers, markers)) this.setMarkers(view, markers);
     }
@@ -20535,16 +21499,16 @@
       // end position or the end of the viewport, to avoid slowing down
       // state updates with parse work beyond the viewport.
       let upto = this.context.treeLen == tr.startState.doc.length ? undefined : Math.max(tr.changes.mapPos(this.context.treeLen), newCx.viewport.to);
-      if (!newCx.work(20 /* Apply */, upto)) newCx.takeTree();
+      if (!newCx.work(20 /* Work.Apply */, upto)) newCx.takeTree();
       return new LanguageState(newCx);
     }
     static init(state) {
-      let vpTo = Math.min(3000 /* InitViewport */, state.doc.length);
+      let vpTo = Math.min(3000 /* Work.InitViewport */, state.doc.length);
       let parseState = ParseContext.create(state.facet(language$1).parser, state, {
         from: 0,
         to: vpTo
       });
-      if (!parseState.work(20 /* Apply */, vpTo)) parseState.takeTree();
+      if (!parseState.work(20 /* Work.Apply */, vpTo)) parseState.takeTree();
       return new LanguageState(parseState);
     }
   }
@@ -20557,16 +21521,16 @@
     }
   });
   let requestIdle = callback => {
-    let timeout = setTimeout(() => callback(), 500 /* MaxPause */);
+    let timeout = setTimeout(() => callback(), 500 /* Work.MaxPause */);
     return () => clearTimeout(timeout);
   };
   if (typeof requestIdleCallback != "undefined") requestIdle = callback => {
     let idle = -1,
       timeout = setTimeout(() => {
         idle = requestIdleCallback(callback, {
-          timeout: 500 /* MaxPause */ - 100 /* MinPause */
+          timeout: 500 /* Work.MaxPause */ - 100 /* Work.MinPause */
         });
-      }, 100 /* MinPause */);
+      }, 100 /* Work.MinPause */);
     return () => idle < 0 ? clearTimeout(timeout) : cancelIdleCallback(idle);
   };
   const isInputPending = typeof navigator != "undefined" && ((_a = navigator.scheduling) === null || _a === void 0 ? void 0 : _a.isInputPending) ? () => navigator.scheduling.isInputPending() : null;
@@ -20585,8 +21549,8 @@
     update(update) {
       let cx = this.view.state.field(Language$1.state).context;
       if (cx.updateViewport(update.view.viewport) || this.view.viewport.to > cx.treeLen) this.scheduleWork();
-      if (update.docChanged) {
-        if (this.view.hasFocus) this.chunkBudget += 50 /* ChangeBonus */;
+      if (update.docChanged || update.selectionSet) {
+        if (this.view.hasFocus) this.chunkBudget += 50 /* Work.ChangeBonus */;
         this.scheduleWork();
       }
       this.checkAsyncSchedule(cx);
@@ -20604,8 +21568,8 @@
       let now = Date.now();
       if (this.chunkEnd < now && (this.chunkEnd < 0 || this.view.hasFocus)) {
         // Start a new chunk
-        this.chunkEnd = now + 30000 /* ChunkTime */;
-        this.chunkBudget = 3000 /* ChunkBudget */;
+        this.chunkEnd = now + 30000 /* Work.ChunkTime */;
+        this.chunkBudget = 3000 /* Work.ChunkBudget */;
       }
 
       if (this.chunkBudget <= 0) return; // No more budget
@@ -20616,12 +21580,12 @@
           }
         } = this.view,
         field = state.field(Language$1.state);
-      if (field.tree == field.context.tree && field.context.isDone(vpTo + 100000 /* MaxParseAhead */)) return;
-      let endTime = Date.now() + Math.min(this.chunkBudget, 100 /* Slice */, deadline && !isInputPending ? Math.max(25 /* MinSlice */, deadline.timeRemaining() - 5) : 1e9);
+      if (field.tree == field.context.tree && field.context.isDone(vpTo + 100000 /* Work.MaxParseAhead */)) return;
+      let endTime = Date.now() + Math.min(this.chunkBudget, 100 /* Work.Slice */, deadline && !isInputPending ? Math.max(25 /* Work.MinSlice */, deadline.timeRemaining() - 5) : 1e9);
       let viewportFirst = field.context.treeLen < vpTo && state.doc.length > vpTo + 1000;
       let done = field.context.work(() => {
         return isInputPending && isInputPending() || Date.now() > endTime;
-      }, vpTo + (viewportFirst ? 0 : 100000 /* MaxParseAhead */));
+      }, vpTo + (viewportFirst ? 0 : 100000 /* Work.MaxParseAhead */));
       this.chunkBudget -= Date.now() - now;
       if (done || this.chunkBudget <= 0) {
         field.context.takeTree();
@@ -20886,7 +21850,24 @@
   const indentNodeProp = /*@__PURE__*/new NodeProp();
   // Compute the indentation for a given position from the syntax tree.
   function syntaxIndentation(cx, ast, pos) {
-    return indentFrom(ast.resolveInner(pos).enterUnfinishedNodesBefore(pos), pos, cx);
+    let stack = ast.resolveStack(pos);
+    let inner = stack.node.enterUnfinishedNodesBefore(pos);
+    if (inner != stack.node) {
+      let add = [];
+      for (let cur = inner; cur != stack.node; cur = cur.parent) add.push(cur);
+      for (let i = add.length - 1; i >= 0; i--) stack = {
+        node: add[i],
+        next: stack
+      };
+    }
+    return indentFor(stack, cx, pos);
+  }
+  function indentFor(stack, cx, pos) {
+    for (let cur = stack; cur; cur = cur.next) {
+      let strategy = indentStrategy(cur.node);
+      if (strategy) return strategy(TreeIndentContext.create(cx, pos, cur));
+    }
+    return 0;
   }
   function ignoreClosed(cx) {
     return cx.pos == cx.options.simulateBreak && cx.options.simulateDoubleBreak;
@@ -20903,13 +21884,6 @@
     }
     return tree.parent == null ? topIndent : null;
   }
-  function indentFrom(node, pos, base) {
-    for (; node; node = node.parent) {
-      let strategy = indentStrategy(node);
-      if (strategy) return strategy(TreeIndentContext.create(base, pos, node));
-    }
-    return null;
-  }
   function topIndent() {
     return 0;
   }
@@ -20924,20 +21898,26 @@
     */
     pos,
     /**
-    The syntax tree node to which the indentation strategy
-    applies.
+    @internal
     */
-    node) {
+    context) {
       super(base.state, base.options);
       this.base = base;
       this.pos = pos;
-      this.node = node;
+      this.context = context;
+    }
+    /**
+    The syntax tree node to which the indentation strategy
+    applies.
+    */
+    get node() {
+      return this.context.node;
     }
     /**
     @internal
     */
-    static create(base, pos, node) {
-      return new TreeIndentContext(base, pos, node);
+    static create(base, pos, context) {
+      return new TreeIndentContext(base, pos, context);
     }
     /**
     Get the text directly after `this.pos`, either the entire line
@@ -20976,8 +21956,7 @@
     and return the result of that.
     */
     continue() {
-      let parent = this.node.parent;
-      return parent ? indentFrom(parent, this.pos, this.base) : 0;
+      return indentFor(this.context.next, this.base, this.pos);
     }
   }
   function isParent(parent, of) {
@@ -21485,6 +22464,8 @@
   const noTokens = /*@__PURE__*/Object.create(null);
   const typeArray = [NodeType.none];
   const warned = [];
+  // Cache of node types by name and tags
+  const byTag = /*@__PURE__*/Object.create(null);
   const defaultTable = /*@__PURE__*/Object.create(null);
   for (let [legacyName, name] of [["variable", "variableName"], ["variable-2", "variableName.special"], ["string-2", "string.special"], ["def", "variableName.definition"], ["tag", "tagName"], ["attribute", "attributeName"], ["type", "typeName"], ["builtin", "variableName.standard"], ["qualifier", "modifier"], ["error", "invalid"], ["header", "heading"], ["property", "propertyName"]]) defaultTable[legacyName] = /*@__PURE__*/createTokenType(noTokens, name);
   function warnForPart(part, msg) {
@@ -21493,26 +22474,33 @@
     console.warn(msg);
   }
   function createTokenType(extra, tagStr) {
-    let tag = null;
-    for (let part of tagStr.split(".")) {
-      let value = extra[part] || tags$1[part];
-      if (!value) {
-        warnForPart(part, `Unknown highlighting tag ${part}`);
-      } else if (typeof value == "function") {
-        if (!tag) warnForPart(part, `Modifier ${part} used at start of tag`);else tag = value(tag);
-      } else {
-        if (tag) warnForPart(part, `Tag ${part} used as modifier`);else tag = value;
+    let tags$1$1 = [];
+    for (let name of tagStr.split(" ")) {
+      let found = [];
+      for (let part of name.split(".")) {
+        let value = extra[part] || tags$1[part];
+        if (!value) {
+          warnForPart(part, `Unknown highlighting tag ${part}`);
+        } else if (typeof value == "function") {
+          if (!found.length) warnForPart(part, `Modifier ${part} used at start of tag`);else found = found.map(value);
+        } else {
+          if (found.length) warnForPart(part, `Tag ${part} used as modifier`);else found = Array.isArray(value) ? value : [value];
+        }
       }
+      for (let tag of found) tags$1$1.push(tag);
     }
-    if (!tag) return 0;
+    if (!tags$1$1.length) return 0;
     let name = tagStr.replace(/ /g, "_"),
-      type = NodeType.define({
-        id: typeArray.length,
-        name,
-        props: [styleTags({
-          [name]: tag
-        })]
-      });
+      key = name + " " + tags$1$1.map(t => t.id);
+    let known = byTag[key];
+    if (known) return known.id;
+    let type = byTag[key] = NodeType.define({
+      id: typeArray.length,
+      name,
+      props: [styleTags({
+        [name]: tags$1$1
+      })]
+    });
     typeArray.push(type);
     return type.id;
   }
@@ -21683,6 +22671,7 @@
         range: EditorSelection.cursor(range.from + fromOff + text.length)
       };
     })), {
+      scrollIntoView: true,
       userEvent: "input.complete"
     });
   }
@@ -21735,7 +22724,7 @@
     // The score is a number that is more negative the worse the match
     // is. See `Penalty` above.
     match(word) {
-      if (this.pattern.length == 0) return this.ret(-100 /* NotFull */, []);
+      if (this.pattern.length == 0) return this.ret(-100 /* Penalty.NotFull */, []);
       if (word.length < this.pattern.length) return false;
       let {
         chars,
@@ -21749,12 +22738,12 @@
       if (chars.length == 1) {
         let first = codePointAt(word, 0),
           firstSize = codePointSize(first);
-        let score = firstSize == word.length ? 0 : -100 /* NotFull */;
-        if (first == chars[0]) ;else if (first == folded[0]) score += -200 /* CaseFold */;else return false;
+        let score = firstSize == word.length ? 0 : -100 /* Penalty.NotFull */;
+        if (first == chars[0]) ;else if (first == folded[0]) score += -200 /* Penalty.CaseFold */;else return false;
         return this.ret(score, [0, firstSize]);
       }
       let direct = word.indexOf(this.pattern);
-      if (direct == 0) return this.ret(word.length == this.pattern.length ? 0 : -100 /* NotFull */, [0, this.pattern.length]);
+      if (direct == 0) return this.ret(word.length == this.pattern.length ? 0 : -100 /* Penalty.NotFull */, [0, this.pattern.length]);
       let len = chars.length,
         anyTo = 0;
       if (direct < 0) {
@@ -21781,7 +22770,7 @@
       let hasLower = /[a-z]/.test(word),
         wordAdjacent = true;
       // Go over the option's text, scanning for the various kinds of matches
-      for (let i = 0, e = Math.min(word.length, 200), prevType = 0 /* NonWord */; i < e && byWordTo < len;) {
+      for (let i = 0, e = Math.min(word.length, 200), prevType = 0 /* Tp.NonWord */; i < e && byWordTo < len;) {
         let next = codePointAt(word, i);
         if (direct < 0) {
           if (preciseTo < len && next == chars[preciseTo]) precise[preciseTo++] = i;
@@ -21796,19 +22785,19 @@
           }
         }
         let ch,
-          type = next < 0xff ? next >= 48 && next <= 57 || next >= 97 && next <= 122 ? 2 /* Lower */ : next >= 65 && next <= 90 ? 1 /* Upper */ : 0 /* NonWord */ : (ch = fromCodePoint(next)) != ch.toLowerCase() ? 1 /* Upper */ : ch != ch.toUpperCase() ? 2 /* Lower */ : 0 /* NonWord */;
-        if (!i || type == 1 /* Upper */ && hasLower || prevType == 0 /* NonWord */ && type != 0 /* NonWord */) {
+          type = next < 0xff ? next >= 48 && next <= 57 || next >= 97 && next <= 122 ? 2 /* Tp.Lower */ : next >= 65 && next <= 90 ? 1 /* Tp.Upper */ : 0 /* Tp.NonWord */ : (ch = fromCodePoint(next)) != ch.toLowerCase() ? 1 /* Tp.Upper */ : ch != ch.toUpperCase() ? 2 /* Tp.Lower */ : 0 /* Tp.NonWord */;
+        if (!i || type == 1 /* Tp.Upper */ && hasLower || prevType == 0 /* Tp.NonWord */ && type != 0 /* Tp.NonWord */) {
           if (chars[byWordTo] == next || folded[byWordTo] == next && (byWordFolded = true)) byWord[byWordTo++] = i;else if (byWord.length) wordAdjacent = false;
         }
         prevType = type;
         i += codePointSize(next);
       }
-      if (byWordTo == len && byWord[0] == 0 && wordAdjacent) return this.result(-100 /* ByWord */ + (byWordFolded ? -200 /* CaseFold */ : 0), byWord, word);
-      if (adjacentTo == len && adjacentStart == 0) return this.ret(-200 /* CaseFold */ - word.length + (adjacentEnd == word.length ? 0 : -100 /* NotFull */), [0, adjacentEnd]);
-      if (direct > -1) return this.ret(-700 /* NotStart */ - word.length, [direct, direct + this.pattern.length]);
-      if (adjacentTo == len) return this.ret(-200 /* CaseFold */ + -700 /* NotStart */ - word.length, [adjacentStart, adjacentEnd]);
-      if (byWordTo == len) return this.result(-100 /* ByWord */ + (byWordFolded ? -200 /* CaseFold */ : 0) + -700 /* NotStart */ + (wordAdjacent ? 0 : -1100 /* Gap */), byWord, word);
-      return chars.length == 2 ? false : this.result((any[0] ? -700 /* NotStart */ : 0) + -200 /* CaseFold */ + -1100 /* Gap */, any, word);
+      if (byWordTo == len && byWord[0] == 0 && wordAdjacent) return this.result(-100 /* Penalty.ByWord */ + (byWordFolded ? -200 /* Penalty.CaseFold */ : 0), byWord, word);
+      if (adjacentTo == len && adjacentStart == 0) return this.ret(-200 /* Penalty.CaseFold */ - word.length + (adjacentEnd == word.length ? 0 : -100 /* Penalty.NotFull */), [0, adjacentEnd]);
+      if (direct > -1) return this.ret(-700 /* Penalty.NotStart */ - word.length, [direct, direct + this.pattern.length]);
+      if (adjacentTo == len) return this.ret(-200 /* Penalty.CaseFold */ + -700 /* Penalty.NotStart */ - word.length, [adjacentStart, adjacentEnd]);
+      if (byWordTo == len) return this.result(-100 /* Penalty.ByWord */ + (byWordFolded ? -200 /* Penalty.CaseFold */ : 0) + -700 /* Penalty.NotStart */ + (wordAdjacent ? 0 : -1100 /* Penalty.Gap */), byWord, word);
+      return chars.length == 2 ? false : this.result((any[0] ? -700 /* Penalty.NotStart */ : 0) + -200 /* Penalty.CaseFold */ + -1100 /* Penalty.Gap */, any, word);
     }
     result(score, positions, word) {
       let result = [],
@@ -21839,7 +22828,8 @@
         addToOptions: [],
         positionInfo: defaultPositionInfo,
         compareCompletions: (a, b) => a.label.localeCompare(b.label),
-        interactionDelay: 75
+        interactionDelay: 75,
+        updateSyncTime: 100
       }, {
         defaultKeymap: (a, b) => a && b,
         closeOnBlur: (a, b) => a && b,
@@ -21853,7 +22843,7 @@
   function joinClass(a, b) {
     return a ? b ? a + " " + b : a : b;
   }
-  function defaultPositionInfo(view, list, option, info, space) {
+  function defaultPositionInfo(view, list, option, info, space, tooltip) {
     let rtl = view.textDirection == Direction.RTL,
       left = rtl,
       narrow = false;
@@ -21867,10 +22857,10 @@
     if (left && spaceLeft < Math.min(infoWidth, spaceRight)) left = false;else if (!left && spaceRight < Math.min(infoWidth, spaceLeft)) left = true;
     if (infoWidth <= (left ? spaceLeft : spaceRight)) {
       offset = Math.max(space.top, Math.min(option.top, space.bottom - infoHeight)) - list.top;
-      maxWidth = Math.min(400 /* Width */, left ? spaceLeft : spaceRight);
+      maxWidth = Math.min(400 /* Info.Width */, left ? spaceLeft : spaceRight);
     } else {
       narrow = true;
-      maxWidth = Math.min(400 /* Width */, (rtl ? list.right : space.right - list.left) - 30 /* Margin */);
+      maxWidth = Math.min(400 /* Info.Width */, (rtl ? list.right : space.right - list.left) - 30 /* Info.Margin */);
       let spaceBelow = space.bottom - list.bottom;
       if (spaceBelow >= infoHeight || spaceBelow > list.top) {
         // Below the completion
@@ -21881,8 +22871,10 @@
         offset = list.bottom - option.top;
       }
     }
+    let scaleY = (list.bottom - list.top) / tooltip.offsetHeight;
+    let scaleX = (list.right - list.left) / tooltip.offsetWidth;
     return {
-      style: `${side}: ${offset}px; max-width: ${maxWidth}px`,
+      style: `${side}: ${offset / scaleY}px; max-width: ${maxWidth / scaleX}px`,
       class: "cm-completionInfo-" + (narrow ? rtl ? "left-narrow" : "right-narrow" : left ? "left" : "right")
     };
   }
@@ -21899,7 +22891,7 @@
       position: 20
     });
     content.push({
-      render(completion, _s, match) {
+      render(completion, _s, _v, match) {
         let labelElt = document.createElement("span");
         labelElt.className = "cm-completionLabel";
         let label = completion.displayLabel || completion.label,
@@ -21976,6 +22968,9 @@
       this.dom.className = "cm-tooltip-autocomplete";
       this.updateTooltipClass(view.state);
       this.dom.addEventListener("mousedown", e => {
+        let {
+          options
+        } = view.state.field(stateField).open;
         for (let dom = e.target, match; dom && dom != this.dom; dom = dom.parentNode) {
           if (dom.nodeName == "LI" && (match = /-(\d+)$/.exec(dom.id)) && +match[1] < options.length) {
             this.applyCompletion(view, options[+match[1]]);
@@ -21990,22 +22985,35 @@
           effects: closeCompletionEffect.of(null)
         });
       });
-      this.list = this.dom.appendChild(this.createListBox(options, cState.id, this.range));
-      this.list.addEventListener("scroll", () => {
-        if (this.info) this.view.requestMeasure(this.placeInfoReq);
-      });
+      this.showOptions(options, cState.id);
     }
     mount() {
       this.updateSel();
     }
+    showOptions(options, id) {
+      if (this.list) this.list.remove();
+      this.list = this.dom.appendChild(this.createListBox(options, id, this.range));
+      this.list.addEventListener("scroll", () => {
+        if (this.info) this.view.requestMeasure(this.placeInfoReq);
+      });
+    }
     update(update) {
-      var _a, _b, _c;
+      var _a;
       let cState = update.state.field(this.stateField);
       let prevState = update.startState.field(this.stateField);
       this.updateTooltipClass(update.state);
       if (cState != prevState) {
+        let {
+          options,
+          selected,
+          disabled
+        } = cState.open;
+        if (!prevState.open || prevState.open.options != options) {
+          this.range = rangeAroundSelected(options.length, selected, update.state.facet(completionConfig).maxRenderedOptions);
+          this.showOptions(options, cState.id);
+        }
         this.updateSel();
-        if (((_a = cState.open) === null || _a === void 0 ? void 0 : _a.disabled) != ((_b = prevState.open) === null || _b === void 0 ? void 0 : _b.disabled)) this.dom.classList.toggle("cm-tooltip-autocomplete-disabled", !!((_c = cState.open) === null || _c === void 0 ? void 0 : _c.disabled));
+        if (disabled != ((_a = prevState.open) === null || _a === void 0 ? void 0 : _a.disabled)) this.dom.classList.toggle("cm-tooltip-autocomplete-disabled", !!disabled);
       }
     }
     updateTooltipClass(state) {
@@ -22025,11 +23033,7 @@
         open = cState.open;
       if (open.selected > -1 && open.selected < this.range.from || open.selected >= this.range.to) {
         this.range = rangeAroundSelected(open.options.length, open.selected, this.view.state.facet(completionConfig).maxRenderedOptions);
-        this.list.remove();
-        this.list = this.dom.appendChild(this.createListBox(open.options, cState.id, this.range));
-        this.list.addEventListener("scroll", () => {
-          if (this.info) this.view.requestMeasure(this.placeInfoReq);
-        });
+        this.showOptions(open.options, cState.id);
       }
       if (this.updateSelectedOption(open.selected)) {
         this.destroyInfo();
@@ -22103,7 +23107,7 @@
         };
       }
       if (selRect.top > Math.min(space.bottom, listRect.bottom) - 10 || selRect.bottom < Math.max(space.top, listRect.top) + 10) return null;
-      return this.view.state.facet(completionConfig).positionInfo(this.view, listRect, selRect, infoRect, space);
+      return this.view.state.facet(completionConfig).positionInfo(this.view, listRect, selRect, infoRect, space, this.dom);
     }
     placeInfo(pos) {
       if (this.info) {
@@ -22148,7 +23152,7 @@
         let cls = this.optionClass(completion);
         if (cls) li.className = cls;
         for (let source of this.optionContent) {
-          let node = source(completion, this.view.state, match);
+          let node = source(completion, this.view.state, this.view, match);
           if (node) li.appendChild(node);
         }
       }
@@ -22167,15 +23171,14 @@
       this.destroyInfo();
     }
   }
-  // We allocate a new function instance every time the completion
-  // changes to force redrawing/repositioning of the tooltip
   function completionTooltip(stateField, applyCompletion) {
     return view => new CompletionTooltip(view, stateField, applyCompletion);
   }
   function scrollIntoView(container, element) {
     let parent = container.getBoundingClientRect();
     let self = element.getBoundingClientRect();
-    if (self.top < parent.top) container.scrollTop -= parent.top - self.top;else if (self.bottom > parent.bottom) container.scrollTop += self.bottom - parent.bottom;
+    let scaleY = parent.height / container.offsetHeight;
+    if (self.top < parent.top) container.scrollTop -= (parent.top - self.top) / scaleY;else if (self.bottom > parent.bottom) container.scrollTop += (self.bottom - parent.bottom) / scaleY;
   }
 
   // Used to pick a preferred option when two options with the same
@@ -22256,7 +23259,7 @@
     static build(active, state, id, prev, conf) {
       let options = sortOptions(active, state);
       if (!options.length) {
-        return prev && active.some(a => a.state == 1 /* Pending */) ? new CompletionDialog(prev.options, prev.attrs, prev.tooltip, prev.timestamp, prev.selected, true) : null;
+        return prev && active.some(a => a.state == 1 /* State.Pending */) ? new CompletionDialog(prev.options, prev.attrs, prev.tooltip, prev.timestamp, prev.selected, true) : null;
       }
       let selected = state.facet(completionConfig).selectOnOpen ? 0 : -1;
       if (prev && prev.selected != selected && prev.selected != -1) {
@@ -22268,7 +23271,7 @@
       }
       return new CompletionDialog(options, makeAttrs(id, selected), {
         pos: active.reduce((a, b) => b.hasResult() ? Math.min(a, b.from) : a, 1e8),
-        create: completionTooltip(completionState, applyCompletion),
+        create: createTooltip,
         above: conf.aboveCursor
       }, prev ? prev.timestamp : Date.now(), selected, false);
     }
@@ -22294,14 +23297,14 @@
         conf = state.facet(completionConfig);
       let sources = conf.override || state.languageDataAt("autocomplete", cur(state)).map(asSource);
       let active = sources.map(source => {
-        let value = this.active.find(s => s.source == source) || new ActiveSource(source, this.active.some(a => a.state != 0 /* Inactive */) ? 1 /* Pending */ : 0 /* Inactive */);
+        let value = this.active.find(s => s.source == source) || new ActiveSource(source, this.active.some(a => a.state != 0 /* State.Inactive */) ? 1 /* State.Pending */ : 0 /* State.Inactive */);
         return value.update(tr, conf);
       });
       if (active.length == this.active.length && active.every((a, i) => a == this.active[i])) active = this.active;
       let open = this.open;
       if (open && tr.docChanged) open = open.map(tr.changes);
-      if (tr.selection || active.some(a => a.hasResult() && tr.changes.touchesRange(a.from, a.to)) || !sameResults(active, this.active)) open = CompletionDialog.build(active, state, this.id, open, conf);else if (open && open.disabled && !active.some(a => a.state == 1 /* Pending */)) open = null;
-      if (!open && active.every(a => a.state != 1 /* Pending */) && active.some(a => a.hasResult())) active = active.map(a => a.hasResult() ? new ActiveSource(a.source, 0 /* Inactive */) : a);
+      if (tr.selection || active.some(a => a.hasResult() && tr.changes.touchesRange(a.from, a.to)) || !sameResults(active, this.active)) open = CompletionDialog.build(active, state, this.id, open, conf);else if (open && open.disabled && !active.some(a => a.state == 1 /* State.Pending */)) open = null;
+      if (!open && active.every(a => a.state != 1 /* State.Pending */) && active.some(a => a.hasResult())) active = active.map(a => a.hasResult() ? new ActiveSource(a.source, 0 /* State.Inactive */) : a);
       for (let effect of tr.effects) if (effect.is(setSelectedEffect)) open = open && open.setSelected(effect.value, this.id);
       return active == this.active && open == this.open ? this : new CompletionState(active, this.id, open);
     }
@@ -22351,18 +23354,18 @@
     update(tr, conf) {
       let event = getUserEvent(tr),
         value = this;
-      if (event) value = value.handleUserEvent(tr, event, conf);else if (tr.docChanged) value = value.handleChange(tr);else if (tr.selection && value.state != 0 /* Inactive */) value = new ActiveSource(value.source, 0 /* Inactive */);
+      if (event) value = value.handleUserEvent(tr, event, conf);else if (tr.docChanged) value = value.handleChange(tr);else if (tr.selection && value.state != 0 /* State.Inactive */) value = new ActiveSource(value.source, 0 /* State.Inactive */);
       for (let effect of tr.effects) {
-        if (effect.is(startCompletionEffect)) value = new ActiveSource(value.source, 1 /* Pending */, effect.value ? cur(tr.state) : -1);else if (effect.is(closeCompletionEffect)) value = new ActiveSource(value.source, 0 /* Inactive */);else if (effect.is(setActiveEffect)) for (let active of effect.value) if (active.source == value.source) value = active;
+        if (effect.is(startCompletionEffect)) value = new ActiveSource(value.source, 1 /* State.Pending */, effect.value ? cur(tr.state) : -1);else if (effect.is(closeCompletionEffect)) value = new ActiveSource(value.source, 0 /* State.Inactive */);else if (effect.is(setActiveEffect)) for (let active of effect.value) if (active.source == value.source) value = active;
       }
       return value;
     }
     handleUserEvent(tr, type, conf) {
-      return type == "delete" || !conf.activateOnTyping ? this.map(tr.changes) : new ActiveSource(this.source, 1 /* Pending */);
+      return type == "delete" || !conf.activateOnTyping ? this.map(tr.changes) : new ActiveSource(this.source, 1 /* State.Pending */);
     }
 
     handleChange(tr) {
-      return tr.changes.touchesRange(cur(tr.startState)) ? new ActiveSource(this.source, 0 /* Inactive */) : this.map(tr.changes);
+      return tr.changes.touchesRange(cur(tr.startState)) ? new ActiveSource(this.source, 0 /* State.Inactive */) : this.map(tr.changes);
     }
     map(changes) {
       return changes.empty || this.explicitPos < 0 ? this : new ActiveSource(this.source, this.state, changes.mapPos(this.explicitPos));
@@ -22370,7 +23373,7 @@
   }
   class ActiveResult extends ActiveSource {
     constructor(source, explicitPos, result, from, to) {
-      super(source, 2 /* Result */, explicitPos);
+      super(source, 2 /* State.Result */, explicitPos);
       this.result = result;
       this.from = from;
       this.to = to;
@@ -22383,15 +23386,15 @@
       let from = tr.changes.mapPos(this.from),
         to = tr.changes.mapPos(this.to, 1);
       let pos = cur(tr.state);
-      if ((this.explicitPos < 0 ? pos <= from : pos < this.from) || pos > to || type == "delete" && cur(tr.startState) == this.from) return new ActiveSource(this.source, type == "input" && conf.activateOnTyping ? 1 /* Pending */ : 0 /* Inactive */);
+      if ((this.explicitPos < 0 ? pos <= from : pos < this.from) || pos > to || type == "delete" && cur(tr.startState) == this.from) return new ActiveSource(this.source, type == "input" && conf.activateOnTyping ? 1 /* State.Pending */ : 0 /* State.Inactive */);
       let explicitPos = this.explicitPos < 0 ? -1 : tr.changes.mapPos(this.explicitPos),
         updated;
       if (checkValid(this.result.validFor, tr.state, from, to)) return new ActiveResult(this.source, explicitPos, this.result, from, to);
       if (this.result.update && (updated = this.result.update(this.result, from, to, new CompletionContext(tr.state, pos, explicitPos >= 0)))) return new ActiveResult(this.source, explicitPos, updated, updated.from, (_a = updated.to) !== null && _a !== void 0 ? _a : cur(tr.state));
-      return new ActiveSource(this.source, 1 /* Pending */, explicitPos);
+      return new ActiveSource(this.source, 1 /* State.Pending */, explicitPos);
     }
     handleChange(tr) {
-      return tr.changes.touchesRange(this.from, this.to) ? new ActiveSource(this.source, 0 /* Inactive */) : this.map(tr.changes);
+      return tr.changes.touchesRange(this.from, this.to) ? new ActiveSource(this.source, 0 /* State.Inactive */) : this.map(tr.changes);
     }
     map(mapping) {
       return mapping.empty ? this : new ActiveResult(this.source, this.explicitPos < 0 ? -1 : mapping.mapPos(this.explicitPos), this.result, mapping.mapPos(this.from), mapping.mapPos(this.to, 1));
@@ -22426,6 +23429,7 @@
     }));else apply(view, option.completion, result.from, result.to);
     return true;
   }
+  const createTooltip = /*@__PURE__*/completionTooltip(completionState, applyCompletion);
 
   /**
   Returns a command that moves the completion selection forward or
@@ -22473,7 +23477,7 @@
   */
   const closeCompletion = view => {
     let cState = view.state.field(completionState, false);
-    if (!cState || !cState.active.some(a => a.state != 0 /* Inactive */)) return false;
+    if (!cState || !cState.active.some(a => a.state != 0 /* State.Inactive */)) return false;
     view.dispatch({
       effects: closeCompletionEffect.of(null)
     });
@@ -22490,8 +23494,7 @@
       this.done = undefined;
     }
   }
-  const DebounceTime = 50,
-    MaxUpdateCount = 50,
+  const MaxUpdateCount = 50,
     MinAbortTime = 1000;
   const completionPlugin = /*@__PURE__*/ViewPlugin.fromClass(class {
     constructor(view) {
@@ -22499,8 +23502,8 @@
       this.debounceUpdate = -1;
       this.running = [];
       this.debounceAccept = -1;
-      this.composing = 0 /* None */;
-      for (let active of view.state.field(completionState).active) if (active.state == 1 /* Pending */) this.startQuery(active);
+      this.composing = 0 /* CompositionState.None */;
+      for (let active of view.state.field(completionState).active) if (active.state == 1 /* State.Pending */) this.startQuery(active);
     }
     update(update) {
       let cState = update.state.field(completionState);
@@ -22525,9 +23528,9 @@
         }
       }
       if (this.debounceUpdate > -1) clearTimeout(this.debounceUpdate);
-      this.debounceUpdate = cState.active.some(a => a.state == 1 /* Pending */ && !this.running.some(q => q.active.source == a.source)) ? setTimeout(() => this.startUpdate(), DebounceTime) : -1;
-      if (this.composing != 0 /* None */) for (let tr of update.transactions) {
-        if (getUserEvent(tr) == "input") this.composing = 2 /* Changed */;else if (this.composing == 2 /* Changed */ && tr.selection) this.composing = 3 /* ChangedAndMoved */;
+      this.debounceUpdate = cState.active.some(a => a.state == 1 /* State.Pending */ && !this.running.some(q => q.active.source == a.source)) ? setTimeout(() => this.startUpdate(), 50) : -1;
+      if (this.composing != 0 /* CompositionState.None */) for (let tr of update.transactions) {
+        if (getUserEvent(tr) == "input") this.composing = 2 /* CompositionState.Changed */;else if (this.composing == 2 /* CompositionState.Changed */ && tr.selection) this.composing = 3 /* CompositionState.ChangedAndMoved */;
       }
     }
 
@@ -22538,7 +23541,7 @@
         } = this.view,
         cState = state.field(completionState);
       for (let active of cState.active) {
-        if (active.state == 1 /* Pending */ && !this.running.some(r => r.active.source == active.source)) this.startQuery(active);
+        if (active.state == 1 /* State.Pending */ && !this.running.some(r => r.active.source == active.source)) this.startQuery(active);
       }
     }
     startQuery(active) {
@@ -22562,7 +23565,7 @@
       });
     }
     scheduleAccept() {
-      if (this.running.every(q => q.done !== undefined)) this.accept();else if (this.debounceAccept < 0) this.debounceAccept = setTimeout(() => this.accept(), DebounceTime);
+      if (this.running.every(q => q.done !== undefined)) this.accept();else if (this.debounceAccept < 0) this.debounceAccept = setTimeout(() => this.accept(), this.view.state.facet(completionConfig).updateSyncTime);
     }
     // For each finished query in this.running, try to create a result
     // or, if appropriate, restart the query.
@@ -22587,13 +23590,13 @@
           }
         }
         let current = this.view.state.field(completionState).active.find(a => a.source == query.active.source);
-        if (current && current.state == 1 /* Pending */) {
+        if (current && current.state == 1 /* State.Pending */) {
           if (query.done == null) {
             // Explicitly failed. Should clear the pending status if it
             // hasn't been re-set in the meantime.
-            let active = new ActiveSource(query.active.source, 0 /* Inactive */);
+            let active = new ActiveSource(query.active.source, 0 /* State.Inactive */);
             for (let tr of query.updates) active = active.update(tr, conf);
-            if (active.state != 1 /* Pending */) updated.push(active);
+            if (active.state != 1 /* State.Pending */) updated.push(active);
           } else {
             // Cleared by subsequent transactions. Restart.
             this.startQuery(current);
@@ -22616,18 +23619,18 @@
         }
       },
       compositionstart() {
-        this.composing = 1 /* Started */;
+        this.composing = 1 /* CompositionState.Started */;
       },
 
       compositionend() {
-        if (this.composing == 3 /* ChangedAndMoved */) {
+        if (this.composing == 3 /* CompositionState.ChangedAndMoved */) {
           // Safari fires compositionend events synchronously, possibly
           // from inside an update, so dispatch asynchronously to avoid reentrancy
           setTimeout(() => this.view.dispatch({
             effects: startCompletionEffect.of(false)
           }), 20);
         }
-        this.composing = 0 /* None */;
+        this.composing = 0 /* CompositionState.None */;
       }
     }
   });
@@ -22687,7 +23690,7 @@
       position: "absolute",
       padding: "3px 9px",
       width: "max-content",
-      maxWidth: `${400 /* Width */}px`,
+      maxWidth: `${400 /* Info.Width */}px`,
       boxSizing: "border-box"
     },
     ".cm-completionInfo.cm-completionInfo-left": {
@@ -22697,10 +23700,10 @@
       left: "100%"
     },
     ".cm-completionInfo.cm-completionInfo-left-narrow": {
-      right: `${30 /* Margin */}px`
+      right: `${30 /* Info.Margin */}px`
     },
     ".cm-completionInfo.cm-completionInfo-right-narrow": {
-      left: `${30 /* Margin */}px`
+      left: `${30 /* Info.Margin */}px`
     },
     "&light .cm-snippetField": {
       backgroundColor: "#00000022"
@@ -23000,7 +24003,8 @@
         last = dir > 0 && !active.ranges.some(r => r.field == next + dir);
       dispatch(state.update({
         selection: fieldSelection(active.ranges, next),
-        effects: setActive.of(last ? null : new ActiveSnippet(active.ranges, next))
+        effects: setActive.of(last ? null : new ActiveSnippet(active.ranges, next)),
+        scrollIntoView: true
       }));
       return true;
     };
@@ -23070,7 +24074,8 @@
       if (!match || match.field == active.active) return false;
       view.dispatch({
         selection: fieldSelection(active.ranges, match.field),
-        effects: setActive.of(active.ranges.some(r => r.field > match.field) ? new ActiveSnippet(active.ranges, match.field) : null)
+        effects: setActive.of(active.ranges.some(r => r.field > match.field) ? new ActiveSnippet(active.ranges, match.field) : null),
+        scrollIntoView: true
       });
       return true;
     }
@@ -23094,12 +24099,13 @@
       return RangeSet.empty;
     },
     update(value, tr) {
-      if (tr.selection) {
-        let lineStart = tr.state.doc.lineAt(tr.selection.main.head).from;
-        let prevLineStart = tr.startState.doc.lineAt(tr.startState.selection.main.head).from;
-        if (lineStart != tr.changes.mapPos(prevLineStart, -1)) value = RangeSet.empty;
-      }
       value = value.map(tr.changes);
+      if (tr.selection) {
+        let line = tr.state.doc.lineAt(tr.selection.main.head);
+        value = value.update({
+          filter: from => from >= line.from && from <= line.to
+        });
+      }
       for (let effect of tr.effects) if (effect.is(closeBracketEffect)) value = value.update({
         add: [closedBracket.range(effect.value, effect.value + 1)]
       });
@@ -23975,9 +24981,14 @@
   }) => {
     let selection = updateSel(state.selection, range => {
       var _a;
-      let context = syntaxTree(state).resolveInner(range.head, 1);
-      while (!(context.from < range.from && context.to >= range.to || context.to > range.to && context.from <= range.from || !((_a = context.parent) === null || _a === void 0 ? void 0 : _a.parent))) context = context.parent;
-      return EditorSelection.range(context.to, context.from);
+      let stack = syntaxTree(state).resolveStack(range.from, 1);
+      for (let cur = stack; cur; cur = cur.next) {
+        let {
+          node
+        } = cur;
+        if ((node.from < range.from && node.to >= range.to || node.to > range.to && node.from <= range.from) && ((_a = node.parent) === null || _a === void 0 ? void 0 : _a.parent)) return EditorSelection.range(node.to, node.from);
+      }
+      return range;
     });
     dispatch(setSel(state, selection));
     return true;
@@ -24010,7 +25021,7 @@
         to
       } = range;
       if (from == to) {
-        let towards = by(from);
+        let towards = by(range);
         if (towards < from) {
           event = "delete.backward";
           towards = skipAtomic(target, towards, false);
@@ -24031,7 +25042,7 @@
           from,
           to
         },
-        range: EditorSelection.cursor(from)
+        range: EditorSelection.cursor(from, from < range.head ? -1 : 1)
       };
     });
     if (changes.changes.empty) return false;
@@ -24048,8 +25059,9 @@
     });
     return pos;
   }
-  const deleteByChar = (target, forward) => deleteBy(target, pos => {
-    let {
+  const deleteByChar = (target, forward) => deleteBy(target, range => {
+    let pos = range.from,
+      {
         state
       } = target,
       line = state.doc.lineAt(pos),
@@ -24063,7 +25075,7 @@
       targetPos = pos;
     } else {
       targetPos = findClusterBreak(line.text, pos - line.from, forward, forward) + line.from;
-      if (targetPos == pos && line.number != (forward ? state.doc.lines : 1)) targetPos += forward ? 1 : -1;
+      if (targetPos == pos && line.number != (forward ? state.doc.lines : 1)) targetPos += forward ? 1 : -1;else if (!forward && /[\ufe00-\ufe0f]/.test(line.text.slice(targetPos - line.from, pos - line.from))) targetPos = findClusterBreak(line.text, targetPos - line.from, false, false) + line.from;
     }
     return targetPos;
   });
@@ -24076,8 +25088,8 @@
   Delete the selection or the character after the cursor.
   */
   const deleteCharForward = view => deleteByChar(view, true);
-  const deleteByGroup = (target, forward) => deleteBy(target, start => {
-    let pos = start,
+  const deleteByGroup = (target, forward) => deleteBy(target, range => {
+    let pos = range.head,
       {
         state
       } = target,
@@ -24085,14 +25097,14 @@
     let categorize = state.charCategorizer(pos);
     for (let cat = null;;) {
       if (pos == (forward ? line.to : line.from)) {
-        if (pos == start && line.number != (forward ? state.doc.lines : 1)) pos += forward ? 1 : -1;
+        if (pos == range.head && line.number != (forward ? state.doc.lines : 1)) pos += forward ? 1 : -1;
         break;
       }
       let next = findClusterBreak(line.text, pos - line.from, forward) + line.from;
       let nextChar = line.text.slice(Math.min(pos, next) - line.from, Math.max(pos, next) - line.from);
       let nextCat = categorize(nextChar);
       if (cat != null && nextCat != cat) break;
-      if (nextChar != " " || pos != start) cat = nextCat;
+      if (nextChar != " " || pos != range.head) cat = nextCat;
       pos = next;
     }
     return pos;
@@ -24112,18 +25124,25 @@
   the end of the line. If the cursor is directly at the end of the
   line, delete the line break after it.
   */
-  const deleteToLineEnd = view => deleteBy(view, pos => {
-    let lineEnd = view.lineBlockAt(pos).to;
-    return pos < lineEnd ? lineEnd : Math.min(view.state.doc.length, pos + 1);
+  const deleteToLineEnd = view => deleteBy(view, range => {
+    let lineEnd = view.lineBlockAt(range.head).to;
+    return range.head < lineEnd ? lineEnd : Math.min(view.state.doc.length, range.head + 1);
   });
   /**
   Delete the selection, or, if it is a cursor selection, delete to
-  the start of the line. If the cursor is directly at the start of the
-  line, delete the line break before it.
+  the start of the line or the next line wrap before the cursor.
   */
-  const deleteToLineStart = view => deleteBy(view, pos => {
-    let lineStart = view.lineBlockAt(pos).from;
-    return pos > lineStart ? lineStart : Math.max(0, pos - 1);
+  const deleteLineBoundaryBackward = view => deleteBy(view, range => {
+    let lineStart = view.moveToLineBoundary(range, false).head;
+    return range.head > lineStart ? lineStart : Math.max(0, range.head - 1);
+  });
+  /**
+  Delete the selection, or, if it is a cursor selection, delete to
+  the end of the line or the next line wrap after the cursor.
+  */
+  const deleteLineBoundaryForward = view => deleteBy(view, range => {
+    let lineStart = view.moveToLineBoundary(range, true).head;
+    return range.head < lineStart ? lineStart : Math.min(view.state.doc.length, range.head + 1);
   });
   /**
   Replace each selection range with a line break, leaving the cursor
@@ -24324,7 +25343,7 @@
     let before = context.childBefore(pos),
       after = context.childAfter(pos),
       closedBy;
-    if (before && after && before.to <= pos && after.from >= pos && (closedBy = before.type.prop(NodeProp.closedBy)) && closedBy.indexOf(after.name) > -1 && state.doc.lineAt(before.to).from == state.doc.lineAt(after.from).from) return {
+    if (before && after && before.to <= pos && after.from >= pos && (closedBy = before.type.prop(NodeProp.closedBy)) && closedBy.indexOf(after.name) > -1 && state.doc.lineAt(before.to).from == state.doc.lineAt(after.from).from && !/\S/.test(state.sliceDoc(before.to, after.from))) return {
       from: before.to,
       to: after.from
     };
@@ -24361,7 +25380,7 @@
           simulateDoubleBreak: !!explode
         });
         let indent = getIndentation(cx, from);
-        if (indent == null) indent = /^\s*/.exec(state.doc.lineAt(from).text)[0].length;
+        if (indent == null) indent = countColumn(/^\s*/.exec(state.doc.lineAt(from).text)[0], state.tabSize);
         while (to < line.to && /\s/.test(line.text[to - line.from])) to++;
         if (explode) ({
           from,
@@ -24582,8 +25601,8 @@
    - Delete: [`deleteCharForward`](https://codemirror.net/6/docs/ref/#commands.deleteCharForward)
    - Ctrl-Backspace (Alt-Backspace on macOS): [`deleteGroupBackward`](https://codemirror.net/6/docs/ref/#commands.deleteGroupBackward)
    - Ctrl-Delete (Alt-Delete on macOS): [`deleteGroupForward`](https://codemirror.net/6/docs/ref/#commands.deleteGroupForward)
-   - Cmd-Backspace (macOS): [`deleteToLineStart`](https://codemirror.net/6/docs/ref/#commands.deleteToLineStart).
-   - Cmd-Delete (macOS): [`deleteToLineEnd`](https://codemirror.net/6/docs/ref/#commands.deleteToLineEnd).
+   - Cmd-Backspace (macOS): [`deleteLineBoundaryBackward`](https://codemirror.net/6/docs/ref/#commands.deleteLineBoundaryBackward).
+   - Cmd-Delete (macOS): [`deleteLineBoundaryForward`](https://codemirror.net/6/docs/ref/#commands.deleteLineBoundaryForward).
   */
   const standardKeymap = /*@__PURE__*/[{
     key: "ArrowLeft",
@@ -24692,10 +25711,10 @@
     run: deleteGroupForward
   }, {
     mac: "Mod-Backspace",
-    run: deleteToLineStart
+    run: deleteLineBoundaryBackward
   }, {
     mac: "Mod-Delete",
-    run: deleteToLineEnd
+    run: deleteLineBoundaryForward
   }].concat( /*@__PURE__*/emacsStyleKeymap.map(b => ({
     mac: b.key,
     run: b.run,
@@ -24968,7 +25987,7 @@
     run() {
       let now = Date.now();
       if (now < this.lintTime - 10) {
-        setTimeout(this.run, this.lintTime - now);
+        this.timeout = setTimeout(this.run, this.lintTime - now);
       } else {
         this.set = false;
         let {
@@ -25231,7 +26250,8 @@
             sel,
             panel
           }) => {
-            if (sel.top < panel.top) this.list.scrollTop -= panel.top - sel.top;else if (sel.bottom > panel.bottom) this.list.scrollTop += sel.bottom - panel.bottom;
+            let scaleY = panel.height / this.list.offsetHeight;
+            if (sel.top < panel.top) this.list.scrollTop -= (panel.top - sel.top) / scaleY;else if (sel.bottom > panel.bottom) this.list.scrollTop += (sel.bottom - panel.bottom) / scaleY;
           }
         });
       } else if (this.selectedIndex < 0) {
@@ -25991,8 +27011,15 @@
         line
       } = this;
       for (;;) {
-        while (line.depth < this.stack.length) this.finishContext();
-        for (let mark of line.markers) this.addNode(mark.type, mark.from, mark.to);
+        for (let markI = 0;;) {
+          let next = line.depth < this.stack.length ? this.stack[this.stack.length - 1] : null;
+          while (markI < line.markers.length && (!next || line.markers[markI].from < next.end)) {
+            let mark = line.markers[markI++];
+            this.addNode(mark.type, mark.from, mark.to);
+          }
+          if (!next) break;
+          this.finishContext();
+        }
         if (line.pos < line.text.length) break;
         // Empty line
         if (!this.nextLine()) return this.finish();
@@ -26572,8 +27599,9 @@
       let rightFlanking = !sBefore && (!pBefore || sAfter || pAfter);
       let canOpen = leftFlanking && (next == 42 || !rightFlanking || pBefore);
       let canClose = rightFlanking && (next == 42 || !leftFlanking || pAfter);
-      return cx.append(new InlineDelimiter(next == 95 ? EmphasisUnderscore : EmphasisAsterisk, start, pos, (canOpen ? 1 /* Mark.Open */ : 0) | (canClose ? 2 /* Mark.Close */ : 0)));
+      return cx.append(new InlineDelimiter(next == 95 ? EmphasisUnderscore : EmphasisAsterisk, start, pos, (canOpen ? 1 /* Mark.Open */ : 0 /* Mark.None */) | (canClose ? 2 /* Mark.Close */ : 0 /* Mark.None */)));
     },
+
     HardBreak(cx, next, start) {
       if (next == 92 /* '\\' */ && cx.char(start + 1) == 10 /* '\n' */) return cx.append(elt(Type$4.HardBreak, start, start + 2));
       if (next == 32) {
@@ -26608,8 +27636,9 @@
           // Set any open-link markers before this link to invalid.
           if (part.type == LinkStart) for (let j = 0; j < i; j++) {
             let p = cx.parts[j];
-            if (p instanceof InlineDelimiter && p.type == LinkStart) p.side = 0;
+            if (p instanceof InlineDelimiter && p.type == LinkStart) p.side = 0 /* Mark.None */;
           }
+
           return link.to;
         }
       }
@@ -26743,7 +27772,7 @@
     /// or both. Returns the end of the delimiter, for convenient
     /// returning from [parse functions](#InlineParser.parse).
     addDelimiter(type, from, to, open, close) {
-      return this.append(new InlineDelimiter(type, from, to, (open ? 1 /* Mark.Open */ : 0) | (close ? 2 /* Mark.Close */ : 0)));
+      return this.append(new InlineDelimiter(type, from, to, (open ? 1 /* Mark.Open */ : 0 /* Mark.None */) | (close ? 2 /* Mark.Close */ : 0 /* Mark.None */)));
     }
     /// Add an inline element. Returns the end of the element.
     addElement(elt) {
@@ -26982,7 +28011,7 @@
     Paragraph: tags$1.content
   });
   /// The default CommonMark parser.
-  const parser$2 = new MarkdownParser(new NodeSet(nodeTypes).extend(markdownHighlighting), Object.keys(DefaultBlockParsers).map(n => DefaultBlockParsers[n]), Object.keys(DefaultBlockParsers).map(n => DefaultLeafBlocks[n]), Object.keys(DefaultBlockParsers), DefaultEndLeaf, DefaultSkipMarkup, Object.keys(DefaultInline).map(n => DefaultInline[n]), Object.keys(DefaultInline), []);
+  const parser$1 = new MarkdownParser(new NodeSet(nodeTypes).extend(markdownHighlighting), Object.keys(DefaultBlockParsers).map(n => DefaultBlockParsers[n]), Object.keys(DefaultBlockParsers).map(n => DefaultLeafBlocks[n]), Object.keys(DefaultBlockParsers), DefaultEndLeaf, DefaultSkipMarkup, Object.keys(DefaultInline).map(n => DefaultInline[n]), Object.keys(DefaultInline), []);
   const StrikethroughDelim = {
     resolve: "Strikethrough",
     mark: "StrikethroughMark"
@@ -27216,875 +28245,13 @@
     }]
   });
 
-  // This file was generated by lezer-generator. You probably shouldn't edit it.
-  const propertyIdentifier = 119,
-    identifier = 120,
-    nameIdentifier = 121,
-    insertSemi = 122,
-    expression0 = 126,
-    ForExpression = 4,
-    forExpressionStart = 129,
-    ForInExpression = 7,
-    Name$4 = 8,
-    Identifier = 9,
-    AdditionalIdentifier = 10,
-    forExpressionBodyStart = 137,
-    IfExpression = 18,
-    ifExpressionStart = 138,
-    QuantifiedExpression = 22,
-    quantifiedExpressionStart = 139,
-    QuantifiedInExpression = 26,
-    PositiveUnaryTest = 36,
-    ArithmeticExpression = 40,
-    arithmeticPlusStart = 143,
-    arithmeticTimesStart = 144,
-    arithmeticExpStart = 145,
-    arithmeticUnaryStart = 146,
-    VariableName$1 = 47,
-    PathExpression = 67,
-    pathExpressionStart = 151,
-    FilterExpression = 69,
-    filterExpressionStart = 152,
-    FunctionInvocation = 71,
-    functionInvocationStart = 153,
-    ParameterName = 75,
-    nil = 158,
-    NumericLiteral = 78,
-    StringLiteral = 79,
-    BooleanLiteral = 80,
-    List$1 = 88,
-    listStart = 169,
-    FunctionDefinition = 89,
-    functionDefinitionStart = 171,
-    Context = 96,
-    contextStart = 173,
-    ContextEntry = 97,
-    PropertyName = 99,
-    PropertyIdentifier = 100;
-
-  /* global console,process */
-
-  const LOG_PARSE = typeof process != 'undefined' && process.env && /\bfparse(:dbg)?\b/.test(process.env.LOG);
-  const LOG_PARSE_DEBUG = typeof process != 'undefined' && process.env && /\bfparse:dbg\b/.test(process.env.LOG);
-  const LOG_VARS = typeof process != 'undefined' && process.env && /\bcontext\b/.test(process.env.LOG);
-  const spaceChars = [9, 11, 12, 32, 133, 160, 5760, 8192, 8193, 8194, 8195, 8196, 8197, 8198, 8199, 8200, 8201, 8202, 8232, 8233, 8239, 8287, 12288];
-  const newlineChars = chars('\n\r');
-  const additionalNameChars = chars("'./-+*");
-
-  /**
-   * @param { string } str
-   * @return { number[] }
-   */
-  function chars(str) {
-    return Array.from(str).map(s => s.charCodeAt(0));
-  }
-
-  /**
-   * @param { number } ch
-   * @return { boolean }
-   */
-  function isStartChar(ch) {
-    return ch === 63 // ?
-    || ch === 95 // _
-    || ch >= 65 && ch <= 90 // A-Z
-    || ch >= 97 && ch <= 122 // a-z
-    || ch >= 161 && !isPartChar(ch) && !isSpace(ch);
-  }
-
-  /**
-   * @param { number } ch
-   * @return { boolean }
-   */
-  function isAdditional(ch) {
-    return additionalNameChars.includes(ch);
-  }
-
-  /**
-   * @param { number } ch
-   * @return { boolean }
-   */
-  function isPartChar(ch) {
-    return ch >= 48 && ch <= 57 // 0-9
-    || ch === 0xB7 || ch >= 0x0300 && ch <= 0x036F || ch >= 0x203F && ch <= 0x2040;
-  }
-
-  /**
-   * @param { number } ch
-   * @return { boolean }
-   */
-  function isSpace(ch) {
-    return spaceChars.includes(ch);
-  }
-
-  // eslint-disable-next-line
-  function indent(str, spaces) {
-    return spaces.concat(str.split(/\n/g).join('\n' + spaces));
-  }
-
-  /**
-   * @param { import('@lezer/lr').InputStream } input
-   * @param  { number } [offset]
-   * @param { boolean } [includeOperators]
-   *
-   * @return { { token: string, offset: number } | null }
-   */
-  function parseAdditionalSymbol(input, offset = 0) {
-    const next = input.peek(offset);
-    if (isAdditional(next)) {
-      return {
-        offset: 1,
-        token: String.fromCharCode(next)
-      };
-    }
-    return null;
-  }
-
-  /**
-   * @param { import('@lezer/lr').InputStream } input
-   * @param { number } [offset]
-   * @param { boolean } [namePart]
-   *
-   * @return { { token: string, offset: number } | null }
-   */
-  function parseIdentifier(input, offset = 0, namePart = false) {
-    for (let inside = false, chars = [], i = 0;; i++) {
-      const next = input.peek(offset + i);
-      if (isStartChar(next) || (inside || namePart) && isPartChar(next)) {
-        if (!inside) {
-          inside = true;
-        }
-        chars.push(next);
-      } else {
-        if (chars.length) {
-          return {
-            token: String.fromCharCode(...chars),
-            offset: i
-          };
-        }
-        return null;
-      }
-    }
-  }
-
-  /**
-   * @param { import('@lezer/lr').InputStream } input
-   * @param  { number } offset
-   *
-   * @return { { token: string, offset: number } | null }
-   */
-  function parseSpaces(input, offset) {
-    for (let inside = false, i = 0;; i++) {
-      let next = input.peek(offset + i);
-      if (isSpace(next)) {
-        if (!inside) {
-          inside = true;
-        }
-      } else {
-        if (inside) {
-          return {
-            token: ' ',
-            offset: i
-          };
-        }
-        return null;
-      }
-    }
-  }
-
-  /**
-   * Parse a name from the input and return the first match, if any.
-   *
-   * @param { import('@lezer/lr').InputStream } input
-   * @param { Variables } variables
-   *
-   * @return { { token: string, offset: number, term: number } | null }
-   */
-  function parseName(input, variables) {
-    const contextKeys = variables.contextKeys();
-    const start = variables.tokens;
-    for (let i = 0, tokens = [], nextMatch = null;;) {
-      const namePart = start.length + tokens.length > 0;
-      const maybeSpace = tokens.length > 0;
-      const match = parseIdentifier(input, i, namePart) || namePart && parseAdditionalSymbol(input, i) || maybeSpace && parseSpaces(input, i);
-
-      // match is required
-      if (!match) {
-        return nextMatch;
-      }
-      const {
-        token,
-        offset
-      } = match;
-      i += offset;
-      if (token === ' ') {
-        continue;
-      }
-      tokens = [...tokens, token];
-      const name = [...start, ...tokens].join(' ');
-      if (contextKeys.some(el => el === name)) {
-        const token = tokens[0];
-        nextMatch = {
-          token,
-          offset: token.length,
-          term: nameIdentifier
-        };
-      }
-      if (dateTimeIdentifiers.some(el => el === name)) {
-        const token = tokens[0];
-
-        // parse date time identifiers as normal
-        // identifiers to allow specialization to kick in
-        //
-        // cf. https://github.com/nikku/lezer-feel/issues/8
-        nextMatch = {
-          token,
-          offset: token.length,
-          term: identifier
-        };
-      }
-      if (!contextKeys.some(el => el.startsWith(name)) && !dateTimeIdentifiers.some(el => el.startsWith(name))) {
-        return nextMatch;
-      }
-    }
-  }
-  const identifiersMap = {
-    [identifier]: 'identifier',
-    [nameIdentifier]: 'nameIdentifier'
-  };
-  const identifiers = new ExternalTokenizer((input, stack) => {
-    LOG_PARSE_DEBUG && console.log('%s: T <identifier | nameIdentifier>', input.pos);
-    const nameMatch = parseName(input, stack.context);
-    const start = stack.context.tokens;
-    const match = nameMatch || parseIdentifier(input, 0, start.length > 0);
-    if (match) {
-      input.advance(match.offset);
-      input.acceptToken(nameMatch ? nameMatch.term : identifier);
-      LOG_PARSE && console.log('%s: MATCH <%s> <%s>', input.pos, nameMatch ? identifiersMap[nameMatch.term] : 'identifier', match.token);
-    }
-  }, {
-    contextual: true
-  });
-  const propertyIdentifiers = new ExternalTokenizer((input, stack) => {
-    LOG_PARSE_DEBUG && console.log('%s: T <propertyIdentifier>', input.pos);
-    const start = stack.context.tokens;
-    const match = parseIdentifier(input, 0, start.length > 0);
-    if (match) {
-      input.advance(match.offset);
-      input.acceptToken(propertyIdentifier);
-      LOG_PARSE && console.log('%s: MATCH <propertyIdentifier> <%s>', input.pos, match.token);
-    }
-  });
-  const insertSemicolon = new ExternalTokenizer((input, stack) => {
-    LOG_PARSE_DEBUG && console.log('%s: T <insertSemi>', input.pos);
-    let offset;
-    let insert = false;
-    for (offset = 0;; offset++) {
-      const char = input.peek(offset);
-      if (spaceChars.includes(char)) {
-        continue;
-      }
-      if (newlineChars.includes(char)) {
-        insert = true;
-      }
-      break;
-    }
-    if (insert) {
-      const identifier = parseIdentifier(input, offset + 1);
-      const spaces = parseSpaces(input, offset + 1);
-      if (spaces || identifier && /^(then|else|return|satisfies)$/.test(identifier.token)) {
-        return;
-      }
-      LOG_PARSE && console.log('%s: MATCH <insertSemi>', input.pos);
-      input.acceptToken(insertSemi);
-    }
-  });
-  const prefixedContextStarts = {
-    [functionInvocationStart]: 'FunctionInvocation',
-    [filterExpressionStart]: 'FilterExpression',
-    [pathExpressionStart]: 'PathExpression'
-  };
-  const contextStarts = {
-    [contextStart]: 'Context',
-    [functionDefinitionStart]: 'FunctionDefinition',
-    [forExpressionStart]: 'ForExpression',
-    [listStart]: 'List',
-    [ifExpressionStart]: 'IfExpression',
-    [quantifiedExpressionStart]: 'QuantifiedExpression'
-  };
-  const contextEnds = {
-    [Context]: 'Context',
-    [FunctionDefinition]: 'FunctionDefinition',
-    [ForExpression]: 'ForExpression',
-    [List$1]: 'List',
-    [IfExpression]: 'IfExpression',
-    [QuantifiedExpression]: 'QuantifiedExpression',
-    [PathExpression]: 'PathExpression',
-    [FunctionInvocation]: 'FunctionInvocation',
-    [FilterExpression]: 'FilterExpression',
-    [ArithmeticExpression]: 'ArithmeticExpression'
-  };
-  class ValueProducer {
-    /**
-     * @param { Function } fn
-     */
-    constructor(fn) {
-      this.fn = fn;
-    }
-    get(variables) {
-      return this.fn(variables);
-    }
-
-    /**
-     * @param { Function }
-     *
-     * @return { ValueProducer }
-     */
-    static of(fn) {
-      return new ValueProducer(fn);
-    }
-  }
-  const dateTimeLiterals = {
-    'date and time': 1,
-    'date': 1,
-    'time': 1,
-    'duration': 1
-  };
-  const dateTimeIdentifiers = Object.keys(dateTimeLiterals);
-  class Variables {
-    constructor({
-      name = 'Expressions',
-      tokens = [],
-      children = [],
-      parent = null,
-      context = {},
-      value,
-      raw
-    } = {}) {
-      this.name = name;
-      this.tokens = tokens;
-      this.children = children;
-      this.parent = parent;
-      this.context = context;
-      this.value = value;
-      this.raw = raw;
-    }
-    enterScope(name) {
-      const childScope = this.of({
-        name,
-        parent: this
-      });
-      LOG_VARS && console.log('[%s] enter', childScope.path, childScope.context);
-      return childScope;
-    }
-    exitScope(str) {
-      if (!this.parent) {
-        LOG_VARS && console.log('[%s] NO exit %o\n%s', this.path, this.context, indent(str, '  '));
-        return this;
-      }
-      LOG_VARS && console.log('[%s] exit %o\n%s', this.path, this.context, indent(str, '  '));
-      return this.parent.pushChild(this);
-    }
-    token(part) {
-      LOG_VARS && console.log('[%s] token <%s> + <%s>', this.path, this.tokens.join(' '), part);
-      return this.assign({
-        tokens: [...this.tokens, part]
-      });
-    }
-    literal(value) {
-      LOG_VARS && console.log('[%s] literal %o', this.path, value);
-      return this.pushChild(this.of({
-        name: 'Literal',
-        value
-      }));
-    }
-
-    /**
-     * Return computed scope value
-     *
-     * @return {any}
-     */
-    computedValue() {
-      for (let scope = this;; scope = last(scope.children)) {
-        if (!scope) {
-          return null;
-        }
-        if (scope.value) {
-          return scope.value;
-        }
-      }
-    }
-    contextKeys() {
-      return Object.keys(this.context).map(normalizeContextKey);
-    }
-    get path() {
-      return this.parent?.path?.concat(' > ', this.name) || this.name;
-    }
-
-    /**
-     * Return value of variable.
-     *
-     * @param { string } variable
-     * @return { any } value
-     */
-    get(variable) {
-      const names = [variable, variable && normalizeContextKey(variable)];
-      const contextKey = Object.keys(this.context).find(key => names.includes(normalizeContextKey(key)));
-      if (typeof contextKey === 'undefined') {
-        return undefined;
-      }
-      const val = this.context[contextKey];
-      if (val instanceof ValueProducer) {
-        return val.get(this);
-      } else {
-        return val;
-      }
-    }
-    resolveName() {
-      const variable = this.tokens.join(' ');
-      const tokens = [];
-      const parentScope = this.assign({
-        tokens
-      });
-      const variableScope = this.of({
-        name: 'VariableName',
-        parent: parentScope,
-        value: this.get(variable),
-        raw: variable
-      });
-      LOG_VARS && console.log('[%s] resolve name <%s=%s>', variableScope.path, variable, this.get(variable));
-      return parentScope.pushChild(variableScope);
-    }
-    pushChild(child) {
-      if (!child) {
-        return this;
-      }
-      const parent = this.assign({
-        children: [...this.children, child]
-      });
-      child.parent = parent;
-      return parent;
-    }
-    pushChildren(children) {
-      let parent = this;
-      for (const child of children) {
-        parent = parent.pushChild(child);
-      }
-      return parent;
-    }
-    declareName() {
-      if (this.tokens.length === 0) {
-        throw Error('no tokens to declare name');
-      }
-      const variableName = this.tokens.join(' ');
-      LOG_VARS && console.log('[%s] declareName <%s>', this.path, variableName);
-      return this.assign({
-        tokens: []
-      }).pushChild(this.of({
-        name: 'Name',
-        value: variableName
-      }));
-    }
-    define(name, value) {
-      if (typeof name !== 'string') {
-        LOG_VARS && console.log('[%s] no define <%s=%s>', this.path, name, value);
-        return this;
-      }
-      LOG_VARS && console.log('[%s] define <%s=%s>', this.path, name, value);
-      const context = {
-        ...this.context,
-        [name]: value
-      };
-      return this.assign({
-        context
-      });
-    }
-
-    /**
-     * @param { Record<string, any> } [options]
-     *
-     * @return { Variables }
-     */
-    assign(options = {}) {
-      return Variables.of({
-        ...this,
-        ...options
-      });
-    }
-
-    /**
-     * @param { Record<string, any> } [options]
-     *
-     * @return { Variables }
-     */
-    of(options = {}) {
-      const defaultOptions = {
-        context: this.context,
-        parent: this.parent
-      };
-      return Variables.of({
-        ...defaultOptions,
-        ...options
-      });
-    }
-    static of(options) {
-      const {
-        name,
-        tokens = [],
-        children = [],
-        parent = null,
-        context = {},
-        value,
-        raw
-      } = options;
-      return new Variables({
-        name,
-        tokens: [...tokens],
-        children: [...children],
-        context: {
-          ...context
-        },
-        parent,
-        value,
-        raw
-      });
-    }
-  }
-
-  /**
-   * @param { string } name
-   *
-   * @return { string } normalizedName
-   */
-  function normalizeContextKey(name) {
-    return name.replace(/\s*([./\-'+*])\s*/g, ' $1 ').replace(/\s{2,}/g, ' ').trim();
-  }
-
-  /**
-   * Wrap children of variables under the given named child.
-   *
-   * @param { Variables } variables
-   * @param { string } name
-   * @param { string } code
-   * @return { Variables }
-   */
-  function wrap(variables, scopeName, code) {
-    const parts = variables.children.filter(c => c.name !== scopeName);
-    const children = variables.children.filter(c => c.name === scopeName);
-    const namePart = parts[0];
-    const valuePart = parts[Math.max(1, parts.length - 1)];
-    const name = namePart.computedValue();
-    const value = valuePart?.computedValue() || null;
-    return variables.assign({
-      children
-    }).enterScope(scopeName).pushChildren(parts).exitScope(code).define(name, value);
-  }
-
-  /**
-   * @param { any } context
-   *
-   * @return { ContextTracker<Variables> }
-   */
-  function trackVariables(context = {}) {
-    const start = Variables.of({
-      context
-    });
-    return new ContextTracker({
-      start,
-      reduce(variables, term, stack, input) {
-        if (term === IfExpression) {
-          const [thenPart, elsePart] = variables.children.slice(-2);
-          variables = variables.assign({
-            value: {
-              ...thenPart?.computedValue(),
-              ...elsePart?.computedValue()
-            }
-          });
-        }
-        if (term === List$1) {
-          variables = variables.assign({
-            value: variables.children.reduce((value, child) => {
-              return {
-                ...value,
-                ...child?.computedValue()
-              };
-            }, {})
-          });
-        }
-        if (term === FilterExpression) {
-          const [sourcePart, _] = variables.children.slice(-2);
-          variables = variables.assign({
-            value: sourcePart?.computedValue()
-          });
-        }
-        if (term === FunctionInvocation) {
-          const [name, ...args] = variables.children;
-
-          // preserve type information through `get value(context, key)` utility
-          if (name?.raw === 'get value') {
-            variables = getContextValue(variables, args);
-          }
-        }
-        const start = contextStarts[term];
-        if (start) {
-          return variables.enterScope(start);
-        }
-        const prefixedStart = prefixedContextStarts[term];
-
-        // pull <expression> into new <prefixedStart> context
-        if (prefixedStart) {
-          const {
-            children: currentChildren,
-            context: currentContext
-          } = variables;
-          const children = currentChildren.slice(0, -1);
-          const lastChild = last(currentChildren);
-          let newContext = null;
-          if (term === pathExpressionStart) {
-            newContext = lastChild?.computedValue();
-          }
-          if (term === filterExpressionStart) {
-            newContext = {
-              ...currentContext,
-              ...lastChild?.computedValue(),
-              item: lastChild?.computedValue()
-            };
-          }
-          return variables.assign({
-            children
-          }).enterScope(prefixedStart).pushChild(lastChild).assign({
-            context: newContext || currentContext
-          });
-        }
-        const code = input.read(input.pos, stack.pos);
-        const end = contextEnds[term];
-        if (end) {
-          return variables.exitScope(code);
-        }
-        if (term === ContextEntry) {
-          const parts = variables.children.filter(c => c.name !== 'ContextEntry');
-          const name = parts[0];
-          const value = last(parts);
-          return wrap(variables, 'ContextEntry', code).assign({
-            value: {
-              ...variables.value,
-              [name.computedValue()]: value?.computedValue()
-            }
-          });
-        }
-        if (term === ForInExpression || term === QuantifiedInExpression) {
-          return wrap(variables, 'InExpression', code);
-        }
-
-        // define <partial> within ForExpression body
-        if (term === forExpressionBodyStart) {
-          return variables.define('partial', ValueProducer.of(variables => {
-            return last(variables.children)?.computedValue();
-          }));
-        }
-        if (term === ParameterName) {
-          const name = last(variables.children).computedValue();
-
-          // TODO: attach type information
-          return variables.define(name, 1);
-        }
-
-        // pull <expression> into ArithmeticExpression child
-        if (term === arithmeticPlusStart || term === arithmeticTimesStart || term === arithmeticExpStart) {
-          const children = variables.children.slice(0, -1);
-          const lastChild = last(variables.children);
-          return variables.assign({
-            children
-          }).enterScope('ArithmeticExpression').pushChild(lastChild);
-        }
-        if (term === arithmeticUnaryStart) {
-          return variables.enterScope('ArithmeticExpression');
-        }
-        if (term === Identifier || term === AdditionalIdentifier || term === PropertyIdentifier) {
-          return variables.token(code);
-        }
-        if (term === StringLiteral) {
-          return variables.literal(code.replace(/^"|"$/g, ''));
-        }
-        if (term === BooleanLiteral) {
-          return variables.literal(code === 'true' ? true : false);
-        }
-        if (term === NumericLiteral) {
-          return variables.literal(parseFloat(code));
-        }
-        if (term === nil) {
-          return variables.literal(null);
-        }
-        if (term === VariableName$1) {
-          return variables.resolveName();
-        }
-        if (term === Name$4 || term === PropertyName) {
-          return variables.declareName();
-        }
-        if (term === expression0 || term === PositiveUnaryTest) {
-          if (variables.tokens.length > 0) {
-            throw new Error('uncleared name');
-          }
-        }
-        if (term === expression0) {
-          let parent = variables;
-          while (parent.parent) {
-            parent = parent.exitScope(code);
-          }
-          return parent;
-        }
-        return variables;
-      }
-    });
-  }
-  const variableTracker = trackVariables({});
-
-  // helpers //////////////
-
-  function getContextValue(variables, args) {
-    if (!args.length) {
-      return variables.assign({
-        value: null
-      });
-    }
-    if (args[0].name === 'Name') {
-      args = extractNamedArgs(args, ['m', 'key']);
-    }
-    if (args.length !== 2) {
-      return variables.assign({
-        value: null
-      });
-    }
-    const [context, key] = args;
-    const keyValue = key?.computedValue();
-    const contextValue = context?.computedValue();
-    if (!contextValue || typeof contextValue !== 'object' || typeof keyValue !== 'string') {
-      return variables.assign({
-        value: null
-      });
-    }
-    return variables.assign({
-      value: [normalizeContextKey(keyValue), keyValue].reduce((value, keyValue) => {
-        if (keyValue in contextValue) {
-          return contextValue[keyValue];
-        }
-        return value;
-      }, null)
-    });
-  }
-  function extractNamedArgs(args, argNames) {
-    const context = {};
-    for (let i = 0; i < args.length; i += 2) {
-      const [name, value] = args.slice(i, i + 2);
-      context[name.value] = value;
-    }
-    return argNames.map(name => context[name]);
-  }
-  function last(arr) {
-    return arr[arr.length - 1];
-  }
-  const feelHighlighting = styleTags({
-    StringLiteral: tags$1.string,
-    NumericLiteral: tags$1.number,
-    BooleanLiteral: tags$1.bool,
-    'AtLiteral!': tags$1.special(tags$1.string),
-    CompareOp: tags$1.compareOperator,
-    ArithOp: tags$1.arithmeticOperator,
-    'for if then else some every satisfies between return': tags$1.controlKeyword,
-    'in instance of and or': tags$1.operatorKeyword,
-    function: tags$1.definitionKeyword,
-    as: tags$1.keyword,
-    'Type/...': tags$1.typeName,
-    Wildcard: tags$1.special,
-    null: tags$1.null,
-    LineComment: tags$1.lineComment,
-    BlockComment: tags$1.blockComment,
-    'VariableName! "?"': tags$1.variableName,
-    'DateTimeConstructor! SpecialFunctionName!': tags$1.function(tags$1.special(tags$1.variableName)),
-    'List Interval': tags$1.list,
-    Context: tags$1.definition(tags$1.literal),
-    'Name!': tags$1.definition(tags$1.variableName),
-    'Key/Name! ContextEntryType/Name!': tags$1.definition(tags$1.propertyName),
-    'PathExpression/VariableName!': tags$1.function(tags$1.propertyName),
-    'FormalParameter/ParameterName!': tags$1.function(tags$1.definition(tags$1.variableName)),
-    '( )': tags$1.paren,
-    '[ ]': tags$1.squareBracket,
-    '{ }': tags$1.brace,
-    '.': tags$1.derefOperator,
-    ', ;': tags$1.separator,
-    '..': tags$1.punctuation
-  });
-
-  // This file was generated by lezer-generator. You probably shouldn't edit it.
-  const spec_identifier = {
-    __proto__: null,
-    for: 10,
-    in: 30,
-    return: 34,
-    if: 38,
-    then: 40,
-    else: 42,
-    some: 46,
-    every: 48,
-    satisfies: 55,
-    or: 58,
-    and: 62,
-    between: 70,
-    instance: 86,
-    of: 89,
-    days: 99,
-    time: 101,
-    duration: 103,
-    years: 105,
-    months: 107,
-    date: 109,
-    list: 115,
-    context: 121,
-    function: 128,
-    null: 154,
-    true: 324,
-    false: 324,
-    "?": 168,
-    external: 184,
-    not: 207
-  };
-  const parser$1 = LRParser.deserialize({
-    version: 14,
-    states: "IWO`QYOOO$gQYOOOOQU'#Ce'#CeO$qQYO'#C`O%zQ^O'#FOOOQQ'#Fd'#FdO'dQYO'#FdO`QYO'#DUOOQU'#Em'#EmO)QQ^O'#D]OOQO'#Fk'#FkO,PQWO'#DuOOQU'#D|'#D|OOQU'#D}'#D}OOQU'#EO'#EOO,UOWO'#ERO,PQWO'#EPOOQU'#EP'#EPOOQU'#Fq'#FqOOQU'#Fo'#FoOOQQ'#Fv'#FvO.yQYO'#FvO0wQYO'#FvOOQU'#ET'#ETO2sQYO'#EVOOQU'#FQ'#FQO4UQ^O'#FQO5hQYO'#EWO5rQWO'#EXOOQP'#GP'#GPO5wQXO'#E`OOQU'#Fz'#FzOOQU'#FP'#FPOOQQ'#Eh'#EhQ`QYOOOOQQ'#FR'#FROOQQ'#F['#F[O2sQYO'#CnOOQQ'#F]'#F]O$qQYO'#CrO6SQYO'#DvOOQU'#Fp'#FpO6XQYO'#EQOOQO'#EQ'#EQO2sQYO'#EUO`QYO'#ETOOQO'#F}'#F}O7bQYO'#DQO8UQWO'#F`OOQO'#DS'#DSO8aQYO'#FdQOQWOOO8hQWOOO9[QYO'#CdO9iQYO'#FTOOQQ'#Cc'#CcO9nQYO'#FSOOQQ'#Cb'#CbO9vQYO,58zO`QYO,59hOOQQ'#Fa'#FaOOQQ'#Fb'#FbOOQQ'#Fc'#FcO`QYO,59pO`QYO,59pO`QYO,59pOOQQ'#Fi'#FiO$qQYO,5:]OOQQ'#Fj'#FjO2sQYO,5:_OOQQ,5;j,5;jO`QYO,59dO`QYO,59fO2sQYO,59hO;fQYO,59hO;mQYO,59rOOQU,5:h,5:hO;rQ^O,59pOOQU-E8k-E8kO>qQYO'#FlOOQU,5:a,5:aOOQU,5:m,5:mOOQU,5:k,5:kO>{QYO,5:qOOQU,5;l,5;lO?SQYO'#FnO?aQWO,5:rO?fQYO,5:sOOQP'#Ed'#EdO@YQXO'#EcOOQO'#Eb'#EbO@aQWO'#EaO@fQWO'#GQO@nQWO,5:zOOQQ-E8f-E8fO@sQYO,59YO9iQYO'#F_OOQQ'#Cv'#CvO@zQYO'#F^OOQQ'#Cu'#CuOASQYO,59^OAXQYO,5:bOA^QYO,5:lOAcQYO,5:pOAjQ^O,5:oO2sQYO'#ElOCSQWO,5;zO2sQYOOOOQR'#Cf'#CfOOQQ'#Ei'#EiOCyQYO,59OO2sQYO,5;oOOQQ'#FW'#FWO$qQYO'#EjODZQYO,5;nO`QYO1G.fOOQQ'#FZ'#FZOEjQ^O1G/SOI]Q^O1G/[OIgQ^O1G/[OK_Q^O1G/[OOQU1G/w1G/wOLtQYO1G/yOMyQ^O1G/OO!!aQ^O1G/QO!$}QYO1G/SO!%UQYO1G/SOOQU1G/S1G/SO!&tQYO1G/^O!'`Q^O'#CdOOQO'#Dy'#DyO!(rQWO'#DxO!(wQWO'#FmOOQO'#Dw'#DwOOQO'#Dz'#DzO!)PQWO,5<WOOQU'#Fy'#FyOOQU1G0]1G0]O2sQYO'#ErO!)UQWO,5<YOOQU'#F|'#F|OOQU1G0^1G0^O!)aQWO'#EZO!)lQWO'#GOOOQO'#EY'#EYO!)tQWO1G0_OOQP'#Et'#EtO!)yQXO,5:}O2sQYO,5:{O!*QQXO'#EuO!*YQWO,5<lOOQU1G0f1G0fO2sQYO1G.tO2sQYO,5;yO$qQYO'#EkO!*bQYO,5;xO`QYO1G.xO!*jQYO1G/|OOQO1G0W1G0WO2sQYO1G0[OOQO,5;W,5;WOOQO-E8j-E8jO!*oQWOOOOQQ-E8g-E8gO!*tQYO'#ClOOQQ1G1Z1G1ZOOQQ,5;U,5;UOOQQ-E8h-E8hO!+RQ^O7+$QOOQU7+%e7+%eO`QYO7+$nO!,kQWO7+$nO!,pQ^O'#D[OOQU'#DZ'#DZO!/oQYO'#D^O!/tQYO'#D^O!/yQYO'#D^O!0OQ`O'#DfO!0TQ`O'#DiO!0YQ`O'#DmOOQU7+$x7+$xO2sQYO,5:dO$qQYO'#EqO!0_QWO,5<XOOQU1G1r1G1rO!0gQYO,5;^OOQO-E8p-E8pO!&tQYO,5:uO$qQYO'#EsO!0tQWO,5<jO!0|QYO7+%yOOQP-E8r-E8rO!1TQYO1G0gOOQO,5;a,5;aOOQO-E8s-E8sO!1_QYO7+$`O!1fQYO1G1eOOQQ,5;V,5;VOOQQ-E8i-E8iO!1pQ^O7+$dOOQO7+%h7+%hO!4WQYO7+%vO2sQYO,59WO!5lQ^O<<HYOOQU<<HY<<HYO$qQYO'#EnO!7OQ^O,59vO!9}QYO,59xO!:SQYO,59xO!:XQYO,59xO!:^QYO,5:QO$qQYO,5:TO!:xQbO,5:XO!;PQYO1G0OOOQO,5;],5;]OOQO-E8o-E8oOOQO1G0a1G0aOOQO,5;_,5;_OOQO-E8q-E8qO!;ZQ^O'#E]OOQU<<Ie<<IeO`QYO<<IeO`QYO<<GzO!<sQ^O'#FjOOQU'#Fw'#FwOOQU<<Ib<<IbO!?rQYO1G.rOOQU,5;Y,5;YOOQU-E8l-E8lO!?|QYO1G/dOOQU1G/d1G/dO!@RQbO'#D]O!@dQ`O'#D[O!@oQ`O1G/lO!@tQWO'#DlO!@yQ`O'#FeOOQO'#Dk'#DkO!ARQ`O1G/oOOQO'#Dp'#DpO!AWQ`O'#FgOOQO'#Do'#DoO!A`Q`O1G/sOOQUAN?PAN?PO!AeQ^OAN=fOOQU7+%O7+%OO!B}Q`O,59vOOQU7+%W7+%WO!:^QYO,5:WO$qQYO'#EoO!CYQ`O,5<POOQU7+%Z7+%ZO!:^QYO'#EpO!CbQ`O,5<RO!CjQ`O7+%_OOQO1G/r1G/rOOQO,5;Z,5;ZOOQO-E8m-E8mOOQO,5;[,5;[OOQO-E8n-E8nO!&tQYO<<HyOOQUAN>eAN>eO!CoQ^O'#FQO2sQYO'#ETO2sQYO,59hO2sQYO,59pO2sQYO,59pO2sQYO,59pO2sQYO,59dO2sQYO,59fO!EvQYO,59hO!E}QYO,5:oO2sQYO1G.fO!FqQYO1G/SO!HxQYO1G/[O!ISQYO1G/[O!JXQYO1G/OO!KyQYO1G/QO2sQYO1G.xO!LsQYO7+$QO2sQYO7+$nO!MgQYO7+%yO!MqQYO7+$dO!NeQYO<<HYO$qQYO'#EnO# RQYO'#E]O2sQYO<<IeO2sQYO<<GzO# uQYOAN=fO!:^QYO<<HyO2sQYO'#DUO#!iQ^O'#DQO9vQYO,58zO#$RQYO,59^O#$WQYO1G/SO#$_QWO1G0_O#$dQYO7+$`O#$kQ`O7+%_O$qQYO'#C`O$qQYO'#CrO2sQYO,59hO?fQYO,5:sO2sQYO1G.tO#$pQ`O1G/sO#$uQWO'#EXO#$zQYO,59YO!:xQbO,5:XO2sQYO'#CnO#%RQ`O'#Dm",
-    stateData: "#%W~O#pOS#qOSPOSQOS~OTsOZUO[TOctOgvOhvOr}OueO!S{O!T{O!UxO!WzO!b!OO!fdO!hfO!oyO!viO#RmO#lQO#mQO$f[O$g]O$h^O$i_O~OTsO[TOctOgvOhvOr&pOueO!S{O!T{O!UxO!WzO!b!OO!fdO!hfO!oyO!viO#RmO#lQO#mQO$f[O$g]O$h^O$i_O~OZ!SO#Z!UO~P!|O#lQO#mQO~OZ!^O[!^O]!_O^!_O_!lOm!iOo!jOq!]Or!]Os!kOy!`O{!mO!h!fO#x!dOu$_X~O#n!hO$u!hOT#rXc#rXg#rXh#rX!S#rX!T#rX!U#rX!W#rX!b#rX!f#rX!o#rX!v#rX#R#rX#j#rX#l#rX#m#rX$f#rX$g#rX$h#rX$i#rX~P$yO$f!nOT$WXZ$WX[$WXc$WXg$WXh$WXr$WXu$WX!S$WX!T$WX!U$WX!W$WX!b$WX!f$WX!h$WX!o$WX!v$WX#R$WX#l$WX#m$WX$g$WX$h$WX$i$WX~O#lQO#mQOT!PXZ!PX[!PX]!PX^!PX_!PXc!PXg!PXh!PXm!PXo!PXq!PXr!PXs!PXu!PXy!PX{!PX!S!PX!T!PX!U!PX!W!PX!b!PX!f!PX!h!PX!o!PX!v!PX#R!PX#j!PX#n!PX#x!PX$f!PX$g!PX$h!PX$i!PX$u!PX#|!PXw!PXd!PX#{!PXa!PX#Q!PXe!PXk!PX~Ou!qO~O$g]O~OT$jXT$lXc$jXc$lXg$jXg$lXh$jXh$lXr$jXr$lXu$jXu$lX!S$jX!S$lX!T$jX!T$lX!U$jX!U$lX!W$jX!W$lX!b$jX!b$lX!f$jX!f$lX!h$jX!h$lX!o$jX!o$lX!v$jX!v$lX#R$jX#R$lX$f$jX$f$lX$g$jX$g$lX$h$jX$h$lX$i$jX$i$lX~OZ$jXZ$lX[$jX[$lX#l$jX#l$lX#m$jX#m$lX~P,ZOT$jXc$jXg$jXh$jXr$jXu$jX!S$jX!T$jX!U$jX!W$jX!b$jX!f$jX!h$jX!o$jX!v$jX#R$jX$f$jX$g$jX$h$jX$i$jX~OT$oXZ$jXZ$oX[$jX[$oXc$oXg$oXh$oXr$oXu$oX!S$oX!T$oX!U$oX!W$oX!b$oX!f$oX!h$oX!o$oX!v$oX#R$oX#l$jX#l$oX#m$jX#m$oX$f$oX$g$oX$h$oX$i$oX~P/gOZUO~P!|O#n!vOZ#tX[#tX]#tX^#tX_#tXm#tXo#tXq#tXr#tXs#tXu#tXy#tX{#tX!f#tX!h#tX#j#tX#x#tX~OT#tXc#tXg#tXh#tX!S#tX!T#tX!U#tX!W#tX!b#tX!o#tX!v#tX#R#tX#l#tX#m#tX#n#tX$f#tX$g#tX$h#tX$i#tX$u#tX~P2zOZUO!f$bP~P!|Ou!yO~O#k!zO$g]O#Q$tP~Oo#XO~Oo#YOu!tX~OZ!^O[!^O]!_O^!_O_&wOm&uOo&vOq&qOr&qOs'gOy!`O{!mO!h!fO#x!dOu$_X~O#jtX#|tXwtX!ftXdtX#{tXatX#QtXetXktX~P6aO#|#]O#j$SXw$SX~O#j#YX~P'dOu#_O~OZ#`O[#`O]#`O^#`O#lQO#mQO#x#`O#y#`O$YWX~O_WXwWX#|WX~P8mO_#dO~O#|#eOa#vX~Oa#hO~OTsOZUO[TOctOgvOhvOr}O!S{O!T{O!UxO!WzO!b!OO!fdO!hfO!oyO!viO#RmO#lQO#mQO$f[O$g]O$h^O$i_O~Ou#rO~P9{O|#tO~O{!mO!h!fO#x!dOTxaZxa[xa]xa^xa_xacxagxahxamxaoxaqxarxasxau$_Xyxa!Sxa!Txa!Uxa!Wxa!bxa!fxa!oxa!vxa#Rxa#jxa#lxa#mxa#nxa$fxa$gxa$hxa$ixa$uxa#|xawxadxa#{xaaxa#Qxaexakxa~OZUOw$bP~P!|Ow#|O~P6aO#|$OO!f$bXw$bX~P6aO!f$QO~O#lQO#mQOw$rP~OZ#`O[#`O]#`O^#`O#k!zO#x#`O#y#`O~O$Y#VX~P?qO$Y$YO~O#|$ZO#Q$tX~O#Q$]O~Od$^O~P6aO#|$`Ok$QX~Ok$bO~O!V$cO~O!S$dO~O#{$eO~P6aOT!wac!wag!wah!wa!S!wa!T!wa!U!wa!W!wa!b!wa!f!wa!o!wa!v!wa#R!wa#j!wa#l!wa#m!wa#n!wa$f!wa$g!wa$h!wa$i!wa$u!wa~P$yO#|#]O#j$Saw$Sa~OZ#`O[#`O]#`O^#`O#lQO#mQO#x#`O#y#`O~O_Wa$YWawWa#|Wa~PC_O#|#eOa#va~OZ!^O[!^O]!_O^!_Oy!`O{!mO!h!fO#x!dO_pimpiopiqpirpispiu$_X!fpi#jpi~OTpicpigpihpi!Spi!Tpi!Upi!Wpi!bpi!opi!vpi#Rpi#lpi#mpi#npi$fpi$gpi$hpi$ipi$upi~PDcOy!`O{!mO!h!fO#x!dOTxiZxi[xi_xicxigxihximxioxiqxirxisxiu$_X!Sxi!Txi!Uxi!Wxi!bxi!fxi!oxi!vxi#Rxi#jxi#lxi#mxi#nxi$fxi$gxi$hxi$ixi$uxi~O]!_O^!_O~PF|O]xi^xi~PF|O{!mO!h!fO#x!dOZxi[xi]xi^xi_ximxioxiqxirxisxiu$_X!fxi#jxi#|xiwxidxi#{xiaxi#Qxiexikxi~OTxicxigxihxiyxi!Sxi!Txi!Uxi!Wxi!bxi!oxi!vxi#Rxi#lxi#mxi#nxi$fxi$gxi$hxi$ixi$uxi~PIqO!f$oO~P6aOZ!^O[!^O]!_O^!_O_!lOo!jOq!]Or!]Os!kOy!`O{!mO!h!fO#x!dOu$_X~OTlicliglihlimli!Sli!Tli!Uli!Wli!bli!fli!oli!vli#Rli#jli#lli#mli#nli$fli$gli$hli$ili$uli~PL{OZ!^O[!^O]!_O^!_O_!lOq!]Or!]Os!kOy!`O{!mO!h!fO#x!dOu$_X~OTnicnignihnimnioni!Sni!Tni!Uni!Wni!bni!fni!oni!vni#Rni#jni#lni#mni#nni$fni$gni$hni$ini$uni~P! fOZ!^O[!^O]!_O^!_O_&wOm&uOq&qOr&qOs'gOy!`O{!mO!h!fO#x!dOu$_X~Oo$pO~P!$POTsOZUO[TOctOgvOhvOr&pOueO!S{O!T{O!UxO!WzO!b!OO!fdO!hfO!oyO!viO#RmO#lQO#mQO$f[O$g]O$h^O$i_O~P,ZO!R$tO!U$uO!W$vO!Z$wO!^$xO!b$yO#lQO#mQO~OZ#aX[#aX]#aX^#aX_#aXm#aXo#aXq#aXr#aXs#aXu#aXw#aXy#aX{#aX!h#aX#l#aX#m#aX#n#aX#x#aX#|#aX~P8mO$Y${O~O#|$|Ow$aX~Ow%OO~O#|$OO!f$baw$ba~O$Y%ROw!}X#|!}X~O#|%SOw$rX~Ow%UO~O$Y#Va~P?qO#k!zO$g]O~O#|$ZO#Q$ta~O#|$`Ok$Qa~O!T%`O~Ow!TO~O#{%bOa`X#|`X~P6aOTSqcSqgSqhSq!SSq!TSq!USq!WSq!bSq!fSq!oSq!vSq#RSq#jSq#lSq#mSq#nSq$fSq$gSq$hSq$iSq$uSq~P$yOw%dO~O#x%eOT!OXZ!OX[!OX]!OX^!OX_!OXc!OXg!OXh!OXm!OXo!OXq!OXr!OXs!OXu!OXy!OX{!OX!S!OX!T!OX!U!OX!W!OX!b!OX!f!OX!h!OX!o!OX!v!OX#R!OX#j!OX#l!OX#m!OX#n!OX$f!OX$g!OX$h!OX$i!OX$u!OX#|!OXw!OXd!OX#{!OXa!OX#Q!OXe!OXk!OX~Oo%gO~Oo%hO~Oo%iO~O![%jO~O![%kO~O![%lO~O#|$|Ow$aa~O!f#fa#|#faw#fa~P6aO#|%SOw$ra~O#O%uO~P`O#Q#Ti#|#Ti~P6aOe%vO~P6aOk$Ri#|$Ri~P6aOTfqcfqgfqhfq!Sfq!Tfq!Ufq!Wfq!bfq!ffq!ofq!vfq#Rfq#jfq#lfq#mfq#nfq$ffq$gfq$hfq$ifq$ufq~P$yOZ!^O[!^O]!_O^!_O_&wOm&uOo&vOq&qOr&qOs'gOy!`O{!mO#x!dOu$_X~Ow%xO!f%xO!h%wO~P!3YOZ!^O[!^O]!_O^!_Oy!`O{!mO!h!fO#x!dO_pympyopyqpyrpyspyu$_X!fpy#jpy~OTpycpygpyhpy!Spy!Tpy!Upy!Wpy!bpy!opy!vpy#Rpy#lpy#mpy#npy$fpy$gpy$hpy$ipy$upy~P!4eO#x%eOT!OaZ!Oa[!Oa]!Oa^!Oa_!Oac!Oag!Oah!Oam!Oao!Oaq!Oar!Oas!Oau!Oay!Oa{!Oa!S!Oa!T!Oa!U!Oa!W!Oa!b!Oa!f!Oa!h!Oa!o!Oa!v!Oa#R!Oa#j!Oa#l!Oa#m!Oa#n!Oa$f!Oa$g!Oa$h!Oa$i!Oa$u!Oa#|!Oaw!Oad!Oa#{!Oaa!Oa#Q!Oae!Oak!Oa~O!S%}O~O!V%}O~O!S&OO~O!R$tO!U$uO!W$vO!Z$wO!^$xO!b'oO#lQO#mQO~O!X$ZP~P!:^Ow!li#|!li~P6aOT#PXc#PXg#PXh#PX!S#PX!T#PX!U#PX!W#PX!b#PX!f#PX!o#PX!v#PX#R#PX#j#PX#l#PX#m#PX#n#PX$f#PX$g#PX$h#PX$i#PX$u#PX~P$yOT$^XZ$^X[$^X]$kX^$kX_$kXc$^Xg$^Xh$^Xm$kXo$kXq$kXr$^Xs$kXu$^Xy$kX{$kX!S$^X!T$^X!U$^X!W$^X!b$^X!f$^X!h$^X!o$^X!v$^X#R$^X#j$kX#l$^X#m$^X#n$kX#x$kX$f$^X$g$^X$h$^X$i$^X$u$kX#|$kXw$kXd$kX#{$kXa$kX#Q$kXe$kXk$kX~Oa`i#|`i~P6aO!T&^O~O#lQO#mQO!X!PX#x!PX#|!PX~O#x'VO!X!OX#|!OX~O!X&`O~O$Y&aO~O#|&bO!X$XX~O!X&dO~O#|&eO!X$ZX~O!X&gO~OTb!Rcb!Rgb!Rhb!R!Sb!R!Tb!R!Ub!R!Wb!R!bb!R!fb!R!ob!R!vb!R#Rb!R#jb!R#lb!R#mb!R#nb!R$fb!R$gb!R$hb!R$ib!R$ub!R~P$yO#x'VO!X!Oa#|!Oa~O#|&bO!X$Xa~O#|&eO!X$Za~O$[&mO~O#|#tXw#tXd#tX#{#tXa#tX#Q#tXe#tXk#tX~P2zOTsOZUO[TOctOgvOhvOr&pO!S{O!T{O!UxO!WzO!b!OO!fdO!hfO!oyO!viO#RmO#lQO#mQO$f[O$g]O$h^O$i_O~Ou#rO~P!D]O#j!wa#|!waw!wa!f!wad!wa#{!waa!wa#Q!wae!wak!wa~P6aO#|piwpidpi#{piapi#Qpiepikpi~PDcOy!`O{!mO!h!fO#x!dOZxi[xi_ximxioxiqxirxisxiu$_X#jxi#|xiwxi!fxidxi#{xiaxi#Qxiexikxi~O]!_O^!_O~P!G_Oy!`O~PIqOZ!^O[!^O]!_O^!_O_&wOo&vOq&qOr&qOs'gOy!`O{!mO!h!fO#x!dOu$_X~Omli#jli#|liwli!flidli#{liali#Qlielikli~P!IZOZ!^O[!^O]!_O^!_O_&wOq&qOr&qOs'gOy!`O{!mO!h!fO#x!dOu$_X~Omnioni#jni#|niwni!fnidni#{niani#Qnienikni~P!KOO#jSq#|SqwSq!fSqdSq#{SqaSq#QSqeSqkSq~P6aOZUO#O'XO~P!|O#jfq#|fqwfq!ffqdfq#{fqafq#Qfqefqkfq~P6aO#|pywpydpy#{pyapy#Qpyepykpy~P!4eO#j#PX#|#PXw#PX!f#PXd#PX#{#PXa#PX#Q#PXe#PXk#PX~P6aO#jb!R#|b!Rwb!R!fb!Rdb!R#{b!Rab!R#Qb!Reb!Rkb!R~P6aOTtXctXgtXhtX!StX!TtX!UtX!WtX!btX!ftX!otX!vtX#RtX#jtX#ltX#mtX#ntX$ftX$gtX$htX$itX$utX~P$yOk'PO~Oo'RO~P!$POw'SO~Oe'YO~P6aO$['[O~O!X'dO~Ou'hO~Od'iO~P6aO!['mO~O",
-    goto: "!$f$uPPPP$vP&Q&W&_&t(sPPPPP(|P$vPPP$vPP)P)VP$vP$vP$vPPP)^P)jP$vP$vPP)s*Y*e*YPPPPPPP*YPP*YP,V,Y*YP,`,f$vP$vP$v,m-w-z.Q-wP.Z/e.Z.Z0v2QP$v3[$v4f4f5p5vP5}PP4f6V6]0r6aP6iP6l6r6y7P7V7]8y9T9Z9a9g9m9s9yPPPPPPPP:P:T=X>c?o?sPP?xPP@O@UAbBnBrBwB|CxDvEvGSPGVPGZHZIZJeJkJn$vJtJtPPPPLOMYM]Ng=XNj! t! w!#T!#X!$c#aiOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nQ![RR'_'eS!YR'eR$l#eU!WR#e'eU#Sw$`'fY#v!q!y$|%S'hT&S%k&b#zWOPVXhkru|}!]!a!b!c!e!g!i!j!k!l#]#_#c#g#r#t$O$Y$^$_$b$e$p${%R%U%b%e%j%l%u%v&P&a&e&m&p&q&r&s&t&u&v&w&y'P'R'S'V'X'Y'[']'g'i'm'nh!VRw!y#e$`$|%S%k&b'e'f'hU#a!V#b#uR#u!qU#a!V#b#uT$W!{$XR$k#cQ#WwR'`'fS#Uw'fR%]$`U!QP#_#rS#s!l&wR$f#]Q!TPQ$h#_R$q#rQ$z#tQ%p%RQ&R%jU&W%l&e'mQ&h&aT&n&m'[c$s#t%R%j%l&a&e&m'['mrjOVr}!]!a!b!c!i!j!l#g$b$p%U%u%vQ#m!eU$r#t%R&mS%{%e'V[&Q%j%l&a&e'['m!m&oPhku|!g!k!q#]#_#c#r$O$Y$^$_$e${%b&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR&V%kQ&T%kR&i&bQ&Z%lR'j'mS&X%l'mR&k&e#aYOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR#{!qQ#x!qR%n$|S#w!q$|V$S!y%S'h#abOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'n#`bOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nQ!s_T!|n$Z#a`OPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'n#aaOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'n#agOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'n#aoOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nQ$V!yR'b'hS$T!y'hR%q%SS%t%U'ST&[%u'XQ#OnR%X$ZT!}n$ZS!{n$ZT$W!{$XR!TPQrOR#QrS#b!V#uR$i#bQ#f!YR$m#fQ$a#UR%^$aQ#^!QR$g#^#jXOPVhkru|}!]!a!b!c!e!g!i!j!k!l!q#]#_#c#g#r#t$O$Y$^$_$b$e$p${%R%U%b%e%u%v&m&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nS!pX&P_&P%j%l&a&e'V'['mQ%f$rS%|%f&_R&_&QQ&c&TR&j&cQ&f&XR&l&fQ$}#xR%o$}Q$P!wR%Q$PQ%T$TR%r%TQ$X!{R%V$XQ$[#OR%Y$[TqOrSSOrY!PP#]#_#r&wS!oV']Q!uhS!wk!qQ#RuQ#Z|Q#[}Q#i!]Q#j!aQ#k!bS#l!c&tQ#n!gQ#o!iQ#p!jQ#q!kQ$j#cQ$n#gQ%P$OQ%W$YQ%Z$^Q%[$_Q%_$bQ%a$eQ%c$pQ%m${S%s%U%uQ%z%bQ&]%vQ&x&pQ&z&qQ&{&rQ&|&sQ&}&uQ'O&vQ'Q&yQ'T'PQ'U'RS'W'S'XQ'Z'YQ'^!lQ'a'gQ'c'iR'l'n#apOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nrROVr}!]!a!b!c!i!j!l#g$b$p%U%u%v!m'ePhku|!g!k!q#]#_#c#r$O$Y$^$_$e${%b&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nT!ZR'eV!XR#e'eQ#c!WR$_#SQ#g![R&y'_ruOVr}!]!a!b!c!i!j!l#g$b$p%U%u%v!m'nPhku|!g!k!q#]#_#c#r$O$Y$^$_$e${%b&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nrwOVr}!]!a!b!c!i!j!l#g$b$p%U%u%v!m'fPhku|!g!k!q#]#_#c#r$O$Y$^$_$e${%b&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nT#Vw'fV#Tw$`'fV!RP#_#rf!aS#[#i#o#p$n%_%c%s&]'^!X&r!P!u!w#R#Z#n#q$j%P%W%Z%[%a%m%z&x&z&}'O'Q'T'U'W'Z'a'c'lh!bS#[#i#j#o#p$n%_%c%s&]'^!Z&s!P!u!w#R#Z#n#q$j%P%W%Z%[%a%m%z&x&z&{&}'O'Q'T'U'W'Z'a'c'lj!cS#[#i#j#k#o#p$n%_%c%s&]'^!]&t!P!u!w#R#Z#n#q$j%P%W%Z%[%a%m%z&x&z&{&|&}'O'Q'T'U'W'Z'a'c'lrVOVr}!]!a!b!c!i!j!l#g$b$p%U%u%v!m']Phku|!g!k!q#]#_#c#r$O$Y$^$_$e${%b&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR&U%kT&Y%l'm!{!eS!P!o!u!w#R#Z#[#i#j#k#l#n#o#p#q$j$n%P%W%Z%[%_%a%c%m%s%z&]&x&z&{&|&}'O'Q'T'U'W'Z'^'a'c'l!{!gS!P!o!u!w#R#Z#[#i#j#k#l#n#o#p#q$j$n%P%W%Z%[%_%a%c%m%s%z&]&x&z&{&|&}'O'Q'T'U'W'Z'^'a'c'l#aZOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nQ!rZR!t`R#y!qQ!xkR#z!q#acOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'n#a|OPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR%y%a#ahOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR#}!u#akOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR$R!xrlOVr}!]!a!b!c!i!j!l#g$b$p%U%u%v!m'kPhku|!g!k!q#]#_#c#r$O$Y$^$_$e${%b&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nT$U!y'h#anOPVhkru|}!]!a!b!c!g!i!j!k!l!q#]#_#c#g#r$O$Y$^$_$b$e$p${%U%b%u%v&p&q&r&s&t&u&v&w&y'P'R'S'X'Y']'g'i'nR#Pn",
-    nodeNames: "⚠ LineComment BlockComment Expressions ForExpression for InExpressions InExpression Name Identifier Identifier ArithOp ArithOp ArithOp ArithOp in IterationContext return IfExpression if then else QuantifiedExpression some every InExpressions InExpression satisfies Disjunction or Conjunction and Comparison CompareOp CompareOp between PositiveUnaryTest ( PositiveUnaryTests ) ArithmeticExpression ArithOp InstanceOfExpression instance of Type QualifiedName VariableName SpecialType days time duration years months date > ListType list < ContextType context ContextEntryTypes ContextEntryType FunctionType function ArgumentTypes ArgumentType PathExpression ] FilterExpression [ FunctionInvocation SpecialFunctionName NamedParameters NamedParameter ParameterName PositionalParameters null NumericLiteral StringLiteral BooleanLiteral DateTimeLiteral DateTimeConstructor AtLiteral ? SimplePositiveUnaryTest Interval ParenthesizedExpression List FunctionDefinition FormalParameters FormalParameter external FunctionBody } { Context ContextEntry Key Name Identifier UnaryTests Wildcard not",
-    maxTerm: 175,
-    context: variableTracker,
-    nodeProps: [["group", -17, 4, 18, 22, 28, 30, 32, 40, 42, 67, 69, 71, 84, 85, 87, 88, 89, 96, "Expression", 47, "Expression Expression", -5, 77, 78, 79, 80, 81, "Expression Literal"], ["closedBy", 37, ")", 70, "]", 95, "}"], ["openedBy", 39, "(", 68, "[", 94, "{"]],
-    propSources: [feelHighlighting],
-    skippedNodes: [0, 1, 2],
-    repeatNodeCount: 14,
-    tokenData: "+l~RuXY#fYZ$ZZ[#f]^$Zpq#fqr$`rs$kwx&cxy&hyz&mz{&r{|'P|}'U}!O'Z!O!P'h!P!Q(Q!Q![){![!]*^!]!^*c!^!_*h!_!`$f!`!a*w!b!c+R!}#O+W#P#Q+]#Q#R&z#o#p+b#q#r+g$f$g#f#BY#BZ#f$IS$I_#f$I|$I}$Z$I}$JO$Z$JT$JU#f$KV$KW#f&FU&FV#f?HT?HU#f~#kY#p~XY#fZ[#fpq#f$f$g#f#BY#BZ#f$IS$I_#f$JT$JU#f$KV$KW#f&FU&FV#f?HT?HU#f~$`O#q~~$cP!_!`$f~$kOq~~$pW$g~OY$kZr$krs%Ys#O$k#O#P%_#P;'S$k;'S;=`&]<%lO$k~%_O$g~~%bRO;'S$k;'S;=`%k;=`O$k~%pX$g~OY$kZr$krs%Ys#O$k#O#P%_#P;'S$k;'S;=`&];=`<%l$k<%lO$k~&`P;=`<%l$k~&hO#y~~&mOu~~&rOw~~&wP^~z{&z~'POy~~'UO[~~'ZO#|~R'`PZP!`!a'cQ'hO$[Q~'mQ#x~!O!P's!Q!['x~'xO#{~~'}P$f~!Q!['x~(VQ]~z{(]!P!Q)d~(`TOz(]z{(o{;'S(];'S;=`)^<%lO(]~(rVOz(]z{(o{!P(]!P!Q)X!Q;'S(];'S;=`)^<%lO(]~)^OQ~~)aP;=`<%l(]~)iSP~OY)dZ;'S)d;'S;=`)u<%lO)d~)xP;=`<%l)d~*QQ$f~!O!P*W!Q![){~*ZP!Q!['x~*cO$Y~~*hO$u~R*oP![QrP!_!`*rP*wOrPR+OP!XQrP!_!`*r~+WO$i~~+]O!h~~+bO!f~~+gO#R~~+lO#Q~",
-    tokenizers: [propertyIdentifiers, identifiers, insertSemicolon, 0, 1],
-    topRules: {
-      "Expressions": [0, 3],
-      "UnaryTests": [1, 101]
-    },
-    dynamicPrecedences: {
-      "30": -1,
-      "71": -1,
-      "73": -1,
-      "126": -1
-    },
-    specialized: [{
-      term: 120,
-      get: value => spec_identifier[value] || -1
-    }],
-    tokenPrec: 0
-  });
-
   /**
    * Create an array of syntax errors in the given tree.
    *
    * @param {Tree} syntaxTree
    * @returns {LintMessage[]} array of syntax errors
    */
-  function lintSyntax$1(syntaxTree) {
+  function lintSyntax(syntaxTree) {
     const lintMessages = [];
     syntaxTree.iterate({
       enter: node => {
@@ -28119,8 +28286,8 @@
    * @param {Tree} syntaxTree
    * @returns {LintMessage[]} array of all lint messages
    */
-  function lintAll$2(syntaxTree) {
-    const lintMessages = [...lintSyntax$1(syntaxTree)];
+  function lintAll$1(syntaxTree) {
+    const lintMessages = [...lintSyntax(syntaxTree)];
     return lintMessages;
   }
 
@@ -28130,13 +28297,13 @@
    * @param {EditorView} editorView
    * @returns {Source} CodeMirror linting source
    */
-  const cmFeelLinter$1 = () => editorView => {
+  const cmFeelLinter = () => editorView => {
     // don't lint if the Editor is empty
     if (editorView.state.doc.length === 0) {
       return [];
     }
     const tree = syntaxTree(editorView.state);
-    const messages = lintAll$2(tree);
+    const messages = lintAll$1(tree);
     return messages.map(message => ({
       ...message,
       source: 'syntaxError'
@@ -28686,7 +28853,7 @@
       wrap: parseMixed(node => {
         if (node.name == 'Feel' || node.name == 'FeelBlock') {
           return {
-            parser: parser$1
+            parser: parser$2
           };
         }
         if (hostLanguage && node.name == 'SimpleTextBlock') {
@@ -28734,7 +28901,7 @@
    * @param {Tree} syntaxTree
    * @returns {LintMessage[]} array of all lint messages
    */
-  function lintAll$1(syntaxTree) {
+  function lintAll(syntaxTree) {
     const lintMessages = [...lintEmptyInserts(syntaxTree)];
     return lintMessages;
   }
@@ -28746,7 +28913,7 @@
    * @returns {Source} CodeMirror linting source
    */
   function cmFeelersLinter() {
-    const lintFeel = cmFeelLinter$1();
+    const lintFeel = cmFeelLinter();
     return editorView => {
       const feelMessages = lintFeel(editorView);
 
@@ -28755,7 +28922,7 @@
         return [];
       }
       const tree = syntaxTree(editorView.state);
-      const feelersMessages = lintAll$1(tree);
+      const feelersMessages = lintAll(tree);
       return [...feelMessages, ...feelersMessages.map(message => ({
         ...message,
         source: 'feelers linter'
@@ -28827,7 +28994,7 @@
     const _getHostLanguageParser = hostLanguage => {
       switch (hostLanguage) {
         case 'markdown':
-          return parser$2;
+          return parser$1;
         default:
           return null;
       }
@@ -28926,7 +29093,7 @@
   // / parser](https://github.com/nikku/lezer-feel), extended with
   // / highlighting and indentation information.
   const feelLanguage = /*@__PURE__*/LRLanguage.define({
-    parser: /*@__PURE__*/parser$3.configure({
+    parser: /*@__PURE__*/parser$2.configure({
       props: [/*@__PURE__*/indentNodeProp.add({
         'Context': /*@__PURE__*/delimitedIndent({
           closing: '}'
@@ -28969,71 +29136,6 @@
     }
   });
 
-  /**
-   * Create an array of syntax errors in the given tree.
-   *
-   * @param {Tree} syntaxTree
-   * @returns {LintMessage[]} array of syntax errors
-   */
-  function lintSyntax(syntaxTree) {
-    const lintMessages = [];
-    syntaxTree.iterate({
-      enter: node => {
-        if (node.type.isError) {
-          const error = node.toString();
-
-          /* The error has the pattern [⚠ || ⚠(NodeType)]. The regex extracts the node type from inside the brackets */
-          const match = /\((.*?)\)/.exec(error);
-          const nodeType = match && match[1];
-          let message;
-          if (nodeType) {
-            message = 'unexpected ' + nodeType;
-          } else {
-            message = 'expression expected';
-          }
-          lintMessages.push({
-            from: node.from,
-            to: node.to,
-            severity: 'error',
-            message: message,
-            type: 'syntaxError'
-          });
-        }
-      }
-    });
-    return lintMessages;
-  }
-
-  /**
-   * Generates lint messages for the given syntax tree.
-   *
-   * @param {Tree} syntaxTree
-   * @returns {LintMessage[]} array of all lint messages
-   */
-  function lintAll(syntaxTree) {
-    const lintMessages = [...lintSyntax(syntaxTree)];
-    return lintMessages;
-  }
-
-  /**
-   * CodeMirror extension that provides linting for FEEL expressions.
-   *
-   * @param {EditorView} editorView
-   * @returns {Source} CodeMirror linting source
-   */
-  const cmFeelLinter = () => editorView => {
-    // don't lint if the Editor is empty
-    if (editorView.state.doc.length === 0) {
-      return [];
-    }
-    const tree = syntaxTree(editorView.state);
-    const messages = lintAll(tree);
-    return messages.map(message => ({
-      ...message,
-      source: 'syntaxError'
-    }));
-  };
-
   // helpers ///////////////////////////////
 
   function isNodeEmpty(node) {
@@ -29049,267 +29151,381 @@
     return isPathExpression(node.parent);
   }
   var tags = [{
-    name: "not()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>negand</code>: boolean</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">not(true)\n// false\n</code></pre>\n"
+    name: "not(negand)",
+    description: "<p>Returns the logical negation of the given value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">not(negand: boolean): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">not(true)\n// false\n\nnot(null)\n// null\n</code></pre>\n"
   }, {
-    name: "is defined()",
-    description: "<p>Checks if a given value is defined. A value is defined if it exists, and it is an instance of one of the FEEL data types including <code>null</code>.</p>\n<p>The function can be used to check if a variable or a context entry (e.g. a property of a variable) exists. It allows differentiating between a <code>null</code> variable and a value that doesn&#39;t exist.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>value</code>: any</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">is defined(1)\n// true\n\nis defined(null)\n// true\n\nis defined(x)\n// false - if no variable &quot;x&quot; exists\n\nis defined(x.y)\n// false - if no variable &quot;x&quot; exists or it doesn&#39;t have a property &quot;y&quot;\n</code></pre>\n"
+    name: "is defined(value)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Checks if a given value is not <code>null</code>. If the value is <code>null</code> then the function returns <code>false</code>.\nOtherwise, the function returns <code>true</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is defined(value: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is defined(1)\n// true\n\nis defined(null)\n// false\n\nis defined(x)\n// false - if no variable &quot;x&quot; exists\n\nis defined(x.y)\n// false - if no variable &quot;x&quot; exists or it doesn&#39;t have a property &quot;y&quot;\n</code></pre>\n<p>:::caution Breaking change</p>\n<p>This function worked differently in previous versions. It returned <code>true</code> if the value was <code>null</code>.\nSince this version, the function returns <code>false</code> if the value is <code>null</code>.</p>\n<p>:::</p>\n"
   }, {
-    name: "get value()",
-    description: "<p>Returns the value of the context entry with the given key.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>context</code>: context</li>\n<li><code>key</code>: string</li>\n</ul>\n</li>\n<li>result: any</li>\n</ul>\n<pre><code class=\"language-feel\">get value({foo: 123}, &quot;foo&quot;)\n// 123\n</code></pre>\n"
+    name: "get or else(value, default)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Return the provided value parameter if not <code>null</code>, otherwise return the default parameter</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">get or else(value: Any, default: Any): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">get or else(&quot;this&quot;, &quot;default&quot;)\n// &quot;this&quot;\n\nget or else(null, &quot;default&quot;)\n// &quot;default&quot;\n\nget or else(null, null)\n// null\n</code></pre>\n"
   }, {
-    name: "get entries()",
-    description: "<p>Returns the entries of the context as a list of key-value-pairs.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>context</code>: context</li>\n</ul>\n</li>\n<li>result: list of context which contains two entries for &quot;key&quot; and &quot;value&quot;</li>\n</ul>\n<pre><code class=\"language-feel\">get entries({foo: 123})\n// [{key: &quot;foo&quot;, value: 123}]\n</code></pre>\n"
+    name: "assert(value, condition)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Verify that the given condition is met. If the condition is <code>true</code>, the function returns the value.\nOtherwise, the evaluation fails with an error.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">assert(value: Any, condition: Any)\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">assert(x, x != null)\n// &quot;value&quot; - if x is &quot;value&quot;\n// error - if x is null or doesn&#39;t exist\n\nassert(x, x &gt;= 0)\n// 4 - if x is 4\n// error - if x is less than zero\n</code></pre>\n"
   }, {
-    name: "put()",
-    description: "<p>Add the given key and value to a context. Returns a new context that includes the entry. It might override an existing entry of the context.</p>\n<p>Returns <code>null</code> if the value is not defined.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>context</code>: context</li>\n<li><code>key</code>: string</li>\n<li><code>value</code>: any</li>\n</ul>\n</li>\n<li>result: context</li>\n</ul>\n<pre><code class=\"language-feel\">put({x:1}, &quot;y&quot;, 2)\n// {x:1, y:2}\n</code></pre>\n"
+    name: "assert(value, condition, cause)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Verify that the given condition is met. If the condition is <code>true</code>, the function returns the value.\nOtherwise, the evaluation fails with an error containing the given message.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">assert(value: Any, condition: Any, cause: String)\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">assert(x, x != null, &quot;&#39;x&#39; should not be null&quot;)\n// &quot;value&quot; - if x is &quot;value&quot;\n// error(&#39;x&#39; should not be null) - if x is null or doesn&#39;t exist\n\nassert(x, x &gt;= 0, &quot;&#39;x&#39; should be positive&quot;)\n// 4 - if x is 4\n// error(&#39;x&#39; should be positive) - if x is less than zero\n</code></pre>\n"
   }, {
-    name: "put all()",
-    description: "<p>Union the given contexts (two or more). Returns a new context that includes all entries of the given contexts. It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts are passed in the method.</p>\n<p>Returns <code>null</code> if one of the values is not a context.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>contexts</code>: contexts as varargs</li>\n</ul>\n</li>\n<li>result: context</li>\n</ul>\n<pre><code class=\"language-feel\">put all({x:1}, {y:2})\n// {x:1, y:2}\n</code></pre>\n"
+    name: "get value(context, key)",
+    description: "<p>Returns the value of the context entry with the given key.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">get value(context: context, key: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">get value({foo: 123}, &quot;foo&quot;)\n// 123\n\nget value({a: 1}, &quot;b&quot;)\n// null\n</code></pre>\n"
   }, {
-    name: "date()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>from</code>: string / date-time</li>\n<li>or <code>year</code>, <code>month</code>, <code>day</code>: number</li>\n</ul>\n</li>\n<li>result: date</li>\n</ul>\n<pre><code class=\"language-feel\">date(birthday)\n// date(&quot;2018-04-29&quot;)\n\ndate(date and time(&quot;2012-12-25T11:00:00&quot;))\n// date(&quot;2012-12-25&quot;)\n\ndate(2012, 12, 25)\n// date(&quot;2012-12-25&quot;)\n</code></pre>\n"
+    name: "get value(context, keys)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Returns the value of the context entry for a context path defined by the given keys.</p>\n<p>If <code>keys</code> contains the keys <code>[k1, k2]</code> then it returns the value at the nested entry <code>k1.k2</code> of the context.</p>\n<p>If <code>keys</code> are empty or the nested entry defined by the keys doesn&#39;t exist in the context, it returns <code>null</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">get value(context: context, keys: list&lt;string&gt;): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">get value({x:1, y: {z:0}}, [&quot;y&quot;, &quot;z&quot;])\n// 0\n\nget value({x: {y: {z:0}}}, [&quot;x&quot;, &quot;y&quot;])\n// {z:0}\n\nget value({a: {b: 3}}, [&quot;b&quot;])\n// null\n</code></pre>\n"
   }, {
-    name: "time()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>from</code>: string / date-time</li>\n<li>or <code>hour</code>, <code>minute</code>, <code>second</code>: number<ul>\n<li>(optional) <code>offset</code>: day-time-duration</li>\n</ul>\n</li>\n</ul>\n</li>\n<li>result: time</li>\n</ul>\n<pre><code class=\"language-feel\">time(lunchTime)\n// time(&quot;12:00:00&quot;)\n\ntime(date and time(&quot;2012-12-25T11:00:00&quot;))\n// time(&quot;11:00:00&quot;)\n\ntime(23, 59, 0)\n// time(&quot;23:59:00&quot;)\n\ntime(14, 30, 0, duration(&quot;PT1H&quot;))\n// time(&quot;15:30:00&quot;)\n</code></pre>\n"
+    name: "get entries(context)",
+    description: "<p>Returns the entries of the context as a list of key-value-pairs.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">get entries(context: context): list&lt;context&gt;\n</code></pre>\n<p>The return value is a list of contexts. Each context contains two entries for &quot;key&quot; and &quot;value&quot;.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">get entries({foo: 123})\n// [{key: &quot;foo&quot;, value: 123}]\n</code></pre>\n"
   }, {
-    name: "date and time()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>date</code>: date / date-time</li>\n<li><code>time</code>: time</li>\n<li>or <code>from</code>: string</li>\n</ul>\n</li>\n<li>result: date-time</li>\n</ul>\n<pre><code class=\"language-feel\">date and time(date(&quot;2012-12-24&quot;),time(&quot;T23:59:00&quot;))\n// date and time(&quot;2012-12-24T23:59:00&quot;)\n\ndate and time(date and time(&quot;2012-12-25T11:00:00&quot;),time(&quot;T23:59:00&quot;))\n// date and time(&quot;2012-12-25T23:59:00&quot;)\n\ndate and time(birthday)\n// date and time(&quot;2018-04-29T009:30:00&quot;)\n</code></pre>\n"
+    name: "context put(context, key, value)",
+    description: "<p>Adds a new entry with the given key and value to the context. Returns a new context that includes the entry.</p>\n<p>If an entry for the same key already exists in the context, it overrides the value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">context put(context: context, key: string, value: Any): context\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">context put({x:1}, &quot;y&quot;, 2)\n// {x:1, y:2}\n</code></pre>\n<p>:::info\nThe function <code>context put()</code> replaced the previous function <code>put()</code> (Camunda Extension). The\nprevious function is deprecated and should not be used anymore.\n:::</p>\n"
   }, {
-    name: "duration()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>from</code>: string</li>\n</ul>\n</li>\n<li>result: day-time-duration or year-month-duration</li>\n</ul>\n<pre><code class=\"language-feel\">duration(weekDays)\n// duration(&quot;P5D&quot;)\n\nduration(age)\n// duration(&quot;P32Y&quot;)\n</code></pre>\n"
+    name: "context put(context, keys, value)",
+    description: "<p>Adds a new entry with the given value to the context. The path of the entry is defined by the keys. Returns a new context that includes the entry.</p>\n<p>If <code>keys</code> contains the keys <code>[k1, k2]</code> then it adds the nested entry <code>k1.k2 = value</code> to the context.</p>\n<p>If an entry for the same keys already exists in the context, it overrides the value.</p>\n<p>If <code>keys</code> are empty, it returns <code>null</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">context put(context: context, keys: list&lt;string&gt;, value: Any): context\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">context put({x:1}, [&quot;y&quot;], 2)\n// {x:1, y:2}\n\ncontext put({x:1, y: {z:0}}, [&quot;y&quot;, &quot;z&quot;], 2)\n// {x:1, y: {z:2}}\n\ncontext put({x:1}, [&quot;y&quot;, &quot;z&quot;], 2)\n// {x:1, y: {z:2}}\n</code></pre>\n"
   }, {
-    name: "years and months duration()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>from</code>: date</li>\n<li><code>to</code>: date</li>\n</ul>\n</li>\n<li>result: year-month-duration</li>\n</ul>\n<pre><code class=\"language-feel\">years and months duration(date(&quot;2011-12-22&quot;), date(&quot;2013-08-24&quot;))\n// duration(&quot;P1Y8M&quot;)\n</code></pre>\n"
+    name: "context merge(contexts)",
+    description: "<p>Union the given contexts. Returns a new context that includes all entries of the given contexts.</p>\n<p>If an entry for the same key already exists in a context, it overrides the value. The entries are overridden in the same order as in the list of contexts.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">context merge(contexts: list&lt;context&gt;): context\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">context merge([{x:1}, {y:2}])\n// {x:1, y:2}\n\ncontext merge([{x:1, y: 0}, {y:2}])\n// {x:1, y:2}\n</code></pre>\n<p>:::info\nThe function <code>context merge()</code> replaced the previous function <code>put all()</code> (Camunda Extension). The\nprevious function is deprecated and should not be used anymore.\n:::</p>\n"
   }, {
-    name: "number()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>from</code>: string</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">number(&quot;1500.5&quot;)\n// 1500.5\n</code></pre>\n"
+    name: "string(from)",
+    description: "<p>Returns the given value as a string representation.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">string(from: Any): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">string(1.1)\n// &quot;1.1&quot;\n\nstring(date(&quot;2012-12-25&quot;))\n// &quot;2012-12-25&quot;\n</code></pre>\n"
   }, {
-    name: "string()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>from</code>: any</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">string(1.1)\n// &quot;1.1&quot;\n\nstring(date(&quot;2012-12-25&quot;))\n// &quot;2012-12-25&quot;\n</code></pre>\n"
+    name: "number(from)",
+    description: "<p>Parses the given string to a number.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">number(from: string): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">number(&quot;1500.5&quot;)\n// 1500.5\n</code></pre>\n"
   }, {
-    name: "context()",
-    description: "<p>Constructs a context of the given list of key-value pairs. It is the reverse function to <a href=\"feel-built-in-functions-context.md#get-entries\">get entries()</a>.</p>\n<p>Each key-value pair must be a context with two entries: <code>key</code> and <code>value</code>. The entry with name <code>key</code> must have a value of the type <code>string</code>.</p>\n<p>It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts in the given list.</p>\n<p>Returns <code>null</code> if one of the entries is not a context or if a context doesn&#39;t contain the required entries.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>entries</code>: list of contexts</li>\n</ul>\n</li>\n<li>result: context</li>\n</ul>\n<pre><code class=\"language-feel\">context([{&quot;key&quot;:&quot;a&quot;, &quot;value&quot;:1}, {&quot;key&quot;:&quot;b&quot;, &quot;value&quot;:2}])\n// {a:1, b:2}\n</code></pre>\n"
+    name: "context(entries)",
+    description: "<p>Constructs a context of the given list of key-value pairs. It is the reverse function to <a href=\"feel-built-in-functions-context.md#get-entriescontext\">get entries()</a>.</p>\n<p>Each key-value pair must be a context with two entries: <code>key</code> and <code>value</code>. The entry with name <code>key</code> must have a value of the type <code>string</code>.</p>\n<p>It might override context entries if the keys are equal. The entries are overridden in the same order as the contexts in the given list.</p>\n<p>Returns <code>null</code> if one of the entries is not a context or if a context doesn&#39;t contain the required entries.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">context(entries: list&lt;context&gt;): context\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">context([{&quot;key&quot;:&quot;a&quot;, &quot;value&quot;:1}, {&quot;key&quot;:&quot;b&quot;, &quot;value&quot;:2}])\n// {a:1, b:2}\n</code></pre>\n"
   }, {
-    name: "list contains()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>element</code>: any</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">list contains([1,2,3], 2)\n// true\n</code></pre>\n"
+    name: "date(from)",
+    description: "<p>Returns a date from the given value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">date(from: string): date\n</code></pre>\n<p>Parses the given string into a date.</p>\n<pre><code class=\"language-feel\">date(from: date and time): date\n</code></pre>\n<p>Extracts the date component from the given date and time.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">date(&quot;2018-04-29&quot;)\n// date(&quot;2018-04-29&quot;)\n\ndate(date and time(&quot;2012-12-25T11:00:00&quot;))\n// date(&quot;2012-12-25&quot;)\n</code></pre>\n"
   }, {
-    name: "count()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">count([1,2,3])\n// 3\n</code></pre>\n"
+    name: "date(year, month, day)",
+    description: "<p>Returns a date from the given components.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">date(year: number, month: number, day: number): date\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">date(2012, 12, 25)\n// date(&quot;2012-12-25&quot;)\n</code></pre>\n"
   }, {
-    name: "min()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">min([1,2,3])\n// 1\n\nmin(1,2,3)\n// 1\n</code></pre>\n"
+    name: "time(from)",
+    description: "<p>Returns a time from the given value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">time(from: string): time\n</code></pre>\n<p>Parses the given string into a time.</p>\n<pre><code class=\"language-feel\">time(from: date and time): time\n</code></pre>\n<p>Extracts the time component from the given date and time.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">time(&quot;12:00:00&quot;)\n// time(&quot;12:00:00&quot;)\n\ntime(date and time(&quot;2012-12-25T11:00:00&quot;))\n// time(&quot;11:00:00&quot;)\n</code></pre>\n"
   }, {
-    name: "max()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">max([1,2,3])\n// 3\n\nmax(1,2,3)\n// 3\n</code></pre>\n"
+    name: "time(hour, minute, second)",
+    description: "<p>Returns a time from the given components.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">time(hour: number, minute: number, second: number): time\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">time(23, 59, 0)\n// time(&quot;23:59:00&quot;)\n</code></pre>\n"
   }, {
-    name: "sum()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">sum([1,2,3])\n// 6\n\nsum(1,2,3)\n// 6\n</code></pre>\n"
+    name: "time(hour, minute, second, offset)",
+    description: "<p>Returns a time from the given components, including a timezone offset.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">time(hour: number, minute: number, second: number, offset: days and time duration): time\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">time(14, 30, 0, duration(&quot;PT1H&quot;))\n// time(&quot;14:30:00+01:00&quot;)\n</code></pre>\n"
   }, {
-    name: "product()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">product([2, 3, 4])\n// 24\n\nproduct(2, 3, 4)\n// 24\n</code></pre>\n"
+    name: "date and time(from)",
+    description: "<p>Parses the given string into a date and time.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">date and time(from: string): date and time\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">date and time(&quot;2018-04-29T009:30:00&quot;)\n// date and time(&quot;2018-04-29T009:30:00&quot;)\n</code></pre>\n"
   }, {
-    name: "mean()",
-    description: "<p>Returns the arithmetic mean (i.e. average).</p>\n<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">mean([1,2,3])\n// 2\n\nmean(1,2,3)\n// 2\n</code></pre>\n"
+    name: "date and time(date, time)",
+    description: "<p>Returns a date and time from the given components.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">date and time(date: date, time: time): date and time\n</code></pre>\n<pre><code class=\"language-feel\">date and time(date: date and time, time: time): date and time\n</code></pre>\n<p>Returns a date and time value that consists of the date component of <code>date</code> combined with <code>time</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">date and time(date(&quot;2012-12-24&quot;),time(&quot;T23:59:00&quot;))\n// date and time(&quot;2012-12-24T23:59:00&quot;)\n\ndate and time(date and time(&quot;2012-12-25T11:00:00&quot;),time(&quot;T23:59:00&quot;))\n// date and time(&quot;2012-12-25T23:59:00&quot;)\n</code></pre>\n"
   }, {
-    name: "median()",
-    description: "<p>Returns the median element of the list of numbers.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">median(8, 2, 5, 3, 4)\n// 4\n\nmedian([6, 1, 2, 3])\n// 2.5\n</code></pre>\n"
+    name: "date and time(date, timezone)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Returns the given date and time value at the given timezone.</p>\n<p>If <code>date</code> has a different timezone than <code>timezone</code> then it adjusts the time to match the local time of <code>timezone</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">date and time(date: date and time, timezone: string): date and time\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">date and time(@&quot;2020-07-31T14:27:30@Europe/Berlin&quot;, &quot;America/Los_Angeles&quot;)\n// date and time(&quot;2020-07-31T05:27:30@America/Los_Angeles&quot;)\n\ndate and time(@&quot;2020-07-31T14:27:30&quot;, &quot;Z&quot;)\n// date and time(&quot;2020-07-31T12:27:30Z&quot;)\n</code></pre>\n"
   }, {
-    name: "stddev()",
-    description: "<p>Returns the standard deviation.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">stddev(2, 4, 7, 5)\n// 2.0816659994661326\n\nstddev([2, 4, 7, 5])\n// 2.0816659994661326\n</code></pre>\n"
+    name: "duration(from)",
+    description: "<p>Parses the given string into a duration. The duration is either a days and time duration or a years and months duration.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">duration(from: string): days and time duration\n</code></pre>\n<pre><code class=\"language-feel\">duration(from: string): years and months duration\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">duration(&quot;P5D&quot;)\n// duration(&quot;P5D&quot;)\n\nduration(&quot;P32Y&quot;)\n// duration(&quot;P32Y&quot;)\n</code></pre>\n"
   }, {
-    name: "mode()",
-    description: "<p>Returns the mode of the list of numbers.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of numbers</li>\n<li>or numbers as varargs</li>\n</ul>\n</li>\n<li>result: list of numbers</li>\n</ul>\n<pre><code class=\"language-feel\">mode(6, 3, 9, 6, 6)\n// [6]\n\nmode([6, 1, 9, 6, 1])\n// [1, 6]\n</code></pre>\n"
+    name: "years and months duration(from, to)",
+    description: "<p>Returns the years and months duration between <code>from</code> and <code>to</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">years and months duration(from: date, to: date): years and months duration\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">years and months duration(date(&quot;2011-12-22&quot;), date(&quot;2013-08-24&quot;))\n// duration(&quot;P1Y8M&quot;)\n</code></pre>\n"
   }, {
-    name: "and()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of booleans</li>\n<li>or booleans as varargs</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">and([true,false])\n// false\n\nand(false,null,true)\n// false\n</code></pre>\n"
+    name: "list contains(list, element)",
+    description: "<p>Returns <code>true</code> if the given list contains the element. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">list contains(list: list, element: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">list contains([1,2,3], 2)\n// true\n</code></pre>\n"
   }, {
-    name: "all()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of booleans</li>\n<li>or booleans as varargs</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">and([true,false])\n// false\n\nand(false,null,true)\n// false\n</code></pre>\n"
+    name: "count(list)",
+    description: "<p>Returns the number of elements of the given list.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">count(list: list): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">count([1,2,3])\n// 3\n</code></pre>\n"
   }, {
-    name: "or()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of booleans</li>\n<li>or booleans as varargs</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">or([false,true])\n// true\n\nor(false,null,true)\n// true\n</code></pre>\n"
+    name: "min(list)",
+    description: "<p>Returns the minimum of the given list.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">min(list: list): Any\n</code></pre>\n<p>All elements in <code>list</code> should have the same type and be comparable.</p>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">min([1,2,3])\n// 1\n\nmin(1,2,3)\n// 1\n</code></pre>\n"
   }, {
-    name: "any()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list of booleans</li>\n<li>or booleans as varargs</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">or([false,true])\n// true\n\nor(false,null,true)\n// true\n</code></pre>\n"
+    name: "max(list)",
+    description: "<p>Returns the maximum of the given list.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">max(list: list): Any\n</code></pre>\n<p>All elements in <code>list</code> should have the same type and be comparable.</p>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">max([1,2,3])\n// 3\n\nmax(1,2,3)\n// 3\n</code></pre>\n"
   }, {
-    name: "sublist()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>start position</code>: number</li>\n<li>(optional) <code>length</code>: number</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">sublist([1,2,3], 2)\n// [2,3]\n\nsublist([1,2,3], 1, 2)\n// [1,2]\n</code></pre>\n"
+    name: "sum(list)",
+    description: "<p>Returns the sum of the given list of numbers.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">sum(list: list&lt;number&gt;): number\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">sum([1,2,3])\n// 6\n\nsum(1,2,3)\n// 6\n</code></pre>\n"
   }, {
-    name: "append()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>items</code>: elements as varargs</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">append([1], 2, 3)\n// [1,2,3]\n</code></pre>\n"
+    name: "product(list)",
+    description: "<p>Returns the product of the given list of numbers.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">product(list: list&lt;number&gt;): number\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">product([2, 3, 4])\n// 24\n\nproduct(2, 3, 4)\n// 24\n</code></pre>\n"
   }, {
-    name: "concatenate()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>lists</code>: lists as varargs</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">concatenate([1,2],[3])\n// [1,2,3]\n\nconcatenate([1],[2],[3])\n// [1,2,3]\n</code></pre>\n"
+    name: "mean(list)",
+    description: "<p>Returns the arithmetic mean (i.e. average) of the given list of numbers.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">mean(list: list&lt;number&gt;): number\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">mean([1,2,3])\n// 2\n\nmean(1,2,3)\n// 2\n</code></pre>\n"
   }, {
-    name: "insert before()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>position</code>: number</li>\n<li><code>newItem</code>: any</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">insert before([1,3],1,2)\n// [1,2,3]\n</code></pre>\n"
+    name: "median(list)",
+    description: "<p>Returns the median element of the given list of numbers.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">median(list: list&lt;number&gt;): number\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">median(8, 2, 5, 3, 4)\n// 4\n\nmedian([6, 1, 2, 3])\n// 2.5\n</code></pre>\n"
   }, {
-    name: "remove()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>position</code>: number</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">remove([1,2,3], 2)\n// [1,3]\n</code></pre>\n"
+    name: "stddev(list)",
+    description: "<p>Returns the standard deviation of the given list of numbers.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">stddev(list: list&lt;number&gt;): number\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">stddev(2, 4, 7, 5)\n// 2.0816659994661326\n\nstddev([2, 4, 7, 5])\n// 2.0816659994661326\n</code></pre>\n"
   }, {
-    name: "reverse()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">reverse([1,2,3])\n// [3,2,1]\n</code></pre>\n"
+    name: "mode(list)",
+    description: "<p>Returns the mode of the given list of numbers.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">mode(list: list&lt;number&gt;): number\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">mode(6, 3, 9, 6, 6)\n// [6]\n\nmode([6, 1, 9, 6, 1])\n// [1, 6]\n</code></pre>\n"
   }, {
-    name: "index of()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>match</code>: any</li>\n</ul>\n</li>\n<li>result: list of numbers</li>\n</ul>\n<pre><code class=\"language-feel\">index of([1,2,3,2],2)\n// [2,4]\n</code></pre>\n"
+    name: "all(list)",
+    description: "<p>Returns <code>false</code> if any element of the given list is <code>false</code>. Otherwise, returns <code>true</code>.</p>\n<p>If the given list is empty, it returns <code>true</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">all(list: list&lt;boolean&gt;): boolean\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">all([true,false])\n// false\n\nall(false,null,true)\n// false\n</code></pre>\n<p>:::info\nThe function <code>all()</code> replaced the previous function <code>and()</code>. The previous function is deprecated and\nshould not be used anymore.\n:::</p>\n"
   }, {
-    name: "union()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>lists</code>: lists as varargs</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">union([1,2],[2,3])\n// [1,2,3]\n</code></pre>\n"
+    name: "any(list)",
+    description: "<p>Returns <code>true</code> if any element of the given list is <code>true</code>. Otherwise, returns <code>false</code>.</p>\n<p>If the given list is empty, it returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">any(list: list&lt;boolean&gt;): boolean\n</code></pre>\n<p>The parameter <code>list</code> can be passed as a list or as a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">any([false,true])\n// true\n\nany(false,null,true)\n// true\n</code></pre>\n<p>:::info\nThe function <code>any()</code> replaced the previous function <code>or()</code>. The previous function is deprecated and\nshould not be used anymore.\n:::</p>\n"
   }, {
-    name: "distinct values()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">distinct values([1,2,3,2,1])\n// [1,2,3]\n</code></pre>\n"
+    name: "sublist(list, start position)",
+    description: "<p>Returns a partial list of the given value starting at <code>start position</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">sublist(list: list, start position: number): list\n</code></pre>\n<p>The <code>start position</code> starts at the index <code>1</code>. The last position is <code>-1</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">sublist([1,2,3], 2)\n// [2,3]\n</code></pre>\n"
   }, {
-    name: "flatten()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">flatten([[1,2],[[3]], 4])\n// [1,2,3,4]\n</code></pre>\n"
+    name: "sublist(list, start position, length)",
+    description: "<p>Returns a partial list of the given value starting at <code>start position</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">sublist(list: list, start position: number, length: number): list\n</code></pre>\n<p>The <code>start position</code> starts at the index <code>1</code>. The last position is <code>-1</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">sublist([1,2,3], 1, 2)\n// [1,2]\n</code></pre>\n"
   }, {
-    name: "sort()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>list</code>: list</li>\n<li><code>precedes</code>: function with two arguments and boolean result</li>\n</ul>\n</li>\n<li>result: list</li>\n</ul>\n<pre><code class=\"language-feel\">sort(list: [3,1,4,5,2], precedes: function(x,y) x &lt; y)\n// [1,2,3,4,5]\n</code></pre>\n"
+    name: "append(list, items)",
+    description: "<p>Returns the given list with all <code>items</code> appended.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">append(list: list, items: Any): list\n</code></pre>\n<p>The parameter <code>items</code> can be a single element or a sequence of elements.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">append([1], 2, 3)\n// [1,2,3]\n</code></pre>\n"
   }, {
-    name: "string join()",
-    description: "<p>This joins a list of strings into a single string. This is similar to\nJava&#39;s <a href=\"https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)\">joining</a>\nfunction.</p>\n<p>If an item of the list is <code>null</code>, the item is ignored for the result string. If an item is\nneither a string nor <code>null</code>, the function returns <code>null</code> instead of a string.</p>\n<ul>\n<li>Parameters:<ul>\n<li><code>list</code>: The list of strings to join</li>\n<li><code>delimiter</code>: (Optional) The string used between each element (default: empty string)</li>\n<li><code>prefix</code>: (Optional) The string used at the beginning of the joined result (default:\nempty string)</li>\n<li><code>suffix</code>: (Optional) The string used at the end of the joined result (default: empty\nstring)</li>\n</ul>\n</li>\n<li>Result: The joined list as a string</li>\n</ul>\n<pre><code class=\"language-feel\">string join([&quot;a&quot;,&quot;b&quot;,&quot;c&quot;])\n// &quot;abc&quot;\nstring join([&quot;a&quot;], &quot;X&quot;)\n// &quot;a&quot;\nstring join([&quot;a&quot;,&quot;b&quot;,&quot;c&quot;], &quot;, &quot;)\n// &quot;a, b, c&quot;\nstring join([&quot;a&quot;,&quot;b&quot;,&quot;c&quot;], &quot;, &quot;, &quot;[&quot;, &quot;]&quot;)\n// &quot;[a, b, c]&quot;\nstring join([&quot;a&quot;,null,&quot;c&quot;])\n// &quot;ac&quot;\nstring join([])\n// &quot;&quot;\n</code></pre>\n"
+    name: "concatenate(lists)",
+    description: "<p>Returns a list that includes all elements of the given lists.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">concatenate(lists: list): list\n</code></pre>\n<p>The parameter <code>lists</code> is a sequence of lists.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">concatenate([1,2],[3])\n// [1,2,3]\n\nconcatenate([1],[2],[3])\n// [1,2,3]\n</code></pre>\n"
   }, {
-    name: "decimal()",
-    description: "<p>Round the given number at the given scale using the given rounding mode. If no rounding mode is passed in, it uses <code>HALF_EVEN</code> as default.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>n</code>: number</li>\n<li><code>scale</code>: number</li>\n<li>(optional) <code>mode</code>: string - one of <code>UP, DOWN, CEILING, FLOOR, HALF_UP, HALF_DOWN, HALF_EVEN, UNNECESSARY</code> (default: <code>HALF_EVEN</code>)</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">decimal(1/3, 2)\n// .33\n\ndecimal(1.5, 0)\n// 2\n\ndecimal(2.5, 0, &quot;half_up&quot;)\n// 3\n</code></pre>\n"
+    name: "insert before(list, position, newItem)",
+    description: "<p>Returns the given list with <code>newItem</code> inserted at <code>position</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">insert before(list: list, position: number, newItem: Any): list\n</code></pre>\n<p>The <code>position</code> starts at the index <code>1</code>. The last position is <code>-1</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">insert before([1,3],1,2)\n// [2,1,3]\n</code></pre>\n"
   }, {
-    name: "floor()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>n</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">floor(1.5)\n// 1\n\nfloor(-1.5)\n// -2\n</code></pre>\n"
+    name: "remove(list, position)",
+    description: "<p>Returns the given list without the element at <code>position</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">remove(list: list, position: number): list\n</code></pre>\n<p>The <code>position</code> starts at the index <code>1</code>. The last position is <code>-1</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">remove([1,2,3], 2)\n// [1,3]\n</code></pre>\n"
   }, {
-    name: "ceiling()",
-    description: "<p>Round the given number at the given scale using the ceiling rounding mode.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>n</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">ceiling(1.5)\n// 2\n\nceiling(-1.5)\n// -1\n</code></pre>\n"
+    name: "reverse(list)",
+    description: "<p>Returns the given list in revered order.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">reverse(list: list): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">reverse([1,2,3])\n// [3,2,1]\n</code></pre>\n"
   }, {
-    name: "abs()",
-    description: "<p>Returns the absolute value of the given numeric value.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>number</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">abs(10)\n// 10\n\nabs(-10)\n// 10\n</code></pre>\n"
+    name: "index of(list, match)",
+    description: "<p>Returns an ascending list of positions containing <code>match</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">index of(list: list, match: Any): list&lt;number&gt;\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">index of([1,2,3,2],2)\n// [2,4]\n</code></pre>\n"
   }, {
-    name: "modulo()",
-    description: "<p>Returns the remainder of the division of dividend by divisor.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>dividend</code>: number</li>\n<li><code>divisor</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">modulo(12, 5)\n// 2\n</code></pre>\n"
+    name: "union(list)",
+    description: "<p>Returns a list that includes all elements of the given lists without duplicates.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">union(list: list): list\n</code></pre>\n<p>The parameter <code>list</code> is a sequence of lists.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">union([1,2],[2,3])\n// [1,2,3]\n</code></pre>\n"
   }, {
-    name: "sqrt()",
-    description: "<p>Returns the square root.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>number</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">sqrt(16)\n// 4\n</code></pre>\n"
+    name: "distinct values(list)",
+    description: "<p>Returns the given list without duplicates.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">distinct values(list: list): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">distinct values([1,2,3,2,1])\n// [1,2,3]\n</code></pre>\n"
   }, {
-    name: "log()",
-    description: "<p>Returns the natural logarithm (base e) of the number.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>number</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">log(10)\n// 2.302585092994046\n</code></pre>\n"
+    name: "duplicate values(list)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Returns all duplicate values of the given list.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">duplicate values(list: list): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">duplicate values([1,2,3,2,1])\n// [1,2]\n</code></pre>\n"
   }, {
-    name: "exp()",
-    description: "<p>Returns the Euler’s number e raised to the power of number .</p>\n<ul>\n<li>parameters:<ul>\n<li><code>number</code>: number</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">exp(5)\n// 148.4131591025766\n</code></pre>\n"
+    name: "flatten(list)",
+    description: "<p>Returns a list that includes all elements of the given list without nested lists.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">flatten(list: list): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">flatten([[1,2],[[3]], 4])\n// [1,2,3,4]\n</code></pre>\n"
   }, {
-    name: "odd()",
-    description: "<p>Returns <code>true</code> if the given numeric value is odd. Otherwise, it returns <code>false</code>.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>number</code>: number</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">odd(5)\n// true\n\nodd(2)\n// false\n</code></pre>\n"
+    name: "sort(list, precedes)",
+    description: "<p>Returns the given list sorted by the <code>precedes</code> function.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">sort(list: list, precedes: function&lt;(Any, Any) -&gt; boolean&gt;): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">sort(list: [3,1,4,5,2], precedes: function(x,y) x &lt; y)\n// [1,2,3,4,5]\n</code></pre>\n"
   }, {
-    name: "even()",
-    description: "<p>Returns <code>true</code> if the given numeric value is even. Otherwise, it returns <code>false</code>.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>number</code>: number</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">even(5)\n// false\n\neven(2)\n// true\n</code></pre>\n"
+    name: "string join(list)",
+    description: "<p>Joins a list of strings into a single string. This is similar to\nJava&#39;s <a href=\"https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)\">joining</a>\nfunction.</p>\n<p>If an item of the list is <code>null</code>, the item is ignored for the result string. If an item is\nneither a string nor <code>null</code>, the function returns <code>null</code> instead of a string.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">string join(list: list&lt;string&gt;): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">string join([&quot;a&quot;,&quot;b&quot;,&quot;c&quot;])\n// &quot;abc&quot;\n\nstring join([&quot;a&quot;,null,&quot;c&quot;])\n// &quot;ac&quot;\n\nstring join([])\n// &quot;&quot;\n</code></pre>\n"
   }, {
-    name: "before()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>point1</code>, <code>point2</code>: any</li>\n<li>or <code>range</code>: range, <code>point</code>: any</li>\n<li>or <code>point</code>: any, <code>range</code>: range</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">before(1, 10)\n// true\n\nbefore(10, 1)\n// false\n\nbefore(1, [2..5])\n// true\n\nbefore([1..5], 10)\n// true\n\nbefore([1..5], [6..10])\n// true\n\nbefore([1..5),[5..10])\n// true\n</code></pre>\n"
+    name: "string join(list, delimiter)",
+    description: "<p>Joins a list of strings into a single string. This is similar to\nJava&#39;s <a href=\"https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)\">joining</a>\nfunction.</p>\n<p>If an item of the list is <code>null</code>, the item is ignored for the result string. If an item is\nneither a string nor <code>null</code>, the function returns <code>null</code> instead of a string.</p>\n<p>The resulting string contains a <code>delimiter</code> between each element.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">string join(list: list&lt;string&gt;, delimiter: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">string join([&quot;a&quot;], &quot;X&quot;)\n// &quot;a&quot;\n\nstring join([&quot;a&quot;,&quot;b&quot;,&quot;c&quot;], &quot;, &quot;)\n// &quot;a, b, c&quot;\n</code></pre>\n"
   }, {
-    name: "after()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>point1</code>, <code>point2</code>: any</li>\n<li>or <code>range</code>: range, <code>point</code>: any</li>\n<li>or <code>point</code>: any, <code>range</code>: range</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">after(10, 1)\n// true\n\nafter(1, 10)\n// false\n\nafter(12, [2..5])\n// true\n\n([1..5], 10)\n// false\n\nbefore([6..10], [1..5])\n// true\n\nbefore([5..10], [1..5))\n// true\n</code></pre>\n"
+    name: "string join(list, delimiter, prefix, suffix)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Joins a list of strings into a single string. This is similar to\nJava&#39;s <a href=\"https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/stream/Collectors.html#joining(java.lang.CharSequence,java.lang.CharSequence,java.lang.CharSequence)\">joining</a>\nfunction.</p>\n<p>If an item of the list is <code>null</code>, the item is ignored for the result string. If an item is\nneither a string nor <code>null</code>, the function returns <code>null</code> instead of a string.</p>\n<p>The resulting string starts with <code>prefix</code>, contains a <code>delimiter</code> between each element, and ends\nwith <code>suffix</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">string join(list: list&lt;string&gt;, delimiter: string, prefix: string, suffix: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">string join([&quot;a&quot;,&quot;b&quot;,&quot;c&quot;], &quot;, &quot;, &quot;[&quot;, &quot;]&quot;)\n// &quot;[a, b, c]&quot;\n</code></pre>\n"
   }, {
-    name: "meets()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range1</code>: range</li>\n<li><code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">meets([1..5], [5..10])\n// true\n\nmeets([1..3], [4..6])\n// false\n\nmeets([1..3], [3..5])\n// true\n\nmeets([1..5], (5..8])\n// false\n</code></pre>\n"
+    name: "decimal(n, scale)",
+    description: "<p>Rounds the given value at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">decimal(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">decimal(1/3, 2)\n// .33\n\ndecimal(1.5, 0)\n// 2\n</code></pre>\n"
   }, {
-    name: "met by()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range1</code>: range</li>\n<li><code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">met by([5..10], [1..5])\n// true\n\nmet by([3..4], [1..2])\n// false\n\nmet by([3..5], [1..3])\n// true\n\nmet by((5..8], [1..5))\n// false\n\nmet by([5..10], [1..5))\n// false\n</code></pre>\n"
+    name: "floor(n)",
+    description: "<p>Rounds the given value with rounding mode flooring.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">floor(n: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">floor(1.5)\n// 1\n\nfloor(-1.5)\n// -2\n</code></pre>\n"
   }, {
-    name: "overlaps()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range1</code>: range</li>\n<li><code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">overlaps([5..10], [1..6])\n// true\n\noverlaps((3..7], [1..4])\n// true\n\noverlaps([1..3], (3..6])\n// false\n\noverlaps((5..8], [1..5))\n// false\n\noverlaps([4..10], [1..5))\n// treu\n</code></pre>\n"
+    name: "floor(n, scale)",
+    description: "<p>Rounds the given value with rounding mode flooring at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">floor(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">floor(-1.56, 1)\n// -1.6\n</code></pre>\n"
   }, {
-    name: "overlaps before()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range1</code>: range</li>\n<li><code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">overlaps before([1..5], [4..10])\n// true\n\noverlaps before([3..4], [1..2])\n// false\n\noverlaps before([1..3], (3..5])\n// false\n\noverlaps before([1..5), (3..8])\n// true\n\noverlaps before([1..5), [5..10])\n// false\n</code></pre>\n"
+    name: "ceiling(n)",
+    description: "<p>Rounds the given value with rounding mode ceiling.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">ceiling(n: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">ceiling(1.5)\n// 2\n\nceiling(-1.5)\n// -1\n</code></pre>\n"
   }, {
-    name: "overlaps after()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range1</code>: range</li>\n<li><code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">overlaps after([4..10], [1..5])\n// true\n\noverlaps after([3..4], [1..2])\n// false\n\noverlaps after([3..5], [1..3))\n// false\n\noverlaps after((5..8], [1..5))\n// false\n\noverlaps after([4..10], [1..5))\n// true\n</code></pre>\n"
+    name: "ceiling(n, scale)",
+    description: "<p>Rounds the given value with rounding mode ceiling at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">ceiling(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">ceiling(-1.56, 1)\n// -1.5\n</code></pre>\n"
   }, {
-    name: "finishes()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>point</code>: any, <code>range</code>: range</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">finishes(5, [1..5])\n// true\n\nfinishes(10, [1..7])\n// false\n\nfinishes([3..5], [1..5])\n// true\n\nfinishes((1..5], [1..5))\n// false\n\nfinishes([5..10], [1..10))\n// false\n</code></pre>\n"
+    name: "round up(n, scale)",
+    description: "<p>Rounds the given value with the rounding mode round-up at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">round up(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">round up(5.5)\n// 6\n\nround up(-5.5)\n// -6\n\nround up(1.121, 2)\n// 1.13\n\nround up(-1.126, 2)\n// -1.13\n</code></pre>\n"
   }, {
-    name: "finished by()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range</code>: range, <code>point</code>: any</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">finishes by([5..10], 10)\n// true\n\nfinishes by([3..4], 2)\n// false\n\nfinishes by([3..5], [1..5])\n// true\n\nfinishes by((5..8], [1..5))\n// false\n\nfinishes by([5..10], (1..10))\n// true\n</code></pre>\n"
+    name: "round down(n, scale)",
+    description: "<p>Rounds the given value with the rounding mode round-down at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">round down(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">round down(5.5, 0)\n// 5\n\nround down (-5.5, 0)\n// -5\n\nround down (1.121, 2)\n// 1.12\n\nround down (-1.126, 2)\n// -1.12\n</code></pre>\n"
   }, {
-    name: "includes()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range</code>: range, <code>point</code>: any</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">includes([5..10], 6)\n// true\n\nincludes([3..4], 5)\n// false\n\nincludes([1..10], [4..6])\n// true\n\nincludes((5..8], [1..5))\n// false\n\nincludes([1..10], [1..5))\n// true\n</code></pre>\n"
+    name: "round half up(n, scale)",
+    description: "<p>Rounds the given value with the rounding mode round-half-up at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">round half up(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">round half up(5.5, 0)\n// 6\n\nround half up(-5.5, 0)\n// -6\n\nround half up(1.121, 2)\n// 1.12\n\nround half up(-1.126, 2)\n// -1.13\n</code></pre>\n"
   }, {
-    name: "during()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>point</code>: any, <code>range</code>: range</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">during(5, [1..10])\n// true\n\nduring(12, [1..10])\n// false\n\nduring(1, (1..10])\n// false\n\nduring([4..6], [1..10))\n// true\n\nduring((1..5], (1..10])\n// true\n</code></pre>\n"
+    name: "round half down(n, scale)",
+    description: "<p>Rounds the given value with the rounding mode round-half-down at the given scale.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">round half down(n: number, scale: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">round half down (5.5, 0)\n// 5\n\nround half down (-5.5, 0)\n// -5\n\nround half down (1.121, 2)\n// 1.12\n\nround half down (-1.126, 2)\n// -1.13\n</code></pre>\n"
   }, {
-    name: "starts()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>point</code>: any, <code>range</code>: range</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">starts(1, [1..5])\n// true\n\nstarts(1, (1..8])\n// false\n\nstarts((1..5], [1..5])\n// false\n\nstarts([1..10], [1..10])\n// true\n\nstarts((1..10), (1..10))\n// true\n</code></pre>\n"
+    name: "abs(number)",
+    description: "<p>Returns the absolute value of the given numeric value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">abs(number: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">abs(10)\n// 10\n\nabs(-10)\n// 10\n</code></pre>\n"
   }, {
-    name: "started by()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>range</code>: range, <code>point</code>: any</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">started by([1..10], 1)\n// true\n\nstarted by((1..10], 1)\n// false\n\nstarted by([1..10], [1..5])\n// true\n\nstarted by((1..10], [1..5))\n// false\n\nstarted by([1..10], [1..10))\n// true\n</code></pre>\n"
+    name: "modulo(dividend, divisor)",
+    description: "<p>Returns the remainder of the division of dividend by divisor.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">modulo(dividend: number, divisor: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">modulo(12, 5)\n// 2\n</code></pre>\n"
   }, {
-    name: "coincides()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>point1</code>, <code>point2</code>: any</li>\n<li>or <code>range1</code>, <code>range2</code>: range</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">coincides(5, 5)\n// true\n\ncoincides(3, 4)\n// false\n\ncoincides([1..5], [1..5])\n// true\n\ncoincides((1..5], [1..5))\n// false\n\ncoincides([1..5], [2..6])\n// false\n</code></pre>\n"
+    name: "sqrt(number)",
+    description: "<p>Returns the square root of the given value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">sqrt(number: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">sqrt(16)\n// 4\n</code></pre>\n"
   }, {
-    name: "substring()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n<li><code>start position</code>: number</li>\n<li>(optional) <code>length</code>: number</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">substring(&quot;foobar&quot;,3)\n// &quot;obar&quot;\n\nsubstring(&quot;foobar&quot;,3,3)\n// &quot;oba&quot;\n</code></pre>\n"
+    name: "log(number)",
+    description: "<p>Returns the natural logarithm (base e) of the given value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">log(number: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">log(10)\n// 2.302585092994046\n</code></pre>\n"
   }, {
-    name: "string length()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">string length(&quot;foo&quot;)\n// 3\n</code></pre>\n"
+    name: "exp(number)",
+    description: "<p>Returns the Euler’s number e raised to the power of the given number .</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">exp(number: number): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">exp(5)\n// 148.4131591025766\n</code></pre>\n"
   }, {
-    name: "upper case()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">upper case(&quot;aBc4&quot;)\n// &quot;ABC4&quot;\n</code></pre>\n"
+    name: "odd(number)",
+    description: "<p>Returns <code>true</code> if the given value is odd. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">odd(number: number): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">odd(5)\n// true\n\nodd(2)\n// false\n</code></pre>\n"
   }, {
-    name: "lower case()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">lower case(&quot;aBc4&quot;)\n// &quot;abc4&quot;\n</code></pre>\n"
+    name: "even(number)",
+    description: "<p>Returns <code>true</code> if the given is even. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">even(number: number): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">even(5)\n// false\n\neven(2)\n// true\n</code></pre>\n"
   }, {
-    name: "substring before()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n<li><code>match</code>: string</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">substring before(&quot;foobar&quot;, &quot;bar&quot;)\n// &quot;foo&quot;\n</code></pre>\n"
+    name: "random number()",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Returns a random number between <code>0</code> and <code>1</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">random number(): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">random number()\n// 0.9701618132579795\n</code></pre>\n"
   }, {
-    name: "substring after()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n<li><code>match</code>: string</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">substring after(&quot;foobar&quot;, &quot;ob&quot;)\n// &quot;ar&quot;\n</code></pre>\n"
+    name: "before(point1, point2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">before(point1: Any, point2: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">before(1, 10)\n// true\n\nbefore(10, 1)\n// false\n</code></pre>\n"
   }, {
-    name: "contains()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n<li><code>match</code>: string</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">contains(&quot;foobar&quot;, &quot;of&quot;)\n// false\n</code></pre>\n"
+    name: "before(range, point)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">before(range: range, point: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">before([1..5], 10)\n// true\n</code></pre>\n"
   }, {
-    name: "starts with()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>input</code>: string</li>\n<li><code>match</code>: string</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">starts with(&quot;foobar&quot;, &quot;fo&quot;)\n// true\n</code></pre>\n"
+    name: "before(point, range)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">before(point: Any, range: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">before(1, [2..5])\n// true\n</code></pre>\n"
   }, {
-    name: "ends with()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>input</code>: string</li>\n<li><code>match</code>: string</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">ends with(&quot;foobar&quot;, &quot;r&quot;)\n// true\n</code></pre>\n"
+    name: "before(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">before(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">before([1..5], [6..10])\n// true\n\nbefore([1..5),[5..10])\n// true\n</code></pre>\n"
   }, {
-    name: "matches()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>input</code>: string</li>\n<li><code>pattern</code>: string (regular expression)</li>\n</ul>\n</li>\n<li>result: boolean</li>\n</ul>\n<pre><code class=\"language-feel\">matches(&quot;foobar&quot;, &quot;^fo*bar&quot;)\n// true\n</code></pre>\n"
+    name: "after(point1, point2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">after(point1: Any, point2: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">after(10, 1)\n// true\n\nafter(1, 10)\n// false\n</code></pre>\n"
   }, {
-    name: "replace()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>input</code>: string</li>\n<li><code>pattern</code>: string (regular expression)</li>\n<li><code>replacement</code>: string (e.g. <code>$1</code> returns the first match group)</li>\n<li>(optional) <code>flags</code>: string (&quot;s&quot;, &quot;m&quot;, &quot;i&quot;, &quot;x&quot;)</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">replace(&quot;abcd&quot;, &quot;(ab)|(a)&quot;, &quot;[1=$1][2=$2]&quot;)\n// &quot;[1=ab][2=]cd&quot;\n\nreplace(&quot;0123456789&quot;, &quot;(\\d{3})(\\d{3})(\\d{4})&quot;, &quot;($1) $2-$3&quot;)\n// &quot;(012) 345-6789&quot;\n</code></pre>\n"
+    name: "after(range, point)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">after(range: range, point: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">after([1..5], 10)\n// false\n</code></pre>\n"
   }, {
-    name: "split()",
-    description: "<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n<li><code>delimiter</code>: string (regular expression)</li>\n</ul>\n</li>\n<li>result: list of strings</li>\n</ul>\n<pre><code class=\"language-feel\">split(&quot;John Doe&quot;, &quot;\\s&quot; )\n// [&quot;John&quot;, &quot;Doe&quot;]\n\nsplit(&quot;a;b;c;;&quot;, &quot;;&quot;)\n// [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;&quot;, &quot;&quot;]\n</code></pre>\n"
+    name: "after(point, range)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">after(point: Any, range: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">after(12, [2..5])\n// true\n</code></pre>\n"
   }, {
-    name: "extract()",
-    description: "<p>Returns all matches of the pattern in the given string. Returns an empty list if the pattern doesn&#39;t\nmatch.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>string</code>: string</li>\n<li><code>pattern</code>: string (regular expression)</li>\n</ul>\n</li>\n<li>result: list of strings</li>\n</ul>\n<pre><code class=\"language-feel\">extract(&quot;references are 1234, 1256, 1378&quot;, &quot;12[0-9]*&quot;)\n// [&quot;1234&quot;,&quot;1256&quot;]\n</code></pre>\n"
+    name: "after(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">after(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">after([6..10], [1..5])\n// true\n\nafter([5..10], [1..5))\n// true\n</code></pre>\n"
+  }, {
+    name: "meets(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">meets(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">meets([1..5], [5..10])\n// true\n\nmeets([1..3], [4..6])\n// false\n\nmeets([1..3], [3..5])\n// true\n\nmeets([1..5], (5..8])\n// false\n</code></pre>\n"
+  }, {
+    name: "met by(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">met by(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">met by([5..10], [1..5])\n// true\n\nmet by([3..4], [1..2])\n// false\n\nmet by([3..5], [1..3])\n// true\n\nmet by((5..8], [1..5))\n// false\n\nmet by([5..10], [1..5))\n// false\n</code></pre>\n"
+  }, {
+    name: "overlaps(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">overlaps(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">overlaps([5..10], [1..6])\n// true\n\noverlaps((3..7], [1..4])\n// true\n\noverlaps([1..3], (3..6])\n// false\n\noverlaps((5..8], [1..5))\n// false\n\noverlaps([4..10], [1..5))\n// true\n</code></pre>\n"
+  }, {
+    name: "overlaps before(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">overlaps before(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">overlaps before([1..5], [4..10])\n// true\n\noverlaps before([3..4], [1..2])\n// false\n\noverlaps before([1..3], (3..5])\n// false\n\noverlaps before([1..5), (3..8])\n// true\n\noverlaps before([1..5), [5..10])\n// false\n</code></pre>\n"
+  }, {
+    name: "overlaps after(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">overlaps after(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">overlaps after([4..10], [1..5])\n// true\n\noverlaps after([3..4], [1..2])\n// false\n\noverlaps after([3..5], [1..3))\n// false\n\noverlaps after((5..8], [1..5))\n// false\n\noverlaps after([4..10], [1..5))\n// true\n</code></pre>\n"
+  }, {
+    name: "finishes(point, range)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">finishes(point: Any, range: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">finishes(5, [1..5])\n// true\n\nfinishes(10, [1..7])\n// false\n</code></pre>\n"
+  }, {
+    name: "finishes(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">finishes(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">finishes([3..5], [1..5])\n// true\n\nfinishes((1..5], [1..5))\n// false\n\nfinishes([5..10], [1..10))\n// false\n</code></pre>\n"
+  }, {
+    name: "finished by(range, point)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">finished by(range: range, point: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">finished by([5..10], 10)\n// true\n\nfinished by([3..4], 2)\n// false\n</code></pre>\n"
+  }, {
+    name: "finished by(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">finished by(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">finished by([1..5], [3..5])\n// true\n\nfinished by((5..8], [1..5))\n// false\n\nfinished by([5..10], (1..10))\n// false\n</code></pre>\n"
+  }, {
+    name: "includes(range, point)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">includes(range: range, point: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">includes([5..10], 6)\n// true\n\nincludes([3..4], 5)\n// false\n</code></pre>\n"
+  }, {
+    name: "includes(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">includes(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">includes([1..10], [4..6])\n// true\n\nincludes((5..8], [1..5))\n// false\n\nincludes([1..10], [1..5))\n// true\n</code></pre>\n"
+  }, {
+    name: "during(point, range)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">during(point: Any, range: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">during(5, [1..10])\n// true\n\nduring(12, [1..10])\n// false\n\nduring(1, (1..10])\n// false\n</code></pre>\n"
+  }, {
+    name: "during(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">during(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">during([4..6], [1..10))\n// true\n\nduring((1..5], (1..10])\n// true\n</code></pre>\n"
+  }, {
+    name: "starts(point, range)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">starts(point: Any, range: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">starts(1, [1..5])\n// true\n\nstarts(1, (1..8])\n// false\n</code></pre>\n"
+  }, {
+    name: "starts(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">starts(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">starts((1..5], [1..5])\n// false\n\nstarts([1..10], [1..5])\n// false\n\nstarts((1..5), (1..10))\n// true\n</code></pre>\n"
+  }, {
+    name: "started by(range, point)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">started by(range: range, point: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">started by([1..10], 1)\n// true\n\nstarted by((1..10], 1)\n// false\n</code></pre>\n"
+  }, {
+    name: "started by(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">started by(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">started by([1..10], [1..5])\n// true\n\nstarted by((1..10], [1..5))\n// false\n\nstarted by([1..10], [1..10))\n// true\n</code></pre>\n"
+  }, {
+    name: "coincides(point1, point2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">coincides(point1: Any, point2: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">coincides(5, 5)\n// true\n\ncoincides(3, 4)\n// false\n</code></pre>\n"
+  }, {
+    name: "coincides(range1, range2)",
+    description: "<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">coincides(range1: range, range2: range): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">coincides([1..5], [1..5])\n// true\n\ncoincides((1..5], [1..5))\n// false\n\ncoincides([1..5], [2..6])\n// false\n</code></pre>\n"
+  }, {
+    name: "substring(string, start position)",
+    description: "<p>Returns a substring of the given value starting at <code>start position</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">substring(string: string, start position: number): string\n</code></pre>\n<p>The <code>start position</code> starts at the index <code>1</code>. The last position is <code>-1</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">substring(&quot;foobar&quot;, 3)\n// &quot;obar&quot;\n</code></pre>\n"
+  }, {
+    name: "substring(string, start position, length)",
+    description: "<p>Returns a substring of the given value starting at <code>start position</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">substring(string: string, start position: number, length: number): string\n</code></pre>\n<p>The <code>start position</code> starts at the index <code>1</code>. The last position is <code>-1</code>.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">substring(&quot;foobar&quot;, 3, 3)\n// &quot;oba&quot;\n</code></pre>\n"
+  }, {
+    name: "string length(string)",
+    description: "<p>Returns the number of characters in the given value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">string length(string: string): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">string length(&quot;foo&quot;)\n// 3\n</code></pre>\n"
+  }, {
+    name: "upper case(string)",
+    description: "<p>Returns the given value with all characters are uppercase.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">upper case(string: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">upper case(&quot;aBc4&quot;)\n// &quot;ABC4&quot;\n</code></pre>\n"
+  }, {
+    name: "lower case(string)",
+    description: "<p>Returns the given value with all characters are lowercase.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">lower case(string: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">lower case(&quot;aBc4&quot;)\n// &quot;abc4&quot;\n</code></pre>\n"
+  }, {
+    name: "substring before(string, match)",
+    description: "<p>Returns a substring of the given value that contains all characters before <code>match</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">substring before(string: string, match: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">substring before(&quot;foobar&quot;, &quot;bar&quot;)\n// &quot;foo&quot;\n</code></pre>\n"
+  }, {
+    name: "substring after(string, match)",
+    description: "<p>Returns a substring of the given value that contains all characters after <code>match</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">substring after(string: string, match: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">substring after(&quot;foobar&quot;, &quot;ob&quot;)\n// &quot;ar&quot;\n</code></pre>\n"
+  }, {
+    name: "contains(string, match)",
+    description: "<p>Returns <code>true</code> if the given value contains the substring <code>match</code>. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">contains(string: string, match: string): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">contains(&quot;foobar&quot;, &quot;of&quot;)\n// false\n</code></pre>\n"
+  }, {
+    name: "starts with(string, match)",
+    description: "<p>Returns <code>true</code> if the given value starts with the substring <code>match</code>. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">starts with(string: string, match: string): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">starts with(&quot;foobar&quot;, &quot;fo&quot;)\n// true\n</code></pre>\n"
+  }, {
+    name: "ends with(string, match)",
+    description: "<p>Returns <code>true</code> if the given value ends with the substring <code>match</code>. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">ends with(string: string, match: string): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">ends with(&quot;foobar&quot;, &quot;r&quot;)\n// true\n</code></pre>\n"
+  }, {
+    name: "matches(input, pattern)",
+    description: "<p>Returns <code>true</code> if the given value matches the <code>pattern</code>. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">matches(input: string, pattern: string): boolean\n</code></pre>\n<p>The <code>pattern</code> is a string that contains a regular expression.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">matches(&quot;foobar&quot;, &quot;^fo*bar&quot;)\n// true\n</code></pre>\n"
+  }, {
+    name: "matches(input, pattern, flags)",
+    description: "<p>Returns <code>true</code> if the given value matches the <code>pattern</code>. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">matches(input: string, pattern: string, flags: string): boolean\n</code></pre>\n<p>The <code>pattern</code> is a string that contains a regular expression.</p>\n<p>The <code>flags</code> can contain one or more of the following characters:</p>\n<ul>\n<li><code>s</code> (dot-all)</li>\n<li><code>m</code> (multi-line)</li>\n<li><code>i</code> (case insensitive)</li>\n<li><code>x</code> (comments)</li>\n</ul>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">matches(&quot;FooBar&quot;, &quot;foo&quot;, &quot;i&quot;)\n// true\n</code></pre>\n"
+  }, {
+    name: "replace(input, pattern, replacement)",
+    description: "<p>Returns the resulting string after replacing all occurrences of <code>pattern</code> with <code>replacement</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">replace(input: string, pattern: string, replacement: string): string\n</code></pre>\n<p>The <code>pattern</code> is a string that contains a regular expression.</p>\n<p>The <code>replacement</code> can access the match groups by using <code>$</code> and the number of the group, for example,\n<code>$1</code> to access the first group.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">replace(&quot;abcd&quot;, &quot;(ab)|(a)&quot;, &quot;[1=$1][2=$2]&quot;)\n// &quot;[1=ab][2=]cd&quot;\n\nreplace(&quot;0123456789&quot;, &quot;(\\d{3})(\\d{3})(\\d{4})&quot;, &quot;($1) $2-$3&quot;)\n// &quot;(012) 345-6789&quot;\n</code></pre>\n"
+  }, {
+    name: "replace(input, pattern, replacement, flags)",
+    description: "<p>Returns the resulting string after replacing all occurrences of <code>pattern</code> with <code>replacement</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">replace(input: string, pattern: string, replacement: string, flags: string): string\n</code></pre>\n<p>The <code>pattern</code> is a string that contains a regular expression.</p>\n<p>The <code>replacement</code> can access the match groups by using <code>$</code> and the number of the group, for example,\n<code>$1</code> to access the first group.</p>\n<p>The <code>flags</code> can contain one or more of the following characters:</p>\n<ul>\n<li><code>s</code> (dot-all)</li>\n<li><code>m</code> (multi-line)</li>\n<li><code>i</code> (case insensitive)</li>\n<li><code>x</code> (comments)</li>\n</ul>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">replace(&quot;How do you feel?&quot;, &quot;Feel&quot;, &quot;FEEL&quot;, &quot;i&quot;)\n// &quot;How do you FEEL?&quot;\n</code></pre>\n"
+  }, {
+    name: "split(string, delimiter)",
+    description: "<p>Splits the given value into a list of substrings, breaking at each occurrence of the <code>delimiter</code> pattern.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">split(string: string, delimiter: string): list&lt;string&gt;\n</code></pre>\n<p>The <code>delimiter</code> is a string that contains a regular expression.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">split(&quot;John Doe&quot;, &quot;\\s&quot; )\n// [&quot;John&quot;, &quot;Doe&quot;]\n\nsplit(&quot;a;b;c;;&quot;, &quot;;&quot;)\n// [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;&quot;, &quot;&quot;]\n</code></pre>\n"
+  }, {
+    name: "extract(string, pattern)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Returns all matches of the pattern in the given string. Returns an empty list if the pattern doesn&#39;t\nmatch.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">extract(string: string, pattern: string): list&lt;string&gt;\n</code></pre>\n<p>The <code>pattern</code> is a string that contains a regular expression.</p>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">extract(&quot;references are 1234, 1256, 1378&quot;, &quot;12[0-9]*&quot;)\n// [&quot;1234&quot;,&quot;1256&quot;]\n</code></pre>\n"
   }, {
     name: "now()",
-    description: "<p>Returns the current date and time including the timezone.</p>\n<ul>\n<li>parameters: no</li>\n<li>result: date-time with timezone</li>\n</ul>\n<pre><code class=\"language-feel\">now()\n// date and time(&quot;2020-07-31T14:27:30@Europe/Berlin&quot;)\n</code></pre>\n"
+    description: "<p>Returns the current date and time including the timezone.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">now(): date and time\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">now()\n// date and time(&quot;2020-07-31T14:27:30@Europe/Berlin&quot;)\n</code></pre>\n"
   }, {
     name: "today()",
-    description: "<p>Returns the current date.</p>\n<ul>\n<li>parameters: no</li>\n<li>result: date</li>\n</ul>\n<pre><code class=\"language-feel\">today()\n// date(&quot;2020-07-31&quot;)\n</code></pre>\n"
+    description: "<p>Returns the current date.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">today(): date\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">today()\n// date(&quot;2020-07-31&quot;)\n</code></pre>\n"
   }, {
-    name: "day of week()",
-    description: "<p>Returns the day of the week according to the Gregorian calendar. Note that it always returns the English name of the day.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>date</code>: date/date-time</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">day of week(date(&quot;2019-09-17&quot;))\n// &quot;Tuesday&quot;\n</code></pre>\n"
+    name: "day of week(date)",
+    description: "<p>Returns the day of the week according to the Gregorian calendar. Note that it always returns the English name of the day.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">day of week(date: date): string\n</code></pre>\n<pre><code class=\"language-feel\">day of week(date: date and time): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">day of week(date(&quot;2019-09-17&quot;))\n// &quot;Tuesday&quot;\n\nday of week(date and time(&quot;2019-09-17T12:00:00&quot;))\n// &quot;Tuesday&quot;\n</code></pre>\n"
   }, {
-    name: "day of year()",
-    description: "<p>Returns the Gregorian number of the day within the year.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>date</code>: date/date-time</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">day of year(date(&quot;2019-09-17&quot;))\n// 260\n</code></pre>\n"
+    name: "day of year(date)",
+    description: "<p>Returns the Gregorian number of the day within the year.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">day of year(date: date): number\n</code></pre>\n<pre><code class=\"language-feel\">day of year(date: date and time): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">day of year(date(&quot;2019-09-17&quot;))\n// 260\n\nday of year(date and time(&quot;2019-09-17T12:00:00&quot;))\n// 260\n</code></pre>\n"
   }, {
-    name: "week of year()",
-    description: "<p>Returns the Gregorian number of the week within the year, according to ISO 8601.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>date</code>: date/date-time</li>\n</ul>\n</li>\n<li>result: number</li>\n</ul>\n<pre><code class=\"language-feel\">week of year(date(&quot;2019-09-17&quot;))\n// 38\n</code></pre>\n"
+    name: "week of year(date)",
+    description: "<p>Returns the Gregorian number of the week within the year, according to ISO 8601.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">week of year(date: date): number\n</code></pre>\n<pre><code class=\"language-feel\">week of year(date: date and time): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">week of year(date(&quot;2019-09-17&quot;))\n// 38\n\nweek of year(date and time(&quot;2019-09-17T12:00:00&quot;))\n// 38\n</code></pre>\n"
   }, {
-    name: "month of year()",
-    description: "<p>Returns the month of the week according to the Gregorian calendar. Note that it always returns the English name of the month.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>date</code>: date/date-time</li>\n</ul>\n</li>\n<li>result: string</li>\n</ul>\n<pre><code class=\"language-feel\">month of year(date(&quot;2019-09-17&quot;))\n// &quot;September&quot;\n</code></pre>\n"
+    name: "month of year(date)",
+    description: "<p>Returns the month of the year according to the Gregorian calendar. Note that it always returns the English name of the month.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">month of year(date: date): string\n</code></pre>\n<pre><code class=\"language-feel\">month of year(date: date and time): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">month of year(date(&quot;2019-09-17&quot;))\n// &quot;September&quot;\n\nmonth of year(date and time(&quot;2019-09-17T12:00:00&quot;))\n// &quot;September&quot;\n</code></pre>\n"
   }, {
-    name: "abs()",
-    description: "<p>Returns the absolute value of a given duration.</p>\n<ul>\n<li>parameters:<ul>\n<li><code>n</code>: days-time-duration/years-months-duration</li>\n</ul>\n</li>\n<li>result: duration</li>\n</ul>\n<pre><code class=\"language-feel\">abs(duration(&quot;-PT5H&quot;))\n// &quot;duration(&quot;PT5H&quot;)&quot;\n\nabs(duration(&quot;PT5H&quot;))\n// &quot;duration(&quot;PT5H&quot;)&quot;\n\nabs(duration(&quot;-P2M&quot;))\n// duration(&quot;P2M&quot;)\n</code></pre>\n"
+    name: "abs(n)",
+    description: "<p>Returns the absolute value of a given duration.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">abs(n: days and time duration): days and time duration\n</code></pre>\n<pre><code class=\"language-feel\">abs(n: years and months duration): years and months duration\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">abs(duration(&quot;-PT5H&quot;))\n// &quot;duration(&quot;PT5H&quot;)&quot;\n\nabs(duration(&quot;PT5H&quot;))\n// &quot;duration(&quot;PT5H&quot;)&quot;\n\nabs(duration(&quot;-P2M&quot;))\n// duration(&quot;P2M&quot;)\n</code></pre>\n"
+  }, {
+    name: "last day of month(date)",
+    description: "<p><em>Camunda Extension</em></p>\n<p>Takes the month of the given date or date-time value and returns the last day of this month.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">last day of month(date: date): date\n</code></pre>\n<pre><code class=\"language-feel\">last day of month(date: date and time): date\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">last day of month(date(&quot;2022-10-01&quot;))\n// date(&quot;2022-10-31&quot;))\n\nlast day of month(date and time(&quot;2022-10-16T12:00:00&quot;))\n// date(&quot;2022-10-31&quot;))\n</code></pre>\n"
   }];
-  const options = tags.map(tag => snippetCompletion(tag.name.replace('()', '(#{1})'), {
-    label: tag.name,
-    type: 'function',
-    info: () => {
-      const html = domify$1(`<div class="description">${tag.description}<div>`);
-      return html;
-    },
-    boost: -1
-  }));
+  const options = tags.map(tag => {
+    const match = tag.name.match(/^([\w\s]+)\((.*)\)$/);
+    const functionName = match[1];
+    const functionArguments = match[2];
+    const placeHolders = functionArguments.split(', ').map(arg => `\${${arg}}`).join(', ');
+    return snippetCompletion(`${functionName}(${placeHolders})`, {
+      label: tag.name,
+      type: 'function',
+      info: () => {
+        const html = domify$1(`<div class="description">${tag.description}<div>`);
+        return html;
+      },
+      boost: -1
+    });
+  });
   var builtins = context => {
     let nodeBefore = syntaxTree(context.state).resolve(context.pos, -1);
 
@@ -29336,7 +29552,7 @@
   };
 
   /**
-   * @type {Facet<import('../../../chrome-extension-template/node_modules/bpmn-js-properties-panel/dist').Variable[]>} Variable
+   * @type {Facet<import('..').Variable[]>} Variable
    */
   const variablesFacet = Facet.define();
   var pathExpression = context => {
@@ -31173,9 +31389,9 @@
   };
 
   var ArrowIcon = function ArrowIcon(props) {
-    return o("svg", {
+    return u("svg", {
       ...props,
-      children: o("path", {
+      children: u("path", {
         fillRule: "evenodd",
         d: "m11.657 8-4.95 4.95a1 1 0 0 1-1.414-1.414L8.828 8 5.293 4.464A1 1 0 1 1 6.707 3.05L11.657 8Z"
       })
@@ -31187,9 +31403,9 @@
     height: "16"
   };
   var CreateIcon = function CreateIcon(props) {
-    return o("svg", {
+    return u("svg", {
       ...props,
-      children: o("path", {
+      children: u("path", {
         fillRule: "evenodd",
         d: "M9 13V9h4a1 1 0 0 0 0-2H9V3a1 1 0 1 0-2 0v4H3a1 1 0 1 0 0 2h4v4a1 1 0 0 0 2 0Z"
       })
@@ -31201,9 +31417,9 @@
     height: "16"
   };
   var DeleteIcon = function DeleteIcon(props) {
-    return o("svg", {
+    return u("svg", {
       ...props,
-      children: o("path", {
+      children: u("path", {
         fillRule: "evenodd",
         d: "M12 6v7c0 1.1-.4 1.55-1.5 1.55h-5C4.4 14.55 4 14.1 4 13V6h8Zm-1.5 1.5h-5v4.3c0 .66.5 1.2 1.111 1.2H9.39c.611 0 1.111-.54 1.111-1.2V7.5ZM13 3h-2l-1-1H6L5 3H3v1.5h10V3Z"
       })
@@ -31215,21 +31431,21 @@
     height: "16"
   };
   var DragIcon = function DragIcon(props) {
-    return o("svg", {
+    return u("svg", {
       ...props,
-      children: [o("path", {
+      children: [u("path", {
         fill: "#fff",
         style: {
           mixBlendMode: "multiply"
         },
         d: "M0 0h16v16H0z"
-      }), o("path", {
+      }), u("path", {
         fill: "#fff",
         style: {
           mixBlendMode: "multiply"
         },
         d: "M0 0h16v16H0z"
-      }), o("path", {
+      }), u("path", {
         d: "M7 3H5v2h2V3zm4 0H9v2h2V3zM7 7H5v2h2V7zm4 0H9v2h2V7zm-4 4H5v2h2v-2zm4 0H9v2h2v-2z",
         fill: "#161616"
       })]
@@ -31242,9 +31458,9 @@
     xmlns: "http://www.w3.org/2000/svg"
   };
   var ExternalLinkIcon = function ExternalLinkIcon(props) {
-    return o("svg", {
+    return u("svg", {
       ...props,
-      children: o("path", {
+      children: u("path", {
         fillRule: "evenodd",
         clipRule: "evenodd",
         d: "M12.637 12.637v-4.72h1.362v4.721c0 .36-.137.676-.411.95-.275.275-.591.412-.95.412H3.362c-.38 0-.703-.132-.967-.396A1.315 1.315 0 0 1 2 12.638V3.362c0-.38.132-.703.396-.967S2.982 2 3.363 2h4.553v1.363H3.363v9.274h9.274ZM14 2H9.28l-.001 1.362h2.408L5.065 9.984l.95.95 6.622-6.622v2.409H14V2Z",
@@ -31259,9 +31475,9 @@
     xmlns: "http://www.w3.org/2000/svg"
   };
   var FeelIcon$1 = function FeelIcon(props) {
-    return o("svg", {
+    return u("svg", {
       ...props,
-      children: o("path", {
+      children: u("path", {
         d: "M3.617 11.99c-.137.684-.392 1.19-.765 1.518-.362.328-.882.492-1.558.492H0l.309-1.579h1.264l1.515-7.64h-.912l.309-1.579h.911l.236-1.191c.137-.685.387-1.192.75-1.52C4.753.164 5.277 0 5.953 0h1.294L6.94 1.579H5.675l-.323 1.623h1.264l-.309 1.579H5.043l-1.426 7.208ZM5.605 11.021l3.029-4.155L7.28 3.202h2.073l.706 2.547h.176l1.691-2.547H14l-3.014 4.051 1.338 3.768H10.25l-.706-2.606H9.37L7.678 11.02H5.605Z",
         fill: "currentcolor"
       })
@@ -31272,6 +31488,47 @@
     height: "14",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
+  };
+  var HelpIcon = function HelpIcon(props) {
+    return u("svg", {
+      ...props,
+      children: [u("path", {
+        d: "M16 2a14 14 0 1 0 14 14A14 14 0 0 0 16 2Zm0 26a12 12 0 1 1 12-12 12 12 0 0 1-12 12Z"
+      }), u("circle", {
+        cx: "16",
+        cy: "23.5",
+        r: "1.5"
+      }), u("path", {
+        d: "M17 8h-1.5a4.49 4.49 0 0 0-4.5 4.5v.5h2v-.5a2.5 2.5 0 0 1 2.5-2.5H17a2.5 2.5 0 0 1 0 5h-2v4.5h2V17a4.5 4.5 0 0 0 0-9Z"
+      }), u("path", {
+        style: {
+          fill: "none"
+        },
+        d: "M0 0h32v32H0z"
+      })]
+    });
+  };
+  HelpIcon.defaultProps = {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 32 32"
+  };
+  var PopupIcon = function PopupIcon(props) {
+    return u("svg", {
+      ...props,
+      children: [u("path", {
+        fill: "currentColor",
+        d: "M28 4H10a2.006 2.006 0 0 0-2 2v14a2.006 2.006 0 0 0 2 2h18a2.006 2.006 0 0 0 2-2V6a2.006 2.006 0 0 0-2-2Zm0 16H10V6h18Z"
+      }), u("path", {
+        fill: "currentColor",
+        d: "M18 26H4V16h2v-2H4a2.006 2.006 0 0 0-2 2v10a2.006 2.006 0 0 0 2 2h14a2.006 2.006 0 0 0 2-2v-2h-2Z"
+      })]
+    });
+  };
+  PopupIcon.defaultProps = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "16",
+    height: "16",
+    viewBox: "0 0 32 32"
   };
   function Header$1(props) {
     const {
@@ -31288,44 +31545,44 @@
     const type = getTypeLabel(element);
     const documentationRef = getDocumentationRef && getDocumentationRef(element);
     const ElementIcon = getElementIcon(element);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-header",
-      children: [o("div", {
+      children: [u("div", {
         class: "bio-properties-panel-header-icon",
-        children: ElementIcon && o(ElementIcon, {
+        children: ElementIcon && u(ElementIcon, {
           width: "32",
           height: "32",
           viewBox: "0 0 32 32"
         })
-      }), o("div", {
+      }), u("div", {
         class: "bio-properties-panel-header-labels",
-        children: [o("div", {
+        children: [u("div", {
           title: type,
           class: "bio-properties-panel-header-type",
           children: type
-        }), label ? o("div", {
+        }), label ? u("div", {
           title: label,
           class: "bio-properties-panel-header-label",
           children: label
         }) : null]
-      }), o("div", {
+      }), u("div", {
         class: "bio-properties-panel-header-actions",
-        children: documentationRef ? o("a", {
+        children: documentationRef ? u("a", {
           rel: "noopener",
           class: "bio-properties-panel-header-link",
           href: documentationRef,
           title: "Open documentation",
           target: "_blank",
-          children: o(ExternalLinkIcon, {})
+          children: u(ExternalLinkIcon, {})
         }) : null
       })]
     });
   }
-  const DescriptionContext = G$1({
+  const DescriptionContext = F$2({
     description: {},
     getDescriptionForId: () => {}
   });
-  const ErrorsContext = G$1({
+  const ErrorsContext = F$2({
     errors: {}
   });
 
@@ -31343,16 +31600,17 @@
    *
    * @returns void
    */
-  const EventContext = G$1({
+
+  const EventContext = F$2({
     eventBus: null
   });
-  const LayoutContext = G$1({
+  const LayoutContext = F$2({
     layout: {},
     setLayout: () => {},
     getLayoutForKey: () => {},
     setLayoutForKey: () => {}
   });
-  const TooltipContext = G$1({
+  const TooltipContext = F$2({
     tooltip: {},
     getTooltipForId: () => {}
   });
@@ -31388,7 +31646,7 @@
     if (!value) {
       return props.children;
     }
-    return o(Tooltip, {
+    return u(Tooltip, {
       ...props,
       value: value,
       forId: prefixId$9(forId)
@@ -31403,8 +31661,8 @@
     const [visible, setShow] = h(false);
     const [focusedViaKeyboard, setFocusedViaKeyboard] = h(false);
     let timeout = null;
-    const wrapperRef = _$1(null);
-    const tooltipRef = _$1(null);
+    const wrapperRef = _(null);
+    const tooltipRef = _(null);
     const showTooltip = async event => {
       const show = () => setShow(true);
       if (!visible && !timeout) {
@@ -31466,7 +31724,7 @@
       };
     }, [wrapperRef.current, visible, focusedViaKeyboard]);
     const renderTooltip = () => {
-      return o("div", {
+      return u("div", {
         class: "bio-properties-panel-tooltip",
         role: "tooltip",
         id: "bio-properties-panel-tooltip",
@@ -31474,15 +31732,15 @@
         style: getTooltipPosition(wrapperRef.current),
         ref: tooltipRef,
         onClick: e => e.stopPropagation(),
-        children: [o("div", {
+        children: [u("div", {
           class: "bio-properties-panel-tooltip-content",
           children: value
-        }), o("div", {
+        }), u("div", {
           class: "bio-properties-panel-tooltip-arrow"
         })]
       });
     };
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-tooltip-wrapper",
       tabIndex: "0",
       ref: wrapperRef,
@@ -31493,7 +31751,7 @@
       },
       onFocus: showTooltip,
       onKeyDown: hideTooltipViaEscape,
-      children: [props.children, visible ? parent ? z(renderTooltip(), parent.current) : renderTooltip() : null]
+      children: [props.children, visible ? parent ? j(renderTooltip(), parent.current) : renderTooltip() : null]
     });
   }
 
@@ -31567,7 +31825,7 @@
         eventBus
       } = eventContext);
     }
-    const didMount = _$1(false);
+    const didMount = _(false);
 
     // (1) subscribe immediately
     if (eventBus && !didMount.current) {
@@ -31656,7 +31914,7 @@
    */
 
   function usePrevious(value) {
-    const ref = _$1();
+    const ref = _();
     p(() => {
       ref.current = value;
     });
@@ -31674,8 +31932,8 @@
     const {
       onShow
     } = q$1(LayoutContext);
-    const ref = _$1();
-    const focus = _$1(false);
+    const ref = _();
+    const focus = _(false);
     const onShowEntry = T$1(event => {
       if (event.id === id) {
         onShow();
@@ -31781,7 +32039,7 @@
    * @returns {Function} static function reference
    */
   function useStaticCallback(callback) {
-    const callbackRef = _$1(callback);
+    const callbackRef = _(callback);
     callbackRef.current = callback;
     return T$1((...args) => callbackRef.current(...args), []);
   }
@@ -31793,7 +32051,7 @@
       label,
       shouldOpen = false
     } = props;
-    const groupRef = _$1(null);
+    const groupRef = _(null);
     const [open, setOpen] = useLayoutState(['groups', id, 'open'], shouldOpen);
     const onShow = T$1(() => setOpen(true), [setOpen]);
     const toggleOpen = () => setOpen(!open);
@@ -31802,20 +32060,24 @@
 
     // set edited state depending on all entries
     p(() => {
-      const hasOneEditedEntry = entries.find(entry => {
-        const {
-          id,
-          isEdited
-        } = entry;
-        const entryNode = query(`[data-entry-id="${id}"]`);
-        if (!isFunction(isEdited) || !entryNode) {
-          return false;
-        }
-        const inputNode = query('.bio-properties-panel-input', entryNode);
-        return isEdited(inputNode);
+      // TODO(@barmac): replace with CSS when `:has()` is supported in all major browsers, or rewrite as in https://github.com/camunda/camunda-modeler/issues/3815#issuecomment-1733038161
+      const scheduled = requestAnimationFrame(() => {
+        const hasOneEditedEntry = entries.find(entry => {
+          const {
+            id,
+            isEdited
+          } = entry;
+          const entryNode = query(`[data-entry-id="${id}"]`);
+          if (!isFunction(isEdited) || !entryNode) {
+            return false;
+          }
+          const inputNode = query('.bio-properties-panel-input', entryNode);
+          return isEdited(inputNode);
+        });
+        setEdited(hasOneEditedEntry);
       });
-      setEdited(hasOneEditedEntry);
-    }, [entries]);
+      return () => cancelAnimationFrame(scheduled);
+    }, [entries, setEdited]);
 
     // set error state depending on all entries
     const allErrors = useErrors();
@@ -31827,40 +32089,41 @@
       ...q$1(LayoutContext),
       onShow
     };
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-group",
       "data-group-id": 'group-' + id,
       ref: groupRef,
-      children: [o("div", {
+      children: [u("div", {
         class: classnames('bio-properties-panel-group-header', edited ? '' : 'empty', open ? 'open' : '', sticky && open ? 'sticky' : ''),
         onClick: toggleOpen,
-        children: [o("div", {
+        children: [u("div", {
           title: props.tooltip ? null : label,
           "data-title": label,
           class: "bio-properties-panel-group-header-title",
-          children: o(TooltipWrapper, {
+          children: u(TooltipWrapper, {
             value: props.tooltip,
             forId: 'group-' + id,
             element: element,
             parent: groupRef,
             children: label
           })
-        }), o("div", {
+        }), u("div", {
           class: "bio-properties-panel-group-header-buttons",
-          children: [o(DataMarker, {
+          children: [u(DataMarker, {
             edited: edited,
             hasErrors: hasErrors
-          }), o("button", {
+          }), u("button", {
+            type: "button",
             title: "Toggle section",
             class: "bio-properties-panel-group-header-button bio-properties-panel-arrow",
-            children: o(ArrowIcon, {
+            children: u(ArrowIcon, {
               class: open ? 'bio-properties-panel-arrow-down' : 'bio-properties-panel-arrow-right'
             })
           })]
         })]
-      }), o("div", {
+      }), u("div", {
         class: classnames('bio-properties-panel-group-entries', open ? 'open' : ''),
-        children: o(LayoutContext.Provider, {
+        children: u(LayoutContext.Provider, {
           value: propertiesPanelContext,
           children: entries.map(entry => {
             const {
@@ -31883,13 +32146,13 @@
       hasErrors
     } = props;
     if (hasErrors) {
-      return o("div", {
+      return u("div", {
         title: "Section contains an error",
         class: "bio-properties-panel-dot bio-properties-panel-dot--error"
       });
     }
     if (edited) {
-      return o("div", {
+      return u("div", {
         title: "Section contains data",
         class: "bio-properties-panel-dot"
       });
@@ -31910,13 +32173,13 @@
       text,
       icon: Icon
     } = props;
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel open",
-      children: o("section", {
+      children: u("section", {
         class: "bio-properties-panel-placeholder",
-        children: [Icon && o(Icon, {
+        children: [Icon && u(Icon, {
           class: "bio-properties-panel-placeholder-icon"
-        }), o("p", {
+        }), u("p", {
           class: "bio-properties-panel-placeholder-text",
           children: text
         })]
@@ -31932,7 +32195,7 @@
     const contextDescription = useDescriptionContext(forId, element);
     const description = value || contextDescription;
     if (description) {
-      return o("div", {
+      return u("div", {
         class: "bio-properties-panel-description",
         children: description
       });
@@ -31965,7 +32228,7 @@
       }
     }, [editor, buffer]);
   };
-  const CodeEditor$1 = k((props, ref) => {
+  const CodeEditor$1 = N((props, ref) => {
     const {
       onInput,
       disabled,
@@ -31979,7 +32242,7 @@
       hostLanguage = null,
       singleLine = false
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
     const [editor, setEditor] = h();
     const [localValue, setLocalValue] = h(value || '');
     useBufferedFocus$1(editor, ref);
@@ -32020,21 +32283,22 @@
     const handleClick = () => {
       ref.current.focus();
     };
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-feelers-editor-container', popupOpen ? 'popupOpen' : null),
-      children: [o("div", {
+      children: [u("div", {
         class: "bio-properties-panel-feelers-editor__open-popup-placeholder",
         children: "Opened in editor"
-      }), o("div", {
+      }), u("div", {
         name: props.name,
         class: classnames('bio-properties-panel-feelers-editor bio-properties-panel-input', localValue ? 'edited' : null, disabled ? 'disabled' : null),
         ref: inputRef,
         onClick: handleClick
-      }), o("button", {
+      }), u("button", {
+        type: "button",
         title: "Open pop-up editor",
         class: "bio-properties-panel-open-feel-popup",
         onClick: () => onPopupOpen('feelers'),
-        children: o(ExternalLinkIcon, {})
+        children: u(ExternalLinkIcon, {})
       })]
     });
   });
@@ -32065,7 +32329,7 @@
       }
     }, [editor, buffer]);
   };
-  const CodeEditor = k((props, ref) => {
+  const CodeEditor = N((props, ref) => {
     const {
       enableGutters,
       value,
@@ -32078,7 +32342,7 @@
       tooltipContainer,
       variables
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
     const [editor, setEditor] = h();
     const [localValue, setLocalValue] = h(value || '');
     useBufferedFocus(editor, ref);
@@ -32140,21 +32404,22 @@
     const handleClick = () => {
       ref.current.focus();
     };
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-feel-editor-container', disabled ? 'disabled' : null, popupOpen ? 'popupOpen' : null),
-      children: [o("div", {
+      children: [u("div", {
         class: "bio-properties-panel-feel-editor__open-popup-placeholder",
         children: "Opened in editor"
-      }), o("div", {
+      }), u("div", {
         name: props.name,
         class: classnames('bio-properties-panel-input', localValue ? 'edited' : null),
         ref: inputRef,
         onClick: handleClick
-      }), o("button", {
+      }), u("button", {
+        type: "button",
         title: "Open pop-up editor",
         class: "bio-properties-panel-open-feel-popup",
         onClick: () => onPopupOpen(),
-        children: o(ExternalLinkIcon, {})
+        children: u(PopupIcon, {})
       })]
     });
   });
@@ -32165,7 +32430,7 @@
     if (!active) {
       return null;
     }
-    return o("span", {
+    return u("span", {
       class: "bio-properties-panel-feel-indicator",
       children: "="
     });
@@ -32194,15 +32459,16 @@
         e.stopPropagation();
       }
     };
-    return o("button", {
+    return u("button", {
+      type: "button",
       class: classnames('bio-properties-panel-feel-icon', active ? 'active' : null, feel === 'required' ? 'required' : 'optional'),
       onClick: handleClick,
       disabled: feel === 'required' || disabled,
       title: feel === 'required' ? feelRequiredLabel : feelOptionalLabel,
-      children: o(FeelIcon$1, {})
+      children: u(FeelIcon$1, {})
     });
   }
-  const FeelPopupContext = G$1({
+  const FeelPopupContext = F$2({
     open: () => {},
     close: () => {},
     source: null
@@ -32243,7 +32509,11 @@
       // (2) setup drag listeners
 
       // attach drag + cleanup event
-      document.addEventListener('dragover', onDrag);
+      // we need to do this to make sure we track cursor
+      // movements before we reach other drag event handlers,
+      // e.g. in child containers.
+      document.addEventListener('dragover', onDrag, true);
+      document.addEventListener('dragenter', preventDefault, true);
       document.addEventListener('dragend', onEnd);
       document.addEventListener('drop', preventDefault);
     }
@@ -32257,7 +32527,8 @@
       return fn.call(self, event, delta);
     }
     function onEnd() {
-      document.removeEventListener('dragover', onDrag);
+      document.removeEventListener('dragover', onDrag, true);
+      document.removeEventListener('dragenter', preventDefault, true);
       document.removeEventListener('dragend', onEnd);
       document.removeEventListener('drop', preventDefault);
     }
@@ -32278,6 +32549,7 @@
    * @param {Object} props
    * @param {HTMLElement} [props.container]
    * @param {string} [props.className]
+   * @param {boolean} [props.delayInitialFocus]
    * @param {{x: number, y: number}} [props.position]
    * @param {number} [props.width]
    * @param {number} [props.height]
@@ -32285,12 +32557,15 @@
    * @param {Function} [props.onPostActivate]
    * @param {Function} [props.onPostDeactivate]
    * @param {boolean} [props.returnFocus]
+   * @param {boolean} [props.closeOnEscape]
    * @param {string} props.title
+   * @param {Ref} [ref]
    */
-  function Popup(props) {
+  function PopupComponent(props, globalRef) {
     const {
       container,
       className,
+      delayInitialFocus,
       position,
       width,
       height,
@@ -32298,12 +32573,17 @@
       onPostActivate = noop$3,
       onPostDeactivate = noop$3,
       returnFocus = true,
+      closeOnEscape = true,
       title
     } = props;
-    const focusTrapRef = _$1(null);
-    const popupRef = _$1(null);
-    const handleKeyPress = event => {
-      if (event.key === 'Escape') {
+    const focusTrapRef = _(null);
+    const localRef = _(null);
+    const popupRef = globalRef || localRef;
+    const containerNode = F$1(() => getContainerNode(container), [container]);
+    const handleKeydown = event => {
+      // do not allow keyboard events to bubble
+      event.stopPropagation();
+      if (closeOnEscape && event.key === 'Escape') {
         onClose();
       }
     };
@@ -32330,14 +32610,6 @@
     }
     p(() => {
       if (popupRef.current) {
-        popupRef.current.addEventListener('keydown', handleKeyPress);
-      }
-      return () => {
-        popupRef.current.removeEventListener('keydown', handleKeyPress);
-      };
-    }, [popupRef]);
-    p(() => {
-      if (popupRef.current) {
         popupRef.current.addEventListener('focusin', handleFocus);
       }
       return () => {
@@ -32348,6 +32620,7 @@
       if (popupRef.current) {
         focusTrapRef.current = createFocusTrap(popupRef.current, {
           clickOutsideDeactivates: true,
+          delayInitialFocus,
           fallbackFocus: popupRef.current,
           onPostActivate,
           onPostDeactivate,
@@ -32357,16 +32630,18 @@
       }
       return () => focusTrapRef.current && focusTrapRef.current.deactivate();
     }, [popupRef]);
-    return z(o("div", {
+    return j(u("div", {
       "aria-label": title,
       tabIndex: -1,
       ref: popupRef,
+      onKeyDown: handleKeydown,
       role: "dialog",
       class: classnames('bio-properties-panel-popup', className),
       style: style,
       children: props.children
-    }), container || document.body);
+    }), containerNode || document.body);
   }
+  const Popup = N(PopupComponent);
   Popup.Title = Title;
   Popup.Body = Body;
   Popup.Footer = Footer;
@@ -32375,19 +32650,21 @@
       children,
       className,
       draggable,
+      emit = () => {},
       title,
       ...rest
     } = props;
 
     // we can't use state as we need to
     // manipulate this inside dragging events
-    const context = _$1({
+    const context = _({
       startPosition: null,
       newPosition: null
     });
-    const dragPreviewRef = _$1();
-    const titleRef = _$1();
-    const onMove = throttle((_, delta) => {
+    const dragPreviewRef = _();
+    const titleRef = _();
+    const onMove = (event, delta) => {
+      cancel(event);
       const {
         x: dx,
         y: dy
@@ -32399,37 +32676,50 @@
       const popupParent = getPopupParent(titleRef.current);
       popupParent.style.top = newPosition.y + 'px';
       popupParent.style.left = newPosition.x + 'px';
-    });
+
+      // notify interested parties
+      emit('dragover', {
+        newPosition,
+        delta
+      });
+    };
     const onMoveStart = event => {
       // initialize drag handler
       const onDragStart = createDragger(onMove, dragPreviewRef.current);
       onDragStart(event);
+      event.stopPropagation();
       const popupParent = getPopupParent(titleRef.current);
       const bounds = popupParent.getBoundingClientRect();
       context.current.startPosition = {
         x: bounds.left,
         y: bounds.top
       };
+
+      // notify interested parties
+      emit('dragstart');
     };
     const onMoveEnd = () => {
       context.current.newPosition = null;
+
+      // notify interested parties
+      emit('dragend');
     };
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-popup__header', draggable && 'draggable', className),
       ref: titleRef,
       draggable: draggable,
       onDragStart: onMoveStart,
       onDragEnd: onMoveEnd,
       ...rest,
-      children: [draggable && o(k$2, {
-        children: [o("div", {
+      children: [draggable && u(g$2, {
+        children: [u("div", {
           ref: dragPreviewRef,
           class: "bio-properties-panel-popup__drag-preview"
-        }), o("div", {
+        }), u("div", {
           class: "bio-properties-panel-popup__drag-handle",
-          children: o(DragIcon, {})
+          children: u(DragIcon, {})
         })]
-      }), o("div", {
+      }), u("div", {
         class: "bio-properties-panel-popup__title",
         children: title
       }), children]
@@ -32441,7 +32731,7 @@
       className,
       ...rest
     } = props;
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-popup__body', className),
       ...rest,
       children: children
@@ -32453,7 +32743,7 @@
       className,
       ...rest
     } = props;
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-popup__footer', className),
       ...rest,
       children: props.children
@@ -32465,26 +32755,58 @@
   function getPopupParent(node) {
     return node.closest('.bio-properties-panel-popup');
   }
+  function cancel(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  function getContainerNode(node) {
+    if (typeof node === 'string') {
+      return query(node);
+    }
+    return node;
+  }
   const FEEL_POPUP_WIDTH = 700;
   const FEEL_POPUP_HEIGHT = 250;
 
   /**
-   * FEEL popup component, built as a singleton.
+   * FEEL popup component, built as a singleton. Emits lifecycle events as follows:
+   *  - `feelPopup.open` - fired before the popup is mounted
+   *  - `feelPopup.opened` - fired after the popup is mounted. Event context contains the DOM node of the popup
+   *  - `feelPopup.close` - fired before the popup is unmounted. Event context contains the DOM node of the popup
+   *  - `feelPopup.closed` - fired after the popup is unmounted
    */
   function FEELPopupRoot(props) {
     const {
-      element
+      element,
+      eventBus = {
+        fire() {},
+        on() {},
+        off() {}
+      },
+      popupContainer
     } = props;
     const prevElement = usePrevious(element);
     const [popupConfig, setPopupConfig] = h({});
     const [open, setOpen] = h(false);
     const [source, setSource] = h(null);
     const [sourceElement, setSourceElement] = h(null);
-    const handleOpen = (key, config, _sourceElement) => {
-      setSource(key);
+    const emit = (type, context) => {
+      eventBus.fire('feelPopup.' + type, context);
+    };
+    const isOpen = T$1(() => {
+      return !!open;
+    }, [open]);
+    useUpdateEffect(() => {
+      if (!open) {
+        emit('closed');
+      }
+    }, [open]);
+    const handleOpen = (entryId, config, _sourceElement) => {
+      setSource(entryId);
       setPopupConfig(config);
       setOpen(true);
       setSourceElement(_sourceElement);
+      emit('open');
     };
     const handleClose = () => {
       setOpen(false);
@@ -32498,21 +32820,47 @@
 
     // close popup on element change, cf. https://github.com/bpmn-io/properties-panel/issues/270
     p(() => {
-      if (element && element !== prevElement) {
+      if (element && prevElement && element !== prevElement) {
         handleClose();
       }
     }, [element]);
-    return o(FeelPopupContext.Provider, {
+
+    // allow close and open via events
+    p(() => {
+      const handlePopupOpen = context => {
+        const {
+          entryId,
+          popupConfig,
+          sourceElement
+        } = context;
+        handleOpen(entryId, popupConfig, sourceElement);
+      };
+      const handleIsOpen = () => {
+        return isOpen();
+      };
+      eventBus.on('feelPopup._close', handleClose);
+      eventBus.on('feelPopup._open', handlePopupOpen);
+      eventBus.on('feelPopup._isOpen', handleIsOpen);
+      return () => {
+        eventBus.off('feelPopup._close', handleClose);
+        eventBus.off('feelPopup._open', handleOpen);
+        eventBus.off('feelPopup._isOpen', handleIsOpen);
+      };
+    }, [eventBus, isOpen]);
+    return u(FeelPopupContext.Provider, {
       value: feelPopupContext,
-      children: [open && o(FeelPopupComponent, {
+      children: [open && u(FeelPopupComponent, {
         onClose: handleClose,
+        container: popupContainer,
         sourceElement: sourceElement,
+        emit: emit,
         ...popupConfig
       }), props.children]
     });
   }
   function FeelPopupComponent(props) {
     const {
+      container,
       id,
       hostLanguage,
       onInput,
@@ -32524,20 +32872,51 @@
       tooltipContainer,
       type,
       value,
-      variables
+      variables,
+      emit
     } = props;
-    const editorRef = _$1();
+    const editorRef = _();
+    const popupRef = _();
+    const isAutoCompletionOpen = _(false);
     const handleSetReturnFocus = () => {
       sourceElement && sourceElement.focus();
     };
-    p(() => {
-      const editor = editorRef.current;
-      if (editor) {
-        editor.focus();
+    const onKeyDownCapture = event => {
+      // we use capture here to make sure we handle the event before the editor does
+      if (event.key === 'Escape') {
+        isAutoCompletionOpen.current = autoCompletionOpen(event.target);
       }
-    }, [editorRef, id]);
-    return o(Popup, {
+    };
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        // close popup only if auto completion is not open
+        // we need to do check this because the editor is not
+        // stop propagating the keydown event
+        // cf. https://discuss.codemirror.net/t/how-can-i-replace-the-default-autocompletion-keymap-v6/3322/5
+        if (!isAutoCompletionOpen.current) {
+          onClose();
+          isAutoCompletionOpen.current = false;
+        }
+      }
+    };
+    p(() => {
+      emit('opened', {
+        domNode: popupRef.current
+      });
+      return () => emit('close', {
+        domNode: popupRef.current
+      });
+    }, []);
+    p(() => {
+      // Set focus on editor when popup is opened
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
+    }, [editorRef]);
+    return u(Popup, {
+      container: container,
       className: "bio-properties-panel-feel-popup",
+      emit: emit,
       position: position,
       title: title,
       onClose: onClose
@@ -32546,16 +32925,33 @@
       ,
 
       returnFocus: false,
+      closeOnEscape: false,
+      delayInitialFocus: false,
       onPostDeactivate: handleSetReturnFocus,
       height: FEEL_POPUP_HEIGHT,
       width: FEEL_POPUP_WIDTH,
-      children: [o(Popup.Title, {
+      ref: popupRef,
+      children: [u(Popup.Title, {
         title: title,
-        draggable: true
-      }), o(Popup.Body, {
-        children: o("div", {
+        emit: emit,
+        draggable: true,
+        children: [type === 'feel' && u("a", {
+          href: "https://docs.camunda.io/docs/components/modeler/feel/what-is-feel/",
+          target: "_blank",
+          class: "bio-properties-panel-feel-popup__title-link",
+          children: ["Learn FEEL expressions", u(HelpIcon, {})]
+        }), type === 'feelers' && u("a", {
+          href: "https://docs.camunda.io/docs/components/modeler/forms/configuration/forms-config-templating-syntax/",
+          target: "_blank",
+          class: "bio-properties-panel-feel-popup__title-link",
+          children: ["Learn templating", u(HelpIcon, {})]
+        })]
+      }), u(Popup.Body, {
+        children: u("div", {
+          onKeyDownCapture: onKeyDownCapture,
+          onKeyDown: onKeyDown,
           class: "bio-properties-panel-feel-popup__body",
-          children: [type === 'feel' && o(CodeEditor, {
+          children: [type === 'feel' && u(CodeEditor, {
             enableGutters: true,
             id: prefixId$8(id),
             name: id,
@@ -32564,7 +32960,7 @@
             variables: variables,
             ref: editorRef,
             tooltipContainer: tooltipContainer
-          }), type === 'feelers' && o(CodeEditor$1, {
+          }), type === 'feelers' && u(CodeEditor$1, {
             id: prefixId$8(id),
             contentAttributes: {
               'aria-label': title
@@ -32579,8 +32975,9 @@
             tooltipContainer: tooltipContainer
           })]
         })
-      }), o(Popup.Footer, {
-        children: o("button", {
+      }), u(Popup.Footer, {
+        children: u("button", {
+          type: "button",
           onClick: onClose,
           title: "Close pop-up editor",
           class: "bio-properties-panel-feel-popup__close-btn",
@@ -32594,6 +32991,26 @@
 
   function prefixId$8(id) {
     return `bio-properties-panel-${id}`;
+  }
+  function autoCompletionOpen(element) {
+    return element.closest('.cm-editor').querySelector('.cm-tooltip-autocomplete');
+  }
+
+  /**
+   * This hook behaves like useEffect, but does not trigger on the first render.
+   *
+   * @param {Function} effect
+   * @param {Array} deps
+   */
+  function useUpdateEffect(effect, deps) {
+    const isMounted = _(false);
+    p(() => {
+      if (isMounted.current) {
+        return effect();
+      } else {
+        isMounted.current = true;
+      }
+    }, deps);
   }
   function ToggleSwitch(props) {
     const {
@@ -32622,24 +33039,24 @@
       }
       setLocalValue(value);
     }, [value]);
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-toggle-switch', {
         inline
       }),
-      children: [o("label", {
+      children: [u("label", {
         class: "bio-properties-panel-label",
         for: prefixId$7(id),
-        children: o(TooltipWrapper, {
+        children: u(TooltipWrapper, {
           value: tooltip,
           forId: id,
           element: props.element,
           children: label
         })
-      }), o("div", {
+      }), u("div", {
         class: "bio-properties-panel-field-wrapper",
-        children: [o("label", {
+        children: [u("label", {
           class: "bio-properties-panel-toggle-switch__switcher",
-          children: [o("input", {
+          children: [u("input", {
             ref: inputRef,
             id: prefixId$7(id),
             class: "bio-properties-panel-input",
@@ -32649,10 +33066,10 @@
             name: id,
             onInput: handleInput,
             checked: !!localValue
-          }), o("span", {
+          }), u("span", {
             class: "bio-properties-panel-toggle-switch__slider"
           })]
-        }), switcherLabel && o("p", {
+        }), switcherLabel && u("p", {
           class: "bio-properties-panel-toggle-switch__label",
           children: switcherLabel
         })]
@@ -32689,10 +33106,10 @@
       tooltip
     } = props;
     const value = getValue(element);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-entry bio-properties-panel-toggle-switch-entry",
       "data-entry-id": id,
-      children: [o(ToggleSwitch, {
+      children: [u(ToggleSwitch, {
         id: id,
         label: label,
         value: value,
@@ -32703,7 +33120,7 @@
         inline: inline,
         tooltip: tooltip,
         element: element
-      }), o(Description, {
+      }), u(Description, {
         forId: id,
         element: element,
         value: description
@@ -32737,18 +33154,14 @@
     } = props;
     const [localValue, setLocalValue] = h(value);
     const handleInputCallback = F$1(() => {
-      return debounce(event => {
-        const {
-          validity,
-          value
-        } = event.target;
-        if (validity.valid) {
-          onInput(value ? parseFloat(value) : undefined);
+      return debounce(target => {
+        if (target.validity.valid) {
+          onInput(target.value ? parseFloat(target.value) : undefined);
         }
       });
     }, [onInput, debounce]);
     const handleInput = e => {
-      handleInputCallback(e);
+      handleInputCallback(e.target);
       setLocalValue(e.target.value);
     };
     p(() => {
@@ -32757,13 +33170,13 @@
       }
       setLocalValue(value);
     }, [value]);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-numberfield",
-      children: [displayLabel && o("label", {
+      children: [displayLabel && u("label", {
         for: prefixId$6(id),
         class: "bio-properties-panel-label",
         children: label
-      }), o("input", {
+      }), u("input", {
         id: prefixId$6(id),
         ref: inputRef,
         type: "number",
@@ -32809,7 +33222,7 @@
     } = props;
     const [localValue, _setLocalValue] = h(value);
     const editorRef = useShowEntryEvent(id);
-    const containerRef = _$1();
+    const containerRef = _();
     const feelActive = isString(localValue) && localValue.startsWith('=') || feel === 'required';
     const feelOnlyValue = isString(localValue) && localValue.startsWith('=') ? localValue.substring(1) : localValue;
     const [focus, _setFocus] = h(undefined);
@@ -32832,7 +33245,7 @@
     }, [onInput, debounce]);
     const setLocalValue = newValue => {
       _setLocalValue(newValue);
-      if (!newValue || newValue === '=') {
+      if (typeof newValue === 'undefined' || newValue === '' || newValue === '=') {
         handleInputCallback(undefined);
       } else {
         handleInputCallback(newValue);
@@ -32933,33 +33346,33 @@
         containerRef.current.removeEventListener('paste', pasteHandler);
       };
     }, [containerRef, feelActive, handleFeelToggle, setFocus]);
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-feel-entry', {
         'feel-active': feelActive
       }),
-      children: [o("label", {
+      children: [u("label", {
         for: prefixId$5(id),
         class: "bio-properties-panel-label",
         onClick: () => setFocus(),
-        children: [o(TooltipWrapper, {
+        children: [u(TooltipWrapper, {
           value: tooltip,
           forId: id,
           element: props.element,
           children: label
-        }), o(FeelIcon, {
+        }), u(FeelIcon, {
           label: label,
           feel: feel,
           onClick: handleFeelToggle,
           active: feelActive
         })]
-      }), o("div", {
+      }), u("div", {
         class: "bio-properties-panel-feel-container",
         ref: containerRef,
-        children: [o(FeelIndicator, {
+        children: [u(FeelIndicator, {
           active: feelActive,
           disabled: feel !== 'optional' || disabled,
           onClick: handleFeelToggle
-        }), feelActive ? o(CodeEditor, {
+        }), feelActive ? u(CodeEditor, {
           id: prefixId$5(id),
           name: id,
           onInput: handleLocalInput,
@@ -32975,7 +33388,7 @@
           variables: variables,
           ref: editorRef,
           tooltipContainer: tooltipContainer
-        }) : o(OptionalComponent, {
+        }) : u(OptionalComponent, {
           ...props,
           popupOpen: popuOpen,
           onInput: handleLocalInput,
@@ -32991,7 +33404,7 @@
       })]
     });
   }
-  const OptionalFeelInput = k((props, ref) => {
+  const OptionalFeelInput = N((props, ref) => {
     const {
       id,
       disabled,
@@ -33000,7 +33413,7 @@
       onFocus,
       onBlur
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
 
     // To be consistent with the FEEL editor, set focus at start of input
     // this ensures clean editing experience when switching with the keyboard
@@ -33019,7 +33432,7 @@
         }
       }
     };
-    return o("input", {
+    return u("input", {
       id: prefixId$5(id),
       type: "text",
       ref: inputRef,
@@ -33034,7 +33447,7 @@
       value: value || ''
     });
   });
-  k((props, ref) => {
+  N((props, ref) => {
     const {
       id,
       debounce,
@@ -33047,7 +33460,7 @@
       onFocus,
       onBlur
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
 
     // To be consistent with the FEEL editor, set focus at start of input
     // this ensures clean editing experience when switching with the keyboard
@@ -33066,7 +33479,7 @@
         }
       }
     };
-    return o(NumberField, {
+    return u(NumberField, {
       id: id,
       debounce: debounce,
       disabled: disabled,
@@ -33081,7 +33494,7 @@
       onBlur: onBlur
     });
   });
-  k((props, ref) => {
+  N((props, ref) => {
     const {
       id,
       disabled,
@@ -33090,7 +33503,7 @@
       onFocus,
       onBlur
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
 
     // To be consistent with the FEEL editor, set focus at start of input
     // this ensures clean editing experience when switching with the keyboard
@@ -33104,7 +33517,7 @@
         input.setSelectionRange(0, 0);
       }
     };
-    return o("textarea", {
+    return u("textarea", {
       id: prefixId$5(id),
       type: "text",
       ref: inputRef,
@@ -33120,7 +33533,7 @@
       "data-gramm": "false"
     });
   });
-  k((props, ref) => {
+  N((props, ref) => {
     const {
       id,
       onInput,
@@ -33129,7 +33542,7 @@
       onBlur,
       switcherLabel
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
 
     // To be consistent with the FEEL editor, set focus at start of input
     // this ensures clean editing experience when switching with the keyboard
@@ -33142,7 +33555,7 @@
         input.focus();
       }
     };
-    return o(ToggleSwitch, {
+    return u(ToggleSwitch, {
       id: id,
       value: value,
       inputRef: inputRef,
@@ -33152,7 +33565,7 @@
       switcherLabel: switcherLabel
     });
   });
-  k((props, ref) => {
+  N((props, ref) => {
     const {
       id,
       disabled,
@@ -33161,7 +33574,7 @@
       onFocus,
       onBlur
     } = props;
-    const inputRef = _$1();
+    const inputRef = _();
     const handleChange = ({
       target
     }) => {
@@ -33179,7 +33592,7 @@
         input.focus();
       }
     };
-    return o("input", {
+    return u("input", {
       ref: inputRef,
       id: prefixId$5(id),
       name: id,
@@ -33260,8 +33673,8 @@
       setLocalError(err);
     }, []);
     const temporaryError = useError(id);
-    const error = localError || temporaryError || validationError;
-    return o("div", {
+    const error = temporaryError || localError || validationError;
+    return u("div", {
       class: classnames(props.class, 'bio-properties-panel-entry', error ? 'has-error' : ''),
       "data-entry-id": id,
       children: [y$1(FeelTextfield, {
@@ -33285,10 +33698,10 @@
         tooltipContainer: tooltipContainer,
         OptionalComponent: props.OptionalComponent,
         tooltip: tooltip
-      }), error && o("div", {
+      }), error && u("div", {
         class: "bio-properties-panel-error",
         children: error
-      }), o(Description, {
+      }), u(Description, {
         forId: id,
         element: element,
         value: description
@@ -33323,7 +33736,7 @@
 
   // todo(pinussilvestrus): make this configurable in the future
   function getPopupTitle(element, label) {
-    let popupTitle;
+    let popupTitle = '';
     if (element && element.type) {
       popupTitle = `${element.type} / `;
     }
@@ -33410,6 +33823,7 @@
    * @param {Function} [props.descriptionLoaded]
    * @param {TooltipConfig} [props.tooltipConfig]
    * @param {Function} [props.tooltipLoaded]
+   * @param {HTMLElement} [props.feelPopupContainer]
    * @param {Object} [props.eventBus]
    */
   function PropertiesPanel(props) {
@@ -33424,6 +33838,7 @@
       descriptionLoaded,
       tooltipConfig,
       tooltipLoaded,
+      feelPopupContainer,
       eventBus
     } = props;
 
@@ -33501,37 +33916,39 @@
 
     // empty state
     if (placeholderProvider && !element) {
-      return o(Placeholder, {
+      return u(Placeholder, {
         ...placeholderProvider.getEmpty()
       });
     }
 
     // multiple state
     if (placeholderProvider && isArray(element)) {
-      return o(Placeholder, {
+      return u(Placeholder, {
         ...placeholderProvider.getMultiple()
       });
     }
-    return o(LayoutContext.Provider, {
+    return u(LayoutContext.Provider, {
       value: propertiesPanelContext,
-      children: o(ErrorsContext.Provider, {
+      children: u(ErrorsContext.Provider, {
         value: errorsContext,
-        children: o(DescriptionContext.Provider, {
+        children: u(DescriptionContext.Provider, {
           value: descriptionContext,
-          children: o(TooltipContext.Provider, {
+          children: u(TooltipContext.Provider, {
             value: tooltipContext,
-            children: o(LayoutContext.Provider, {
+            children: u(LayoutContext.Provider, {
               value: layoutContext,
-              children: o(EventContext.Provider, {
+              children: u(EventContext.Provider, {
                 value: eventContext,
-                children: o(FEELPopupRoot, {
+                children: u(FEELPopupRoot, {
                   element: element,
-                  children: o("div", {
+                  eventBus: eventBus,
+                  popupContainer: feelPopupContainer,
+                  children: u("div", {
                     class: "bio-properties-panel",
-                    children: [o(Header$1, {
+                    children: [u(Header$1, {
                       element: element,
                       headerProvider: headerProvider
-                    }), o("div", {
+                    }), u("div", {
                       class: "bio-properties-panel-scroll-container",
                       children: groups.map(group => {
                         const {
@@ -33585,7 +34002,7 @@
    * @param {Array} deps
    */
   function useUpdateLayoutEffect(effect, deps) {
-    const isMounted = _$1(false);
+    const isMounted = _(false);
     y(() => {
       if (isMounted.current) {
         return effect();
@@ -33620,31 +34037,33 @@
 
     // todo(pinussilvestrus): translate once we have a translate mechanism for the core
     const placeholderLabel = '<empty>';
-    return o("div", {
+    return u("div", {
       "data-entry-id": id,
       class: classnames('bio-properties-panel-collapsible-entry', open ? 'open' : ''),
-      children: [o("div", {
+      children: [u("div", {
         class: "bio-properties-panel-collapsible-entry-header",
         onClick: toggleOpen,
-        children: [o("div", {
+        children: [u("div", {
           title: label || placeholderLabel,
           class: classnames('bio-properties-panel-collapsible-entry-header-title', !label && 'empty'),
           children: label || placeholderLabel
-        }), o("button", {
+        }), u("button", {
+          type: "button",
           title: "Toggle list item",
           class: "bio-properties-panel-arrow  bio-properties-panel-collapsible-entry-arrow",
-          children: o(ArrowIcon, {
+          children: u(ArrowIcon, {
             class: open ? 'bio-properties-panel-arrow-down' : 'bio-properties-panel-arrow-right'
           })
-        }), remove ? o("button", {
+        }), remove ? u("button", {
+          type: "button",
           title: "Delete item",
           class: "bio-properties-panel-remove-entry",
           onClick: remove,
-          children: o(DeleteIcon, {})
+          children: u(DeleteIcon, {})
         }) : null]
-      }), o("div", {
+      }), u("div", {
         class: classnames('bio-properties-panel-collapsible-entry-entries', open ? 'open' : ''),
-        children: o(LayoutContext.Provider, {
+        children: u(LayoutContext.Provider, {
           value: propertiesPanelContext,
           children: entries.map(entry => {
             const {
@@ -33681,9 +34100,9 @@
         }
       }
     }, [autoOpen, autoFocusEntry]);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-list-item",
-      children: o(CollapsibleEntry, {
+      children: u(CollapsibleEntry, {
         ...props,
         open: autoOpen
       })
@@ -33704,7 +34123,7 @@
       shouldOpen = true,
       shouldSort = true
     } = props;
-    const groupRef = _$1(null);
+    const groupRef = _(null);
     const [open, setOpen] = useLayoutState(['groups', id, 'open'], false);
     const [sticky, setSticky] = h(false);
     const onShow = T$1(() => setOpen(true), [setOpen]);
@@ -33817,49 +34236,51 @@
       // also check if the error is nested, e.g. for name-value entries
       return item.entries.some(entry => allErrors[entry.id]);
     });
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-group",
       "data-group-id": 'group-' + id,
       ref: groupRef,
-      children: [o("div", {
+      children: [u("div", {
         class: classnames('bio-properties-panel-group-header', hasItems ? '' : 'empty', hasItems && open ? 'open' : '', sticky && open ? 'sticky' : ''),
         onClick: hasItems ? toggleOpen : noop$1,
-        children: [o("div", {
+        children: [u("div", {
           title: props.tooltip ? null : label,
           "data-title": label,
           class: "bio-properties-panel-group-header-title",
-          children: o(TooltipWrapper, {
+          children: u(TooltipWrapper, {
             value: props.tooltip,
             forId: 'group-' + id,
             element: element,
             parent: groupRef,
             children: label
           })
-        }), o("div", {
+        }), u("div", {
           class: "bio-properties-panel-group-header-buttons",
-          children: [add ? o("button", {
+          children: [add ? u("button", {
+            type: "button",
             title: "Create new list item",
             class: "bio-properties-panel-group-header-button bio-properties-panel-add-entry",
             onClick: handleAddClick,
-            children: [o(CreateIcon, {}), !hasItems ? o("span", {
+            children: [u(CreateIcon, {}), !hasItems ? u("span", {
               class: "bio-properties-panel-add-entry-label",
               children: "Create"
             }) : null]
-          }) : null, hasItems ? o("div", {
+          }) : null, hasItems ? u("div", {
             title: `List contains ${items.length} item${items.length != 1 ? 's' : ''}`,
             class: classnames('bio-properties-panel-list-badge', hasError ? 'bio-properties-panel-list-badge--error' : ''),
             children: items.length
-          }) : null, hasItems ? o("button", {
+          }) : null, hasItems ? u("button", {
+            type: "button",
             title: "Toggle section",
             class: "bio-properties-panel-group-header-button bio-properties-panel-arrow",
-            children: o(ArrowIcon, {
+            children: u(ArrowIcon, {
               class: open ? 'bio-properties-panel-arrow-down' : 'bio-properties-panel-arrow-right'
             })
           }) : null]
         })]
-      }), o("div", {
+      }), u("div", {
         class: classnames('bio-properties-panel-list', open && hasItems ? 'open' : ''),
-        children: o(LayoutContext.Provider, {
+        children: u(LayoutContext.Provider, {
           value: propertiesPanelContext,
           children: ordering.map((o, index) => {
             const item = getItem(items, o);
@@ -33928,9 +34349,9 @@
       setLocalValue(value);
     }, [value]);
     const ref = useShowEntryEvent(id);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-checkbox",
-      children: [o("input", {
+      children: [u("input", {
         ref: ref,
         id: prefixId$4(id),
         name: id,
@@ -33941,10 +34362,10 @@
         onChange: handleChange,
         checked: localValue,
         disabled: disabled
-      }), o("label", {
+      }), u("label", {
         for: prefixId$4(id),
         class: "bio-properties-panel-label",
-        children: o(TooltipWrapper, {
+        children: u(TooltipWrapper, {
           value: tooltip,
           forId: id,
           element: props.element,
@@ -33982,10 +34403,10 @@
     } = props;
     const value = getValue(element);
     const error = useError(id);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-entry bio-properties-panel-checkbox-entry",
       "data-entry-id": id,
-      children: [o(Checkbox, {
+      children: [u(Checkbox, {
         disabled: disabled,
         id: id,
         label: label,
@@ -33995,10 +34416,10 @@
         value: value,
         tooltip: tooltip,
         element: element
-      }, element), error && o("div", {
+      }, element), error && u("div", {
         class: "bio-properties-panel-error",
         children: error
-      }), o(Description, {
+      }), u(Description, {
         forId: id,
         element: element,
         value: description
@@ -34052,39 +34473,41 @@
         setOpen(true);
       }
     }
-    return o("div", {
+    return u("div", {
       "data-entry-id": id,
       class: classnames('bio-properties-panel-entry', 'bio-properties-panel-list-entry', hasItems ? '' : 'empty', open ? 'open' : ''),
-      children: [o("div", {
+      children: [u("div", {
         class: "bio-properties-panel-list-entry-header",
         onClick: toggleOpen,
-        children: [o("div", {
+        children: [u("div", {
           title: label,
           class: classnames('bio-properties-panel-list-entry-header-title', open && 'open'),
           children: label
-        }), o("div", {
+        }), u("div", {
           class: "bio-properties-panel-list-entry-header-buttons",
-          children: [o("button", {
+          children: [u("button", {
+            type: "button",
             title: "Create new list item",
             onClick: addItem,
             class: "bio-properties-panel-add-entry",
-            children: [o(CreateIcon, {}), !hasItems ? o("span", {
+            children: [u(CreateIcon, {}), !hasItems ? u("span", {
               class: "bio-properties-panel-add-entry-label",
               children: "Create"
             }) : null]
-          }), hasItems && o("div", {
+          }), hasItems && u("div", {
             title: `List contains ${items.length} item${items.length != 1 ? 's' : ''}`,
             class: "bio-properties-panel-list-badge",
             children: items.length
-          }), hasItems && o("button", {
+          }), hasItems && u("button", {
+            type: "button",
             title: "Toggle list item",
             class: "bio-properties-panel-arrow",
-            children: o(ArrowIcon, {
+            children: u(ArrowIcon, {
               class: open ? 'bio-properties-panel-arrow-down' : 'bio-properties-panel-arrow-right'
             })
           })]
         })]
-      }), hasItems && o(ItemsList, {
+      }), hasItems && u(ItemsList, {
         ...restProps,
         autoFocusEntry: autoFocusEntry,
         component: component,
@@ -34130,25 +34553,25 @@
         }
       }
     }, [newItem, autoFocusEntry, id]);
-    return o("ol", {
+    return u("ol", {
       class: classnames('bio-properties-panel-list-entry-items', open ? 'open' : ''),
       children: items.map((item, index) => {
         const key = getKey(item);
-        return o("li", {
+        return u("li", {
           class: "bio-properties-panel-list-entry-item",
-          children: [o(Component, {
+          children: [u(Component, {
             ...restProps,
             element: element,
             id: id,
             index: index,
             item: item,
             open: item === newItem
-          }), onRemove && o("button", {
+          }), onRemove && u("button", {
             type: "button",
             title: "Delete item",
             class: "bio-properties-panel-remove-entry bio-properties-panel-remove-list-entry",
             onClick: () => onRemove && onRemove(item),
-            children: o(DeleteIcon, {})
+            children: u(DeleteIcon, {})
           })]
         }, key);
       })
@@ -34165,7 +34588,7 @@
    * @returns {Item[]}
    */
   function useSortedItems(currentItems, compareFn, shouldReset = false) {
-    const itemsRef = _$1(currentItems.slice());
+    const itemsRef = _(currentItems.slice());
 
     // (1) Reset and optionally sort.
     if (shouldReset) {
@@ -34225,18 +34648,18 @@
       }
       setLocalValue(value);
     }, [value]);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-select",
-      children: [o("label", {
+      children: [u("label", {
         for: prefixId$3(id),
         class: "bio-properties-panel-label",
-        children: o(TooltipWrapper, {
+        children: u(TooltipWrapper, {
           value: tooltip,
           forId: id,
           element: props.element,
           children: label
         })
-      }), o("select", {
+      }), u("select", {
         ref: ref,
         id: prefixId$3(id),
         name: id,
@@ -34248,16 +34671,16 @@
         disabled: disabled,
         children: options.map((option, idx) => {
           if (option.children) {
-            return o("optgroup", {
+            return u("optgroup", {
               label: option.label,
-              children: option.children.map((child, idx) => o("option", {
+              children: option.children.map((child, idx) => u("option", {
                 value: child.value,
                 disabled: child.disabled,
                 children: child.label
               }, idx))
             }, idx);
           }
-          return o("option", {
+          return u("option", {
             value: option.value,
             disabled: option.disabled,
             children: option.label
@@ -34316,10 +34739,10 @@
       setLocalError(newValidationError);
     };
     const error = globalError || localError;
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-entry', error ? 'has-error' : ''),
       "data-entry-id": id,
-      children: [o(Select, {
+      children: [u(Select, {
         id: id,
         label: label,
         value: value,
@@ -34330,10 +34753,10 @@
         disabled: disabled,
         tooltip: tooltip,
         element: element
-      }, element), error && o("div", {
+      }, element), error && u("div", {
         class: "bio-properties-panel-error",
         children: error
-      }), o(Description, {
+      }), u(Description, {
         forId: id,
         element: element,
         value: description
@@ -34363,12 +34786,10 @@
     const value = getValue(element);
     const [localValue, setLocalValue] = h(value);
     const handleInputCallback = F$1(() => {
-      return debounce(({
-        target
-      }) => setValue(target.value.length ? target.value : undefined));
+      return debounce(target => setValue(target.value.length ? target.value : undefined));
     }, [setValue, debounce]);
     const handleInput = e => {
-      handleInputCallback(e);
+      handleInputCallback(e.target);
       setLocalValue(e.target.value);
     };
     p(() => {
@@ -34377,9 +34798,9 @@
       }
       setLocalValue(value);
     }, [value]);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-simple",
-      children: o("input", {
+      children: u("input", {
         id: prefixId$2(id),
         type: "text",
         name: id,
@@ -34426,12 +34847,10 @@
     const [localValue, setLocalValue] = h(value);
     const ref = useShowEntryEvent(id);
     const handleInputCallback = F$1(() => {
-      return debounce(({
-        target
-      }) => onInput(target.value.length ? target.value : undefined));
+      return debounce(target => onInput(target.value.length ? target.value : undefined));
     }, [onInput, debounce]);
     const handleInput = e => {
-      handleInputCallback(e);
+      handleInputCallback(e.target);
       autoResize && resizeToContents(e.target);
       setLocalValue(e.target.value);
     };
@@ -34444,18 +34863,18 @@
       }
       setLocalValue(value);
     }, [value]);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-textarea",
-      children: [o("label", {
+      children: [u("label", {
         for: prefixId$1(id),
         class: "bio-properties-panel-label",
-        children: o(TooltipWrapper, {
+        children: u(TooltipWrapper, {
           value: tooltip,
           forId: id,
           element: props.element,
           children: label
         })
-      }), o("textarea", {
+      }), u("textarea", {
         ref: ref,
         id: prefixId$1(id),
         name: id,
@@ -34524,10 +34943,10 @@
       setLocalError(newValidationError);
     };
     const error = globalError || localError;
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-entry', error ? 'has-error' : ''),
       "data-entry-id": id,
-      children: [o(TextArea, {
+      children: [u(TextArea, {
         id: id,
         label: label,
         value: value,
@@ -34541,10 +34960,10 @@
         autoResize: autoResize,
         tooltip: tooltip,
         element: element
-      }, element), error && o("div", {
+      }, element), error && u("div", {
         class: "bio-properties-panel-error",
         children: error
-      }), o(Description, {
+      }), u(Description, {
         forId: id,
         element: element,
         value: description
@@ -34575,12 +34994,10 @@
     const [localValue, setLocalValue] = h(value || '');
     const ref = useShowEntryEvent(id);
     const handleInputCallback = F$1(() => {
-      return debounce(({
-        target
-      }) => onInput(target.value.length ? target.value : undefined));
+      return debounce(target => onInput(target.value.length ? target.value : undefined));
     }, [onInput, debounce]);
     const handleInput = e => {
-      handleInputCallback(e);
+      handleInputCallback(e.target);
       setLocalValue(e.target.value);
     };
     p(() => {
@@ -34589,18 +35006,18 @@
       }
       setLocalValue(value);
     }, [value]);
-    return o("div", {
+    return u("div", {
       class: "bio-properties-panel-textfield",
-      children: [o("label", {
+      children: [u("label", {
         for: prefixId$a(id),
         class: "bio-properties-panel-label",
-        children: o(TooltipWrapper, {
+        children: u(TooltipWrapper, {
           value: tooltip,
           forId: id,
           element: props.element,
           children: label
         })
-      }), o("input", {
+      }), u("input", {
         ref: ref,
         id: prefixId$a(id),
         type: "text",
@@ -34665,10 +35082,10 @@
       setLocalError(newValidationError);
     };
     const error = globalError || localError;
-    return o("div", {
+    return u("div", {
       class: classnames('bio-properties-panel-entry', error ? 'has-error' : ''),
       "data-entry-id": id,
-      children: [o(Textfield, {
+      children: [u(Textfield, {
         debounce: debounce,
         disabled: disabled,
         id: id,
@@ -34679,10 +35096,10 @@
         value: value,
         tooltip: tooltip,
         element: element
-      }, element), error && o("div", {
+      }, element), error && u("div", {
         class: "bio-properties-panel-error",
         children: error
-      }), o(Description, {
+      }), u(Description, {
         forId: id,
         element: element,
         value: description
@@ -34710,11 +35127,50 @@
     };
   }
   debounceInput.$inject = ['config.debounceInput'];
-  var index$4 = {
+  var index$1$1 = {
     debounceInput: ['factory', debounceInput]
   };
+  class FeelPopupModule {
+    constructor(eventBus) {
+      this._eventBus = eventBus;
+    }
 
-  const BpmnPropertiesPanelContext = G$1({
+    /**
+     * Check if the FEEL popup is open.
+     * @return {Boolean}
+     */
+    isOpen() {
+      return this._eventBus.fire('feelPopup._isOpen');
+    }
+
+    /**
+     * Open the FEEL popup.
+     *
+     * @param {String} entryId
+     * @param {Object} popupConfig
+     * @param {HTMLElement} sourceElement
+     */
+    open(entryId, popupConfig, sourceElement) {
+      return this._eventBus.fire('feelPopup._open', {
+        entryId,
+        popupConfig,
+        sourceElement
+      });
+    }
+
+    /**
+     * Close the FEEL popup.
+     */
+    close() {
+      return this._eventBus.fire('feelPopup._close');
+    }
+  }
+  FeelPopupModule.$inject = ['eventBus'];
+  var index$4 = {
+    feelPopup: ['type', FeelPopupModule]
+  };
+
+  const BpmnPropertiesPanelContext = F$2({
     selectedElement: null,
     injector: null,
     getService() {
@@ -34879,11 +35335,11 @@
   var AssociationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1o({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1o({
     width: "32",
     height: "32",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     stroke: "#000",
     strokeWidth: "2",
     fill: "none",
@@ -34896,13 +35352,13 @@
   var BusinessRuleTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1n({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1n({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 3C2.916 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.012C28.015 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5zM5.296 7.398v12.665h16.87V7.398H5.296zm.718 4.386h15.433v3.44H9.985v-3.432h-.719v3.431H6.014v-3.44zm0 4.158h3.252v3.403H6.014v-3.403zm3.97 0h11.463v3.403H9.985v-3.403z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     d: "M6.079 8.209v3.587H21.44V8.209z"
   })));
 
@@ -34910,11 +35366,11 @@
   var CallActivityIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1m({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1m({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M24.978 3c3.761 0 6.89 2.979 7.018 6.695l.004.238V22.4c0 3.747-3.05 6.804-6.783 6.93l-.24.003H7.023c-3.761 0-6.89-2.978-7.018-6.695L0 22.4V9.933C0 6.187 3.05 3.13 6.783 3.004L7.023 3h17.955zm0 3.667H7.022c-1.842 0-3.255 1.344-3.35 3.079l-.005.187V22.4c0 1.761 1.35 3.167 3.16 3.262l.195.005L10 25.666V15h12v10.666h2.978c1.842 0 3.255-1.344 3.35-3.079l.005-.187V9.933c0-1.761-1.35-3.166-3.16-3.261l-.195-.005zm-3.732 9.087H10.754v9.912h10.491v-9.912zm-4.475 1.817v2.658h2.658v1.542H16.77v2.658H15.23V21.77H12.57V20.23h2.658V17.57h1.542z"
   })));
 
@@ -34922,16 +35378,16 @@
   var CollaborationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1l({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1l({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("g", {
+  }, props), /*#__PURE__*/wn.createElement("g", {
     fillRule: "evenodd"
-  }, /*#__PURE__*/Cn.createElement("path", {
+  }, /*#__PURE__*/wn.createElement("path", {
     fillRule: "nonzero",
     d: "M0 0v8.62h32V0H0zm1.655 7.054v-5.37h28.62v5.37H1.656zM0 23.38V32h32v-8.62H0zm1.655 7.054v-5.37h28.62v5.37H1.656z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     d: "M24 8l4 7h-8l4-7zm0 2l-2.28 4h4.56L24 10zM23.5 21h1v3h-1zM23.5 15h1v3h-1zM8 24l-4-7h8l-4 7zm0-2l2.28-4H5.72L8 22zM7.5 8h1v3h-1zM7.5 14h1v3h-1z"
   }))));
 
@@ -34939,11 +35395,11 @@
   var ConditionalFlowIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1k({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1k({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M32 .041S20.42 5.95 14.537 8.713c1.26 1.15 2.432 2.392 3.648 3.588-5.703 5.78-3.15 3.303-8.087 8.316l-8.472 1.377L0 32l10.006-1.626.098-.598 1.279-7.873c4.975-5.052 2.403-2.555 8.118-8.346 1.218 1.214 2.43 2.435 3.648 3.648C26.29 11.018 32 .041 32 .041zM9.603 22.397L8.54 28.91 2.03 29.97l1.061-6.515 6.512-1.058z"
   })));
 
@@ -34951,11 +35407,11 @@
   var ConnectionIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1j({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1j({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M32 .06S20.33 6.014 14.403 8.798c1.27 1.16 2.451 2.41 3.676 3.616L0 30.734 1.325 32l18.08-18.32c1.227 1.223 2.448 2.453 3.676 3.676C26.247 11.12 32 .06 32 .06z"
   })));
 
@@ -34963,17 +35419,17 @@
   var DataInputOutputAssociationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1i({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1i({
     width: "32",
     height: "32",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     stroke: "#000",
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeDasharray: "1.1,4.3",
     d: "M1.5 30.5L27 5"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     d: "M31.803.197L26.5 16.107l-1.52-1.52 3.783-11.35-11.35 3.783-1.52-1.52z"
   })));
 
@@ -34981,11 +35437,11 @@
   var DataInputIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1h({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1h({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M20.833 0H3.488v32H28V7.36L20.833 0zm-2.105 1.818v7.507h7.454v20.857H5.306V1.818h13.422zm1.818.493l5.06 5.196h-5.06V2.311zm-9.182.86v3.744H7.081v3.222h4.283v3.743l5.7-5.354-5.7-5.354zm.808 1.868l3.711 3.487-3.71 3.487V9.329H7.888V7.723h4.283V5.039z"
   })));
 
@@ -34993,11 +35449,11 @@
   var DataObjectIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1g({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1g({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M21.345 0H4v32h24.512V7.36L21.345 0zM19.24 1.818v7.507h7.454v20.857H5.818V1.818H19.24zm1.818.493l5.06 5.196h-5.06V2.311z"
   })));
 
@@ -35005,11 +35461,11 @@
   var DataOutputIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1f({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1f({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M20.833 0H3.488v32H28V7.36L20.833 0zm-2.105 1.818v7.507h7.454v20.857H5.306V1.818h13.422zm1.818.493l5.06 5.196h-5.06V2.311zm-9.182.86v3.744H7.081v3.222h4.283v3.743l5.7-5.354-5.7-5.354z"
   })));
 
@@ -35017,11 +35473,11 @@
   var DataStoreIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1e({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1e({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.008 1c-3.712 0-7.417.306-10.319.939-1.45.316-2.7.71-3.68 1.226C1.065 3.662.297 4.304.061 5.23a.823.823 0 00-.035.15L0 5.502l.017.084c-.012 7.41 0 14.46 0 22.08l.017.082c.203.985.995 1.656 1.975 2.172.98.517 2.23.91 3.68 1.226 2.902.633 6.607.94 10.319.94 3.711 0 7.416-.307 10.318-.94 1.451-.316 2.701-.71 3.68-1.226.98-.516 1.772-1.187 1.975-2.172l.017-.082V5.541a.825.825 0 000-.106v-.016l-.002-.013a.823.823 0 00-.046-.197c-.244-.916-1.007-1.55-1.943-2.044-.98-.516-2.23-.91-3.68-1.226C23.423 1.306 19.718 1 16.006 1zm0 1.646c3.62 0 7.245.308 9.968.901 1.36.297 2.497.67 3.263 1.074.612.323.932.643 1.063.882-.131.24-.451.56-1.063.882-.766.404-1.902.777-3.263 1.074-2.723.594-6.349.901-9.968.901-3.62 0-7.245-.307-9.968-.901-1.361-.297-2.497-.67-3.264-1.074-.611-.322-.931-.642-1.062-.882.13-.24.451-.56 1.062-.882.767-.403 1.903-.777 3.264-1.074 2.723-.593 6.348-.9 9.968-.9zM1.664 7.647c.112.067.227.132.345.194.98.517 2.23.91 3.68 1.226 2.902.633 6.607.94 10.319.94 3.711 0 7.416-.307 10.318-.94 1.451-.316 2.701-.71 3.68-1.226.119-.062.234-.127.346-.194v1.93c-.08.245-.398.619-1.113.995-.766.404-1.902.777-3.263 1.074-2.723.594-6.349.901-9.968.901-3.62 0-7.245-.307-9.968-.9-1.361-.298-2.497-.671-3.264-1.075-.714-.376-1.032-.75-1.112-.995v-1.93zm0 4.187c.112.067.227.132.345.195.98.516 2.23.91 3.68 1.226 2.902.632 6.607.938 10.319.938 3.711 0 7.416-.306 10.318-.938 1.451-.317 2.701-.71 3.68-1.226.119-.063.234-.128.346-.195v1.93c-.08.245-.398.619-1.113.995-.766.404-1.902.777-3.263 1.074-2.723.594-6.349.901-9.968.901-3.62 0-7.245-.307-9.968-.9-1.361-.298-2.497-.67-3.264-1.075-.714-.376-1.032-.75-1.112-.995v-1.93zm0 4.188c.112.067.227.131.345.194.98.516 2.23.91 3.68 1.226 2.902.633 6.607.939 10.319.939 3.711 0 7.416-.306 10.318-.94 1.451-.316 2.701-.709 3.68-1.225.119-.063.234-.127.346-.194V27.47c-.08.245-.398.618-1.113.995-.766.404-1.902.777-3.263 1.074-2.723.594-6.349.9-9.968.9-3.62 0-7.245-.306-9.968-.9-1.361-.297-2.497-.67-3.264-1.074-.714-.377-1.032-.75-1.112-.995V16.022z"
   })));
 
@@ -35029,11 +35485,11 @@
   var DefaultFlowIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1d({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1d({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M32 .06S20.33 6.014 14.403 8.798c1.27 1.16 2.451 2.41 3.676 3.616L6.84 23.804H.046v1.755h5.063L0 30.735 1.325 32l6.357-6.441h7.145v-1.756H9.414l9.99-10.123c1.228 1.223 2.45 2.453 3.677 3.676C26.247 11.12 32 .06 32 .06z"
   })));
 
@@ -35041,11 +35497,11 @@
   var EndEventCancelIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1c({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1c({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676.051C7.943.058.834 6.501.104 14.21c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 5.009 23.394.364 16.978.083A18.532 18.532 0 0015.676.05zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm-3.955 3.918L8.94 12.072l3.985 3.985-3.913 3.913 3.048 3.047 3.913-3.913 3.987 3.987 3.096-3.096-3.987-3.987 3.913-3.913-3.047-3.048-3.913 3.913-3.985-3.985z"
   })));
 
@@ -35053,11 +35509,11 @@
   var EndEventCompensationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1b({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1b({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676.051C7.943.058.834 6.501.104 14.21c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 5.009 23.394.364 16.978.083A18.532 18.532 0 0015.676.05zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm-.56 5.744l-7.407 5.23 7.408 5.234v-5.057c2.384 1.687 4.771 3.371 7.157 5.057V10.801l-7.157 5.054v-5.054z"
   })));
 
@@ -35065,11 +35521,11 @@
   var EndEventErrorIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1a({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1a({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676.051C7.943.058.834 6.501.104 14.21c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 5.009 23.394.364 16.978.083A18.532 18.532 0 0015.676.05zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm6.132 4.166l-3.633 7.363-4.516-5.874-4.102 12.131 4.599-5.91 4.743 5.427 2.909-13.137z"
   })));
 
@@ -35077,11 +35533,11 @@
   var EndEventEscalationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$19({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$19({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676.051C7.943.058.834 6.501.104 14.21c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 5.009 23.394.364 16.978.083A18.532 18.532 0 0015.676.05zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm.006 3.9c-1.672 4.653-2.733 9.5-4.406 14.153 1.535-1.525 2.872-3.234 4.406-4.759l4.406 4.76c-1.497-4.71-2.91-9.445-4.406-14.155z"
   })));
 
@@ -35089,11 +35545,11 @@
   var EndEventLinkIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$18({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$18({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676 0C7.943.007.834 6.45.104 14.16c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 4.958 23.394.313 16.978.032A18.532 18.532 0 0015.676 0zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm1.78 4.065v3.555H9.779v6.713h7.994v3.554l5.828-6.91-5.828-6.912z"
   })));
 
@@ -35101,11 +35557,11 @@
   var EndEventMessageIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$17({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$17({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676 0C7.943.007.834 6.45.104 14.16c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 4.958 23.394.313 16.978.032A18.532 18.532 0 0015.676 0zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm-5.91 5.448l6.041 4.9 6.04-4.9H10.084zm-1.34 1.137v9.92h14.513v-9.718l-7.132 5.786-7.381-5.988z"
   })));
 
@@ -35113,11 +35569,11 @@
   var EndEventMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$16({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$16({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676 0C7.943.007.834 6.45.104 14.16c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 4.958 23.394.313 16.978.032A18.529 18.529 0 0015.676 0zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm.011 3.039l-7.619 5.53 2.91 8.95h9.418l2.91-8.95-7.619-5.53z"
   })));
 
@@ -35125,11 +35581,11 @@
   var EndEventNoneIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$15({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$15({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.84.042C8.654-.01 1.913 5.437.4 12.454-1.057 18.62 1.554 25.495 6.784 29.09c5.076 3.636 12.31 3.92 17.59.544 5.309-3.251 8.435-9.744 7.445-15.921C30.91 7.307 25.795 1.738 19.442.422a16.064 16.064 0 00-3.602-.38zm.382 5.01c5.28-.017 10.13 4.353 10.669 9.61.687 5.025-2.552 10.281-7.423 11.792-4.754 1.617-10.486-.447-12.962-4.856-2.74-4.575-1.574-11.094 2.768-14.27a11.05 11.05 0 016.948-2.276z"
   })));
 
@@ -35137,11 +35593,11 @@
   var EndEventSignalIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$14({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$14({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676.051C7.943.058.834 6.501.104 14.21c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 5.009 23.394.364 16.978.083A18.532 18.532 0 0015.676.05zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm.006 3.492c-2.261 4.07-4.532 8.136-6.797 12.204h13.595L15.999 8.55z"
   })));
 
@@ -35149,11 +35605,11 @@
   var EndEventTerminateIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$13({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$13({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.676.051C7.943.058.834 6.501.104 14.21c-.783 6.565 2.912 13.427 8.942 16.216 5.6 2.737 12.789 1.87 17.434-2.344 4.725-4.09 6.79-11.06 4.714-17.006C29.22 5.009 23.394.364 16.978.083A18.532 18.532 0 0015.676.05zm.317 5.006c5.695-.165 10.916 4.858 10.983 10.555.246 5.212-3.67 10.33-8.864 11.204-5.026 1.007-10.6-1.898-12.36-6.777-1.894-4.826.039-10.928 4.649-13.46a11.082 11.082 0 015.592-1.522zm.006 2.859c-5.264-.2-9.495 5.551-7.755 10.516 1.366 5.085 8.108 7.436 12.339 4.301 4.455-2.807 4.708-9.943.462-13.058A8.128 8.128 0 0016 7.915z"
   })));
 
@@ -35161,11 +35617,11 @@
   var EventSubProcessExpandedIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$12({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$12({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M7.295 4.78h1.779V3.003h-1.78V4.78zm3.558 0h1.779V3.003h-1.78V4.78zm3.557 0h1.78V3.003h-1.78V4.78zm3.558 0h1.78V3.003h-1.78V4.78zm3.558 0h1.779V3.003h-1.779V4.78zm3.558 0c.55.014 1.106-.034 1.654.045l.245-1.762c-.629-.096-1.266-.05-1.9-.061V4.78zM5.732 3.004a5.933 5.933 0 00-.915.093c.111.582.226 1.164.315 1.75.358-.101.947.098.746-.483-.096-.382.164-1.208-.146-1.36zm22.372 2.281c.427.234.812.547 1.13.915.42-.4 1.002-.777 1.33-1.18a5.863 5.863 0 00-1.593-1.289l-.867 1.554zm-25.27-1.44c-.587.354-1.11.811-1.539 1.345.47.333.96.86 1.417 1.077.299-.362.66-.673 1.065-.913-.328-.493-.55-1.055-.944-1.509zM30.515 7.26c-.563.046-.557.342-.378.784.154.25-.097.862.25.85.525-.023 1.14.043 1.612-.032a5.891 5.891 0 00-.362-2.027l-1.122.425zM.268 7.114A6.042 6.042 0 000 9.052h1.78c-.013-.5.047-1.003.208-1.478L.296 7.027l-.026.079-.002.008zM30.22 12.45H32v-1.779h-1.779v1.779zm-30.22.16h1.78v-1.779H0v1.78zm30.22 3.398H32v-1.78h-1.779v1.78zm-30.22.16h1.78v-1.779H0v1.779zm30.22 3.398H32v-1.78h-1.779v1.78zm-30.22.16h1.78v-1.78H0v1.78zm30.22 3.397H32v-1.779h-1.779v1.78zm-30.22.16h1.78v-1.778H0v1.778zm30.137 1.47a4.059 4.059 0 01-.522 1.32c.506.283 1.046.715 1.53.908a5.836 5.836 0 00.744-1.918c-.576-.094-1.209-.264-1.752-.31zm-29.984.51c.157.676.435 1.325.82 1.904l1.486-.977a4.065 4.065 0 01-.577-1.347l-1.73.42zm28.427 1.943c-.371.277-.79.49-1.234.627l.548 1.693a5.84 5.84 0 001.835-.96l-1.082-1.412-.066.05-.001.002zm-26.164 1.47c.567.413 1.21.722 1.886.907.14-.569.343-1.175.444-1.722a4.062 4.062 0 01-1.283-.624l-1.047 1.438zm3.88 1.119h1.779v-1.78h-1.78v1.78zm3.55 0h1.787v-1.78H9.846v1.78zm3.565 0h1.78v-1.78h-1.78v1.78zm3.558 0h1.78v-1.78h-1.78v1.78zm3.451 0h1.743v-1.78h-1.743v1.78zm3.665 0h1.779v-1.78h-1.78v1.78zm-1.922-.545V16.776H9.846V29.25h12.318zM10.967 17.905h10.068V27.97H10.967V17.905zm1.336 3.998v1.711h7.396v-1.711h-7.396z",
     opacity: ".97"
   })));
@@ -35174,11 +35630,11 @@
   var GatewayComplexIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$11({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$11({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.001 0a1.29 1.29 0 00-.917.373L.373 15.084a1.316 1.316 0 00.002 1.834l14.71 14.709a1.313 1.313 0 001.833 0l14.711-14.711a1.316 1.316 0 00-.002-1.834L16.917.372A1.294 1.294 0 0016.002 0zM16 2.181l13.821 13.821L16 29.823 2.179 16.003 16 2.18zm-.327 6.79v.007l-.145.027-.118.08-.083.123-.028.145v4.954L11.793 10.8l-.125-.08-.14-.029-.144.027-.122.082-.46.46-.085.125-.026.142.028.14.08.125 3.505 3.505H9.347l-.001-.002-.145.032-.118.08-.083.122-.028.146v.652l.029.147.082.119.12.08.144.032h4.956L10.8 20.207v-.001l-.084.124-.026.142.028.14.08.124.46.461.126.082.14.029.143-.027.124-.084L15.3 17.69v4.964-.001l.028.147.082.12.12.08.144.031h.652l.148-.03.118-.08.083-.12.028-.146v-4.962l3.505 3.505.126.082.14.027.142-.027.124-.084.461-.46.083-.123s.028-.144.027-.146l-.028-.14-.082-.126-3.496-3.496h4.948l.148-.03.119-.08.082-.12.028-.147v-.652l-.028-.145-.083-.122-.119-.08s-.147-.033-.147-.031h-4.964l3.512-3.512.082-.122.029-.144-.028-.14-.084-.124-.46-.461-.123-.082-.14-.027-.145.027-.122.082-3.507 3.507V9.348l-.028-.146-.082-.122-.12-.08-.147-.029h-.652z"
   })));
 
@@ -35186,11 +35642,11 @@
   var GatewayEventBasedIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$10({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$10({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16 0a1.29 1.29 0 00-.918.373L.371 15.084a1.316 1.316 0 00.002 1.834l14.71 14.709a1.313 1.313 0 001.833 0l14.711-14.711a1.316 1.316 0 00-.002-1.834L16.915.372A1.294 1.294 0 0016 0zm-.002 2.181l13.821 13.821-13.821 13.821-13.821-13.82L15.998 2.18zm0 5.876l-.254.185-7.377 5.355 2.915 8.964h9.433l2.915-8.964-7.631-5.54zm0 1.07l6.614 4.8-2.526 7.769h-8.175l-2.526-7.768 6.614-4.802z"
   })));
 
@@ -35198,11 +35654,11 @@
   var GatewayNoneIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$$({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$$({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M.373 15.084a1.316 1.316 0 00.002 1.834l14.71 14.709a1.313 1.313 0 001.833 0l14.711-14.711a1.316 1.316 0 00-.002-1.834L16.917.373a1.313 1.313 0 00-1.833 0L.373 15.084zm1.806.918L16 2.182l13.821 13.82L16 29.823 2.179 16.003z"
   })));
 
@@ -35210,11 +35666,11 @@
   var GatewayOrIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$_({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$_({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.001 0a1.29 1.29 0 00-.917.373L.373 15.084a1.316 1.316 0 00.002 1.834l14.71 14.709a1.313 1.313 0 001.833 0l14.711-14.711a1.316 1.316 0 00-.002-1.834L16.917.372A1.294 1.294 0 0016.002 0zM16 2.181l13.821 13.821L16 29.823 2.179 16.003 16 2.18zm0 6.379a7.447 7.447 0 00-7.44 7.441A7.447 7.447 0 0016 23.443 7.447 7.447 0 0023.443 16a7.447 7.447 0 00-7.441-7.441zm0 .825a6.61 6.61 0 016.617 6.616A6.61 6.61 0 0116 22.618 6.61 6.61 0 019.385 16 6.61 6.61 0 0116 9.385z"
   })));
 
@@ -35222,11 +35678,11 @@
   var GatewayParallelIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$Z({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$Z({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.001 0a1.29 1.29 0 00-.917.373L.373 15.084a1.316 1.316 0 00.002 1.834l14.71 14.709a1.313 1.313 0 001.833 0l14.711-14.711a1.316 1.316 0 00-.002-1.834L16.917.372A1.294 1.294 0 0016.002 0zM16 2.181l13.821 13.821L16 29.823 2.179 16.003 16 2.18zm-.377 5.708l-.168.032-.136.092-.096.14-.032.168v6.868h-6.87l-.002-.002-.166.037-.137.092v-.002l-.095.141-.033.167v.753s.032.169.034.17l.094.138.138.092.167.036h6.87v6.867l-.001-.001.033.17.095.138.138.092s.166.035.167.037h.752l.17-.036.137-.092.095-.137.033-.17v-6.867h6.868l.17-.035.137-.092.095-.137.033-.17v-.753s-.033-.165-.032-.167l-.096-.14-.138-.093s-.17-.037-.17-.035H16.81V8.323l-.033-.168-.094-.14-.138-.092-.17-.034h-.752z"
   })));
 
@@ -35234,11 +35690,11 @@
   var GatewayXorIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$Y({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$Y({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16 0a1.29 1.29 0 00-.918.373L.371 15.084a1.316 1.316 0 00.002 1.834l14.71 14.709a1.313 1.313 0 001.833 0l14.711-14.711a1.316 1.316 0 00-.002-1.834L16.915.372A1.294 1.294 0 0016 0zm-.002 2.181l13.821 13.821-13.821 13.821-13.821-13.82L15.998 2.18zm-5.162 7.69l-.166.032-.141.096-.532.532s-.097.142-.097.144l-.03.164.032.162.093.144 4.857 4.858-4.855 4.855v-.001L9.9 21l-.03.164.032.162s.093.142.093.144l.531.532.146.095.162.032.164-.03.144-.097 4.855-4.856 4.857 4.857.145.095.162.032.164-.03.144-.097.531-.532.095-.14.033-.168-.033-.162-.095-.146L17.144 16 22 11.144l.095-.14.033-.166-.033-.163-.097-.144-.532-.532-.14-.095-.163-.032-.166.032-.141.095L16 14.855l-4.858-4.858v-.002l-.144-.092-.162-.032z"
   })));
 
@@ -35246,11 +35702,11 @@
   var GroupIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$X({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$X({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.34.016c-2.333.025-4.684 1.77-5.29 4.17C.608 5.848.88 7.608.804 9.314v2.922h2.041c.038-2.332-.076-4.673.062-7C3.14 3.355 4.869 1.938 6.643 2.04h8.956V.009c-3.086 0-6.173-.02-9.258 0v.007zm13.094 2.023h1.92V.009h-1.92v2.03zm5.756 0c1.265-.069 2.66.045 3.602 1.055 1.036.983 1.201 2.523 1.122 3.91v6.313h2.078c-.03-2.677.062-5.36-.047-8.032-.17-2.743-2.62-5.111-5.215-5.236-.511-.064-1.027-.02-1.54-.033v2.023zM.803 18.319h2.041v-2.026H.804v2.026zm29.11 1.084h2.08v-2.03h-2.08v2.03zM.804 26.148c.004 2.218 1.393 4.366 3.313 5.28 1.728.853 3.681.448 5.521.544.43-.112 1.29.231 1.435-.183v-1.847c-1.788-.043-3.584.094-5.365-.082-1.67-.354-2.919-2.048-2.863-3.844v-3.644H.804v3.777zm29.11-.068c.04 1.961-1.508 3.787-3.381 3.842-1.954.06-3.914.02-5.87.026v2.03c2.118-.042 4.242.08 6.355-.063 2.524-.264 4.818-2.644 4.94-5.323.08-1.039.014-2.085.035-3.126h-2.078v2.613zm-15.006 5.898h1.92v-2.03h-1.92v2.03z"
   })));
 
@@ -35258,11 +35714,11 @@
   var IntermediateEventCatchCancelIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$W({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$W({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.111.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.454 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.215-2.282-2.022-5.3-3.217-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.082 11.082 0 0116 5.021zm-3.956 3.946l-3.096 3.097 3.985 3.985-3.913 3.913 3.047 3.048 3.913-3.913 3.988 3.987 3.097-3.096L19.076 16l3.914-3.913-3.048-3.048-3.913 3.913-3.986-3.985zm-.002 1.222l3.988 3.987 3.913-3.913 1.826 1.826-3.913 3.913 3.985 3.986-1.873 1.873-3.985-3.985-3.913 3.913-1.827-1.827 3.914-3.913-3.988-3.987 1.873-1.873z"
   })));
 
@@ -35270,11 +35726,11 @@
   var IntermediateEventCatchCompensationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$V({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$V({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm-.56 5.772l-7.408 5.231 7.409 5.234v-5.057c2.385 1.687 4.771 3.371 7.157 5.057V10.793l-7.157 5.055v-5.055zm-.865 1.665v7.125l-5.048-3.562 5.048-3.563zm7.161 0v7.132l-5.048-3.566 5.048-3.566z"
   })));
 
@@ -35282,11 +35738,11 @@
   var IntermediateEventCatchConditionIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$U({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$U({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.97.04h-.127C8.713-.018 2.003 5.334.437 12.286c-1.51 6.123.98 13.005 6.136 16.665 5.125 3.788 12.546 4.105 17.912.623 5.272-3.276 8.33-9.766 7.325-15.916-.904-6.241-5.79-11.7-11.95-13.143A16.082 16.082 0 0015.97.04zm-.181 1.724c.115 0 .23 0 .347.003 6.625-.066 12.823 5.149 13.89 11.69 1.13 5.91-1.908 12.349-7.262 15.138-5.473 3.013-12.866 1.884-17.116-2.726C1.291 21.372.444 13.914 3.802 8.602c2.493-4.112 7.169-6.819 11.987-6.838zm.283 1.554c-.117 0-.234.002-.351.005-6.1 0-11.691 5.049-12.346 11.114-.78 5.684 2.795 11.612 8.218 13.52 5.139 1.943 11.416.101 14.624-4.38 3.461-4.583 3.262-11.538-.596-15.831-2.36-2.747-5.924-4.423-9.549-4.428zm-.078 1.695c.078 0 .156 0 .234.003 5.4 0 10.321 4.556 10.734 9.942.563 5.13-2.958 10.364-7.971 11.678-4.832 1.41-10.457-.935-12.746-5.446-2.463-4.559-1.2-10.795 3.014-13.883a11.072 11.072 0 016.735-2.294zm-5.352 4.266V22.761h10.716V9.279H10.642zm.863.866h8.987v11.75h-8.987v-11.75zm.927 1.323v.862h7.133v-.862h-7.133zm0 2.602v.866h7.133v-.866h-7.133zm0 3.008v.862h7.133v-.862h-7.133zm0 2.717v.863h7.133v-.863h-7.133z"
   })));
 
@@ -35294,11 +35750,11 @@
   var IntermediateEventCatchErrorIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$T({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$T({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm6.132 4.194c-1.21 2.455-2.422 4.91-3.633 7.364l-4.516-5.875-4.103 12.133 4.6-5.912c1.58 1.81 3.162 3.619 4.744 5.429L22.13 9.215zM14.383 13.1l4.295 5.445 1.073-2.387-1.027 4.131-4.384-5.157-1.778 2.75 1.821-4.782z"
   })));
 
@@ -35306,11 +35762,11 @@
   var IntermediateEventCatchEscalationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$S({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$S({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm.006 3.927c-1.672 4.654-2.734 9.502-4.406 14.155 1.534-1.525 2.872-3.234 4.406-4.759l4.406 4.76c-1.496-4.71-2.91-9.446-4.406-14.156zm.032 2.929c.822 2.586 1.598 5.186 2.42 7.771l-2.42-2.612c-.682.597-2.452 2.884-2.338 2.388.87-2.487 1.447-5.067 2.338-7.547z"
   })));
 
@@ -35318,11 +35774,11 @@
   var IntermediateEventCatchLinkIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$R({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$R({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm1.78 4.093v3.555H9.785v6.714h7.994v3.554l5.829-6.911-5.83-6.912zm.974 2.584l3.61 4.295-3.61 4.294v-1.933h-7.88v-4.688h7.88v-1.968z"
   })));
 
@@ -35330,11 +35786,11 @@
   var IntermediateEventCatchMessageIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$Q({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$Q({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm-7.245 5.475v11.06h14.502v-11.06H8.754zm3.222 1.728h8.057c-1.427.878-2.854 2.806-4.281 3.016l-3.776-3.016zm9.554 1.017v6.587H10.48V13.24l5.524 4.414 5.526-4.414z"
   })));
 
@@ -35342,11 +35798,11 @@
   var IntermediateEventCatchMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$P({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$P({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.003C8.195-.156.935 6.24.125 13.985c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.884 23.445.407 17.201.049c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.174.872 11.679 4.985 6.916c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 4.975c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 4.975zm.006 3.073l-7.62 5.531 2.91 8.95h9.42l2.91-8.95-7.62-5.53zm0 1.067l6.604 4.794-2.523 7.757h-8.162l-2.522-7.757 6.603-4.794z"
   })));
 
@@ -35354,11 +35810,11 @@
   var IntermediateEventCatchNonInterruptingConditionIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$O({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$O({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M10.638 9.563V23.056h10.724V9.563H10.638zm.863.866h8.995v11.76H11.5V10.43zm.928 1.324v.862h7.139v-.862h-7.14zm0 2.605v.866h7.139v-.866h-7.14zm0 3.01v.863h7.139v-.863h-7.14zm0 2.72v.863h7.139v-.864h-7.14zM15.999.308h-.004l-.188.001h-.011l-.188.004h-.011L15.41.32h-.011l-.187.008h-.005L15.2.33l-.187.01h-.005l-.005.001-.187.013h-.011L14.62.37h-.01l-.186.018h-.011l-.185.02-.005.001h-.006l-.185.022-.005.001h-.005l-.185.025h-.005l-.005.001-.185.027h-.005l-.005.001-.184.029h-.005l-.005.001-.183.031-.006.001-.005.001-.182.033-.006.001-.005.001-.182.035-.005.001-.005.001-.182.038h-.005l-.005.002-.181.04h-.005l-.005.002-.18.042-.006.001-.005.001-.18.044-.005.002h-.005l-.17.045-.152.054-.139.082-.121.106-.1.127-.074.143-.046.155-.017.16.013.16.043.156.07.145.097.13.119.108.137.085.15.058.159.03.16-.001.133-.023.165-.043.168-.041.171-.04.171-.037.172-.036.17-.033.173-.03.17-.03.177-.027.171-.025.175-.022.175-.02.175-.02.176-.016.175-.014.177-.012.176-.01.177-.007.174-.006.177-.003.178-.001h.177l.178.004.174.006.177.007.176.01.177.012.175.014.176.017.175.018.175.02.175.023.171.025.176.027.17.03.174.03.17.033.171.036.154.033.16.02.161-.01.156-.04.146-.069.131-.094.111-.117.087-.135.061-.15.032-.158.002-.16-.027-.16-.057-.15L20 1.023l-.108-.12-.128-.097-.145-.073-.128-.038-.158-.035-.005-.001-.005-.001L19.14.62h-.005l-.005-.002-.182-.035h-.006L18.938.58l-.182-.033h-.006l-.005-.002-.183-.03-.005-.001-.006-.001-.183-.029h-.005l-.006-.001-.184-.027h-.005l-.005-.001-.185-.024h-.005L17.968.43 17.783.41l-.006-.001h-.005l-.185-.02h-.006l-.005-.001L17.39.37h-.005L17.38.368l-.187-.015h-.005l-.005-.001-.187-.013h-.011L16.8.328h-.011L16.6.32h-.011l-.187-.006h-.011L16.204.31h-.011L16.005.31H16zm9.016 2.935l-.16.004-.158.033-.15.062-.134.09-.116.111-.093.132-.067.147-.038.156-.01.161.022.16.05.153.078.141.103.124.102.087.045.034.142.106.137.105.14.11.136.11.135.112.134.115.134.117.13.115.132.122.128.12.127.122.126.125.124.126.124.128.121.13.118.128.118.132.117.133.113.134.113.136.11.136.109.137.109.142.104.14.103.14.101.142.1.144.099.146.095.145.094.147.093.15.092.15.087.149.087.15.084.152.084.155.08.152.08.155.04.081.084.138.11.119.128.096.145.072.155.043.16.013.16-.016.155-.046.144-.074.127-.099.106-.12.083-.14.055-.151.026-.16-.004-.16-.034-.158-.05-.124-.042-.085-.002-.004-.003-.005-.084-.165-.002-.004-.003-.005-.086-.164-.002-.004-.003-.005-.088-.162-.002-.005-.003-.005-.09-.161-.002-.005-.003-.004-.092-.16-.003-.005-.002-.005-.094-.16-.003-.004-.003-.004-.096-.159-.002-.004-.003-.005-.098-.157-.003-.004-.003-.005-.1-.156-.003-.004-.003-.005-.101-.154-.003-.005-.003-.004-.104-.154-.003-.004-.003-.005-.106-.152-.003-.005-.003-.004-.108-.151-.003-.004-.003-.005-.11-.15-.003-.004-.003-.004-.111-.15-.004-.003-.003-.005-.113-.147-.004-.004-.003-.005-.115-.146-.004-.004-.003-.004-.117-.145-.004-.004-.003-.004-.12-.144-.003-.004-.003-.004-.121-.142-.004-.004-.003-.004-.123-.141-.003-.004-.004-.004-.125-.14-.003-.004-.004-.004-.127-.138-.003-.004-.004-.004-.128-.136-.004-.004-.004-.004-.13-.135-.004-.004-.004-.004-.132-.134-.003-.004-.004-.003-.134-.133-.004-.003-.004-.004-.135-.13-.004-.004-.004-.004-.136-.128-.004-.004-.004-.004-.138-.126-.004-.004-.004-.003-.14-.125-.004-.004-.004-.003-.14-.123-.005-.004-.004-.003-.142-.121-.004-.004-.004-.003-.144-.12-.004-.003-.004-.003-.145-.117-.004-.004-.004-.003-.147-.115-.004-.004-.004-.003-.148-.113-.004-.003-.004-.004-.149-.111-.004-.003-.004-.004-.05-.036-.14-.083-.15-.055-.16-.027zm-18.381.344l-.161.008-.157.037-.147.066-.111.074-.04.032-.005.003-.004.004-.145.117-.004.003-.004.004-.144.119-.004.003-.004.004-.142.12-.004.004-.004.004-.141.123-.004.003-.004.004-.14.125-.004.003-.004.004-.138.126-.004.004-.004.004-.136.128-.004.004-.004.004-.135.13-.004.004-.004.003-.134.133-.004.003L4.682 5l-.132.134-.003.004-.004.004-.13.135-.004.004-.004.004-.128.136-.004.004-.004.004-.126.138-.004.004-.003.004-.125.14-.004.004-.003.004-.123.14-.004.005-.003.004-.121.142-.004.004-.003.004-.12.144-.003.004-.003.004-.117.145-.004.004-.003.004-.115.146-.004.005-.003.004-.113.147-.003.005-.004.004-.111.149-.003.004-.004.004-.11.15-.002.005-.003.004-.108.151-.003.004-.003.005-.106.152-.003.005-.003.004-.104.154-.003.004-.003.005-.102.154-.003.005-.002.004-.1.156-.003.005-.003.004-.098.157-.003.005-.003.004-.096.159-.002.004-.003.005-.094.16-.003.004-.002.004-.092.16-.003.005-.003.005-.09.161-.002.005-.003.005-.088.162-.002.005-.003.004-.086.164-.002.005-.002.004-.084.165-.003.005-.002.004-.082.166-.002.004-.003.005-.08.167-.002.004-.002.005-.078.168-.002.004-.002.005-.045.1-.053.153-.023.16.007.16.037.157.065.148.092.132.114.114.134.09.148.064.157.035.161.006.16-.025.152-.054.14-.08.121-.106.1-.126.065-.118.043-.095.074-.16.075-.155.077-.157.08-.155.08-.152.083-.155.085-.152.086-.15.088-.149.091-.15.094-.15.094-.147.095-.145.099-.146.1-.144.1-.142.104-.14.104-.14.11-.142.107-.137.11-.136.114-.136.113-.134.117-.133.118-.132.117-.129.122-.13.124-.127.123-.126.127-.125.127-.122.128-.12.132-.122.13-.115.133-.117.135-.115.135-.111.136-.11.037-.03.117-.11.094-.132.068-.146.04-.156.01-.161-.02-.16-.05-.154-.076-.141-.102-.125-.123-.104-.14-.08-.153-.051-.16-.023zM16 3.595h-.005l-.148.001h-.01l-.147.003h-.011l-.147.005h-.011l-.146.007h-.011l-.146.009h-.011l-.146.01h-.005l-.005.001-.146.012h-.011l-.145.014h-.006l-.005.001-.05.006-.158.031-.15.06-.135.088-.117.111-.094.13-.069.147-.04.156-.01.16.019.16.049.154.076.142.102.125.123.105.14.08.152.051.16.023.134-.003.045-.005.135-.013.133-.01.136-.01.135-.007.137-.006.136-.004.136-.003h.274l.136.003.136.004.136.006.136.007.136.01.133.01.135.013.135.014.135.016.134.018.132.018.134.021.133.023.133.024.133.025.13.027.132.03.132.03.129.031.13.034.129.035.129.036.13.04.126.038.128.042.126.042.128.045.127.047.126.047.12.048.127.051.123.052.006.002.147.048.16.021.16-.009.157-.038.147-.067.131-.093.112-.116.089-.135.062-.149.033-.158.004-.16-.027-.16-.055-.151-.083-.139-.107-.12-.127-.099-.118-.063-.004-.001-.005-.003-.005-.002-.133-.056-.005-.002-.005-.002-.134-.054-.004-.002-.005-.002-.135-.053-.005-.002-.005-.002-.135-.051-.005-.002-.005-.002-.135-.05-.005-.001-.005-.002-.137-.048-.005-.001-.005-.002-.137-.046-.005-.002-.005-.002-.137-.044-.005-.002-.005-.001-.138-.043-.006-.002-.005-.001-.138-.042-.005-.001-.005-.002-.14-.04H19.4l-.005-.002-.14-.038-.005-.001-.005-.002-.14-.036-.005-.001-.005-.001-.141-.035-.005-.001-.005-.001-.142-.033-.005-.001-.005-.001-.142-.031-.005-.002h-.005l-.142-.03-.005-.001-.005-.001-.143-.028h-.005l-.005-.002-.143-.025-.006-.001-.005-.001-.143-.024-.005-.001-.006-.001-.143-.022-.006-.001h-.005l-.144-.022h-.005l-.006-.001-.144-.019h-.005l-.006-.001-.144-.017h-.006l-.005-.001-.145-.016h-.011l-.145-.014H17.1l-.005-.001-.146-.012h-.01l-.146-.01-.006-.001h-.005l-.146-.009h-.011l-.147-.006h-.01L16.32 3.6h-.011l-.147-.003h-.011l-.147-.001H16zm-5.482 1.366l-.16.008-.157.037-.123.053-.06.032-.005.002-.004.003-.128.069-.004.002-.005.003-.126.07-.005.003-.004.002-.126.072-.005.003-.004.003-.125.073-.004.003-.005.003-.124.075-.004.003-.005.002-.123.077-.004.003-.005.003-.122.078-.004.003-.005.003-.121.08-.004.002-.005.003-.12.082-.005.003-.004.003-.12.083-.004.003-.004.003-.118.084-.005.003-.004.003-.118.086-.004.003-.004.003-.117.088-.004.003-.004.003-.116.089-.004.003-.004.004-.114.09-.005.003-.004.003-.113.092-.004.004-.004.003-.113.093-.004.004-.004.003-.111.095-.005.003-.004.004-.11.096-.004.004-.004.003-.11.098-.003.003-.004.004-.108.1-.004.003-.004.003-.107.101-.004.004-.004.003-.106.102-.004.004-.003.004-.105.103-.004.004-.004.004-.103.105-.004.004-.004.003-.102.106-.003.004-.004.004-.1.107-.004.004-.004.004-.099.108-.004.004-.003.004-.098.11-.003.003-.004.004-.096.11-.004.005-.003.004-.095.111-.003.004-.004.004-.093.113-.003.004-.004.004-.092.113-.003.004-.003.005-.09.114-.004.004-.003.004-.089.116-.003.004-.003.004-.088.117-.003.004-.003.004-.086.118-.003.004-.003.005-.084.118-.003.004-.003.005-.083.12-.003.003-.003.005-.082.12-.003.005-.002.004-.068.103-.076.142-.048.154-.018.16.011.161.041.156.07.146.095.13.117.11.136.086.15.06.158.03.162.002.158-.03.15-.057.138-.085.119-.109.082-.105.065-.099.075-.11.077-.113.077-.107.08-.11.08-.108.084-.108.083-.105.086-.106.086-.104.088-.104.089-.101.09-.102.093-.101.093-.099.094-.097.095-.096.098-.097.098-.095.099-.093.1-.092.103-.091.101-.089.104-.088.104-.086.106-.086.106-.083.106-.082.109-.082.108-.079.11-.078.11-.076.112-.076.112-.074.113-.072.113-.071.115-.07.115-.068.118-.067.117-.065.12-.065.054-.029.135-.088.116-.111.094-.132.068-.146.04-.156.009-.161-.02-.16-.05-.153-.078-.142-.102-.125-.123-.103-.141-.079-.153-.051-.16-.022zm13.91 2.116l-.162.008-.157.037-.147.066-.132.092-.113.116-.09.134-.063.148-.034.157-.005.162.025.159.055.152.082.138.086.103.09.09.094.098.092.099.093.1.091.103.089.101.088.104.086.104.086.106.083.105.083.108.08.108.081.11.077.107.077.112.075.111.075.114.072.113.071.113.07.114.068.118.067.115.065.118.064.117.062.117.061.121.059.119.059.122.056.121.054.12.055.125.051.123.051.125.048.123.048.127.047.126.044.125.043.128.042.129.039.126.038.13.022.076.058.15.085.137.11.119.129.096.145.07.155.043.16.013.161-.017.154-.046.144-.075.126-.1.106-.12.082-.14.055-.151.025-.16-.005-.16-.026-.132-.023-.082-.002-.005-.001-.005-.042-.139-.001-.005-.002-.005-.043-.138-.001-.005-.002-.005-.044-.137-.002-.005-.002-.005-.046-.137-.002-.005-.001-.005-.048-.137-.002-.005-.002-.005-.05-.135-.001-.005-.002-.005-.051-.135-.002-.005-.002-.005-.053-.135-.002-.005-.002-.005-.054-.133-.002-.005-.002-.005-.057-.133-.002-.005-.002-.005-.057-.132-.003-.005-.002-.005-.06-.132-.001-.005-.002-.004-.061-.132-.003-.004-.002-.005-.063-.13-.002-.005-.002-.005-.064-.13-.003-.004-.002-.005-.066-.129-.002-.004-.003-.005-.067-.128-.002-.005-.003-.004-.069-.128-.002-.004-.003-.005-.07-.126-.003-.005-.003-.004-.072-.126-.002-.005-.003-.004-.074-.125-.002-.004-.003-.005-.075-.124-.003-.004-.003-.005-.076-.123-.003-.004-.003-.005-.078-.122-.003-.004-.003-.005-.08-.121-.003-.004-.003-.005-.081-.12-.003-.005-.003-.004-.083-.12-.003-.004-.003-.004-.084-.118-.003-.005-.003-.004-.086-.118-.003-.004-.004-.004-.087-.117-.003-.004-.003-.004-.09-.116-.002-.004-.004-.004-.09-.114-.003-.005-.004-.004-.091-.113-.004-.004-.003-.004-.094-.113-.003-.004-.003-.004-.095-.111-.004-.004-.003-.004-.096-.11-.004-.005-.003-.004-.098-.11-.004-.003-.003-.004-.1-.108-.003-.004-.004-.004-.1-.107-.004-.004-.004-.004-.102-.106-.003-.003-.004-.004-.093-.095-.124-.103-.14-.08-.153-.05-.16-.023zM4.45 13.135l-.161.002-.158.032-.15.06-.135.088-.118.11-.094.131-.069.146-.035.129-.026.132v.005l-.002.005-.025.143-.001.005-.001.006-.024.143-.001.005-.001.006-.022.143-.001.006-.001.005-.02.144-.001.005-.001.005-.019.145v.005l-.001.006-.017.144v.006l-.001.005-.016.145v.011l-.014.145v.005l-.001.006-.012.146v.01l-.01.146-.001.006v.005l-.009.146v.011l-.007.146v.011l-.004.147v.011l-.003.147v.01l-.002.148v.01l.001.148v.01l.003.147v.011l.005.147v.01l.007.147v.011l.009.146v.011l.01.146v.01l.013.146v.011l.014.145v.005l.001.006.016.145v.011l.018.144v.006l.001.005.019.144v.006l.001.005.021.144v.005l.002.006.022.143v.006l.002.005.024.143v.005l.002.006.025.143.001.005.001.005.028.143.001.005.001.005.03.142v.005l.002.006.03.141.002.005.001.005.033.142v.005l.002.005.035.14v.006l.002.005.036.14.002.005.001.005.038.14.001.005.002.005.04.14v.005l.002.005.042.138.001.006.002.005.042.138.002.005.002.005.017.054.064.148.09.134.114.114.132.092.148.065.157.037.16.007.16-.023.153-.052.14-.08.123-.104.102-.125.076-.142.049-.153.02-.16-.011-.161-.031-.13-.017-.051-.039-.126-.038-.13-.037-.128-.035-.13-.033-.128-.033-.134-.03-.13-.029-.131-.026-.13-.026-.133-.024-.133-.023-.133-.02-.132-.02-.136-.017-.132-.016-.135-.014-.135-.012-.133-.012-.138-.009-.133-.007-.136-.006-.138-.004-.134-.003-.136v-.274l.003-.136.004-.134.006-.139.007-.136.01-.133.01-.138.013-.132.014-.135.016-.135.017-.132.02-.137.02-.13.023-.134.024-.133.024-.126.016-.16-.014-.161-.044-.155-.072-.145-.098-.128-.12-.108-.137-.084-.15-.057-.16-.029zm26.698 1.601l-.161.01-.157.04-.146.067-.131.093-.112.117-.088.135-.061.149-.033.157-.005.134.006.14.006.176.003.177.001.178-.001.177-.003.178-.006.177-.007.176-.01.177-.012.176-.015.176-.016.173-.018.175-.02.175-.024.174-.025.175-.026.17-.03.174-.03.173-.033.17-.036.172-.037.17-.04.17-.042.172-.043.168-.045.166-.048.169-.05.167-.052.168-.053.164-.056.166-.058.166-.06.16-.062.165-.062.158-.066.165-.068.16-.07.16-.07.158-.075.159-.074.155-.079.158-.08.158-.06.15-.03.158-.001.161.029.159.058.15.085.137.108.119.13.097.144.07.156.044.16.013.16-.017.155-.046.143-.074.127-.1.107-.12.07-.115.083-.164.003-.005.002-.004.082-.166.002-.005.003-.004.08-.167.002-.005.002-.004.078-.168.002-.005.002-.004.076-.169.002-.004.002-.005.074-.17.002-.004.002-.005.072-.17.002-.005.002-.005.07-.171.001-.005.002-.005.068-.172.002-.004.002-.005.065-.173.002-.005.002-.005.063-.173.002-.005.002-.005.06-.174.003-.005.001-.005.06-.175.001-.005.002-.005.057-.176.001-.005.002-.005.055-.177.001-.005.002-.005.052-.177.002-.005.001-.005.051-.178.001-.005.002-.005.048-.179.002-.005v-.005l.047-.179.001-.005.002-.005.044-.18v-.005l.002-.005.042-.18.001-.006.001-.005.04-.181.001-.005.001-.005.037-.182.002-.005v-.005l.036-.182v-.006l.002-.005.033-.182v-.006l.002-.005.03-.183.001-.005.001-.005.029-.184v-.005l.001-.006.027-.184v-.005l.001-.005.024-.185v-.005l.001-.005.022-.185v-.006l.001-.005.02-.185v-.006l.001-.005.017-.186v-.005l.001-.005.015-.187v-.005l.001-.005.013-.187v-.01l.01-.187.001-.006v-.005l.009-.187v-.011l.006-.187V16.7l.004-.188v-.011l.001-.188v-.01l-.001-.188v-.011l-.004-.188v-.011l-.006-.187v-.011l-.007-.145-.022-.16-.05-.152-.08-.141-.103-.124-.125-.102-.141-.077-.153-.05-.16-.02zm-30.21.572l-.161.001-.158.032-.15.06-.136.087-.117.11-.095.131-.068.146-.04.156-.012.133-.001.14v.01l.001.188v.011l.004.188v.011l.006.187v.011l.008.187v.011l.011.187v.005l.001.005.013.187v.01l.016.187v.01l.018.186v.011l.02.185.001.005v.006l.022.185.001.005v.005l.025.185v.005l.001.005.027.184v.006l.001.005.029.184v.005l.001.005.031.183.001.005.001.006.033.182.001.005.001.006.035.182.001.005.001.005.038.182v.005l.002.005.04.181v.005l.002.005.042.18.001.006.001.005.044.18.002.005v.005l.047.18.001.004.002.005.048.179.002.005.001.005.05.178.002.005.001.005.053.177.002.005.001.005.055.177.002.005.001.005.057.176.002.005.001.005.06.175.001.005.002.005.061.174.002.005.002.005.063.173.002.005.002.005.065.173.002.005.002.004.067.172.002.005.002.005.07.171.002.005.002.005.072.17.002.005.002.004.074.17.002.005.002.004.076.169.002.004.002.005.078.168.002.004.002.005.08.167.003.004.002.005.082.166.002.004.003.005.02.04.086.136.11.118.13.095.146.07.156.041.16.012.16-.019.155-.048.142-.075.126-.1.105-.123.08-.14.054-.152.024-.16-.006-.16-.036-.158-.051-.123-.018-.034-.078-.158-.074-.155-.074-.16-.071-.157-.07-.16-.068-.16-.067-.165-.062-.158-.062-.164-.059-.161-.058-.166-.056-.166-.053-.164-.052-.168-.05-.167-.048-.17-.045-.165-.043-.168-.043-.172-.039-.17-.037-.17-.036-.172-.033-.17-.03-.173-.03-.174-.027-.17-.025-.175-.022-.174-.021-.175-.018-.175-.017-.173-.014-.176-.012-.176-.01-.177-.007-.176-.006-.177-.003-.178-.001-.177v-.134l-.013-.16-.044-.156-.072-.144-.097-.129-.12-.108-.137-.085-.15-.057-.159-.028zm26.798 2.024l-.16.007-.157.038-.148.066-.132.092-.113.115-.09.134-.062.148-.03.127-.001.004-.023.134-.024.133-.026.133-.026.13-.03.132-.03.129-.032.134-.033.128-.035.13-.037.128-.038.13-.04.126-.04.128-.044.128-.044.126-.046.126-.048.126-.05.125-.05.125-.051.122-.054.123-.055.122-.056.12-.058.122-.06.12-.061.12-.063.119-.062.116-.067.119-.066.116-.069.115-.069.115-.07.113-.073.113-.074.112-.076.113-.077.112-.077.107-.08.11-.08.107-.085.11-.044.056-.088.135-.06.15-.033.158-.002.16.027.16.057.15.083.138.108.12.128.098.144.072.155.045.16.015.161-.016.155-.044.144-.073.128-.098.09-.099.05-.061.003-.004.003-.005.089-.115.003-.004.003-.005.088-.116.003-.004.003-.005.086-.117.003-.004.003-.005.084-.118.003-.004.003-.005.083-.12.003-.004.003-.004.081-.12.003-.005.003-.004.08-.121.003-.005.003-.004.078-.122.003-.005.003-.004.077-.123.002-.005.003-.004.075-.124.003-.005.003-.004.073-.125.003-.005.003-.004.072-.126.002-.004.003-.005.07-.126.003-.005.002-.005.07-.127.002-.004.002-.005.068-.128.002-.005.002-.004.066-.13.003-.004.002-.005.064-.13.002-.004.003-.005.062-.13.002-.005.003-.005.06-.13.003-.005.002-.005.06-.132.002-.005.002-.005.057-.132.003-.005.002-.005.056-.133.002-.005.002-.005.054-.134.002-.004.002-.005.053-.135.002-.005.002-.005.051-.135.002-.005.002-.005.05-.135.001-.005.002-.005.048-.137.001-.005.002-.005.046-.137.002-.005.002-.005.044-.137.002-.005.002-.005.042-.138.002-.005.001-.006.042-.138.001-.005.002-.005.04-.14v-.005l.002-.005.038-.14.001-.005.002-.005.036-.14.001-.005.001-.005.035-.141.001-.005.001-.005.033-.142.001-.005.001-.005.031-.141.001-.006.002-.005.029-.142v-.005l.002-.005.028-.143v-.005l.002-.005.025-.143.001-.006.001-.005.024-.143.001-.005.001-.006.001-.006.01-.161-.02-.16-.05-.154-.077-.141-.102-.125-.123-.104-.141-.079-.153-.051-.16-.022zM6.841 23.019l-.16.024-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.018.16.011.161.041.156.07.146.077.109.04.048.003.004.003.004.095.111.003.004.004.004.096.11.004.005.003.004.098.109.003.004.004.004.1.108.003.004.003.004.101.107.004.004.003.004.102.105.004.004.004.004.103.105.004.004.004.003.105.104.003.004.004.003.106.102.004.004.004.004.107.1.004.004.004.004.108.099.004.003.004.004.11.098.003.003.004.004.11.096.004.003.005.004.11.095.005.003.004.004.113.093.004.003.004.004.113.091.004.004.005.003.114.09.004.004.004.003.116.089.004.003.004.003.117.088.004.003.004.003.118.086.004.003.005.003.118.084.004.003.005.003.119.083.004.003.005.003.12.081.005.003.004.003.121.08.005.003.004.003.122.078.005.003.004.003.123.076.005.003.004.003.124.075.005.003.004.003.125.073.004.003.005.002.126.073.004.002.005.003.126.07.005.003.004.002.128.07.004.002.005.002.128.067.005.003.004.002.13.066.004.002.005.003.13.064.004.002.005.003.13.062.005.002.004.003.132.06.004.003.005.002.132.06.005.002.005.002.132.057.005.002.005.002.133.057.005.002.005.002.133.054.005.002.005.002.13.05.154.045.16.016.16-.015.156-.045.144-.072.128-.098.108-.12.083-.138.057-.15.028-.16-.003-.16-.032-.159-.061-.149-.088-.135-.11-.117-.132-.094-.12-.058-.124-.049-.126-.051-.122-.051-.122-.054-.12-.054-.126-.058-.119-.057-.12-.06-.12-.06-.118-.063-.117-.064-.119-.066-.116-.066-.115-.068-.115-.07-.113-.07-.115-.074-.112-.074-.11-.075-.11-.076-.112-.08-.11-.08-.109-.081-.106-.082-.104-.082-.106-.086-.105-.087-.101-.086-.105-.091-.1-.09-.1-.091-.1-.094-.097-.094-.1-.098-.093-.095-.096-.1-.093-.098-.092-.101-.089-.1-.09-.102-.088-.104-.036-.043-.114-.114-.133-.091-.148-.065-.157-.036-.161-.006zm15.063 2.701l-.16.014-.156.044-.12.057-.06.034-.12.066-.117.064-.118.062-.12.061-.12.06-.118.057-.126.058-.12.054-.122.054-.122.05-.126.052-.125.05-.124.046-.127.047-.125.044-.129.043-.126.04-.13.042-.128.038-.127.035-.13.036-.131.034-.129.031-.132.03-.13.03-.135.027-.133.026-.13.023-.13.022-.137.021-.132.02-.134.017-.132.015-.138.015-.135.013-.133.01-.138.01-.136.007-.134.006-.136.004-.14.003-.16.018-.155.047-.142.076-.127.1-.105.122-.08.14-.054.151-.025.16.006.16.035.158.064.148.09.134.114.114.133.092.147.065.157.036.134.008.145-.002h.011l.147-.005h.01l.147-.007h.011l.146-.009h.011l.146-.01h.005l.005-.001.146-.012h.011l.145-.014h.005l.006-.001.145-.016h.011l.144-.018h.006l.005-.001.144-.02h.011l.144-.021.005-.001h.006l.143-.023.006-.001h.005l.143-.025h.005l.006-.002.143-.026h.005l.005-.002.143-.027.005-.001.005-.001.142-.03h.005l.005-.002.142-.03.005-.002.005-.001.142-.033.005-.001.005-.001.14-.035.006-.001.005-.001.14-.037h.005l.005-.002.14-.038.005-.002h.005l.14-.04.005-.002.005-.001.138-.042.005-.001.006-.002.138-.043.005-.001.005-.002.137-.044.005-.002.005-.002.137-.046.005-.002.005-.001.137-.048.005-.002.005-.002.135-.05.005-.001.005-.002.135-.051.005-.002.005-.002.135-.053.005-.002.004-.002.134-.054.005-.002.005-.002.133-.057.005-.002.005-.002.132-.057.005-.003.005-.002.132-.06.005-.001.004-.002.131-.061.005-.003.005-.002.13-.062.005-.003.005-.002.13-.064.004-.003.005-.002.128-.066.005-.002.005-.003.128-.067.005-.002.004-.003.127-.069.005-.002.005-.003.126-.07.005-.003.004-.003.065-.037.132-.093.112-.115.089-.135.062-.149.034-.157.003-.161-.026-.16-.055-.15-.082-.14-.107-.12-.127-.1-.144-.073-.154-.046-.16-.016zM6.33 27.127l-.16.023-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.02.16.012.161.041.156.07.146.094.13.096.093.032.026.004.003.004.004.145.117.004.003.004.004.146.115.005.003.004.004.147.113.005.003.004.004.149.111.004.003.004.003.15.11.005.003.004.003.151.108.004.003.005.003.152.106.005.003.004.003.154.104.004.003.005.003.154.102.005.002.004.003.156.1.005.003.004.003.157.098.005.003.004.002.159.096.004.003.005.003.16.094.004.003.004.002.16.092.005.003.005.002.161.09.005.003.005.002.162.088.005.003.004.002.164.086.005.003.004.002.165.084.005.003.004.002.166.082.004.002.005.003.167.08.004.002.005.002.168.078.004.002.005.002.168.076.005.002.005.002.17.074.004.002.005.002.17.072.005.002.005.002.17.07.006.002.005.001.171.068.005.002.005.002.173.065.005.002.005.002.173.063.005.002.005.002.174.06.005.003.005.001.175.06.005.001.005.002.176.057.005.001.005.002.176.055.006.001.005.002.177.052.005.002.005.001.178.05.005.002.005.002.178.048.006.001.005.002.179.046.005.001.005.002.18.044h.005l.005.002.18.042.006.001.005.001.159.035.16.02.16-.01.157-.04.146-.069.13-.094.112-.117.087-.136.06-.149.033-.158.002-.161-.028-.159-.057-.15-.084-.138-.108-.12-.128-.098-.144-.072-.128-.039-.154-.033-.168-.04-.171-.041-.17-.044-.168-.046-.167-.047-.168-.05-.165-.051-.166-.054-.166-.056-.163-.057-.165-.06-.161-.062-.164-.064-.16-.065-.16-.068-.162-.07-.157-.07-.157-.074-.157-.075-.156-.077-.153-.079-.156-.082-.153-.082-.154-.086-.15-.086-.152-.09-.148-.09-.147-.092-.149-.095-.145-.095-.144-.098-.145-.1-.143-.102-.14-.103-.14-.104-.14-.108-.139-.11-.136-.11-.027-.022-.133-.091-.148-.065-.157-.036-.161-.006zm19.215.087l-.16.01-.157.039-.146.067-.11.076-.064.051-.139.11-.14.108-.14.104-.14.103-.143.101-.145.101-.144.098-.145.095-.149.095-.148.093-.147.089-.152.09-.15.086-.154.086-.153.082-.156.082-.153.079-.156.077-.157.075-.158.073-.157.071-.16.07-.16.068-.161.065-.164.064-.161.061-.165.06-.163.058-.166.056-.166.054-.166.051-.167.05-.167.047-.17.046-.168.044-.171.042-.168.039-.17.037-.11.023-.154.047-.143.075-.126.1-.106.122-.081.139-.054.152-.025.16.006.16.035.158.063.148.09.133.114.115.132.092.148.065.157.037.16.007.133-.016.115-.024.005-.001.005-.001.181-.04h.005l.005-.002.18-.042.006-.001.005-.001.18-.044.005-.002.005-.001.18-.046.004-.002h.005l.179-.05h.005l.005-.002.178-.05.005-.002.005-.002.177-.052.005-.002.005-.001.177-.055.005-.002.005-.001.176-.057.005-.002.005-.002.175-.059.005-.001.005-.002.174-.061.005-.002.005-.002.173-.063.005-.002.005-.002.173-.065.004-.002.005-.002.172-.068.005-.002.005-.002.171-.07.005-.001.005-.002.17-.072.005-.002.004-.002.17-.074.005-.002.004-.002.169-.076.004-.002.005-.002.168-.078.004-.002.005-.003.167-.08.004-.002.005-.002.166-.082.004-.002.005-.003.165-.084.004-.002.005-.003.163-.086.005-.002.005-.003.162-.088.005-.002.005-.003.161-.09.005-.002.004-.003.16-.092.005-.003.005-.002.16-.094.004-.003.004-.003.158-.096.005-.002.004-.003.158-.098.004-.003.005-.003.156-.1.004-.003.004-.003.155-.101.005-.003.004-.003.154-.104.004-.003.004-.003.153-.106.004-.003.005-.003.151-.108.004-.003.005-.003.15-.11.004-.003.004-.003.149-.112.004-.003.004-.003.148-.113.004-.004.004-.003.147-.115.004-.004.004-.003.068-.055.116-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.05-.153-.08-.14-.103-.125-.124-.102-.142-.077-.153-.05-.16-.02z"
   })));
 
@@ -35366,11 +35822,11 @@
   var IntermediateEventCatchNonInterruptingEscalationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$N({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$N({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.012 9.222c-1.673 4.657-2.735 9.508-4.409 14.164 1.536-1.526 2.874-3.236 4.41-4.762l4.408 4.762c-1.497-4.712-2.911-9.451-4.409-14.164zm.032 2.93c.823 2.588 1.599 5.19 2.421 7.777l-2.42-2.614c-.683.598-2.454 2.886-2.34 2.39.871-2.489 1.448-5.07 2.34-7.552zM16.012.312c-1.448.02-2.93.157-4.302.628-.852.447-.255 1.863.66 1.574 2.255-.608 4.648-.607 6.922-.108.934.075 1.228-1.376.338-1.67C18.451.44 17.227.317 16.012.311zm9.012 2.934c-.913-.104-1.272 1.258-.454 1.648 1.834 1.36 3.293 3.185 4.31 5.22.526.776 1.842.098 1.515-.78a15.522 15.522 0 00-5.06-6.006c-.1-.044-.203-.07-.31-.082zM6.65 3.59c-.762.089-1.24.809-1.805 1.267C3.38 6.295 2.163 8.007 1.37 9.905c-.266.898 1.094 1.484 1.564.675a14.825 14.825 0 014.327-5.56c.476-.515.09-1.419-.612-1.431zm9.362.007c-.698.066-1.689-.16-2.033.635-.282.733.535 1.358 1.217 1.125 1.806-.147 3.63.203 5.293.907.902.255 1.472-1.112.656-1.573-1.6-.735-3.374-1.089-5.133-1.094zm-5.479 1.365c-.835.15-1.517.76-2.21 1.226-1.203.94-2.318 2.061-3.057 3.402-.33.904 1.063 1.552 1.547.723 1.045-1.656 2.596-2.925 4.285-3.873.545-.499.171-1.463-.565-1.478zm13.903 2.115c-.875-.07-1.22 1.173-.501 1.627 1.325 1.34 2.188 3.062 2.748 4.84.468.84 1.869.21 1.557-.699-.604-2.118-1.751-4.097-3.351-5.615a.93.93 0 00-.453-.153zM4.467 13.132c-.822-.07-.996.826-1.046 1.455-.256 1.93-.094 3.933.562 5.769.406.844 1.807.365 1.612-.551a11.498 11.498 0 01-.334-5.808.874.874 0 00-.794-.865zm26.687 1.6c-.746-.037-1.014.785-.879 1.395.043 2.393-.57 4.771-1.66 6.894-.31.884 1.02 1.536 1.53.75a15.632 15.632 0 001.821-8.372.876.876 0 00-.812-.667zm-30.197.571c-.782-.073-1.044.775-.933 1.404.068 2.414.661 4.833 1.809 6.962.534.77 1.842.076 1.505-.798a14.833 14.833 0 01-1.603-6.861.876.876 0 00-.778-.707zm26.787 2.024c-.777-.048-.952.797-1.021 1.392-.354 1.692-1.202 3.231-2.216 4.608-.407.872.925 1.638 1.48.852 1.361-1.733 2.296-3.827 2.582-6.017a.874.874 0 00-.825-.835zM6.857 23.012c-.808.018-1.082 1.122-.47 1.59 1.393 1.607 3.187 2.886 5.194 3.599.91.222 1.43-1.165.598-1.596a11.495 11.495 0 01-4.723-3.396.899.899 0 00-.599-.197zm15.057 2.7c-.81.194-1.504.76-2.325.972-1.203.458-2.5.536-3.758.664-.869.307-.573 1.728.346 1.663 2.201-.034 4.412-.626 6.293-1.778.604-.495.227-1.532-.556-1.521zM6.346 27.118c-.833.008-1.11 1.218-.395 1.617 1.986 1.602 4.358 2.749 6.868 3.226.933.076 1.227-1.376.338-1.67a14.838 14.838 0 01-6.345-3.066.929.929 0 00-.466-.107zm19.208.087c-.766.09-1.241.841-1.922 1.158-1.516.991-3.251 1.58-4.996 2.005-.872.405-.346 1.849.584 1.604 2.543-.526 4.98-1.66 6.963-3.344.47-.52.072-1.42-.63-1.423z"
   })));
 
@@ -35378,11 +35834,11 @@
   var IntermediateEventCatchNonInterruptingMessageIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$M({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$M({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M8.742 10.464v11.072h14.516V10.464H8.742zm3.224 1.73h8.066a69569 69569 0 00-4.034 3.22l-4.032-3.22zm9.565 1.018v6.594H10.469v-6.593L16 17.63l5.532-4.419zM16 0h-.005l-.188.001h-.011l-.188.004h-.011l-.187.006h-.011l-.187.008h-.005L15.2.02l-.187.01h-.005l-.005.001-.187.013h-.011L14.62.06h-.01l-.186.018h-.011l-.185.02-.005.001h-.006l-.185.022-.005.001h-.005l-.185.025h-.005l-.005.001-.185.027h-.005l-.005.001-.184.029h-.005l-.005.001-.183.031-.006.001-.005.001-.182.033-.006.001-.005.001-.182.035-.005.001-.005.001-.182.038h-.005l-.005.002-.181.04h-.005l-.005.002-.18.042-.006.001-.005.001-.18.044-.005.002h-.005l-.17.045-.152.054-.139.082-.121.106-.1.127-.074.143-.046.155-.017.16.013.16.043.156.07.145.097.13.119.108.137.085.15.058.159.03.16-.001.133-.023.165-.043.168-.041.171-.04.171-.037.172-.036.17-.033.173-.03.17-.03.177-.027.171-.025.175-.022.175-.02.175-.02.176-.016.175-.014.177-.012.176-.01.177-.007.174-.006.177-.003L16 1.73h.177l.178.004.174.006.177.007.176.01.177.012.175.014.176.017.175.018.175.02.175.023.171.025.176.027.17.03.174.03.17.033.171.036.154.033.16.02.161-.01.156-.04.146-.069.131-.094.111-.117.087-.135.061-.15.032-.158.002-.16-.027-.16-.057-.15L20 .714l-.108-.12-.128-.097-.145-.073-.128-.038-.158-.035-.005-.001-.005-.001L19.14.31h-.005l-.005-.002-.182-.035h-.006l-.005-.002-.182-.033h-.006l-.005-.002-.183-.03-.005-.001-.006-.001-.183-.029h-.005l-.006-.001-.184-.027h-.005l-.005-.001-.185-.024h-.005L17.968.12 17.783.1l-.006-.001h-.005l-.185-.02h-.006l-.005-.001L17.39.06h-.005L17.38.06l-.187-.015h-.005l-.005-.001-.187-.013h-.011L16.8.02h-.011L16.6.01h-.011l-.187-.006h-.011L16.204 0h-.011L16.005 0H16zm9.015 2.935l-.16.004-.158.033-.15.062-.134.09-.116.111-.093.132-.067.147-.038.156-.01.161.022.16.05.153.078.141.103.124.102.087.045.034.142.106.137.105.14.11.136.11.135.112.134.115.134.117.13.115.132.122.128.12.127.122.126.125.124.126.124.128.121.13.118.128.118.132.117.133.113.134.113.136.11.136.109.137.109.142.104.14.103.14.101.142.1.144.099.146.095.145.094.147.093.15.092.15.087.149.087.15.084.152.084.155.08.152.08.155.04.081.084.138.11.119.128.096.145.072.155.043.16.013.16-.016.155-.046.144-.074.127-.099.106-.12.083-.14.055-.151.026-.16-.004-.16-.034-.158-.05-.124-.042-.085-.002-.004-.003-.005-.084-.165-.002-.004-.003-.005-.086-.164-.002-.004-.003-.005-.088-.162-.002-.005-.003-.005-.09-.161-.002-.005-.003-.004-.092-.16-.003-.005-.002-.005-.094-.16-.003-.004-.003-.004-.096-.159-.002-.004-.003-.005-.098-.157-.003-.004-.003-.005-.1-.156-.003-.004-.003-.005-.101-.154-.003-.005-.003-.004-.104-.154-.003-.004-.003-.005-.106-.152-.003-.005-.003-.004-.108-.151-.003-.004-.003-.005-.11-.15-.003-.004-.003-.004-.111-.15-.004-.003-.003-.005-.113-.147-.004-.004-.003-.005-.115-.146-.004-.004-.003-.004-.117-.145-.004-.004-.003-.004-.12-.144-.003-.004-.003-.004-.121-.142-.004-.004-.003-.004-.123-.141-.003-.004-.004-.004-.125-.14-.003-.004-.004-.004-.127-.138-.003-.004-.004-.004-.128-.136-.004-.004-.004-.004-.13-.135-.004-.004-.004-.004-.132-.134-.003-.004-.004-.003-.134-.133-.004-.003-.004-.004-.135-.13-.004-.004-.004-.004-.136-.128-.004-.004-.004-.004-.138-.126-.004-.004-.004-.003-.14-.125-.004-.004-.004-.003-.14-.123-.005-.004-.004-.003-.142-.121-.004-.004-.004-.003-.144-.12-.004-.003-.004-.003-.145-.117-.004-.004-.004-.003-.147-.115-.004-.004-.004-.003-.148-.113-.004-.003-.004-.004-.149-.111-.004-.003-.004-.004-.05-.036-.14-.083-.15-.055-.16-.027zM6.634 3.28l-.161.008-.157.037-.147.066-.111.074-.04.032-.005.003-.004.004-.145.117-.004.003-.004.004-.144.119-.004.003-.004.004-.142.12-.004.004-.004.004-.141.123-.004.003-.004.004-.14.125-.004.003-.004.004-.138.126-.004.004-.004.004-.136.128-.004.004-.004.004-.135.13-.004.004-.004.003-.134.133-.004.003-.004.004-.132.134-.003.004-.004.004-.13.135-.004.004-.004.004-.128.136-.004.004-.004.004-.126.138-.004.004-.003.004-.125.14-.004.004-.003.004-.123.14-.004.005-.003.004-.121.142-.004.004-.003.004-.12.144-.003.004-.003.004-.117.145-.004.004-.003.004-.115.146-.004.005-.003.004-.113.147-.003.005-.004.004-.111.149-.003.004-.004.004-.11.15-.002.005-.003.004-.108.151-.003.004-.003.005-.106.152-.003.005-.003.004-.104.154-.003.004-.003.005-.102.154-.003.005-.002.004-.1.156-.003.005-.003.004-.098.157-.003.005-.003.004-.096.159-.002.004-.003.005-.094.16-.003.004-.002.004-.092.16-.003.005-.003.005-.09.161-.002.005-.003.005-.088.162-.002.005-.003.004-.086.164-.002.005-.002.004-.084.165-.003.005-.002.004-.082.166-.002.004-.003.005-.08.167-.002.004-.002.005-.078.168-.002.004-.002.005-.045.1-.053.153-.023.16.007.16.037.157.065.148.092.132.114.114.134.09.148.064.157.035.161.006.16-.025.152-.054.14-.08.121-.106.1-.126.065-.118.043-.095.074-.16.075-.155.077-.157.08-.155.08-.152.083-.155.085-.152.086-.15.088-.149.091-.15.094-.15.094-.147.095-.145.099-.146.1-.144.1-.142.104-.14.104-.14.11-.142.107-.137.11-.136.114-.136.113-.134.117-.133.118-.132.117-.129.122-.13.124-.127.123-.126.127-.125.127-.122.128-.12.132-.122.13-.115.133-.117.135-.115.135-.111.136-.11.037-.03.117-.11.094-.132.068-.146.04-.156.01-.161-.02-.16-.05-.154-.076-.141-.102-.125-.123-.104-.14-.08-.153-.051-.16-.023zM16 3.286h-.005l-.148.001h-.01l-.147.003h-.011l-.147.005h-.011l-.146.007h-.011l-.146.009h-.011l-.146.01h-.005l-.005.001-.146.012h-.011l-.145.014h-.006l-.005.001-.05.006-.158.031-.15.06-.135.088-.117.111-.094.13-.069.147-.04.156-.01.16.019.16.049.154.076.142.102.125.123.105.14.08.152.051.16.023.134-.003.045-.005.135-.013.133-.01.136-.01.135-.007.137-.006.136-.004.136-.003h.274l.136.003.136.004.136.006.136.007.136.01.133.01.135.013.135.014.135.016.134.018.132.018.134.021.133.023.133.024.133.025.13.027.132.03.132.03.129.031.13.034.129.035.129.036.13.04.126.038.128.042.126.042.128.045.127.047.126.047.12.048.127.051.123.052.006.002.147.048.16.021.16-.009.157-.038.147-.067.131-.093.112-.116.089-.135.062-.149.033-.158.004-.16-.027-.16-.055-.151-.083-.139-.107-.12-.127-.099-.118-.063-.004-.001-.005-.003-.005-.002-.133-.056-.005-.002-.005-.002-.134-.054-.004-.002-.005-.002-.135-.053-.005-.002-.005-.002-.135-.051-.005-.002-.005-.002-.135-.05-.005-.001-.005-.002-.137-.048-.005-.001-.005-.002-.137-.046-.005-.002-.005-.002-.137-.044-.005-.002-.005-.001-.138-.043-.006-.002-.005-.001-.138-.042-.005-.001-.005-.002-.14-.04H19.4l-.005-.002-.14-.038-.005-.001-.005-.002-.14-.036-.005-.001-.005-.001-.141-.035-.005-.001-.005-.001-.142-.033-.005-.001-.005-.001-.142-.031-.005-.002h-.005l-.142-.03-.005-.001-.005-.001-.143-.028h-.005l-.005-.002-.143-.025-.006-.001-.005-.001-.143-.024-.005-.001-.006-.001-.143-.022-.006-.001h-.005l-.144-.022h-.005l-.006-.001-.144-.019h-.005l-.006-.001-.144-.017h-.006l-.005-.001-.145-.016h-.011l-.145-.014H17.1l-.005-.001-.146-.012h-.01l-.146-.01-.006-.001h-.005l-.146-.009h-.011l-.147-.006h-.01l-.147-.005h-.011l-.147-.003h-.011l-.147-.001H16zm-5.482 1.366l-.16.008-.157.037-.123.053-.06.032-.005.002-.004.003-.128.069-.004.002-.005.003-.126.07-.005.003-.004.002-.126.072-.005.003-.004.003-.125.073-.004.003-.005.003-.124.075-.004.003-.005.002-.123.077-.004.003-.005.003-.122.078-.004.003-.005.003-.121.08-.004.002-.005.003-.12.082-.005.003-.004.003-.12.083-.004.003-.004.003-.118.084-.005.003-.004.003-.118.086-.004.003-.004.003-.117.088-.004.003-.004.003-.116.089-.004.003-.004.004-.114.09-.005.003-.004.003-.113.092-.004.004-.004.003-.113.093-.004.004-.004.003-.111.095-.005.003-.004.004-.11.096-.004.004-.004.003-.11.098-.003.003-.004.004-.108.1-.004.003-.004.003-.107.101-.004.004-.004.003-.106.102-.004.004-.003.004-.105.103-.004.004-.004.004-.103.105-.004.004-.004.003-.102.106-.003.004-.004.004-.1.107-.004.004-.004.004-.099.108-.004.004-.003.004-.098.11-.003.003-.004.004-.096.11-.004.005-.003.004-.095.111-.003.004-.004.004-.093.113-.003.004-.004.004-.092.113-.003.004-.003.005-.09.114-.004.004-.003.004-.089.116-.003.004-.003.004-.088.117-.003.004-.003.004-.086.118-.003.004-.003.005-.084.118-.003.004-.003.005-.083.12-.003.003-.003.005-.082.12-.003.005-.002.004-.068.103-.076.142-.048.154-.018.16.011.161.041.156.07.146.095.13.117.11.136.086.15.06.158.03.162.002.158-.03.15-.057.138-.085.119-.109.082-.105.065-.099.075-.11.077-.113.077-.107.08-.11.08-.108.084-.108.083-.105.086-.106.086-.104.088-.104.089-.101.09-.102.093-.101.093-.099.094-.097.095-.096.098-.097.098-.095.099-.093.1-.092.103-.091.101-.089.104-.088.104-.086.106-.086.106-.083.106-.082.109-.082.108-.079.11-.078.11-.076.112-.076.112-.074.113-.072.113-.071.115-.07.115-.068.118-.067.117-.065.12-.065.054-.029.135-.088.116-.111.094-.132.068-.146.04-.156.009-.161-.02-.16-.05-.153-.078-.142-.102-.125-.123-.103-.141-.079-.153-.051-.16-.022zm13.91 2.116l-.162.008-.157.037-.147.066-.132.092-.113.116-.09.134-.063.148-.034.157-.005.162.025.159.055.152.082.138.086.103.09.09.094.098.092.099.093.1.091.103.089.101.088.104.086.104.086.106.083.105.083.108.08.108.081.11.077.107.077.112.075.111.075.114.072.113.071.113.07.114.068.118.067.115.065.118.064.117.062.117.061.121.059.119.059.122.056.121.054.12.055.125.051.123.051.125.048.123.048.127.047.126.044.125.043.128.042.129.039.126.038.13.022.076.058.15.085.137.11.119.129.096.145.07.155.043.16.013.161-.017.154-.046.144-.075.126-.1.106-.12.082-.14.055-.151.025-.16-.005-.16-.026-.132-.023-.082-.002-.005-.001-.005-.042-.139-.001-.005-.002-.005-.043-.138-.001-.005-.002-.005-.044-.137-.002-.005-.002-.005-.046-.137-.002-.005-.001-.005-.048-.137-.002-.005-.002-.005-.05-.135-.001-.005-.002-.005-.051-.135-.002-.005-.002-.005-.053-.135-.002-.005-.002-.005-.054-.133-.002-.005-.002-.005-.057-.133-.002-.005-.002-.005-.057-.132-.003-.005-.002-.005-.06-.132-.001-.005-.002-.004-.061-.132-.003-.004-.002-.005-.063-.13-.002-.005-.002-.005-.064-.13-.003-.004-.002-.005-.066-.129-.002-.004-.003-.005-.067-.128-.002-.005-.003-.004-.069-.128-.002-.004-.003-.005-.07-.126-.003-.005-.003-.004-.072-.126-.002-.005-.003-.004-.074-.125-.002-.004-.003-.005-.075-.124-.003-.004-.003-.005-.076-.123-.003-.004-.003-.005-.078-.122-.003-.004-.003-.005-.08-.121-.003-.004-.003-.005-.081-.12-.003-.005-.003-.004-.083-.12-.003-.004-.003-.004-.084-.118-.003-.005-.003-.004-.086-.118-.003-.004-.004-.004-.087-.117-.003-.004-.003-.004-.09-.116-.002-.004-.004-.004-.09-.114-.003-.005-.004-.004-.091-.113-.004-.004-.003-.004-.094-.113-.003-.004-.003-.004-.095-.111-.004-.004-.003-.004-.096-.11-.004-.005-.003-.004-.098-.11-.004-.003-.003-.004-.1-.108-.003-.004-.004-.004-.1-.107-.004-.004-.004-.004-.102-.106-.003-.003-.004-.004-.093-.095-.124-.103-.14-.08-.153-.05-.16-.023zM4.45 12.826l-.161.002-.158.032-.15.06-.135.088-.118.11-.094.131-.069.146-.035.129-.026.132v.005l-.002.005-.025.143-.001.005-.001.006-.024.143-.001.005-.001.006-.022.143-.001.006-.001.005-.02.144-.001.005-.001.005-.019.145v.005l-.001.006-.017.144v.006l-.001.005-.016.145v.011l-.014.145v.005l-.001.006-.012.146v.01l-.01.146-.001.006v.005l-.009.146v.011l-.007.146v.011l-.004.147v.011l-.003.147v.01l-.002.148v.01l.001.148v.01l.003.147v.011l.005.147v.01l.007.147v.011l.009.146v.011l.01.146v.01l.013.146v.011l.014.145v.005l.001.006.016.145v.011l.018.144v.006l.001.005.019.144v.006l.001.005.021.144v.005l.002.006.022.143v.006l.002.005.024.143v.005l.002.006.025.143.001.005.001.005.028.143.001.005.001.005.03.142v.005l.002.006.03.141.002.005.001.005.033.142v.005l.002.005.035.14v.006l.002.005.036.14.002.005.001.005.038.14.001.005.002.005.04.14v.005l.002.005.042.138.001.006.002.005.042.138.002.005.002.005.017.054.064.148.09.134.114.114.132.092.148.065.157.037.16.007.16-.023.153-.052.14-.08.123-.104.102-.125.076-.142.049-.153.02-.16-.011-.161-.031-.13-.017-.051-.039-.126-.038-.13-.037-.128-.035-.13-.033-.128-.033-.134-.03-.13-.029-.131-.026-.13-.026-.133-.024-.133-.023-.133-.02-.132-.02-.136-.017-.132-.016-.135-.014-.135-.012-.133-.012-.138-.009-.133-.007-.136-.006-.138-.004-.134-.003-.136v-.274l.003-.136.004-.134.006-.139.007-.136.01-.133.01-.138.013-.132.014-.135.016-.135.017-.132.02-.137.02-.13.023-.134.024-.133.024-.126.016-.16-.014-.161-.044-.155-.072-.145-.098-.128-.12-.108-.137-.084-.15-.057-.16-.029zm26.698 1.601l-.161.01-.157.04-.146.067-.131.093-.112.117-.088.135-.061.149-.033.157-.005.134.006.14.006.176.003.177.001.178-.001.177-.003.178-.006.177-.007.176-.01.177-.012.176-.015.176-.016.173-.018.175-.02.175-.024.174-.025.175-.026.17-.03.174-.03.173-.033.17-.036.172-.037.17-.04.17-.042.172-.043.168-.045.166-.048.169-.05.167-.052.168-.053.164-.056.166-.058.166-.06.16-.062.165-.062.158-.066.165-.068.16-.07.16-.07.158-.075.159-.074.155-.079.158-.08.158-.06.15-.03.158-.001.161.029.159.058.15.085.137.108.119.13.097.144.07.156.044.16.013.16-.017.155-.046.143-.074.127-.1.107-.12.07-.115.083-.164.003-.005.002-.004.082-.166.002-.005.003-.004.08-.167.002-.005.002-.004.078-.168.002-.005.002-.004.076-.169.002-.004.002-.005.074-.17.002-.004.002-.005.072-.17.002-.005.002-.005.07-.171.001-.005.002-.005.068-.172.002-.004.002-.005.065-.173.002-.005.002-.005.063-.173.002-.005.002-.005.06-.174.003-.005.001-.005.06-.175.001-.005.002-.005.057-.176.001-.005.002-.005.055-.177.001-.005.002-.005.052-.177.002-.005.001-.005.051-.178.001-.005.002-.005.048-.179.002-.005v-.005l.047-.179.001-.005.002-.005.044-.18v-.005l.002-.005.042-.18.001-.006.001-.005.04-.181.001-.005.001-.005.037-.182.002-.005v-.005l.036-.182v-.006l.002-.005.033-.182v-.006l.002-.005.03-.183.001-.005.001-.005.029-.184v-.005l.001-.006.027-.184v-.005l.001-.005.024-.185v-.005l.001-.005.022-.185v-.006l.001-.005.02-.185v-.006l.001-.005.017-.186v-.005l.001-.005.015-.187v-.005l.001-.005.013-.187v-.01l.01-.187.001-.006v-.005l.009-.187v-.011l.006-.187v-.011l.004-.188v-.011l.001-.188v-.01l-.001-.188v-.011l-.004-.188v-.011l-.006-.187v-.011l-.007-.145-.022-.16-.05-.152-.08-.141-.103-.124-.125-.102-.141-.077-.153-.05-.16-.02zM.938 15L.777 15l-.158.032-.15.06-.136.087-.117.11-.095.131-.068.146-.04.156-.012.133-.001.14v.01l.001.188v.011l.004.188v.011l.006.187v.011l.008.187v.011l.011.187v.005l.001.005.013.187v.01l.016.187v.01l.018.186v.011l.02.185.001.005v.006l.022.185.001.005v.005l.025.185v.005l.001.005.027.184v.006l.001.005.029.184v.005l.001.005.031.183.001.005.001.006.033.182.001.005.001.006.035.182.001.005.001.005.038.182v.005l.002.005.04.181v.005l.002.005.042.18.001.006.001.005.044.18.002.005v.005l.047.18.001.004.002.005.048.179.002.005.001.005.05.178.002.005.001.005.053.177.002.005.001.005.055.177.002.005.001.005.057.176.002.005.001.005.06.175.001.005.002.005.061.174.002.005.002.005.063.173.002.005.002.005.065.173.002.005.002.004.067.172.002.005.002.005.07.171.002.005.002.005.072.17.002.005.002.004.074.17.002.005.002.004.076.169.002.004.002.005.078.168.002.004.002.005.08.167.003.004.002.005.082.166.002.004.003.005.02.04.086.136.11.118.13.095.146.07.156.041.16.012.16-.019.155-.048.142-.075.126-.1.105-.123.08-.14.054-.152.024-.16-.006-.16-.036-.158-.051-.123-.018-.034-.078-.158L3.1 22.1l-.074-.16-.071-.157-.07-.16-.068-.16-.067-.165-.062-.158-.062-.164-.059-.161-.058-.166-.056-.166-.053-.164-.052-.168-.05-.167-.048-.17-.045-.165-.043-.168-.043-.172-.039-.17-.037-.17-.036-.172-.033-.17-.03-.173-.03-.174-.027-.17-.025-.175-.022-.174-.021-.175-.018-.175-.017-.173-.014-.176-.012-.176-.01-.177-.007-.176-.006-.177-.003-.178L1.73 16v-.134l-.013-.16-.044-.156-.072-.144-.097-.129-.12-.108-.137-.085-.15-.057L.938 15zm26.798 2.024l-.16.007-.157.038-.148.066-.132.092-.113.115-.09.134-.062.148-.03.127-.001.004-.023.134-.024.133-.026.133-.026.13-.03.132-.03.129-.032.134-.033.128-.035.13-.037.128-.038.13-.04.126-.04.128-.044.128-.044.126-.046.126-.048.126-.05.125-.05.125-.051.122-.054.123-.055.122-.056.12-.058.122-.06.12-.061.12-.063.119-.062.116-.067.119-.066.116-.069.115-.069.115-.07.113-.073.113-.074.112-.076.113-.077.112-.077.107-.08.11-.08.107-.085.11-.044.056-.088.135-.06.15-.033.158-.002.16.027.16.057.15.083.138.108.12.128.098.144.072.155.045.16.015.161-.016.155-.044.144-.073.128-.098.09-.099.05-.061.003-.004.003-.005.089-.115.003-.004.003-.005.088-.116.003-.004.003-.005.086-.117.003-.004.003-.005.084-.118.003-.004.003-.005.083-.12.003-.004.003-.004.081-.12.003-.005.003-.004.08-.121.003-.005.003-.004.078-.122.003-.005.003-.004.077-.123.002-.005.003-.004.075-.124.003-.005.003-.004.073-.125.003-.005.003-.004.072-.126.002-.004.003-.005.07-.126.003-.005.002-.005.07-.127.002-.004.002-.005.068-.128.002-.005.002-.004.066-.13.003-.004.002-.005.064-.13.002-.004.003-.005.062-.13.002-.005.003-.005.06-.13.003-.005.002-.005.06-.132.002-.005.002-.005.057-.132.003-.005.002-.005.056-.133.002-.005.002-.005.054-.134.002-.004.002-.005.053-.135.002-.005.002-.005.051-.135.002-.005.002-.005.05-.135.001-.005.002-.005.048-.137.001-.005.002-.005.046-.137.002-.005.002-.005.044-.137.002-.005.002-.005.042-.138.002-.005.001-.006.042-.138.001-.005.002-.005.04-.14V19.4l.002-.005.038-.14.001-.005.002-.005.036-.14.001-.005.001-.005.035-.141.001-.005.001-.005.033-.142.001-.005.001-.005.031-.141.001-.006.002-.005.029-.142v-.005l.002-.005.028-.143v-.005l.002-.005.025-.143.001-.006.001-.005.024-.143.001-.005.001-.006.001-.006.01-.161-.02-.16-.05-.154-.077-.141-.102-.125-.123-.104-.141-.079-.153-.051-.16-.022zM6.841 22.71l-.16.024-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.018.16.011.161.041.156.07.146.077.109.04.048.003.004.003.004.095.111.003.004.004.004.096.11.004.005.003.004.098.109.003.004.004.004.1.108.003.004.003.004.101.107.004.004.003.004.102.105.004.004.004.004.103.105.004.004.004.003.105.104.003.004.004.003.106.102.004.004.004.004.107.1.004.004.004.004.108.099.004.003.004.004.11.098.003.003.004.004.11.096.004.003.005.004.11.095.005.003.004.004.113.093.004.003.004.004.113.091.004.004.005.003.114.09.004.004.004.003.116.089.004.003.004.003.117.088.004.003.004.003.118.086.004.003.005.003.118.084.004.003.005.003.119.083.004.003.005.003.12.081.005.003.004.003.121.08.005.003.004.003.122.078.005.003.004.003.123.076.005.003.004.003.124.075.005.003.004.003.125.073.004.003.005.002.126.073.004.002.005.003.126.07.005.003.004.002.128.07.004.002.005.002.128.067.005.003.004.002.13.066.004.002.005.003.13.064.004.002.005.003.13.062.005.002.004.003.132.06.004.003.005.002.132.06.005.002.005.002.132.057.005.002.005.002.133.057.005.002.005.002.133.054.005.002.005.002.13.05.154.045.16.016.16-.015.156-.045.144-.072.128-.098.108-.12.083-.138.057-.15.028-.16-.003-.16-.032-.159-.061-.149-.088-.135-.11-.117-.132-.094-.12-.058-.124-.049-.126-.051-.122-.051-.122-.054-.12-.054-.126-.058-.119-.057-.12-.06-.12-.06-.118-.063-.117-.064-.119-.066-.116-.066-.115-.068-.115-.07-.113-.07-.115-.074-.112-.074-.11-.075-.11-.076-.112-.08-.11-.08-.109-.081-.106-.082-.104-.082-.106-.086-.105-.087-.101-.086-.105-.091-.1-.09-.1-.091-.1-.094-.097-.094-.1-.098-.093-.095-.096-.1-.093-.098-.092-.101-.089-.1-.09-.102-.088-.104-.036-.043-.114-.114-.133-.091-.148-.065-.157-.036-.161-.006zm15.063 2.701l-.16.014-.156.044-.12.057-.06.034-.12.066-.117.064-.118.062-.12.061-.12.06-.118.057-.126.058-.12.054-.122.054-.122.05-.126.052-.125.05-.124.046-.127.047-.125.044-.129.043-.126.04-.13.042-.128.038-.127.035-.13.036-.131.034-.129.031-.132.03-.13.03-.135.027-.133.026-.13.023-.13.022-.137.021-.132.02-.134.017-.132.015-.138.015-.135.013-.133.01-.138.01-.136.007-.134.006-.136.004-.14.003-.16.018-.155.047-.142.076-.127.1-.105.122-.08.14-.054.151-.025.16.006.16.035.158.064.148.09.134.114.114.133.092.147.065.157.036.134.008.145-.002h.011l.147-.005h.01l.147-.007h.011l.146-.009h.011l.146-.01h.005l.005-.001.146-.012h.011l.145-.014h.005l.006-.001.145-.016h.011l.144-.018h.006l.005-.001.144-.02h.011l.144-.021.005-.001h.006l.143-.023.006-.001h.005l.143-.025h.005l.006-.002.143-.026h.005l.005-.002.143-.027.005-.001.005-.001.142-.03h.005l.005-.002.142-.03.005-.002.005-.001.142-.033.005-.001.005-.001.14-.035.006-.001.005-.001.14-.037h.005l.005-.002.14-.038.005-.002h.005l.14-.04.005-.002.005-.001.138-.042.005-.001.006-.002.138-.043.005-.001.005-.002.137-.044.005-.002.005-.002.137-.046.005-.002.005-.001.137-.048.005-.002.005-.002.135-.05.005-.001.005-.002.135-.051.005-.002.005-.002.135-.053.005-.002.004-.002.134-.054.005-.002.005-.002.133-.057.005-.002.005-.002.132-.057.005-.003.005-.002.132-.06.005-.001.004-.002.131-.061.005-.003.005-.002.13-.062.005-.003.005-.002.13-.064.004-.003.005-.002.128-.066.005-.002.005-.003.128-.067.005-.002.004-.003.127-.069.005-.002.005-.003.126-.07.005-.003.004-.003.065-.037.132-.093.112-.115.089-.135.062-.149.034-.157.003-.161-.026-.16-.055-.15-.082-.14-.107-.12-.127-.1-.144-.073-.154-.046-.16-.016zM6.33 26.818l-.16.023-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.02.16.012.161.041.156.07.146.094.13.096.093.032.026.004.003.004.004.145.117.004.003.004.004.146.115.005.003.004.004.147.113.005.003.004.004.149.111.004.003.004.003.15.11.005.003.004.003.151.108.004.003.005.003.152.106.005.003.004.003.154.104.004.003.005.003.154.102.005.002.004.003.156.1.005.003.004.003.157.098.005.003.004.002.159.096.004.003.005.003.16.094.004.003.004.002.16.092.005.003.005.002.161.09.005.003.005.002.162.088.005.003.004.002.164.086.005.003.004.002.165.084.005.003.004.002.166.082.004.002.005.003.167.08.004.002.005.002.168.078.004.002.005.002.168.076.005.002.005.002.17.074.004.002.005.002.17.072.005.002.005.002.17.07.006.002.005.001.171.068.005.002.005.002.173.065.005.002.005.002.173.063.005.002.005.002.174.06.005.003.005.001.175.06.005.001.005.002.176.057.005.001.005.002.176.055.006.001.005.002.177.052.005.002.005.001.178.05.005.002.005.002.178.048.006.001.005.002.179.046.005.001.005.002.18.044h.005l.005.002.18.042.006.001.005.001.159.035.16.02.16-.01.157-.04.146-.069.13-.094.112-.117.087-.136.06-.149.033-.158.002-.161-.028-.159-.057-.15-.084-.138-.108-.12-.128-.098-.144-.072-.128-.039-.154-.033-.168-.04-.171-.041-.17-.044-.168-.046-.167-.047-.168-.05-.165-.051-.166-.054-.166-.056-.163-.057-.165-.06-.161-.062-.164-.064-.16-.065-.16-.068-.162-.07-.157-.07-.157-.074-.157-.075-.156-.077-.153-.079-.156-.082-.153-.082-.154-.086-.15-.086-.152-.09-.148-.09-.147-.092-.149-.095-.145-.095-.144-.098-.145-.1-.143-.102-.14-.103-.14-.104-.14-.108-.139-.11-.136-.11-.027-.022-.133-.091-.148-.065-.157-.036-.161-.006zm19.215.087l-.16.01-.157.039-.146.067-.11.076-.064.051-.139.11-.14.108-.14.104-.14.103-.143.101-.145.101-.144.098-.145.095-.149.095-.148.093-.147.089-.152.09-.15.086-.154.086-.153.082-.156.082-.153.079-.156.077-.157.075-.158.073-.157.071-.16.07-.16.068-.161.065-.164.064-.161.061-.165.06-.163.058-.166.056-.166.054-.166.051-.167.05-.167.047-.17.046-.168.044-.171.042-.168.039-.17.037-.11.023-.154.047-.143.075-.126.1-.106.122-.081.139-.054.152-.025.16.006.16.035.158.063.148.09.133.114.115.132.092.148.065.157.037.16.007.133-.016.115-.024.005-.001.005-.001.181-.04h.005l.005-.002.18-.042.006-.001.005-.001.18-.044.005-.002.005-.001.18-.046.004-.002h.005l.179-.05h.005l.005-.002.178-.05.005-.002.005-.002.177-.052.005-.002.005-.001.177-.055.005-.002.005-.001.176-.057.005-.002.005-.002.175-.059.005-.001.005-.002.174-.061.005-.002.005-.002.173-.063.005-.002.005-.002.173-.065.004-.002.005-.002.172-.068.005-.002.005-.002.171-.07.005-.001.005-.002.17-.072.005-.002.004-.002.17-.074.005-.002.004-.002.169-.076.004-.002.005-.002.168-.078.004-.002.005-.003.167-.08.004-.002.005-.002.166-.082.004-.002.005-.003.165-.084.004-.002.005-.003.163-.086.005-.002.005-.003.162-.088.005-.002.005-.003.161-.09.005-.002.004-.003.16-.092.005-.003.005-.002.16-.094.004-.003.004-.003.158-.096.005-.002.004-.003.158-.098.004-.003.005-.003.156-.1.004-.003.004-.003.155-.101.005-.003.004-.003.154-.104.004-.003.004-.003.153-.106.004-.003.005-.003.151-.108.004-.003.005-.003.15-.11.004-.003.004-.003.149-.112.004-.003.004-.003.148-.113.004-.004.004-.003.147-.115.004-.004.004-.003.068-.055.116-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.05-.153-.08-.14-.103-.125-.124-.102-.142-.077-.153-.05-.16-.02z"
   })));
 
@@ -35390,11 +35846,11 @@
   var IntermediateEventCatchNonInterruptingMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$L({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$L({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M23.637 13.902l-7.625-5.535-7.624 5.535 2.912 8.956h9.425l2.912-8.956zm-1.017.33l-2.524 7.762H11.93l-2.524-7.762 6.607-4.796 6.608 4.796zM16.012.311c-1.448.02-2.93.157-4.302.628-.852.447-.255 1.863.66 1.574 2.255-.608 4.648-.607 6.922-.108.934.075 1.228-1.376.338-1.67C18.451.44 17.227.317 16.012.311zm9.012 2.934c-.913-.104-1.272 1.258-.454 1.648 1.834 1.36 3.293 3.185 4.31 5.22.526.776 1.842.098 1.515-.78a15.522 15.522 0 00-5.06-6.006c-.1-.044-.203-.07-.31-.082zM6.65 3.59c-.762.089-1.24.809-1.805 1.267C3.38 6.295 2.163 8.007 1.37 9.905c-.266.898 1.094 1.484 1.564.675a14.825 14.825 0 014.327-5.56c.476-.515.09-1.419-.612-1.431zm9.362.007c-.698.066-1.689-.16-2.033.635-.282.733.535 1.358 1.217 1.125 1.806-.147 3.63.203 5.293.907.902.255 1.472-1.112.656-1.573-1.6-.735-3.374-1.089-5.133-1.094zm-5.479 1.365c-.835.15-1.517.76-2.21 1.226-1.203.94-2.318 2.061-3.057 3.402-.33.904 1.063 1.552 1.547.723 1.045-1.656 2.596-2.925 4.285-3.873.545-.499.171-1.463-.565-1.478zm13.903 2.115c-.875-.07-1.22 1.173-.501 1.627 1.325 1.34 2.188 3.062 2.748 4.84.468.84 1.869.21 1.557-.699-.604-2.118-1.751-4.097-3.351-5.615a.93.93 0 00-.453-.153zM4.467 13.132c-.822-.07-.996.826-1.046 1.455-.256 1.93-.094 3.933.562 5.769.406.844 1.807.365 1.612-.551a11.498 11.498 0 01-.334-5.808.874.874 0 00-.794-.865zm26.687 1.6c-.746-.037-1.014.785-.879 1.395.043 2.393-.57 4.771-1.66 6.894-.31.884 1.02 1.536 1.53.75a15.632 15.632 0 001.821-8.372.876.876 0 00-.812-.667zm-30.197.571c-.782-.073-1.044.775-.933 1.404.068 2.414.661 4.833 1.809 6.962.534.77 1.842.076 1.505-.798a14.833 14.833 0 01-1.603-6.861.876.876 0 00-.778-.707zm26.787 2.024c-.777-.048-.952.797-1.021 1.392-.354 1.692-1.202 3.231-2.216 4.608-.407.872.925 1.638 1.48.852 1.361-1.733 2.296-3.827 2.582-6.017a.874.874 0 00-.825-.835zM6.857 23.012c-.808.018-1.082 1.122-.47 1.59 1.393 1.607 3.187 2.886 5.194 3.599.91.222 1.43-1.165.598-1.596a11.495 11.495 0 01-4.723-3.396.899.899 0 00-.599-.197zm15.057 2.7c-.81.194-1.504.76-2.325.972-1.203.458-2.5.536-3.758.664-.869.307-.573 1.728.346 1.663 2.201-.034 4.412-.626 6.293-1.778.604-.495.227-1.532-.556-1.521zM6.346 27.118c-.833.008-1.11 1.218-.395 1.617 1.986 1.602 4.358 2.749 6.868 3.226.933.076 1.227-1.376.338-1.67a14.838 14.838 0 01-6.345-3.066.929.929 0 00-.466-.107zm19.208.087c-.766.09-1.241.841-1.922 1.158-1.516.991-3.251 1.58-4.996 2.005-.872.405-.346 1.849.584 1.604 2.543-.526 4.98-1.66 6.963-3.344.47-.52.072-1.42-.63-1.423z"
   })));
 
@@ -35402,11 +35858,11 @@
   var IntermediateEventCatchNonInterruptingParallelIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$K({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$K({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M13.51 9.081v4.428H9.08v4.982h4.428v4.428h4.982V18.49h4.428v-4.982H18.49V9.081h-4.982zm.83.83h3.32v4.428h4.429v3.322H17.66v4.428h-3.32v-4.454H9.91v-3.296h4.428V9.911zM16 0h-.005l-.188.001h-.011l-.188.004h-.011l-.187.006h-.011l-.187.008h-.005L15.2.02l-.187.01h-.005l-.005.001-.187.013h-.011L14.62.06h-.01l-.186.018h-.011l-.185.02-.005.001h-.006l-.185.022-.005.001h-.005l-.185.025h-.005l-.005.001-.185.027h-.005l-.005.001-.184.029h-.005l-.005.001-.183.031-.006.001-.005.001-.182.033-.006.001-.005.001-.182.035-.005.001-.005.001-.182.038h-.005l-.005.002-.181.04h-.005l-.005.002-.18.042-.006.001-.005.001-.18.044-.005.002h-.005l-.17.045-.152.054-.139.082-.121.106-.1.127-.074.143-.046.155-.017.16.013.16.043.156.07.145.097.13.119.108.137.085.15.058.159.03.16-.001.133-.023.165-.043.168-.041.171-.04.171-.037.172-.036.17-.033.173-.03.17-.03.177-.027.171-.025.175-.022.175-.02.175-.02.176-.016.175-.014.177-.012.176-.01.177-.007.174-.006.177-.003L16 1.73h.177l.178.004.174.006.177.007.176.01.177.012.175.014.176.017.175.018.175.02.175.023.171.025.176.027.17.03.174.03.17.033.171.036.154.033.16.02.161-.01.156-.04.146-.069.131-.094.111-.117.087-.135.061-.15.032-.158.002-.16-.027-.16-.057-.15L20 .714l-.108-.12-.128-.097-.145-.073-.128-.038-.158-.035-.005-.001-.005-.001L19.14.31h-.005l-.005-.002-.182-.035h-.006l-.005-.002-.182-.033h-.006l-.005-.002-.183-.03-.005-.001-.006-.001-.183-.029h-.005l-.006-.001-.184-.027h-.005l-.005-.001-.185-.024h-.005L17.968.12 17.783.1l-.006-.001h-.005l-.185-.02h-.006l-.005-.001L17.39.06h-.005L17.38.06l-.187-.015h-.005l-.005-.001-.187-.013h-.011L16.8.02h-.011L16.6.01h-.011l-.187-.006h-.011L16.204 0h-.011L16.005 0H16zm9.015 2.935l-.16.004-.158.033-.15.062-.134.09-.116.111-.093.132-.067.147-.038.156-.01.161.022.16.05.153.078.141.103.124.102.087.045.034.142.106.137.105.14.11.136.11.135.112.134.115.134.117.13.115.132.122.128.12.127.122.126.125.124.126.124.128.121.13.118.128.118.132.117.133.113.134.113.136.11.136.109.137.109.142.104.14.103.14.101.142.1.144.099.146.095.145.094.147.093.15.092.15.087.149.087.15.084.152.084.155.08.152.08.155.04.081.084.138.11.119.128.096.145.072.155.043.16.013.16-.016.155-.046.144-.074.127-.099.106-.12.083-.14.055-.151.026-.16-.004-.16-.034-.158-.05-.124-.042-.085-.002-.004-.003-.005-.084-.165-.002-.004-.003-.005-.086-.164-.002-.004-.003-.005-.088-.162-.002-.005-.003-.005-.09-.161-.002-.005-.003-.004-.092-.16-.003-.005-.002-.005-.094-.16-.003-.004-.003-.004-.096-.159-.002-.004-.003-.005-.098-.157-.003-.004-.003-.005-.1-.156-.003-.004-.003-.005-.101-.154-.003-.005-.003-.004-.104-.154-.003-.004-.003-.005-.106-.152-.003-.005-.003-.004-.108-.151-.003-.004-.003-.005-.11-.15-.003-.004-.003-.004-.111-.15-.004-.003-.003-.005-.113-.147-.004-.004-.003-.005-.115-.146-.004-.004-.003-.004-.117-.145-.004-.004-.003-.004-.12-.144-.003-.004-.003-.004-.121-.142-.004-.004-.003-.004-.123-.141-.003-.004-.004-.004-.125-.14-.003-.004-.004-.004-.127-.138-.003-.004-.004-.004-.128-.136-.004-.004-.004-.004-.13-.135-.004-.004-.004-.004-.132-.134-.003-.004-.004-.003-.134-.133-.004-.003-.004-.004-.135-.13-.004-.004-.004-.004-.136-.128-.004-.004-.004-.004-.138-.126-.004-.004-.004-.003-.14-.125-.004-.004-.004-.003-.14-.123-.005-.004-.004-.003-.142-.121-.004-.004-.004-.003-.144-.12-.004-.003-.004-.003-.145-.117-.004-.004-.004-.003-.147-.115-.004-.004-.004-.003-.148-.113-.004-.003-.004-.004-.149-.111-.004-.003-.004-.004-.05-.036-.14-.083-.15-.055-.16-.027zM6.634 3.28l-.161.008-.157.037-.147.066-.111.074-.04.032-.005.003-.004.004-.145.117-.004.003-.004.004-.144.119-.004.003-.004.004-.142.12-.004.004-.004.004-.141.123-.004.003-.004.004-.14.125-.004.003-.004.004-.138.126-.004.004-.004.004-.136.128-.004.004-.004.004-.135.13-.004.004-.004.003-.134.133-.004.003-.004.004-.132.134-.003.004-.004.004-.13.135-.004.004-.004.004-.128.136-.004.004-.004.004-.126.138-.004.004-.003.004-.125.14-.004.004-.003.004-.123.14-.004.005-.003.004-.121.142-.004.004-.003.004-.12.144-.003.004-.003.004-.117.145-.004.004-.003.004-.115.146-.004.005-.003.004-.113.147-.003.005-.004.004-.111.149-.003.004-.004.004-.11.15-.002.005-.003.004-.108.151-.003.004-.003.005-.106.152-.003.005-.003.004-.104.154-.003.004-.003.005-.102.154-.003.005-.002.004-.1.156-.003.005-.003.004-.098.157-.003.005-.003.004-.096.159-.002.004-.003.005-.094.16-.003.004-.002.004-.092.16-.003.005-.003.005-.09.161-.002.005-.003.005-.088.162-.002.005-.003.004-.086.164-.002.005-.002.004-.084.165-.003.005-.002.004-.082.166-.002.004-.003.005-.08.167-.002.004-.002.005-.078.168-.002.004-.002.005-.045.1-.053.153-.023.16.007.16.037.157.065.148.092.132.114.114.134.09.148.064.157.035.161.006.16-.025.152-.054.14-.08.121-.106.1-.126.065-.118.043-.095.074-.16.075-.155.077-.157.08-.155.08-.152.083-.155.085-.152.086-.15.088-.149.091-.15.094-.15.094-.147.095-.145.099-.146.1-.144.1-.142.104-.14.104-.14.11-.142.107-.137.11-.136.114-.136.113-.134.117-.133.118-.132.117-.129.122-.13.124-.127.123-.126.127-.125.127-.122.128-.12.132-.122.13-.115.133-.117.135-.115.135-.111.136-.11.037-.03.117-.11.094-.132.068-.146.04-.156.01-.161-.02-.16-.05-.154-.076-.141-.102-.125-.123-.104-.14-.08-.153-.051-.16-.023zM16 3.286h-.005l-.148.001h-.01l-.147.003h-.011l-.147.005h-.011l-.146.007h-.011l-.146.009h-.011l-.146.01h-.005l-.005.001-.146.012h-.011l-.145.014h-.006l-.005.001-.05.006-.158.031-.15.06-.135.088-.117.111-.094.13-.069.147-.04.156-.01.16.019.16.049.154.076.142.102.125.123.105.14.08.152.051.16.023.134-.003.045-.005.135-.013.133-.01.136-.01.135-.007.137-.006.136-.004.136-.003h.274l.136.003.136.004.136.006.136.007.136.01.133.01.135.013.135.014.135.016.134.018.132.018.134.021.133.023.133.024.133.025.13.027.132.03.132.03.129.031.13.034.129.035.129.036.13.04.126.038.128.042.126.042.128.045.127.047.126.047.12.048.127.051.123.052.006.002.147.048.16.021.16-.009.157-.038.147-.067.131-.093.112-.116.089-.135.062-.149.033-.158.004-.16-.027-.16-.055-.151-.083-.139-.107-.12-.127-.099-.118-.063-.004-.001-.005-.003-.005-.002-.133-.056-.005-.002-.005-.002-.134-.054-.004-.002-.005-.002-.135-.053-.005-.002-.005-.002-.135-.051-.005-.002-.005-.002-.135-.05-.005-.001-.005-.002-.137-.048-.005-.001-.005-.002-.137-.046-.005-.002-.005-.002-.137-.044-.005-.002-.005-.001-.138-.043-.006-.002-.005-.001-.138-.042-.005-.001-.005-.002-.14-.04H19.4l-.005-.002-.14-.038-.005-.001-.005-.002-.14-.036-.005-.001-.005-.001-.141-.035-.005-.001-.005-.001-.142-.033-.005-.001-.005-.001-.142-.031-.005-.002h-.005l-.142-.03-.005-.001-.005-.001-.143-.028h-.005l-.005-.002-.143-.025-.006-.001-.005-.001-.143-.024-.005-.001-.006-.001-.143-.022-.006-.001h-.005l-.144-.022h-.005l-.006-.001-.144-.019h-.005l-.006-.001-.144-.017h-.006l-.005-.001-.145-.016h-.011l-.145-.014H17.1l-.005-.001-.146-.012h-.01l-.146-.01-.006-.001h-.005l-.146-.009h-.011l-.147-.006h-.01l-.147-.005h-.011l-.147-.003h-.011l-.147-.001H16zm-5.482 1.366l-.16.008-.157.037-.123.053-.06.032-.005.002-.004.003-.128.069-.004.002-.005.003-.126.07-.005.003-.004.002-.126.072-.005.003-.004.003-.125.073-.004.003-.005.003-.124.075-.004.003-.005.002-.123.077-.004.003-.005.003-.122.078-.004.003-.005.003-.121.08-.004.002-.005.003-.12.082-.005.003-.004.003-.12.083-.004.003-.004.003-.118.084-.005.003-.004.003-.118.086-.004.003-.004.003-.117.088-.004.003-.004.003-.116.089-.004.003-.004.004-.114.09-.005.003-.004.003-.113.092-.004.004-.004.003-.113.093-.004.004-.004.003-.111.095-.005.003-.004.004-.11.096-.004.004-.004.003-.11.098-.003.003-.004.004-.108.1-.004.003-.004.003-.107.101-.004.004-.004.003-.106.102-.004.004-.003.004-.105.103-.004.004-.004.004-.103.105-.004.004-.004.003-.102.106-.003.004-.004.004-.1.107-.004.004-.004.004-.099.108-.004.004-.003.004-.098.11-.003.003-.004.004-.096.11-.004.005-.003.004-.095.111-.003.004-.004.004-.093.113-.003.004-.004.004-.092.113-.003.004-.003.005-.09.114-.004.004-.003.004-.089.116-.003.004-.003.004-.088.117-.003.004-.003.004-.086.118-.003.004-.003.005-.084.118-.003.004-.003.005-.083.12-.003.003-.003.005-.082.12-.003.005-.002.004-.068.103-.076.142-.048.154-.018.16.011.161.041.156.07.146.095.13.117.11.136.086.15.06.158.03.162.002.158-.03.15-.057.138-.085.119-.109.082-.105.065-.099.075-.11.077-.113.077-.107.08-.11.08-.108.084-.108.083-.105.086-.106.086-.104.088-.104.089-.101.09-.102.093-.101.093-.099.094-.097.095-.096.098-.097.098-.095.099-.093.1-.092.103-.091.101-.089.104-.088.104-.086.106-.086.106-.083.106-.082.109-.082.108-.079.11-.078.11-.076.112-.076.112-.074.113-.072.113-.071.115-.07.115-.068.118-.067.117-.065.12-.065.054-.029.135-.088.116-.111.094-.132.068-.146.04-.156.009-.161-.02-.16-.05-.153-.078-.142-.102-.125-.123-.103-.141-.079-.153-.051-.16-.022zm13.91 2.116l-.162.008-.157.037-.147.066-.132.092-.113.116-.09.134-.063.148-.034.157-.005.162.025.159.055.152.082.138.086.103.09.09.094.098.092.099.093.1.091.103.089.101.088.104.086.104.086.106.083.105.083.108.08.108.081.11.077.107.077.112.075.111.075.114.072.113.071.113.07.114.068.118.067.115.065.118.064.117.062.117.061.121.059.119.059.122.056.121.054.12.055.125.051.123.051.125.048.123.048.127.047.126.044.125.043.128.042.129.039.126.038.13.022.076.058.15.085.137.11.119.129.096.145.07.155.043.16.013.161-.017.154-.046.144-.075.126-.1.106-.12.082-.14.055-.151.025-.16-.005-.16-.026-.132-.023-.082-.002-.005-.001-.005-.042-.139-.001-.005-.002-.005-.043-.138-.001-.005-.002-.005-.044-.137-.002-.005-.002-.005-.046-.137-.002-.005-.001-.005-.048-.137-.002-.005-.002-.005-.05-.135-.001-.005-.002-.005-.051-.135-.002-.005-.002-.005-.053-.135-.002-.005-.002-.005-.054-.133-.002-.005-.002-.005-.057-.133-.002-.005-.002-.005-.057-.132-.003-.005-.002-.005-.06-.132-.001-.005-.002-.004-.061-.132-.003-.004-.002-.005-.063-.13-.002-.005-.002-.005-.064-.13-.003-.004-.002-.005-.066-.129-.002-.004-.003-.005-.067-.128-.002-.005-.003-.004-.069-.128-.002-.004-.003-.005-.07-.126-.003-.005-.003-.004-.072-.126-.002-.005-.003-.004-.074-.125-.002-.004-.003-.005-.075-.124-.003-.004-.003-.005-.076-.123-.003-.004-.003-.005-.078-.122-.003-.004-.003-.005-.08-.121-.003-.004-.003-.005-.081-.12-.003-.005-.003-.004-.083-.12-.003-.004-.003-.004-.084-.118-.003-.005-.003-.004-.086-.118-.003-.004-.004-.004-.087-.117-.003-.004-.003-.004-.09-.116-.002-.004-.004-.004-.09-.114-.003-.005-.004-.004-.091-.113-.004-.004-.003-.004-.094-.113-.003-.004-.003-.004-.095-.111-.004-.004-.003-.004-.096-.11-.004-.005-.003-.004-.098-.11-.004-.003-.003-.004-.1-.108-.003-.004-.004-.004-.1-.107-.004-.004-.004-.004-.102-.106-.003-.003-.004-.004-.093-.095-.124-.103-.14-.08-.153-.05-.16-.023zM4.45 12.826l-.161.002-.158.032-.15.06-.135.088-.118.11-.094.131-.069.146-.035.129-.026.132v.005l-.002.005-.025.143-.001.005-.001.006-.024.143-.001.005-.001.006-.022.143-.001.006-.001.005-.02.144-.001.005-.001.005-.019.145v.005l-.001.006-.017.144v.006l-.001.005-.016.145v.011l-.014.145v.005l-.001.006-.012.146v.01l-.01.146-.001.006v.005l-.009.146v.011l-.007.146v.011l-.004.147v.011l-.003.147v.01l-.002.148v.01l.001.148v.01l.003.147v.011l.005.147v.01l.007.147v.011l.009.146v.011l.01.146v.01l.013.146v.011l.014.145v.005l.001.006.016.145v.011l.018.144v.006l.001.005.019.144v.006l.001.005.021.144v.005l.002.006.022.143v.006l.002.005.024.143v.005l.002.006.025.143.001.005.001.005.028.143.001.005.001.005.03.142v.005l.002.006.03.141.002.005.001.005.033.142v.005l.002.005.035.14v.006l.002.005.036.14.002.005.001.005.038.14.001.005.002.005.04.14v.005l.002.005.042.138.001.006.002.005.042.138.002.005.002.005.017.054.064.148.09.134.114.114.132.092.148.065.157.037.16.007.16-.023.153-.052.14-.08.123-.104.102-.125.076-.142.049-.153.02-.16-.011-.161-.031-.13-.017-.051-.039-.126-.038-.13-.037-.128-.035-.13-.033-.128-.033-.134-.03-.13-.029-.131-.026-.13-.026-.133-.024-.133-.023-.133-.02-.132-.02-.136-.017-.132-.016-.135-.014-.135-.012-.133-.012-.138-.009-.133-.007-.136-.006-.138-.004-.134-.003-.136v-.274l.003-.136.004-.134.006-.139.007-.136.01-.133.01-.138.013-.132.014-.135.016-.135.017-.132.02-.137.02-.13.023-.134.024-.133.024-.126.016-.16-.014-.161-.044-.155-.072-.145-.098-.128-.12-.108-.137-.084-.15-.057-.16-.029zm26.698 1.601l-.161.01-.157.04-.146.067-.131.093-.112.117-.088.135-.061.149-.033.157-.005.134.006.14.006.176.003.177.001.178-.001.177-.003.178-.006.177-.007.176-.01.177-.012.176-.015.176-.016.173-.018.175-.02.175-.024.174-.025.175-.026.17-.03.174-.03.173-.033.17-.036.172-.037.17-.04.17-.042.172-.043.168-.045.166-.048.169-.05.167-.052.168-.053.164-.056.166-.058.166-.06.16-.062.165-.062.158-.066.165-.068.16-.07.16-.07.158-.075.159-.074.155-.079.158-.08.158-.06.15-.03.158-.001.161.029.159.058.15.085.137.108.119.13.097.144.07.156.044.16.013.16-.017.155-.046.143-.074.127-.1.107-.12.07-.115.083-.164.003-.005.002-.004.082-.166.002-.005.003-.004.08-.167.002-.005.002-.004.078-.168.002-.005.002-.004.076-.169.002-.004.002-.005.074-.17.002-.004.002-.005.072-.17.002-.005.002-.005.07-.171.001-.005.002-.005.068-.172.002-.004.002-.005.065-.173.002-.005.002-.005.063-.173.002-.005.002-.005.06-.174.003-.005.001-.005.06-.175.001-.005.002-.005.057-.176.001-.005.002-.005.055-.177.001-.005.002-.005.052-.177.002-.005.001-.005.051-.178.001-.005.002-.005.048-.179.002-.005v-.005l.047-.179.001-.005.002-.005.044-.18v-.005l.002-.005.042-.18.001-.006.001-.005.04-.181.001-.005.001-.005.037-.182.002-.005v-.005l.036-.182v-.006l.002-.005.033-.182v-.006l.002-.005.03-.183.001-.005.001-.005.029-.184v-.005l.001-.006.027-.184v-.005l.001-.005.024-.185v-.005l.001-.005.022-.185v-.006l.001-.005.02-.185v-.006l.001-.005.017-.186v-.005l.001-.005.015-.187v-.005l.001-.005.013-.187v-.01l.01-.187.001-.006v-.005l.009-.187v-.011l.006-.187v-.011l.004-.188v-.011l.001-.188v-.01l-.001-.188v-.011l-.004-.188v-.011l-.006-.187v-.011l-.007-.145-.022-.16-.05-.152-.08-.141-.103-.124-.125-.102-.141-.077-.153-.05-.16-.02zM.938 15L.777 15l-.158.032-.15.06-.136.087-.117.11-.095.131-.068.146-.04.156-.012.133-.001.14v.01l.001.188v.011l.004.188v.011l.006.187v.011l.008.187v.011l.011.187v.005l.001.005.013.187v.01l.016.187v.01l.018.186v.011l.02.185.001.005v.006l.022.185.001.005v.005l.025.185v.005l.001.005.027.184v.006l.001.005.029.184v.005l.001.005.031.183.001.005.001.006.033.182.001.005.001.006.035.182.001.005.001.005.038.182v.005l.002.005.04.181v.005l.002.005.042.18.001.006.001.005.044.18.002.005v.005l.047.18.001.004.002.005.048.179.002.005.001.005.05.178.002.005.001.005.053.177.002.005.001.005.055.177.002.005.001.005.057.176.002.005.001.005.06.175.001.005.002.005.061.174.002.005.002.005.063.173.002.005.002.005.065.173.002.005.002.004.067.172.002.005.002.005.07.171.002.005.002.005.072.17.002.005.002.004.074.17.002.005.002.004.076.169.002.004.002.005.078.168.002.004.002.005.08.167.003.004.002.005.082.166.002.004.003.005.02.04.086.136.11.118.13.095.146.07.156.041.16.012.16-.019.155-.048.142-.075.126-.1.105-.123.08-.14.054-.152.024-.16-.006-.16-.036-.158-.051-.123-.018-.034-.078-.158L3.1 22.1l-.074-.16-.071-.157-.07-.16-.068-.16-.067-.165-.062-.158-.062-.164-.059-.161-.058-.166-.056-.166-.053-.164-.052-.168-.05-.167-.048-.17-.045-.165-.043-.168-.043-.172-.039-.17-.037-.17-.036-.172-.033-.17-.03-.173-.03-.174-.027-.17-.025-.175-.022-.174-.021-.175-.018-.175-.017-.173-.014-.176-.012-.176-.01-.177-.007-.176-.006-.177-.003-.178L1.73 16v-.134l-.013-.16-.044-.156-.072-.144-.097-.129-.12-.108-.137-.085-.15-.057L.938 15zm26.798 2.024l-.16.007-.157.038-.148.066-.132.092-.113.115-.09.134-.062.148-.03.127-.001.004-.023.134-.024.133-.026.133-.026.13-.03.132-.03.129-.032.134-.033.128-.035.13-.037.128-.038.13-.04.126-.04.128-.044.128-.044.126-.046.126-.048.126-.05.125-.05.125-.051.122-.054.123-.055.122-.056.12-.058.122-.06.12-.061.12-.063.119-.062.116-.067.119-.066.116-.069.115-.069.115-.07.113-.073.113-.074.112-.076.113-.077.112-.077.107-.08.11-.08.107-.085.11-.044.056-.088.135-.06.15-.033.158-.002.16.027.16.057.15.083.138.108.12.128.098.144.072.155.045.16.015.161-.016.155-.044.144-.073.128-.098.09-.099.05-.061.003-.004.003-.005.089-.115.003-.004.003-.005.088-.116.003-.004.003-.005.086-.117.003-.004.003-.005.084-.118.003-.004.003-.005.083-.12.003-.004.003-.004.081-.12.003-.005.003-.004.08-.121.003-.005.003-.004.078-.122.003-.005.003-.004.077-.123.002-.005.003-.004.075-.124.003-.005.003-.004.073-.125.003-.005.003-.004.072-.126.002-.004.003-.005.07-.126.003-.005.002-.005.07-.127.002-.004.002-.005.068-.128.002-.005.002-.004.066-.13.003-.004.002-.005.064-.13.002-.004.003-.005.062-.13.002-.005.003-.005.06-.13.003-.005.002-.005.06-.132.002-.005.002-.005.057-.132.003-.005.002-.005.056-.133.002-.005.002-.005.054-.134.002-.004.002-.005.053-.135.002-.005.002-.005.051-.135.002-.005.002-.005.05-.135.001-.005.002-.005.048-.137.001-.005.002-.005.046-.137.002-.005.002-.005.044-.137.002-.005.002-.005.042-.138.002-.005.001-.006.042-.138.001-.005.002-.005.04-.14V19.4l.002-.005.038-.14.001-.005.002-.005.036-.14.001-.005.001-.005.035-.141.001-.005.001-.005.033-.142.001-.005.001-.005.031-.141.001-.006.002-.005.029-.142v-.005l.002-.005.028-.143v-.005l.002-.005.025-.143.001-.006.001-.005.024-.143.001-.005.001-.006.001-.006.01-.161-.02-.16-.05-.154-.077-.141-.102-.125-.123-.104-.141-.079-.153-.051-.16-.022zM6.841 22.71l-.16.024-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.018.16.011.161.041.156.07.146.077.109.04.048.003.004.003.004.095.111.003.004.004.004.096.11.004.005.003.004.098.109.003.004.004.004.1.108.003.004.003.004.101.107.004.004.003.004.102.105.004.004.004.004.103.105.004.004.004.003.105.104.003.004.004.003.106.102.004.004.004.004.107.1.004.004.004.004.108.099.004.003.004.004.11.098.003.003.004.004.11.096.004.003.005.004.11.095.005.003.004.004.113.093.004.003.004.004.113.091.004.004.005.003.114.09.004.004.004.003.116.089.004.003.004.003.117.088.004.003.004.003.118.086.004.003.005.003.118.084.004.003.005.003.119.083.004.003.005.003.12.081.005.003.004.003.121.08.005.003.004.003.122.078.005.003.004.003.123.076.005.003.004.003.124.075.005.003.004.003.125.073.004.003.005.002.126.073.004.002.005.003.126.07.005.003.004.002.128.07.004.002.005.002.128.067.005.003.004.002.13.066.004.002.005.003.13.064.004.002.005.003.13.062.005.002.004.003.132.06.004.003.005.002.132.06.005.002.005.002.132.057.005.002.005.002.133.057.005.002.005.002.133.054.005.002.005.002.13.05.154.045.16.016.16-.015.156-.045.144-.072.128-.098.108-.12.083-.138.057-.15.028-.16-.003-.16-.032-.159-.061-.149-.088-.135-.11-.117-.132-.094-.12-.058-.124-.049-.126-.051-.122-.051-.122-.054-.12-.054-.126-.058-.119-.057-.12-.06-.12-.06-.118-.063-.117-.064-.119-.066-.116-.066-.115-.068-.115-.07-.113-.07-.115-.074-.112-.074-.11-.075-.11-.076-.112-.08-.11-.08-.109-.081-.106-.082-.104-.082-.106-.086-.105-.087-.101-.086-.105-.091-.1-.09-.1-.091-.1-.094-.097-.094-.1-.098-.093-.095-.096-.1-.093-.098-.092-.101-.089-.1-.09-.102-.088-.104-.036-.043-.114-.114-.133-.091-.148-.065-.157-.036-.161-.006zm15.063 2.701l-.16.014-.156.044-.12.057-.06.034-.12.066-.117.064-.118.062-.12.061-.12.06-.118.057-.126.058-.12.054-.122.054-.122.05-.126.052-.125.05-.124.046-.127.047-.125.044-.129.043-.126.04-.13.042-.128.038-.127.035-.13.036-.131.034-.129.031-.132.03-.13.03-.135.027-.133.026-.13.023-.13.022-.137.021-.132.02-.134.017-.132.015-.138.015-.135.013-.133.01-.138.01-.136.007-.134.006-.136.004-.14.003-.16.018-.155.047-.142.076-.127.1-.105.122-.08.14-.054.151-.025.16.006.16.035.158.064.148.09.134.114.114.133.092.147.065.157.036.134.008.145-.002h.011l.147-.005h.01l.147-.007h.011l.146-.009h.011l.146-.01h.005l.005-.001.146-.012h.011l.145-.014h.005l.006-.001.145-.016h.011l.144-.018h.006l.005-.001.144-.02h.011l.144-.021.005-.001h.006l.143-.023.006-.001h.005l.143-.025h.005l.006-.002.143-.026h.005l.005-.002.143-.027.005-.001.005-.001.142-.03h.005l.005-.002.142-.03.005-.002.005-.001.142-.033.005-.001.005-.001.14-.035.006-.001.005-.001.14-.037h.005l.005-.002.14-.038.005-.002h.005l.14-.04.005-.002.005-.001.138-.042.005-.001.006-.002.138-.043.005-.001.005-.002.137-.044.005-.002.005-.002.137-.046.005-.002.005-.001.137-.048.005-.002.005-.002.135-.05.005-.001.005-.002.135-.051.005-.002.005-.002.135-.053.005-.002.004-.002.134-.054.005-.002.005-.002.133-.057.005-.002.005-.002.132-.057.005-.003.005-.002.132-.06.005-.001.004-.002.131-.061.005-.003.005-.002.13-.062.005-.003.005-.002.13-.064.004-.003.005-.002.128-.066.005-.002.005-.003.128-.067.005-.002.004-.003.127-.069.005-.002.005-.003.126-.07.005-.003.004-.003.065-.037.132-.093.112-.115.089-.135.062-.149.034-.157.003-.161-.026-.16-.055-.15-.082-.14-.107-.12-.127-.1-.144-.073-.154-.046-.16-.016zM6.33 26.818l-.16.023-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.02.16.012.161.041.156.07.146.094.13.096.093.032.026.004.003.004.004.145.117.004.003.004.004.146.115.005.003.004.004.147.113.005.003.004.004.149.111.004.003.004.003.15.11.005.003.004.003.151.108.004.003.005.003.152.106.005.003.004.003.154.104.004.003.005.003.154.102.005.002.004.003.156.1.005.003.004.003.157.098.005.003.004.002.159.096.004.003.005.003.16.094.004.003.004.002.16.092.005.003.005.002.161.09.005.003.005.002.162.088.005.003.004.002.164.086.005.003.004.002.165.084.005.003.004.002.166.082.004.002.005.003.167.08.004.002.005.002.168.078.004.002.005.002.168.076.005.002.005.002.17.074.004.002.005.002.17.072.005.002.005.002.17.07.006.002.005.001.171.068.005.002.005.002.173.065.005.002.005.002.173.063.005.002.005.002.174.06.005.003.005.001.175.06.005.001.005.002.176.057.005.001.005.002.176.055.006.001.005.002.177.052.005.002.005.001.178.05.005.002.005.002.178.048.006.001.005.002.179.046.005.001.005.002.18.044h.005l.005.002.18.042.006.001.005.001.159.035.16.02.16-.01.157-.04.146-.069.13-.094.112-.117.087-.136.06-.149.033-.158.002-.161-.028-.159-.057-.15-.084-.138-.108-.12-.128-.098-.144-.072-.128-.039-.154-.033-.168-.04-.171-.041-.17-.044-.168-.046-.167-.047-.168-.05-.165-.051-.166-.054-.166-.056-.163-.057-.165-.06-.161-.062-.164-.064-.16-.065-.16-.068-.162-.07-.157-.07-.157-.074-.157-.075-.156-.077-.153-.079-.156-.082-.153-.082-.154-.086-.15-.086-.152-.09-.148-.09-.147-.092-.149-.095-.145-.095-.144-.098-.145-.1-.143-.102-.14-.103-.14-.104-.14-.108-.139-.11-.136-.11-.027-.022-.133-.091-.148-.065-.157-.036-.161-.006zm19.215.087l-.16.01-.157.039-.146.067-.11.076-.064.051-.139.11-.14.108-.14.104-.14.103-.143.101-.145.101-.144.098-.145.095-.149.095-.148.093-.147.089-.152.09-.15.086-.154.086-.153.082-.156.082-.153.079-.156.077-.157.075-.158.073-.157.071-.16.07-.16.068-.161.065-.164.064-.161.061-.165.06-.163.058-.166.056-.166.054-.166.051-.167.05-.167.047-.17.046-.168.044-.171.042-.168.039-.17.037-.11.023-.154.047-.143.075-.126.1-.106.122-.081.139-.054.152-.025.16.006.16.035.158.063.148.09.133.114.115.132.092.148.065.157.037.16.007.133-.016.115-.024.005-.001.005-.001.181-.04h.005l.005-.002.18-.042.006-.001.005-.001.18-.044.005-.002.005-.001.18-.046.004-.002h.005l.179-.05h.005l.005-.002.178-.05.005-.002.005-.002.177-.052.005-.002.005-.001.177-.055.005-.002.005-.001.176-.057.005-.002.005-.002.175-.059.005-.001.005-.002.174-.061.005-.002.005-.002.173-.063.005-.002.005-.002.173-.065.004-.002.005-.002.172-.068.005-.002.005-.002.171-.07.005-.001.005-.002.17-.072.005-.002.004-.002.17-.074.005-.002.004-.002.169-.076.004-.002.005-.002.168-.078.004-.002.005-.003.167-.08.004-.002.005-.002.166-.082.004-.002.005-.003.165-.084.004-.002.005-.003.163-.086.005-.002.005-.003.162-.088.005-.002.005-.003.161-.09.005-.002.004-.003.16-.092.005-.003.005-.002.16-.094.004-.003.004-.003.158-.096.005-.002.004-.003.158-.098.004-.003.005-.003.156-.1.004-.003.004-.003.155-.101.005-.003.004-.003.154-.104.004-.003.004-.003.153-.106.004-.003.005-.003.151-.108.004-.003.005-.003.15-.11.004-.003.004-.003.149-.112.004-.003.004-.003.148-.113.004-.004.004-.003.147-.115.004-.004.004-.003.068-.055.116-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.05-.153-.08-.14-.103-.125-.124-.102-.142-.077-.153-.05-.16-.02z",
     opacity: ".98"
   })));
@@ -35415,11 +35871,11 @@
   var IntermediateEventCatchNonInterruptingSignalIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$J({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$J({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.012 8.816L9.21 21.026h13.606l-6.803-12.21zm0 1.776l5.332 9.57H10.681l5.331-9.57zm0-10.281c-1.448.02-2.93.157-4.302.628-.852.447-.255 1.863.66 1.574 2.255-.608 4.648-.607 6.922-.108.934.075 1.228-1.376.338-1.67C18.451.44 17.227.317 16.012.311zm9.012 2.934c-.913-.104-1.272 1.258-.454 1.648 1.834 1.36 3.293 3.185 4.31 5.22.526.776 1.842.098 1.515-.78a15.522 15.522 0 00-5.06-6.006c-.1-.044-.203-.07-.31-.082zM6.65 3.59c-.762.089-1.24.809-1.805 1.267C3.38 6.295 2.163 8.007 1.37 9.905c-.266.898 1.094 1.484 1.564.675a14.825 14.825 0 014.327-5.56c.476-.515.09-1.419-.612-1.431zm9.362.007c-.698.066-1.689-.16-2.033.635-.282.733.535 1.358 1.217 1.125 1.806-.147 3.63.203 5.293.907.902.255 1.472-1.112.656-1.573-1.6-.735-3.374-1.089-5.133-1.094zm-5.479 1.365c-.835.15-1.517.76-2.21 1.226-1.203.94-2.318 2.061-3.057 3.402-.33.904 1.063 1.552 1.547.723 1.045-1.656 2.596-2.925 4.285-3.873.545-.499.171-1.463-.565-1.478zm13.903 2.115c-.875-.07-1.22 1.173-.501 1.627 1.325 1.34 2.188 3.062 2.748 4.84.468.84 1.869.21 1.557-.699-.604-2.118-1.751-4.097-3.351-5.615a.93.93 0 00-.453-.153zM4.467 13.132c-.822-.07-.996.826-1.046 1.455-.256 1.93-.094 3.933.562 5.769.406.844 1.807.365 1.612-.551a11.498 11.498 0 01-.334-5.808.874.874 0 00-.794-.865zm26.687 1.6c-.746-.037-1.014.785-.879 1.395.043 2.393-.57 4.771-1.66 6.894-.31.884 1.02 1.536 1.53.75a15.632 15.632 0 001.821-8.372.876.876 0 00-.812-.667zm-30.197.571c-.782-.073-1.044.775-.933 1.404.068 2.414.661 4.833 1.809 6.962.534.77 1.842.076 1.505-.798a14.833 14.833 0 01-1.603-6.861.876.876 0 00-.778-.707zm26.787 2.024c-.777-.048-.952.797-1.021 1.392-.354 1.692-1.202 3.231-2.216 4.608-.407.872.925 1.638 1.48.852 1.361-1.733 2.296-3.827 2.582-6.017a.874.874 0 00-.825-.835zM6.857 23.012c-.808.018-1.082 1.122-.47 1.59 1.393 1.607 3.187 2.886 5.194 3.599.91.222 1.43-1.165.598-1.596a11.495 11.495 0 01-4.723-3.396.899.899 0 00-.599-.197zm15.057 2.7c-.81.194-1.504.76-2.325.972-1.203.458-2.5.536-3.758.664-.869.307-.573 1.728.346 1.663 2.201-.034 4.412-.626 6.293-1.778.604-.495.227-1.532-.556-1.521zM6.346 27.118c-.833.008-1.11 1.218-.395 1.617 1.986 1.602 4.358 2.749 6.868 3.226.933.076 1.227-1.376.338-1.67a14.838 14.838 0 01-6.345-3.066.929.929 0 00-.466-.107zm19.208.087c-.766.09-1.241.841-1.922 1.158-1.516.991-3.251 1.58-4.996 2.005-.872.405-.346 1.849.584 1.604 2.543-.526 4.98-1.66 6.963-3.344.47-.52.072-1.42-.63-1.423z"
   })));
 
@@ -35427,11 +35883,11 @@
   var IntermediateEventCatchNonInterruptingTimerIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$I({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$I({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.998 8.406c-3.018-.041-5.92 1.926-7.031 4.727-1.138 2.695-.51 6.012 1.537 8.103 1.99 2.141 5.268 2.93 8.014 1.927 2.878-.98 4.992-3.827 5.068-6.87.153-2.957-1.624-5.88-4.3-7.137a7.552 7.552 0 00-3.288-.75zm0 1.384c2.759-.052 5.373 1.973 6.015 4.655.704 2.578-.482 5.517-2.791 6.867-2.358 1.48-5.682 1.086-7.618-.918-2.043-1.971-2.407-5.381-.84-7.745 1.11-1.763 3.15-2.88 5.234-2.86zm1.962 1.765l-2.074 3.762c-.64.068-.793 1.04-.202 1.3.39.27.696-.18 1.052-.165h3.17v-.865h-3.182l1.993-3.615c-.252-.14-.505-.278-.757-.417zm-1.965-8.268h-.158l-.147.003h-.011l-.147.005h-.011l-.146.007h-.011l-.146.009h-.011l-.146.01h-.005l-.005.001-.146.012h-.011l-.145.014h-.006l-.005.001-.05.006-.158.031-.15.06-.135.088-.117.111-.094.13-.069.147-.04.156-.01.16.019.16.049.154.076.142.102.125.123.105.14.08.152.051.16.023.134-.003.045-.005.135-.013.133-.01.136-.01.135-.007.137-.006.136-.004.136-.003h.274l.136.003.136.004.136.006.136.007.136.01.133.01.135.013.135.014.135.016.134.018.132.018.134.021.133.023.133.024.133.025.13.027.132.03.132.03.129.031.13.034.129.035.129.036.13.04.126.038.128.042.126.042.128.045.127.047.126.048.12.047.127.051.123.052.006.002.147.048.16.021.16-.009.157-.038.147-.067.131-.093.112-.116.089-.135.062-.149.033-.158.004-.16-.027-.16-.055-.151-.083-.138-.107-.121-.127-.099-.118-.063-.004-.001-.005-.003-.005-.002-.133-.056-.005-.002-.005-.002-.134-.054-.004-.002-.005-.002-.135-.053-.005-.002-.005-.002-.135-.051-.005-.002-.005-.002-.135-.05-.005-.001-.005-.002-.137-.048-.005-.001-.005-.002-.137-.046-.005-.002-.005-.002-.137-.044-.005-.002-.005-.001-.138-.043-.005-.002-.006-.001-.138-.042-.005-.001-.005-.002-.14-.04H19.4l-.005-.002-.14-.038-.005-.001-.005-.002-.14-.036-.005-.001-.005-.001-.141-.035-.005-.001-.005-.001-.142-.033-.005-.001-.005-.001-.141-.031-.006-.002h-.005l-.142-.03-.005-.001-.005-.001-.143-.028h-.005l-.005-.001-.143-.026-.006-.001-.005-.001-.143-.024-.005-.001-.006-.001-.143-.022-.006-.001h-.005l-.144-.022h-.005l-.006-.001-.144-.019h-.005l-.006-.001-.144-.017h-.006l-.005-.001-.145-.016h-.011l-.145-.014H17.1l-.005-.001-.146-.012h-.01l-.146-.01-.006-.001h-.005l-.146-.009h-.011l-.147-.006h-.01l-.147-.005h-.011l-.147-.003h-.01l-.148-.001h-.01zM10.357 4.66l-.156.037-.123.053-.06.032-.005.002-.004.003-.128.069-.004.002-.005.003-.126.07-.005.003-.004.002-.126.072-.005.003-.004.003-.125.073-.004.003-.005.003-.124.075-.004.003-.005.002-.123.077-.004.003-.005.003-.122.078-.004.003-.005.003-.121.08-.004.002-.005.003-.12.082-.005.003-.004.003-.12.083-.004.003-.004.003-.118.084-.005.003-.004.003-.118.086-.004.003-.004.003-.117.088-.004.003-.004.003-.116.089-.004.003-.004.004-.114.09-.005.003-.004.003-.113.092-.004.004-.004.003-.113.093-.004.004-.004.003-.111.095-.004.003-.005.004-.11.096-.004.004-.004.003-.109.098-.004.003-.004.004-.108.1-.004.003-.004.003-.107.101-.004.004-.004.003-.106.102-.003.004-.004.004-.105.103-.004.004-.004.004-.103.105-.004.004-.004.003-.102.106-.003.004-.004.004-.1.107-.004.004-.004.004-.099.108-.004.004-.003.004-.098.11-.003.003-.004.004-.096.11-.004.005-.003.004-.095.111-.003.004-.004.004-.093.113-.003.004-.004.004-.092.113-.003.004-.003.005-.09.114-.004.004-.003.004-.089.116-.003.004-.003.004-.088.117-.003.004-.003.005-.086.117-.003.004-.003.005-.084.118-.003.004-.003.005-.083.12-.003.003-.003.005-.082.12-.003.005-.002.004-.068.103-.076.142-.048.154-.018.16.011.161.041.156.07.146.095.13.117.11.136.086.15.06.158.03.162.002.158-.029.15-.058.138-.085.119-.108.082-.106.065-.099.075-.11.077-.113.077-.107.08-.11.08-.108.084-.108.083-.105.086-.106.086-.104.088-.104.089-.101.09-.102.093-.101.093-.099.094-.097.095-.096.098-.097.098-.095.099-.093.1-.092.103-.091.101-.089.104-.088.104-.086.106-.086.106-.083.106-.082.109-.082.108-.079.11-.078.11-.076.112-.076.112-.074.113-.072.113-.071.115-.07.115-.068.118-.067.117-.065.12-.065.054-.029.135-.088.116-.111.094-.132.068-.146.04-.156.009-.161-.02-.16-.05-.153-.078-.142-.102-.125-.123-.103-.141-.079-.153-.051-.16-.022-.16.008zm13.91 2.116l-.158.037-.147.066-.132.092-.113.116-.09.134-.063.148-.034.157-.005.162.026.159.054.152.082.139.086.102.09.09.094.098.093.099.092.1.091.103.089.101.088.104.086.104.086.106.083.105.083.108.08.108.081.11.077.107.077.112.075.111.075.114.072.113.071.113.07.115.068.117.067.115.065.118.064.117.062.118.061.12.059.119.059.122.056.121.054.12.055.125.051.123.051.125.048.123.049.127.046.126.044.125.043.128.042.129.039.126.038.13.022.076.058.15.086.137.109.119.129.096.145.07.155.043.16.013.161-.017.155-.046.143-.074.126-.1.106-.122.082-.138.055-.152.025-.16-.005-.16-.026-.132-.023-.082-.002-.005-.001-.005-.042-.139-.001-.005-.002-.005-.043-.138-.001-.005-.002-.005-.044-.137-.002-.005-.002-.005-.046-.137-.002-.005-.001-.005-.048-.137-.002-.005-.002-.005-.05-.135-.001-.005-.002-.005-.051-.135-.002-.005-.002-.005-.053-.135-.002-.005-.002-.005-.054-.133-.002-.005-.002-.005-.057-.133-.002-.005-.002-.005-.057-.132-.003-.005-.002-.005-.059-.132-.002-.005-.002-.004-.061-.132-.003-.004-.002-.005-.062-.13-.003-.005-.002-.005-.064-.13-.003-.004-.002-.005-.066-.129-.002-.004-.003-.005-.067-.128-.002-.005-.003-.004-.069-.128-.002-.004-.003-.005-.07-.126-.003-.005-.003-.004-.072-.126-.002-.005-.003-.004-.073-.125-.003-.004-.003-.005-.075-.124-.003-.004-.003-.005-.076-.123-.003-.004-.003-.005-.078-.122-.003-.004-.003-.005-.08-.121-.003-.004-.003-.005-.08-.12-.004-.005-.003-.004-.083-.12-.003-.004-.003-.004-.084-.118-.003-.005-.003-.004-.086-.117-.003-.005-.003-.004-.088-.117-.003-.004-.003-.004-.09-.116-.002-.004-.004-.004-.09-.114-.003-.005-.004-.004-.091-.113-.004-.004-.003-.004-.093-.113-.004-.004-.003-.004-.095-.111-.004-.004-.003-.004-.096-.11-.004-.005-.003-.004-.098-.109-.004-.004-.003-.004-.1-.108-.003-.004-.004-.004-.1-.107-.004-.004-.004-.004-.102-.106-.003-.003-.004-.004-.093-.095-.124-.103-.14-.08-.153-.05-.16-.023-.16.008zM4.288 12.828l-.158.032-.15.06-.135.088-.117.11-.095.131-.069.146-.035.129-.026.132v.005l-.002.005-.025.143-.001.005-.001.006-.024.143-.001.005-.001.006-.022.143-.001.006-.001.005-.02.144-.001.005-.001.006-.019.144v.005l-.001.006-.017.144v.006l-.001.005-.016.145v.011l-.014.145v.006l-.001.005-.012.146v.01l-.01.146-.001.006v.005l-.009.146v.011l-.007.146v.011l-.004.147v.011l-.003.147v.01l-.002.148v.01l.001.148v.01l.003.147v.011l.005.147v.01l.007.147v.011l.009.146v.011l.01.146v.01l.013.146v.011l.014.145v.005l.001.006.016.145v.011l.018.144v.006l.001.005.019.144v.006l.001.005.021.144v.005l.002.006.022.143v.006l.002.005.024.143v.005l.002.006.025.143.001.005.001.005.028.143.001.005.001.005.03.142v.005l.002.006.03.141.002.005.001.006.033.14v.006l.002.005.035.14v.006l.002.005.036.14.002.005.001.005.038.14.001.005.002.005.04.14v.005l.002.005.042.138.001.006.002.005.042.138.002.005.002.005.017.054.064.148.09.134.114.114.132.092.148.065.157.037.16.007.16-.023.153-.052.14-.08.123-.103.102-.126.076-.142.049-.153.02-.16-.01-.161-.032-.13-.017-.051-.039-.126-.038-.13-.037-.128-.035-.13-.033-.128-.033-.134-.03-.13-.029-.131-.026-.13-.026-.132-.024-.134-.023-.133-.02-.132-.02-.136-.017-.132-.016-.135-.014-.135-.012-.133-.012-.138-.009-.133-.007-.136-.006-.138-.004-.134-.003-.136v-.274l.003-.136.004-.134.006-.139.007-.136.01-.132.01-.139.013-.132.014-.135.016-.135.017-.132.02-.137.02-.13.023-.134.024-.133.024-.126.016-.16-.014-.161-.044-.155-.072-.145-.098-.128-.12-.108-.137-.084-.15-.057-.16-.029-.16.002zm23.286 4.202l-.156.038-.148.066-.132.092-.113.115-.09.134-.062.148-.03.127-.001.004-.023.134-.024.134-.026.132-.026.13-.03.132-.03.129-.032.134-.033.128-.035.13-.037.128-.038.13-.04.126-.04.128-.044.128-.044.126-.046.126-.048.126-.05.125-.05.125-.051.122-.054.123-.055.122-.056.12-.058.122-.06.12-.061.12-.062.119-.063.116-.067.119-.066.116-.068.115-.07.115-.07.113-.073.113-.074.112-.076.113-.077.112-.077.107-.08.11-.08.108-.085.109-.044.056-.088.135-.06.15-.033.158-.002.16.027.16.057.15.083.138.108.12.128.098.144.072.155.045.16.015.161-.016.155-.044.144-.073.128-.098.09-.099.05-.061.003-.004.003-.005.089-.115.003-.004.003-.005.088-.116.003-.004.003-.005.086-.117.003-.004.003-.005.084-.118.003-.004.003-.005.083-.12.003-.004.003-.004.082-.12.003-.005.002-.004.08-.121.003-.005.003-.004.078-.122.003-.005.003-.004.077-.123.002-.005.003-.004.075-.124.003-.005.003-.004.073-.125.003-.004.003-.005.072-.126.002-.004.003-.005.07-.126.003-.005.002-.005.07-.127.002-.004.002-.005.068-.128.002-.005.002-.004.066-.13.003-.004.002-.005.064-.13.002-.004.003-.005.062-.13.003-.005.002-.005.06-.13.003-.005.002-.005.06-.132.002-.005.002-.005.057-.132.003-.005.002-.005.056-.133.002-.005.002-.005.054-.134.002-.004.002-.005.053-.135.002-.005.002-.005.051-.135.002-.005.002-.005.05-.135.001-.005.002-.005.048-.137.001-.005.002-.005.046-.137.002-.005.002-.005.044-.137.002-.005.002-.005.042-.138.002-.005.002-.006.04-.138.002-.005.002-.005.04-.14V19.4l.002-.005.038-.14.001-.005.002-.005.036-.14.001-.005.001-.005.035-.141.001-.005.001-.005.033-.141.001-.006.001-.005.031-.141.002-.006v-.005l.03-.142.001-.005.001-.005.028-.143v-.005l.002-.005.025-.143.001-.006.001-.005.024-.143.001-.005.001-.006.001-.006.01-.161-.02-.16-.05-.154-.077-.141-.102-.125-.123-.104-.141-.079-.153-.051-.16-.022-.16.007zM6.681 22.734l-.152.053-.14.08-.122.105-.101.126-.076.142-.048.154-.018.16.011.161.041.156.07.146.077.11.04.047.003.004.003.004.095.111.003.004.004.004.096.11.004.005.003.004.098.109.003.004.004.004.1.108.003.004.003.004.101.107.004.004.003.004.102.106.004.003.004.004.103.105.004.004.004.004.105.103.004.004.003.003.106.102.004.004.004.004.107.1.004.004.004.004.108.099.004.003.004.004.11.098.003.003.004.004.11.096.005.004.004.003.11.095.005.003.004.004.113.093.004.003.004.004.113.091.004.004.005.003.114.09.004.004.004.003.116.089.004.003.004.003.117.088.004.003.004.003.118.086.004.003.005.003.118.084.004.003.005.003.119.083.004.003.005.003.12.081.005.003.004.003.121.08.005.003.004.003.122.078.005.003.004.003.123.076.005.003.004.003.124.075.005.003.004.003.125.073.004.003.005.003.126.072.004.002.005.003.126.07.005.003.004.002.128.07.004.002.005.002.128.068.005.002.004.002.13.066.004.003.005.002.13.064.004.002.005.003.13.062.005.002.004.003.132.06.004.003.005.002.132.06.005.002.005.002.132.057.005.002.005.003.133.056.005.002.005.002.133.054.005.002.005.002.13.05.154.045.16.016.161-.015.155-.045.144-.072.128-.098.108-.12.083-.138.057-.15.028-.16-.003-.16-.032-.158-.061-.15-.088-.135-.11-.117-.132-.094-.12-.058-.124-.049-.126-.051-.122-.051-.122-.054-.12-.054-.126-.058-.119-.057-.12-.06-.12-.06-.118-.063-.117-.064-.119-.066-.116-.066-.115-.068-.115-.07-.113-.07-.115-.074-.112-.074-.11-.075-.11-.076-.112-.079-.11-.08-.109-.082-.106-.082-.104-.082-.106-.086-.105-.087-.101-.086-.105-.091-.1-.09-.1-.091-.1-.094-.097-.094-.1-.098-.093-.095-.096-.1-.093-.098-.092-.101-.089-.1-.09-.102-.088-.104-.036-.043-.114-.114-.133-.091-.148-.065-.157-.036-.161-.006-.16.024zm15.063 2.691l-.156.044-.12.057-.06.034-.12.066-.116.064-.119.062-.12.061-.12.06-.118.057-.126.058-.12.054-.122.054-.122.05-.126.052-.125.05-.124.046-.127.047-.125.044-.129.043-.126.04-.13.042-.128.038-.127.036-.13.035-.131.034-.129.031-.132.03-.13.03-.135.027-.133.026-.13.023-.13.022-.137.021-.132.02-.134.017-.132.015-.138.015-.135.013-.133.01-.138.01-.136.007-.134.006-.136.004-.14.003-.16.018-.155.047-.142.076-.127.1-.105.122-.08.14-.054.151-.025.16.006.16.035.158.064.148.09.134.114.114.133.092.147.065.157.036.134.008.145-.002h.011l.147-.005h.01l.147-.007h.011l.146-.009h.011l.146-.01h.005l.005-.001.146-.012h.011l.145-.014h.005l.006-.001.145-.016h.011l.144-.018h.006l.005-.001.144-.02h.011l.144-.021h.005l.006-.002.143-.022h.006l.005-.002.143-.024h.005l.006-.002.143-.026h.005l.005-.002.143-.027.005-.001.005-.001.142-.03h.005l.005-.002.142-.03.005-.002.005-.001.142-.033.005-.001.005-.001.14-.035.006-.001.005-.001.14-.036.005-.002.005-.001.14-.038.005-.001.005-.002.14-.04h.005l.005-.002.138-.042.005-.001.006-.002.138-.043.005-.001.005-.002.137-.044.005-.002.005-.002.137-.046.005-.002.005-.001.137-.048.005-.002.005-.002.135-.05.005-.001.005-.002.135-.051.005-.002.005-.002.135-.053.005-.002.004-.002.134-.054.005-.002.005-.002.133-.056.005-.003.005-.002.132-.057.005-.002.005-.003.132-.059.005-.002.004-.002.131-.061.005-.003.005-.002.13-.062.005-.003.005-.002.13-.064.004-.002.005-.003.129-.066.004-.002.005-.003.128-.067.005-.002.004-.003.127-.069.005-.002.005-.003.126-.07.005-.003.004-.002.065-.038.132-.093.112-.115.089-.135.062-.149.034-.157.004-.161-.027-.16-.055-.15-.082-.14-.107-.12-.127-.1-.144-.073-.154-.045-.16-.017-.161.014zM15.994 0l-.187.001h-.011l-.188.004h-.011l-.187.006h-.011l-.187.008h-.005L15.2.02l-.187.01h-.005l-.005.001-.187.013h-.01L14.62.06h-.01l-.186.018h-.011l-.185.02-.005.001h-.006l-.185.022-.005.001h-.005l-.185.025h-.005l-.005.001-.184.027h-.006l-.005.001-.184.029h-.005l-.005.001-.183.031-.005.001-.006.001-.182.033-.006.001-.005.001-.182.035-.005.001-.005.001-.182.038h-.005l-.005.002-.181.04h-.005l-.005.002-.18.042-.006.001-.005.001-.18.044-.005.002h-.005l-.17.045-.152.054-.139.082-.121.106-.1.127-.074.143-.046.155-.017.16.013.16.043.156.07.145.097.13.119.108.137.085.15.058.159.03.16-.001.133-.023.165-.043.168-.041.171-.04.171-.037.172-.036.17-.033.173-.03.17-.03.177-.027.171-.025.175-.022.175-.02.175-.02.176-.016.175-.014.177-.012.176-.01.177-.007.174-.006.177-.003L16 1.73h.177l.178.004.174.006.177.007.176.01.177.012.175.014.176.017.175.018.175.02.175.023.171.025.177.027.17.03.173.03.17.033.171.036.154.033.16.02.161-.01.156-.04.146-.069.131-.094.111-.117.088-.135.06-.15.032-.158.002-.16-.027-.16-.057-.15L20 .714l-.108-.12-.128-.097-.144-.073-.129-.038-.158-.035-.005-.001-.005-.001L19.14.31h-.005l-.005-.002-.182-.035h-.006l-.005-.002-.182-.033h-.006l-.005-.002-.183-.03-.005-.001-.005-.001-.184-.029h-.005l-.006-.001-.184-.027h-.005l-.005-.001-.185-.024h-.005L17.968.12 17.783.1l-.006-.001h-.005l-.185-.02h-.006l-.005-.001L17.39.06 17.385.06h-.005l-.187-.015h-.005l-.005-.001-.187-.013h-.01L16.799.02h-.011L16.6.01h-.011l-.187-.006h-.011L16.204 0h-.011L16.005 0h-.01zm8.86 2.939l-.157.033-.15.062-.134.09-.116.111-.093.132-.067.147-.038.156-.01.161.022.16.05.153.078.141.103.124.102.087.045.034.142.106.137.105.14.11.136.11.135.112.134.115.134.117.13.115.132.122.128.12.127.122.127.125.123.126.124.128.121.13.118.128.118.132.117.133.113.134.113.136.11.136.109.137.109.142.104.14.103.14.101.142.1.144.099.146.095.145.094.147.093.15.092.15.087.149.087.15.085.152.083.155.08.152.08.155.04.081.084.138.11.119.128.096.145.072.155.043.16.013.161-.016.155-.046.143-.074.127-.099.106-.12.083-.14.055-.151.026-.16-.004-.16-.034-.158-.05-.124-.042-.085-.002-.004-.003-.005-.084-.165-.002-.004-.003-.005-.086-.164-.002-.004-.003-.005-.088-.162-.002-.005-.003-.005-.09-.161-.002-.005-.003-.004-.092-.16-.002-.005-.003-.005-.094-.16-.003-.004-.003-.004-.096-.159-.002-.004-.003-.005-.098-.157-.003-.004-.003-.005-.1-.156-.003-.004-.002-.005-.102-.154-.003-.005-.003-.004-.104-.154-.003-.004-.003-.005-.106-.152-.003-.004-.003-.005-.108-.151-.003-.004-.003-.005-.11-.15-.003-.004-.003-.004-.111-.15-.004-.003-.003-.005-.113-.147-.004-.004-.003-.005-.115-.146-.004-.004-.003-.004-.117-.145-.004-.004-.003-.004-.12-.144-.003-.004-.003-.004-.121-.142-.003-.004-.004-.004-.123-.141-.003-.004-.004-.004-.125-.14-.003-.004-.004-.004-.127-.138-.003-.004-.004-.004-.128-.136-.004-.004-.004-.004-.13-.135-.004-.004-.003-.004-.133-.134-.003-.004-.004-.003-.134-.133-.004-.003-.004-.004-.135-.13-.004-.004-.004-.004-.136-.128-.004-.004-.004-.004-.138-.126-.004-.004-.004-.003-.14-.125-.004-.004-.004-.003-.14-.123-.005-.004-.004-.003-.142-.121-.004-.004-.004-.003-.144-.12-.004-.003-.004-.003-.145-.117-.004-.004-.004-.003-.147-.115-.004-.004-.004-.003-.148-.113-.004-.003-.004-.004-.149-.111-.004-.003-.004-.004-.05-.036-.14-.083-.15-.055-.16-.027-.16.004zm-18.381.348l-.157.037-.147.066-.111.074-.04.032-.005.003-.004.004-.145.117-.004.003-.004.004-.144.119-.004.003-.004.004-.142.12-.004.004-.004.004-.141.123-.004.003-.004.004-.14.125-.004.003-.004.004-.138.126-.004.004-.004.004-.136.128-.004.004-.004.004-.135.13-.004.004-.004.003-.134.133-.004.003-.004.004-.132.134-.003.004-.004.004-.13.135-.004.004-.004.004-.128.136-.004.004-.004.004-.126.138-.004.004-.003.004-.125.14-.004.004-.003.004-.123.14-.004.005-.003.004-.121.142-.004.004-.003.004-.12.144-.003.004-.003.004-.117.145-.004.004-.003.004-.115.146-.004.005-.003.004-.113.147-.003.005-.004.004-.111.149-.003.004-.004.004-.11.15-.002.005-.003.004-.108.151-.003.005-.003.004-.106.152-.003.005-.003.004-.104.154-.003.004-.003.005-.102.154-.003.005-.002.004-.1.156-.003.005-.003.004-.098.157-.003.005-.003.004-.096.159-.002.004-.003.005-.094.16-.003.004-.002.004-.092.16-.003.005-.003.005-.09.161-.002.005-.003.005-.088.162-.002.005-.003.004-.086.164-.002.005-.002.004-.084.165-.003.005-.002.004-.082.166-.002.005-.003.004-.08.167-.002.004-.002.005-.078.168-.002.004-.002.005-.045.1-.053.153-.023.16.007.16.037.157.065.148.092.132.114.114.134.09.148.064.157.035.161.006.16-.025.152-.054.14-.08.121-.106.1-.126.065-.118.043-.095.074-.16.075-.155.077-.157.08-.155.08-.152.083-.155.085-.152.086-.15.088-.149.091-.15.094-.15.094-.147.095-.145.099-.146.1-.144.1-.142.104-.14.104-.14.11-.142.107-.137.11-.136.114-.136.113-.134.117-.133.118-.132.117-.129.122-.13.124-.127.123-.126.127-.125.127-.122.128-.12.132-.122.13-.115.133-.117.135-.115.135-.111.136-.11.037-.03.117-.11.094-.132.068-.146.04-.156.01-.161-.02-.16-.05-.154-.076-.141-.102-.125-.123-.104-.14-.08-.153-.051-.16-.023-.161.008zm24.514 11.15l-.157.04-.146.067-.131.093-.112.117-.088.135-.061.149-.033.157-.005.134.006.14.006.176.003.177.001.178-.001.177-.003.178-.006.177-.007.176-.01.177-.012.176-.015.176-.016.173-.018.175-.02.175-.024.174-.024.175-.027.17-.03.174-.03.173-.033.17-.036.172-.037.17-.04.17-.042.172-.043.168-.045.166-.048.169-.05.167-.052.168-.053.164-.056.166-.058.166-.06.161-.061.164-.063.158-.066.165-.068.16-.07.16-.07.158-.075.159-.074.155-.078.158-.081.158-.06.15-.03.158-.001.161.029.159.058.15.085.137.108.12.13.096.144.07.156.044.16.013.16-.017.155-.046.143-.074.127-.1.107-.12.07-.115.083-.164.003-.005.002-.004.082-.166.002-.005.003-.004.08-.167.002-.005.002-.004.078-.168.002-.004.002-.005.076-.169.002-.004.002-.005.074-.17.002-.004.002-.005.072-.17.002-.005.002-.005.07-.17.002-.006.001-.005.068-.172.002-.004.002-.005.065-.173.002-.005.002-.005.063-.173.002-.005.002-.005.06-.174.003-.005.001-.005.06-.175.001-.005.002-.005.057-.176.001-.005.002-.005.055-.177.001-.005.002-.005.052-.177.002-.005.001-.005.051-.178.001-.005.002-.005.048-.179.002-.005v-.005l.047-.179.001-.005.002-.005.044-.18v-.005l.002-.005.042-.18.001-.006.001-.005.04-.18.001-.006.001-.005.038-.182v-.005l.002-.005.035-.182v-.006l.002-.005.033-.182v-.006l.002-.005.03-.183.001-.005.001-.005.029-.184v-.005l.001-.006.027-.184v-.005l.001-.005.024-.185v-.005l.001-.005.022-.185v-.006l.001-.005.02-.185v-.006l.001-.005.017-.186v-.005l.001-.005.015-.187v-.005l.001-.005.013-.187v-.01l.01-.187.001-.006v-.005l.009-.187v-.011l.006-.187v-.011l.004-.188v-.011l.001-.188v-.01l-.001-.188v-.011l-.004-.188v-.011l-.006-.187v-.011l-.007-.145-.022-.16-.05-.152-.08-.141-.103-.124-.125-.102-.141-.077-.153-.05-.16-.02-.161.009zM.777 15l-.158.032-.15.06-.136.087-.117.11-.095.131-.068.146-.04.156-.012.133-.001.14v.01l.001.188v.011l.004.188v.011l.006.187v.011l.008.187v.011l.011.187v.005l.001.005.013.187v.01l.016.187v.01l.018.186v.011l.02.185.001.005v.006l.022.185.001.005v.005l.025.185v.005l.001.005.027.184v.006l.001.005.029.184v.005l.001.005.031.183.001.005.001.006.033.182.001.005.001.006.035.182.001.005.001.005.038.182v.005l.002.005.04.181v.005l.002.005.042.18.001.006.001.005.044.18.002.005v.005l.047.18.001.004.002.005.048.179.002.005.001.005.05.178.002.005.001.005.053.177.002.005.001.005.055.177.002.005.001.005.057.176.002.005.001.005.06.175.001.005.002.005.061.174.002.005.002.005.063.173.002.005.002.005.065.173.002.005.002.004.067.172.002.005.002.005.07.171.002.005.002.005.072.17.002.005.002.005.074.169.002.005.002.004.076.169.002.005.002.004.078.168.002.004.002.005.08.167.003.004.002.005.082.166.002.004.003.005.02.04.086.136.11.118.13.095.146.07.156.041.16.012.16-.019.155-.048.142-.075.126-.1.105-.123.08-.14.054-.152.024-.16-.006-.16-.036-.158-.051-.123-.018-.034-.078-.158L3.1 22.1l-.074-.16-.071-.156-.07-.162-.068-.16-.067-.164-.062-.158-.062-.164-.059-.161-.058-.166-.056-.166-.053-.164-.052-.168-.05-.167-.048-.17-.045-.165-.043-.168-.043-.172-.039-.17-.037-.17-.036-.172-.033-.17-.03-.173-.03-.174-.027-.17-.025-.175-.022-.174-.021-.175-.018-.175-.017-.173-.014-.176-.012-.176-.01-.177-.007-.176-.006-.177-.003-.178L1.73 16v-.134l-.013-.16-.044-.156-.072-.144-.097-.129-.12-.108-.137-.085-.15-.057L.938 15 .777 15zM6.17 26.842l-.152.052-.14.08-.122.105-.101.126-.076.142-.048.154-.02.16.012.161.041.156.07.146.094.13.096.093.032.026.004.003.004.004.145.117.004.003.004.004.146.115.005.003.004.004.147.113.005.003.004.004.149.111.004.003.004.003.15.11.005.003.004.003.151.108.005.003.004.003.152.106.005.003.004.003.154.104.004.003.005.003.154.102.005.002.004.003.156.1.005.003.004.003.157.098.005.003.004.002.159.096.004.003.005.003.16.094.004.003.004.002.16.092.005.003.005.002.161.09.005.003.005.003.162.088.005.002.004.002.164.087.005.002.004.002.165.084.005.003.004.002.166.082.004.002.005.003.167.08.004.002.005.002.168.078.004.002.005.002.169.076.004.002.005.002.17.074.004.002.005.002.17.072.005.002.005.002.17.07.006.002.005.001.171.068.005.002.005.002.173.065.005.002.005.002.173.063.005.002.005.002.174.061.005.002.005.001.175.06.005.001.005.002.176.057.005.001.005.002.177.055.005.001.005.002.177.052.005.002.005.001.178.051.005.001.005.002.178.048.006.002h.005l.179.047.005.001.005.002.18.044h.005l.005.002.18.042.006.001.005.001.159.035.16.02.16-.01.157-.04.146-.069.13-.094.112-.117.087-.136.06-.149.033-.158.002-.161-.028-.159-.057-.15-.084-.138-.108-.12-.128-.098-.144-.072-.128-.039-.154-.033-.168-.04-.171-.041-.169-.044-.17-.045-.166-.048-.168-.05-.165-.051-.166-.054-.166-.056-.163-.057-.165-.06-.161-.062-.164-.064-.16-.065-.16-.068-.162-.07-.157-.07-.157-.074-.157-.075-.156-.077-.153-.079-.156-.082-.153-.082-.154-.086-.15-.086-.152-.09-.148-.09-.147-.092-.149-.095-.145-.095-.144-.098-.145-.1-.143-.102-.14-.103-.14-.104-.14-.108-.139-.11-.136-.11-.027-.022-.133-.091-.148-.065-.157-.036-.161-.006-.16.024zm19.214.073l-.156.039-.146.067-.11.076-.064.051-.139.11-.14.108-.14.104-.14.103-.143.101-.145.101-.144.098-.145.095-.149.095-.148.093-.147.089-.152.09-.15.086-.154.086-.153.082-.156.082-.153.079-.156.077-.157.075-.157.073-.158.071-.16.07-.16.068-.161.065-.164.064-.161.061-.165.06-.163.058-.166.056-.166.054-.166.051-.167.05-.167.048-.17.045-.168.044-.171.042-.168.039-.17.037-.11.023-.154.047-.143.075-.126.1-.106.122-.081.139-.054.152-.025.16.006.16.035.158.063.148.09.133.114.115.132.092.148.065.157.037.16.008.133-.017.115-.024h.005l.005-.002.181-.04h.005l.005-.002.18-.042.006-.001.005-.001.18-.044.005-.002h.005l.18-.047.004-.001.005-.002.179-.048.005-.002.005-.001.178-.05.005-.002.005-.002.177-.052.005-.002.005-.001.177-.055.005-.002.005-.001.176-.057.005-.002.005-.002.175-.059.005-.001.005-.002.174-.061.005-.002.005-.002.173-.063.005-.002.005-.002.173-.065.005-.002.004-.002.172-.068.005-.001.005-.002.171-.07.005-.002.005-.002.17-.072.005-.002.005-.002.169-.074.005-.002.004-.002.169-.076.004-.002.005-.002.168-.078.004-.002.005-.002.167-.08.004-.003.005-.002.166-.082.004-.002.005-.003.165-.084.004-.002.005-.002.163-.087.005-.002.005-.002.162-.088.005-.003.005-.003.161-.09.005-.002.004-.003.16-.092.005-.002.005-.003.16-.094.004-.003.004-.003.158-.096.005-.002.004-.003.158-.098.004-.003.005-.003.156-.1.004-.003.004-.002.155-.102.005-.003.004-.003.154-.104.004-.003.005-.003.152-.106.004-.003.005-.003.151-.108.004-.003.005-.003.15-.11.004-.003.004-.003.149-.111.004-.004.004-.003.148-.113.004-.004.004-.003.147-.115.004-.004.004-.003.068-.055.116-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.05-.153-.08-.14-.103-.125-.124-.102-.142-.077-.153-.05-.16-.02-.16.009z"
   })));
 
@@ -35439,11 +35895,11 @@
   var IntermediateEventCatchParallelMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$H({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$H({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.003C8.195-.157.935 6.24.125 13.985c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.884 23.445.408 17.201.049c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.174.872 11.679 4.985 6.916c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.215-2.282-2.022-5.3-3.217-8.357-3.22zM16 4.975c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.082 11.082 0 0116 4.975zm-2.15 3.281v5.534H8.213v4.38h5.636v5.534h4.31V18.17h5.639v-4.38h-5.64V8.256h-4.31zm.865.865h2.583v5.534h5.635v2.65h-5.635v5.533h-2.583v-5.534h-5.64v-2.649h5.64V9.121z"
   })));
 
@@ -35451,11 +35907,11 @@
   var IntermediateEventCatchSignalIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$G({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$G({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm.006 3.521L9.206 20.745h13.598L16.005 8.542zm0 1.775l5.329 9.564H10.677l5.328-9.564z"
   })));
 
@@ -35463,11 +35919,11 @@
   var IntermediateEventCatchTimerIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$F({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$F({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.97.04h-.127C8.713-.018 2.003 5.334.437 12.286c-1.51 6.123.98 13.005 6.136 16.665 5.125 3.788 12.546 4.105 17.912.623 5.272-3.276 8.33-9.766 7.325-15.916-.904-6.241-5.79-11.7-11.95-13.143A16.082 16.082 0 0015.97.04zm-.181 1.724c.115 0 .23 0 .347.003 6.625-.066 12.823 5.149 13.89 11.69 1.13 5.91-1.908 12.349-7.262 15.138-5.473 3.013-12.866 1.884-17.116-2.726C1.291 21.372.444 13.914 3.802 8.602c2.493-4.112 7.169-6.819 11.987-6.838zm.283 1.554c-.117 0-.234.002-.351.005-6.1 0-11.691 5.049-12.346 11.114-.78 5.684 2.795 11.612 8.218 13.52 5.139 1.943 11.416.101 14.624-4.38 3.461-4.583 3.262-11.538-.596-15.831-2.36-2.747-5.924-4.423-9.549-4.428zm-.078 1.695c.078 0 .156 0 .234.003 5.4 0 10.321 4.556 10.734 9.942.563 5.13-2.958 10.364-7.971 11.678-4.832 1.41-10.457-.935-12.746-5.446-2.463-4.559-1.2-10.795 3.014-13.883a11.072 11.072 0 016.735-2.294zm-.137 3.42c-2.965.02-5.792 1.968-6.884 4.722-1.137 2.693-.509 6.007 1.536 8.096 1.988 2.14 5.263 2.929 8.007 1.926 2.875-.98 4.987-3.824 5.063-6.865.154-2.954-1.622-5.875-4.295-7.13a7.545 7.545 0 00-3.427-.75zm.27 1.381c2.708.013 5.249 2.014 5.88 4.652.704 2.576-.481 5.512-2.788 6.862-2.356 1.478-5.677 1.084-7.611-.918-2.042-1.97-2.405-5.376-.839-7.738 1.11-1.762 3.146-2.877 5.229-2.857h.13zm1.831 1.764l-2.072 3.76c-.64.068-.792 1.039-.202 1.298.39.27.696-.18 1.051-.164h3.168v-.864h-3.18l1.992-3.612-.757-.418z"
   })));
 
@@ -35475,11 +35931,11 @@
   var IntermediateEventNoneIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$E({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$E({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.848.001C8.113-.093.931 6.281.125 13.983c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.207C29.105 4.938 23.55.48 17.367.06A16.448 16.448 0 0015.848 0v.001zm.293 1.727c7.113-.099 13.662 5.97 14.077 13.08.56 6.299-3.516 12.735-9.582 14.679-5.798 2.004-12.806-.12-16.283-5.237C.717 19.159.874 11.638 5.016 6.876 7.722 3.638 11.902 1.63 16.14 1.728zm-.415 1.555C9.157 3.258 3.256 9.156 3.278 15.729c-.16 5.965 4.365 11.725 10.293 12.737 5.409 1.065 11.37-1.744 13.775-6.753 2.534-4.986 1.386-11.627-2.953-15.251-2.364-2.077-5.512-3.27-8.667-3.18zm.507 1.692c5.82-.026 11.013 5.318 10.79 11.143-.024 5.3-4.313 10.267-9.636 10.803-5.075.667-10.426-2.588-11.885-7.553-1.535-4.744.494-10.46 4.925-12.885a11.072 11.072 0 015.806-1.508z"
   })));
 
@@ -35487,11 +35943,11 @@
   var IntermediateEventThrowCompensationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$D({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$D({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.003C8.195-.156.935 6.24.125 13.985c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.884 23.445.407 17.201.049c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.174.872 11.679 4.985 6.916c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 4.975c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 4.975zm-.56 5.772l-7.408 5.231 7.409 5.234v-5.057c2.385 1.687 4.771 3.371 7.157 5.057V10.747l-7.157 5.055v-5.055z"
   })));
 
@@ -35499,11 +35955,11 @@
   var IntermediateEventThrowEscalationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$C({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$C({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm.006 3.927c-1.672 4.654-2.734 9.502-4.406 14.155 1.534-1.525 2.872-3.234 4.406-4.759l4.406 4.76c-1.496-4.71-2.91-9.446-4.406-14.156z"
   })));
 
@@ -35511,11 +35967,11 @@
   var IntermediateEventThrowLinkIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$B({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$B({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.049C8.195-.11.935 6.286.125 14.03c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.93 23.445.453 17.201.095c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.22.872 11.725 4.985 6.962c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 5.021c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 5.021zm1.78 4.093v3.555H9.785v6.714h7.994v3.554l5.829-6.911-5.83-6.912z"
   })));
 
@@ -35523,11 +35979,11 @@
   var IntermediateEventThrowMessageIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$A({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$A({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.003C8.195-.156.935 6.24.125 13.985c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.884 23.445.407 17.201.049c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.174.872 11.679 4.985 6.916c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 4.975c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 4.975zm-5.91 5.475l6.04 4.901 6.042-4.9H10.088zm-1.341 1.138v9.921h14.514V11.79l-7.132 5.787-7.382-5.99z"
   })));
 
@@ -35535,11 +35991,11 @@
   var IntermediateEventThrowMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$z({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$z({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.003C8.195-.156.935 6.24.125 13.985c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.884 23.445.407 17.201.049c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.174.872 11.679 4.985 6.916c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 4.975c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 4.975zm.006 3.073l-7.62 5.532 2.91 8.95h9.42l2.91-8.95-7.62-5.532z"
   })));
 
@@ -35547,11 +36003,11 @@
   var IntermediateEventThrowSignalIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$y({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$y({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.975.003C8.195-.156.935 6.24.125 13.985c-.855 6.55 2.741 13.46 8.74 16.314 5.666 2.847 13.012 1.99 17.71-2.33 4.745-4.162 6.727-11.243 4.532-17.206C29.09 4.884 23.445.407 17.201.049c-.408-.03-.817-.046-1.226-.046zm-.181 1.724c7.134-.269 13.84 5.68 14.399 12.804.686 6.283-3.267 12.792-9.283 14.862-5.847 2.162-13.025.06-16.557-5.141C.728 19.174.872 11.679 4.985 6.916c2.632-3.171 6.671-5.174 10.809-5.19zm.283 1.553c-6.6-.21-12.671 5.585-12.79 12.185-.292 5.964 4.129 11.817 10.034 12.953 5.47 1.198 11.584-1.613 14.025-6.702 2.525-4.97 1.396-11.585-2.912-15.216-2.282-2.021-5.3-3.216-8.357-3.22zM16 4.975c5.818-.154 11.117 5.082 11.024 10.905.103 5.384-4.23 10.5-9.636 11.043-5.075.667-10.426-2.587-11.885-7.552-1.53-4.73.48-10.428 4.888-12.864A11.083 11.083 0 0116 4.975zm.006 3.52c-2.261 4.07-4.533 8.136-6.798 12.205h13.596L16.005 8.495z"
   })));
 
@@ -35559,11 +36015,11 @@
   var LaneIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$x({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$x({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M0 7v18.62h32V7H0zm1.655 17.056V8.684h28.62v15.372H1.656z"
   })));
 
@@ -35571,11 +36027,11 @@
   var ManualTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$w({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$w({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 3C2.916 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.012C28.015 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5zm4.43 1.328c-.222.005-.43.09-.606.203-.985.638-4.356 2.977-5.096 3.486-.67.46-1.12 1.153-1.38 1.974-.27.858-.235 1.793-.232 2.576.002.59.016 1.104.17 1.727.22.908.634 1.63 1.23 2.118.597.49 1.363.732 2.23.734 3.038.012 6.078.016 9.119 0 .327-.002.645-.127.848-.37.204-.241.287-.56.291-.914a1.732 1.732 0 00-.097-.625h.327c.335 0 .641-.11.852-.316.21-.206.317-.475.374-.754a1.783 1.783 0 00-.126-1.143 1.18 1.18 0 00.877-.521c.196-.306.257-.666.258-1.025.001-.375-.088-.738-.293-1.033a1.179 1.179 0 00-.958-.512h-.478c.108-.237.156-.505.155-.782-.003-.373-.098-.721-.316-.99a1.21 1.21 0 00-.943-.43c-2.273-.004-4.236.018-6.412.012l-.19-.001c.102-.104.202-.205.312-.314.337-.336.662-.652.83-.869.4-.516.46-1.215.123-1.729-.178-.272-.439-.456-.72-.494a.93.93 0 00-.148-.008zm.029.728l.022.001c.055.008.115.027.209.172.132.201.126.606-.09.884-.079.102-.431.465-.767.8-.337.334-.657.643-.815.836-.153.186-.096.338-.056.435.04.096.085.212.298.263.063.014.066.01.086.012l.066.003c2.429.027 4.986-.004 7.223-.003.194 0 .293.056.379.162.086.105.151.286.153.533 0 .257-.065.467-.155.59-.09.124-.183.182-.37.183-1.706-.001-3.411-.005-5.117-.009v.731c2.23.004 4.461.01 6.692.012.17 0 .265.06.361.2.096.138.164.364.163.615 0 .268-.058.501-.143.634-.085.132-.162.193-.385.195-2.32-.001-4.554-.006-6.688-.003v.73c1.905 0 3.809.003 5.713.001.194.005.316.09.416.26.102.173.151.442.093.728-.04.193-.102.313-.17.38-.067.065-.148.108-.343.108h-5.71l.002.734c1.445 0 2.89-.01 4.334-.001.162 0 .232.041.297.123.064.081.123.238.12.488-.003.244-.061.385-.12.455-.06.07-.127.11-.296.11-3.037.016-6.076.012-9.113 0-.735-.002-1.316-.196-1.77-.568-.454-.372-.793-.935-.986-1.728-.134-.546-.146-.978-.148-1.558-.003-.796-.018-1.664.199-2.354.222-.705.582-1.24 1.096-1.593.75-.515 4.14-2.866 5.079-3.474a.504.504 0 01.241-.087z"
   })));
 
@@ -35583,11 +36039,11 @@
   var MessageFlowIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$v({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$v({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M4.073 26.607l1.295 1.296L1.325 32l-.662-.633L0 30.735l4.073-4.128zm6.953-7.046l1.296 1.296L1.325 32l7.555-7.656-1.295-1.296 1.455-1.474 1.986-2.013zM32 .06s-2.699 5.189-5.417 10.462l-.326.633c-1.14 2.214-2.265 4.407-3.176 6.2-1.228-1.222-2.449-2.452-3.676-3.675l-3.57 3.618-1.297-1.296 3.541-3.588c-.98-.964-1.932-1.958-2.923-2.91l-.753-.706c2.68-1.258 6.533-3.165 9.95-4.876l.617-.309C28.838 1.673 32 .06 32 .06zm-4.126 4.06l-.015.007-.115.057-.048.024-.115.057L17.7 9.172l5.017 4.948 5.157-10z"
   })));
 
@@ -35595,11 +36051,11 @@
   var ParticipantIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$u({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$u({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M0 5v22.069h32V5H0zm30.276 1.684v18.82H6.62V6.684h23.655zm-28.62 0h3.31v18.82h-3.31V6.684z"
   })));
 
@@ -35607,11 +36063,11 @@
   var ProcessIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$t({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$t({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     fillRule: "evenodd",
     d: "M16.177 0l.137.002c.452.009.9.037 1.342.082.346.036.62.303.68.646l.437 2.536c.055.319.296.57.608.655.986.269 1.923.653 2.796 1.14.28.155.624.145.885-.039l2.083-1.47a.775.775 0 01.937.022c.86.699 1.645 1.484 2.343 2.343.22.27.223.653.023.937l-1.439 2.038a.833.833 0 00-.031.896c.512.889.92 1.846 1.204 2.855a.833.833 0 00.653.601l2.435.42c.342.059.61.333.645.679a15.928 15.928 0 01.08 2.064l-.003.114c-.012.382-.038.76-.077 1.134a.775.775 0 01-.645.68l-2.396.412a.835.835 0 00-.656.61 12.511 12.511 0 01-1.2 2.917.832.832 0 00.034.892l1.396 1.978c.2.284.196.667-.023.936a16.104 16.104 0 01-2.343 2.343.775.775 0 01-.937.023l-1.99-1.404a.833.833 0 00-.88-.026c-.907.516-1.886.922-2.916 1.2a.833.833 0 00-.61.656l-.414 2.396a.775.775 0 01-.679.646 16.096 16.096 0 01-3.312 0 .775.775 0 01-.679-.646l-.423-2.452a.834.834 0 00-.598-.636 12.474 12.474 0 01-1.468-.514 12.49 12.49 0 01-1.417-.68.833.833 0 00-.878.03l-2.026 1.43a.775.775 0 01-.937-.023 16.069 16.069 0 01-2.342-2.342.774.774 0 01-.024-.936l1.402-1.986a.833.833 0 00.032-.896 12.507 12.507 0 01-1.214-2.911.833.833 0 00-.655-.606l-2.386-.412a.775.775 0 01-.646-.678 16.097 16.097 0 010-3.314.775.775 0 01.646-.678l2.386-.412a.833.833 0 00.655-.606 12.507 12.507 0 011.214-2.911.833.833 0 00-.032-.896L3.552 6.853a.774.774 0 01.023-.936 16.091 16.091 0 012.343-2.343.775.775 0 01.937-.023l2.03 1.433c.26.177.6.182.874.028.915-.512 1.88-.9 2.87-1.167a.833.833 0 00.612-.656l.424-2.46a.775.775 0 01.679-.645C14.845.032 15.348.004 15.85 0h.326zM16 6.4c-5.302 0-9.6 4.297-9.6 9.599 0 5.302 4.298 9.6 9.6 9.6s9.6-4.298 9.6-9.6-4.298-9.6-9.6-9.6zm-3 4.283c0-1.425 1.637-2.203 2.715-1.29l5.69 4.815c.794.672.794 1.91 0 2.583l-5.69 4.815c-1.078.913-2.715.134-2.715-1.29z"
   })));
@@ -35620,11 +36076,11 @@
   var ReceiveTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$s({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$s({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 3C2.916 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.012C28.015 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5zM5.23 7.764v11.577h17.55V7.764H5.23zm1.816.758h13.917l-6.959 4.577-6.958-4.577zm-1.06.21l8.018 5.274 8.018-5.275v9.853H5.987V8.73z"
   })));
 
@@ -35632,11 +36088,11 @@
   var ScriptTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$r({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$r({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 3C2.916 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.012C28.015 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5zm2.99 3.077l-.077.045-.026.015c-1.09.646-1.84 1.239-2.336 1.818-.496.579-.735 1.162-.742 1.725-.014 1.119.812 1.958 1.544 2.708.732.75 1.385 1.456 1.446 2.041.032.298-.039.598-.364 1.008-.324.408-.911.897-1.85 1.445l-1.388.808h8.56l.101-.059c.996-.58 1.667-1.116 2.094-1.655.429-.54.603-1.107.547-1.638-.11-1.052-.967-1.818-1.688-2.556-.721-.739-1.306-1.436-1.298-2.092.004-.331.132-.7.535-1.171.402-.47 1.08-1.02 2.119-1.636l1.362-.806h-8.54zm.241.867h5.271a6.83 6.83 0 00-1.113 1.01c-.496.58-.736 1.163-.743 1.726-.014 1.119.812 1.958 1.544 2.708.732.75 1.385 1.456 1.446 2.041.032.298-.039.598-.364 1.008-.312.393-.872.862-1.753 1.386H8.728c.367-.286.658-.566.88-.847.43-.54.604-1.107.548-1.638-.11-1.052-.968-1.818-1.688-2.556-.721-.739-1.306-1.435-1.298-2.092.004-.331.132-.7.534-1.171.389-.454 1.04-.984 2.021-1.575zm-1.233 1.48v.4h4.12v-.4h-4.12zm-.154 2.158v.4H12.6v-.4H8.34zm1.931 2.158v.4h4.126v-.4H10.27zm.59 2.158v.4h4.276v-.4h-4.276z"
   })));
 
@@ -35644,11 +36100,11 @@
   var SendTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$q({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$q({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 3C2.916 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.012C28.015 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5zm-1.38 3.16l8.332 4.717L21.78 8.16H5.114zm.021 1.745v9.309H21.8V9.905l-8.353 4.655-8.31-4.655z"
   })));
 
@@ -35656,11 +36112,11 @@
   var ServiceTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$p({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$p({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 3C2.916 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.012C28.015 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5zm1.22 1.681V7.84c-.329.093-.63.223-.914.382l-.83-.82-1.554 1.561.83.82c-.16.288-.285.594-.372.911l-1.177.002v2.2l1.189-.004c.109.431.345.819.58 1.165v-1.898l-1.038.004v-.737l1.034-.002.058-.294c.084-.429.252-.838.493-1.203l.165-.25-.727-.718.523-.526.728.719.247-.165c.379-.25.793-.417 1.206-.505l.291-.06-.002-1.01h.75L9.19 8.417H11.16c-.185-.221-.951-.508-1.237-.588L9.93 6.68H7.713zm2.078 2.105l.003 1.158a4.19 4.19 0 00-.915.383l-.83-.821-1.553 1.562.83.82c-.16.288-.286.593-.373.91l-1.176.003v2.2l1.188-.004c.094.326.224.624.383.905l-.85.847 1.57 1.543.847-.843c.29.161.599.286.919.373v1.198c.756.006 1.56.003 2.206.003V17.81a4.19 4.19 0 00.915-.383l.847.835 1.554-1.56-.848-.836c.16-.288.286-.594.373-.912l1.152-.007V12.75l-1.165.007a4.09 4.09 0 00-.382-.905l.805-.807-1.57-1.546-.804.806a4.16 4.16 0 00-.915-.372l.007-1.147H9.792zm.732.73h.751l-.006 1.005.297.058c.43.085.844.252 1.21.492l.25.162.701-.704.528.52-.702.704.169.25c.248.374.412.779.505 1.196l.061.292 1.016-.006v.737l-1.01.006-.058.292c-.085.43-.252.838-.494 1.205l-.165.25.744.733-.523.525-.743-.734-.248.165c-.378.247-.789.418-1.203.503l-.294.058v1.067h-.745v-1.059l-.295-.057a3.395 3.395 0 01-1.21-.492l-.248-.162-.747.743-.528-.52.747-.744-.17-.25a3.546 3.546 0 01-.506-1.196l-.06-.291-1.04.004v-.738l1.034-.002.058-.294c.085-.428.252-.837.493-1.203l.165-.25-.726-.718.522-.526.728.72.248-.166a3.546 3.546 0 011.205-.504l.292-.06-.003-1.01zm.388 2.685a1.65 1.65 0 00-1.645 1.645c0 .904.74 1.645 1.645 1.645a1.65 1.65 0 001.645-1.645 1.65 1.65 0 00-1.645-1.645zm0 .73a.91.91 0 01.915.915.91.91 0 01-.915.914.91.91 0 01-.915-.914.91.91 0 01.915-.915z"
   })));
 
@@ -35668,11 +36124,11 @@
   var StartEventCompensationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$o({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$o({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.995.001C9.705-.084 3.643 3.964 1.257 9.775-1.235 15.485.06 22.577 4.42 27.03c4.193 4.513 11.102 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.269.403-6.227-3.26-12.44-8.87-15.153A15.924 15.924 0 0015.994 0zm0 1.73c6.213-.108 12.122 4.355 13.726 10.357 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.626C2.101 23.171.377 16.07 2.848 10.44c2.14-5.205 7.515-8.774 13.147-8.708zm-.566 9.03l-7.415 5.235 7.415 5.238v-5.062c2.386 1.689 4.775 3.375 7.163 5.062V10.761l-7.163 5.058v-5.058zm-.866 1.666v7.13L9.51 15.993l5.052-3.565zm7.166 0v7.137l-5.052-3.568 5.052-3.569z"
   })));
 
@@ -35680,11 +36136,11 @@
   var StartEventConditionIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$n({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$n({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16 0C7.174 0 0 7.174 0 16s7.174 16 16 16 16-7.174 16-16S24.826 0 16 0zm0 1.73c7.892 0 14.27 6.378 14.27 14.27 0 7.891-6.379 14.27-14.27 14.27S1.73 23.891 1.73 16C1.73 8.108 8.108 1.73 16 1.73zm-5.362 7.523v13.493h10.724V9.253H10.638zm.863.866h8.995V21.88H11.501V10.12zm.928 1.324v.863h7.139v-.863h-7.139zm0 2.605v.867h7.139v-.867h-7.139zm0 3.01v.864h7.139v-.863h-7.139zm0 2.72v.863h7.139v-.863h-7.139z"
   })));
 
@@ -35692,11 +36148,11 @@
   var StartEventErrorIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$m({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$m({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.995.005C9.705-.08 3.643 3.968 1.257 9.78-1.235 15.49.06 22.581 4.42 27.034c4.193 4.513 11.102 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.269.403-6.227-3.26-12.44-8.87-15.153A15.924 15.924 0 0015.994.005zm0 1.73c6.213-.108 12.122 4.355 13.726 10.357 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.626-4.814-3.838-6.538-10.939-4.067-16.57 2.14-5.205 7.515-8.774 13.147-8.708zm6.13 7.45l-3.635 7.37-4.52-5.88c-1.37 4.048-2.738 8.095-4.106 12.143l4.603-5.917 4.748 5.433 2.91-13.149zm-7.754 3.889l4.299 5.449 1.073-2.39-1.028 4.135-4.387-5.16-1.78 2.75 1.823-4.784z"
   })));
 
@@ -35704,11 +36160,11 @@
   var StartEventEscalationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$l({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$l({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.995.001C9.705-.084 3.643 3.964 1.257 9.775-1.235 15.485.06 22.577 4.42 27.03c4.193 4.513 11.102 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.269.403-6.227-3.26-12.44-8.87-15.153A15.924 15.924 0 0015.994 0zm0 1.73c6.213-.108 12.122 4.355 13.726 10.357 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.626C2.101 23.171.377 16.07 2.848 10.44c2.14-5.205 7.515-8.774 13.147-8.708zm0 7.183c-1.674 4.658-2.736 9.509-4.41 14.166 1.535-1.526 2.874-3.236 4.41-4.763l4.41 4.763c-1.499-4.713-2.913-9.453-4.41-14.166zm.032 2.931c.822 2.588 1.598 5.19 2.42 7.778l-2.42-2.615c-.683.598-2.455 2.887-2.34 2.39.871-2.489 1.448-5.07 2.34-7.553z"
   })));
 
@@ -35716,11 +36172,11 @@
   var StartEventMessageIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$k({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$k({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.995.001C9.705-.084 3.643 3.964 1.257 9.775-1.235 15.485.06 22.577 4.42 27.03c4.193 4.513 11.102 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.269.403-6.227-3.26-12.44-8.87-15.153A15.924 15.924 0 0015.994 0zm0 1.73c6.213-.108 12.122 4.355 13.726 10.357 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.626C2.101 23.171.377 16.07 2.848 10.44c2.14-5.205 7.515-8.774 13.147-8.708zm-7.257 8.732v11.069h14.513v-11.07H8.738zm3.224 1.73h8.064c-1.428.878-2.857 2.807-4.285 3.018l-3.779-3.019zm9.562 1.017v6.593H10.465V13.21l5.528 4.417 5.53-4.418z"
   })));
 
@@ -35728,11 +36184,11 @@
   var StartEventMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$j({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$j({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.995.001C9.705-.084 3.643 3.964 1.257 9.775-1.235 15.485.06 22.577 4.42 27.03c4.193 4.513 11.102 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.269.403-6.227-3.26-12.44-8.87-15.153A15.924 15.924 0 0015.994 0zm0 1.73c6.213-.108 12.122 4.355 13.726 10.357 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.626C2.101 23.171.377 16.07 2.848 10.44c2.14-5.205 7.515-8.774 13.147-8.708zm0 6.328l-7.626 5.536c.97 2.986 1.942 5.971 2.913 8.957h9.426l2.912-8.957-7.625-5.536zm0 1.068l6.609 4.798-2.525 7.763H11.91l-2.524-7.763 6.609-4.798z"
   })));
 
@@ -35740,11 +36196,11 @@
   var StartEventNonInterruptingConditionIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$i({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$i({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M10.632 9.189V22.68h10.723V9.189H10.632zm.862.865h8.994v11.76H11.494v-11.76zm.928 1.324v.863h7.138v-.863h-7.138zm0 2.605v.866h7.138v-.866h-7.138zm0 3.01v.863h7.138v-.863h-7.138zm0 2.72v.862h7.138v-.863h-7.138zM16.12 0h-.232l-.22.004h-.012l-.221.006h-.012l-.22.01h-.012l-.22.013h-.012l-.22.016h-.012l-.22.019h-.005l-.006.001-.22.021h-.006l-.005.001-.22.025h-.011l-.22.028h-.005l-.006.002-.219.03h-.005l-.006.001-.218.033-.006.001-.006.001-.217.036-.006.001-.006.001-.217.039-.006.001-.006.001-.216.042-.006.001-.006.001-.215.045-.006.001-.006.002-.215.047-.006.002-.006.001-.214.05-.006.002-.006.002-.115.029-.152.053-.14.081-.122.106-.1.126-.075.143-.047.154-.018.16.012.16.042.156.07.145.095.13.118.11.137.086.15.059.158.03h.161l.132-.022.11-.028.202-.047.203-.046.208-.043.202-.039.206-.037.206-.034.205-.03.208-.03.205-.025.209-.023.208-.02.21-.017.209-.015.207-.011.21-.009.21-.006.207-.003h.21l.21.002.207.005.207.008.212.011.207.014.208.017.209.019.208.022.205.025.206.028.207.03.208.035.205.036.202.039.052.01.16.018.16-.012.156-.042.146-.07.13-.096.109-.119.085-.136.06-.15.03-.159v-.16l-.03-.16-.059-.15-.086-.136-.109-.118-.13-.096-.145-.07-.128-.038-.057-.011-.006-.002h-.006l-.216-.042-.006-.001-.006-.001-.217-.039H18.9l-.006-.002-.217-.035-.006-.001-.006-.001-.218-.032-.006-.001-.006-.001-.218-.03h-.006l-.006-.001-.219-.027h-.011l-.22-.024-.005-.001h-.006l-.22-.021h-.006l-.006-.001-.22-.017-.005-.001h-.006L17.06.03h-.012l-.22-.012h-.012l-.22-.01h-.012l-.22-.005h-.012L16.132 0h-.012zm8.715 2.783l-.157.034-.149.063-.134.089-.116.112-.092.132-.067.147-.038.157-.008.16.021.16.051.153.079.141.103.124.102.087.052.038h.001l.087.064v.001l.082.061.002.001.076.059h.001l.084.065.082.066.002.001.079.063.002.002.077.063.081.067.002.002.077.065.076.065.001.002.08.07.078.07h.002l.075.068.077.072.002.001.073.069.077.073.072.07.002.001.077.076.07.07v.001l.075.076.07.073.002.001.074.079.002.002.069.074.069.075.074.082.07.08.002.001.068.079h.001l.067.079.068.082.065.078.001.002.068.083.067.084.063.081.001.002.067.087.002.002.063.084.001.001.064.087.008.01.008.01.095.12.093.121.09.119.087.119.088.122.086.123.084.12.081.122.001.002.084.126.08.126.08.127.077.126.079.131.074.127.075.131.073.131.07.13.07.133.069.133.045.09.086.137.109.119.13.096.144.07.156.042.16.013.16-.017.155-.047.143-.075.126-.1.106-.121.082-.14.054-.151.025-.16-.005-.16-.035-.158-.05-.124-.048-.095-.002-.004-.002-.004-.073-.14-.002-.005-.002-.004-.074-.14-.002-.004-.002-.004-.076-.14-.002-.003-.002-.004-.077-.139-.003-.004-.002-.004-.078-.138-.003-.004-.002-.003-.08-.137-.002-.004-.003-.004-.081-.136-.002-.004-.003-.004-.083-.136-.002-.003-.002-.004-.085-.135-.002-.004-.003-.003-.085-.134-.003-.004-.002-.004-.087-.132-.003-.004-.003-.004-.088-.132-.003-.003-.002-.004-.09-.13-.003-.005-.003-.003-.091-.13-.003-.004-.002-.004-.093-.129-.003-.003-.003-.004-.094-.128-.003-.004-.003-.003-.095-.127-.003-.004-.003-.004-.097-.125-.003-.004-.003-.004-.09-.114-.06-.082-.003-.003-.002-.003-.069-.091-.002-.004-.002-.003-.07-.09-.003-.003-.002-.003-.07-.09-.003-.003-.002-.003-.071-.09-.002-.003-.003-.002-.072-.089-.002-.003-.002-.003-.073-.088-.002-.003-.002-.002-.074-.087-.002-.003-.002-.003-.074-.086-.003-.003-.002-.003-.074-.086-.003-.002-.002-.003-.075-.085-.003-.003-.002-.002-.076-.084-.002-.003-.003-.003-.076-.083-.002-.003-.003-.003-.077-.082-.002-.003-.003-.002-.077-.082-.003-.003-.003-.002-.078-.081-.002-.003-.003-.003-.078-.08-.003-.002-.003-.003-.079-.08-.002-.002-.003-.002-.08-.08-.002-.002-.003-.002-.08-.078-.003-.003-.003-.002-.08-.077-.003-.003-.003-.002-.082-.077-.002-.002-.003-.002-.082-.076-.003-.002-.002-.003-.083-.075-.003-.002-.002-.003-.084-.074-.002-.002-.003-.002-.084-.074-.003-.002-.002-.002-.085-.073-.002-.002-.003-.003-.085-.071-.003-.003-.002-.002-.086-.07-.003-.003-.002-.002-.086-.07-.003-.003-.003-.002-.086-.07-.003-.002-.003-.002-.087-.069-.002-.002-.003-.002-.088-.068-.002-.002-.003-.002-.088-.067-.003-.003-.003-.002-.088-.066-.003-.002-.003-.002-.089-.066-.003-.002-.003-.002-.057-.042-.14-.082-.15-.055-.16-.026-.16.004zM6.377 3.21l-.157.037-.148.066-.111.074-.007.006-.003.002-.003.002-.086.069-.003.002-.002.002-.086.07-.003.002-.002.002-.086.07-.002.003-.003.002-.085.071-.002.002-.003.003-.084.071-.003.003-.002.002-.084.072-.003.003-.002.002-.083.073-.003.003-.002.002-.083.074-.002.002-.003.003-.082.074-.003.003-.002.002-.081.076-.003.002-.003.002-.08.077-.003.002-.003.003-.08.076-.002.003-.003.002-.08.078-.002.002-.003.003-.079.078-.002.003-.003.002-.078.08-.003.002-.002.002-.078.08-.002.003-.003.002-.077.08-.003.004-.002.002-.077.081-.002.003-.003.003-.076.082-.002.002-.003.003-.075.082-.002.003-.003.003-.074.083-.003.003-.002.003-.074.084-.003.003-.002.002-.074.085-.002.003-.002.003-.073.085-.003.003-.002.003-.072.086-.002.003-.003.003-.071.087-.003.003-.002.002-.07.088-.003.003-.002.003-.07.088-.003.003-.002.003-.07.09-.002.002-.002.003-.069.09-.002.003-.003.003-.068.09-.002.003-.002.003-.067.092-.003.003-.002.003-.067.092-.002.003-.002.003-.066.092-.002.003-.002.004-.066.093-.002.003-.002.003-.065.094-.002.003-.002.004-.064.094-.002.003-.002.004-.063.095-.002.003-.002.003-.063.097-.002.003-.002.003-.046.073-.05.07-.003.002-.002.003-.067.093-.003.003-.002.003-.066.094-.002.003-.002.003-.066.094-.002.003-.002.003-.064.094-.002.004-.002.003-.064.094-.002.004-.002.003-.062.095-.002.003-.002.003-.062.096-.002.003-.002.003-.06.096-.003.003-.002.003-.06.096-.001.004-.002.003-.059.096-.002.004-.002.003-.058.097-.002.003-.001.003-.057.098-.002.003-.002.003-.056.098-.002.003-.002.003-.055.098-.002.004-.001.003-.055.098-.001.004-.002.003-.054.099-.001.003-.002.003-.052.1-.002.002-.002.004-.051.1-.002.002-.002.004-.05.1-.002.003-.002.003-.05.1v.003l-.002.004-.05.1v.003l-.002.004-.048.1-.002.004-.001.003-.047.101-.002.003-.001.004-.013.027-.052.152-.024.16.006.16.037.157.064.148.091.133.114.114.134.09.147.065.157.036.162.006.159-.024.152-.053.14-.08.122-.105.1-.126.066-.117.01-.023.044-.095.045-.095.002-.003.042-.087.048-.097.048-.095v-.001l.048-.092.001-.001.047-.09.05-.093.002-.002.049-.09.052-.092.001-.002.051-.089.001-.002.051-.087.053-.088.001-.002.055-.091.057-.091.057-.09.001-.002.057-.089.055-.083.001-.002.06-.09.06-.088.062-.089.001-.001.06-.084.063-.088.065-.089.017-.023.016-.025.06-.094.059-.09v-.002l.058-.086.057-.086.001-.001.062-.09.062-.088.001-.002.06-.085.002-.002.06-.082.063-.087.064-.084.002-.002.061-.08.065-.084.064-.08v-.001l.067-.083.067-.082.07-.083.069-.08.063-.074.074-.083.068-.077.002-.002.07-.076.07-.075.072-.077.001-.001.067-.07.076-.078.002-.002.07-.07.075-.075.002-.002.072-.07.075-.072.002-.002.073-.069.074-.068.001-.001.08-.073.076-.068.002-.002.072-.063v-.001l.078-.067.079-.068.002-.001.08-.068.002-.002.077-.063.082-.066.001-.001.075-.06.002-.002.006-.004.117-.111.094-.131.068-.146.04-.156.01-.161-.019-.16-.049-.154-.076-.141-.102-.125-.123-.105-.14-.079-.153-.052-.16-.023-.16.007zm24.596 11.088l-.156.04-.146.067-.131.094-.112.117-.087.135-.061.15-.033.157-.004.134.007.142.005.152.004.15.002.149v.153l.001.011v.015l.004.11.002.11v.002l.002.106v.321l-.003.102-.002.106-.004.107-.005.105-.006.106-.006.106-.008.106v.002l-.008.103v.002l-.01.1-.01.105-.01.105-.013.105-.012.099v.002l-.014.108-.014.1-.016.105-.016.103v.002l-.017.099-.018.104-.019.103v.002l-.019.097-.02.104-.022.103v.001l-.022.098-.023.103v.002l-.024.096-.025.103v.002l-.024.096-.027.102v.003l-.026.093v.001l-.029.103v.002l-.03.099-.028.097v.002l-.03.095-.03.096v.001l-.033.1-.031.095v.002l-.035.1v.003l-.034.094v.003l-.035.096v.001l-.034.09v.002l-.038.098-.036.093v.002l-.038.095-.079.194-.08.188-.085.189-.087.19-.09.184-.092.183-.095.184-.05.093-.064.148-.034.158-.005.16.026.16.054.151.082.14.106.12.127.1.143.075.154.046.16.017.161-.013.156-.042.144-.071.13-.096.109-.119.072-.112.053-.099.003-.005.003-.006.102-.195.003-.006.003-.006.098-.196.003-.006.003-.006.096-.197.002-.006.003-.006.093-.2.002-.006.003-.006.09-.2.002-.006.003-.007.086-.202.003-.006.002-.006.084-.203.002-.005.001-.005.04-.102.002-.003.001-.003.04-.103.001-.003.001-.003.04-.103v-.004l.001-.003.039-.103v-.003l.002-.003.037-.104.001-.003.001-.003.037-.104v-.004l.002-.003.035-.104.002-.003v-.004l.035-.104.002-.004v-.003l.034-.105.002-.003v-.003l.034-.105v-.004l.002-.003.032-.106.001-.003.001-.003.031-.106.001-.003.001-.004.031-.106.001-.003.001-.004.03-.106v-.003l.002-.004.028-.107.001-.003.001-.003.028-.107.001-.004.001-.003.027-.107.001-.004v-.003l.027-.108.001-.003v-.004l.026-.108.001-.003v-.004l.025-.108.001-.003v-.004l.025-.108v-.004l.001-.003.023-.109v-.003l.001-.004.022-.109v-.003l.002-.004.02-.109.001-.004v-.003l.02-.11.002-.003v-.004l.02-.11v-.007l.019-.11v-.003l.001-.004.017-.11v-.004l.001-.003.017-.11v-.008l.016-.11v-.004l.001-.004.015-.11v-.008l.015-.111v-.008l.013-.111v-.007l.013-.112v-.007l.011-.112v-.004l.001-.004.01-.112v-.007l.01-.112v-.008l.008-.112v-.008l.007-.113v-.007l.007-.113v-.008l.005-.113v-.007l.005-.114v-.007l.003-.114v-.007l.003-.114v-.129l.001-.114v-.13l-.003-.114v-.008l-.003-.115v-.007l-.003-.102v-.155l-.003-.158v-.01l-.004-.158v-.01l-.006-.158v-.01l-.007-.148-.023-.16-.051-.152-.08-.14-.103-.124-.125-.102-.142-.077-.153-.05-.16-.02-.161.01zm-30.213.66l-.157.034-.149.063-.134.09-.115.113-.092.132-.067.147-.037.156-.009.134.001.11V15.95l.006.22v.012l.01.22v.012l.012.22v.006l.001.006.015.22v.005l.001.006.018.22.001.006v.006l.022.219v.006l.001.006.024.219.001.006v.006l.028.218.001.006v.006l.031.218.001.006.001.006.033.218.001.006.001.005.037.218v.006l.002.005.04.217v.006l.001.006.043.216.001.006.001.006.046.216v.005l.002.006.048.215.002.006.001.006.051.214.002.006v.006l.055.214.002.005.001.006.057.213.002.006.001.005.06.213.002.005.001.006.063.212.002.005.001.006.066.21.002.006.002.006.068.21.002.005.002.005.07.21.003.005.002.005.074.208.002.006.002.005.077.207.002.006.002.005.08.206.002.005.002.006.082.204.002.006.002.005.086.204.002.005.002.006.088.202.002.005.003.006.09.2.003.006.002.005.094.2.002.006.003.005.096.199.002.005.003.005.03.062.086.137.11.118.128.097.145.07.156.043.16.013.16-.017.155-.047.143-.074.127-.1.106-.121.081-.14.055-.15.025-.16-.005-.161-.034-.158-.05-.124-.028-.055-.092-.19-.087-.188-.087-.192-.083-.19-.08-.193-.078-.194-.076-.196-.073-.195-.07-.197-.067-.198-.065-.199-.063-.2-.059-.2-.056-.2-.055-.204-.05-.201-.049-.202-.046-.205-.043-.206-.04-.203-.038-.207-.034-.204-.032-.207-.028-.205-.026-.207-.023-.208-.02-.207-.018-.207-.014-.208-.011-.207-.009-.208-.005-.207-.002-.104-.017-.16-.046-.155-.074-.143-.1-.126-.121-.107-.139-.081-.152-.055-.159-.025-.161.004zm24.585 11.83l-.156.039-.146.068-.11.076-.015.012-.163.129-.166.127-.168.125-.17.124-.17.12-.172.118-.173.115-.176.114-.177.111-.18.11-.178.105-.182.104-.182.101-.184.1-.184.095-.189.095-.186.09-.188.089-.19.086-.19.082-.193.081-.195.078-.191.074-.197.073-.195.07-.196.065-.198.064-.198.061-.2.058-.2.055-.2.052-.2.049-.151.035-.153.05-.141.078-.125.103-.103.124-.078.14-.05.154-.022.16.009.16.038.157.067.147.093.132.116.112.134.089.149.062.158.034.16.003.133-.02.158-.035.006-.002.006-.001.213-.052.006-.002.007-.001.212-.056.006-.001.006-.002.212-.058.006-.002.006-.002.211-.061.006-.002.006-.002.21-.064.006-.002.006-.002.21-.067.005-.002.006-.002.208-.07.006-.002.006-.003.207-.073.006-.002.006-.002.206-.077.006-.002.005-.002.206-.08.005-.001.006-.003.204-.082.006-.002.005-.002.203-.085.006-.003.005-.002.202-.088.006-.002.005-.003.2-.09.006-.003.006-.003.2-.093.005-.003.005-.002.198-.096.006-.003.005-.003.197-.099.005-.002.005-.003.196-.102.005-.002.005-.003.195-.105.005-.002.005-.003.193-.107.005-.003.005-.003.191-.11.005-.003.005-.003.19-.112.005-.003.005-.003.189-.115.005-.003.005-.003.187-.117.005-.003.004-.004.186-.12.005-.003.004-.003.184-.122.005-.003.005-.004.182-.125.004-.003.005-.003.18-.128.005-.003.005-.003.179-.13.004-.003.005-.004.177-.132.004-.004.005-.003.175-.135.005-.003.004-.004.173-.137.005-.003.004-.004.019-.015.115-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.052-.153-.079-.14-.103-.124-.125-.102-.142-.078-.153-.05-.16-.02-.16.01zm-19.17.054l-.153.051-.14.079-.124.103-.103.125-.077.141-.05.153-.02.16.009.161.04.156.067.147.093.131.095.094.047.04.005.004.005.004.17.14.005.004.005.004.172.137.004.004.005.003.086.067.003.002.003.002.087.067.003.002.003.002.088.066.002.003.003.002.089.065.002.002.003.002.09.065.002.002.003.002.09.064.002.002.003.002.09.063.003.002.003.002.09.063.003.002.003.002.092.062.002.002.003.002.092.061.003.002.003.002.092.06.003.003.003.001.093.06.003.002.003.002.093.06.003.001.003.002.094.058.003.002.003.002.095.058.003.001.003.002.095.057.003.002.003.002.095.056.003.002.003.002.096.055.004.002.003.001.096.055.003.002.003.002.098.053.003.002.003.002.097.053.004.002.003.001.098.053.003.001.003.002.099.052.003.001.003.002.1.05.003.002.003.002.1.05.003.002.003.001.1.05h.003l.004.003.1.048.004.001.003.002.101.048.003.001.004.002.101.046.004.002.003.001.102.046.004.002.003.001.103.045.003.002.003.001.103.045.004.001.003.002.104.043.003.001.004.002.104.042.003.002.004.001.104.042.004.001.003.002.105.04.004.002.003.001.106.04.003.002h.004l.106.04.004.001.003.002.107.038.003.001.004.001.107.038.003.001.004.001.107.037.004.001.004.001.108.036.003.001.004.001.108.035.004.001.003.001.11.034.003.001.004.001.109.033.004.002h.003l.11.033h.004l.003.002.11.031.004.001.004.001.084.023.081.028.004.001.003.001.109.037.003.001.004.001.109.036.003.001.004.001.109.035h.003l.004.002.11.033.003.001.003.001.11.033.003.001.004.001.109.031.004.002h.003l.11.031.003.001.004.001.11.03h.003l.003.001.11.029h.004l.003.002.11.027.003.001.004.001.11.027h.003l.004.001.004.001.16.022.16-.008.157-.038.147-.067.132-.092.112-.116.09-.134.062-.149.034-.157.004-.161-.025-.16-.055-.151-.082-.139-.107-.12-.127-.1-.143-.074-.124-.04h-.003l-.104-.025-.103-.026h-.002l-.095-.026h-.001l-.101-.027h-.002l-.1-.028h-.002l-.103-.03-.104-.032-.097-.03h-.002l-.103-.033-.102-.033-.101-.034-.106-.036-.027-.01-.027-.007-.107-.03-.104-.029-.104-.03h-.002l-.097-.03-.102-.032-.102-.032-.102-.034-.103-.035-.096-.034-.1-.036-.101-.037h-.002l-.094-.036-.096-.037-.097-.04h-.002l-.099-.04-.098-.042h-.002l-.092-.04-.097-.043-.095-.043-.097-.044h-.002l-.09-.043-.094-.045-.094-.046-.093-.047-.09-.046-.096-.05-.088-.047-.002-.001-.09-.049-.094-.052-.002-.002-.087-.049-.087-.05h-.002l-.088-.053h-.001l-.09-.055-.086-.052-.002-.001-.089-.055-.084-.054h-.002l-.09-.059h-.001l-.085-.056-.001-.001-.084-.056-.082-.056h-.001l-.086-.06-.082-.058H7.79l-.086-.062-.002-.002-.08-.058-.081-.06h-.001l-.085-.064-.002-.002-.076-.058-.002-.002-.082-.064-.161-.128-.162-.133-.04-.034-.132-.092-.147-.066-.157-.038-.16-.008-.16.022z"
   })));
 
@@ -35752,11 +36208,11 @@
   var StartEventNonInterruptingEscalationIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$h({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$h({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16 9.209c-1.674 4.655-2.735 9.504-4.408 14.16 1.534-1.526 2.873-3.235 4.407-4.761l4.408 4.76c-1.497-4.71-2.91-9.448-4.408-14.16zm.031 2.93c.822 2.586 1.598 5.187 2.42 7.774l-2.42-2.614c-.682.598-2.453 2.886-2.34 2.389.873-2.488 1.45-5.068 2.34-7.55zM16.132.364c-1.51.016-3.055.139-4.492.614-.854.442-.266 1.861.651 1.578 2.266-.58 4.656-.596 6.944-.144.935.063 1.21-1.391.318-1.674-1.118-.26-2.274-.361-3.42-.374zm8.865 2.777c-.931-.1-1.262 1.29-.425 1.666 1.863 1.364 3.222 3.298 4.322 5.296.617.737 1.875-.145 1.398-.979-1.184-2.275-2.808-4.384-4.923-5.866a.863.863 0 00-.372-.117zM6.55 3.564c-.734.078-1.196.762-1.735 1.206C3.552 6.02 2.55 7.511 1.681 9.053c-.31.533-.71 1.33-.03 1.767.615.432 1.282-.132 1.446-.742.796-1.475 1.746-2.89 2.934-4.08.43-.548 1.292-.822 1.34-1.595a.874.874 0 00-.822-.839zm24.582 11.078c-.771-.033-1.004.82-.873 1.437.13 2.395-.471 4.797-1.615 6.897-.33.876.984 1.559 1.512.785a14.276 14.276 0 001.761-8.54.865.865 0 00-.785-.579zm-30.195.666c-.774-.06-1.032.785-.905 1.407.117 2.41.732 4.81 1.858 6.945.528.774 1.84.09 1.51-.786A15.932 15.932 0 011.728 16a.876.876 0 00-.79-.692zm24.57 11.817c-.762.099-1.243.835-1.919 1.16-1.514 1.002-3.237 1.632-4.978 2.092-.864.423-.307 1.855.616 1.591 2.528-.578 4.93-1.75 6.913-3.421.469-.522.07-1.42-.631-1.422zm-19.16.042c-.845.001-1.12 1.228-.395 1.628 1.665 1.401 3.667 2.348 5.76 2.912.618.178 1.482.565 1.893-.177.355-.628-.226-1.297-.87-1.326-1.972-.515-3.912-1.285-5.5-2.594-.26-.213-.522-.472-.888-.443z"
   })));
 
@@ -35764,11 +36220,11 @@
   var StartEventNonInterruptingMessageIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$g({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$g({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M8.746 10.393v11.064h14.506V10.393H8.746zm3.223 1.728h8.06c-1.428.879-2.856 2.807-4.283 3.018l-3.777-3.018zm9.557 1.018v6.59H10.473v-6.59l5.525 4.416 5.528-4.416zM16.132 0c-1.51.016-3.055.139-4.492.614-.854.442-.266 1.861.651 1.578 2.266-.58 4.656-.596 6.944-.144.935.063 1.21-1.391.318-1.674-1.118-.26-2.274-.361-3.42-.374zm8.865 2.777c-.931-.1-1.262 1.29-.425 1.666 1.863 1.364 3.222 3.298 4.322 5.296.617.737 1.875-.145 1.398-.979-1.184-2.275-2.808-4.384-4.923-5.866a.863.863 0 00-.372-.117zM6.55 3.2c-.734.078-1.196.762-1.735 1.206C3.552 5.656 2.55 7.147 1.681 8.69c-.31.533-.71 1.33-.03 1.767.615.432 1.282-.132 1.446-.742.796-1.475 1.746-2.89 2.934-4.08.43-.548 1.292-.822 1.34-1.595a.874.874 0 00-.822-.839zm24.582 11.078c-.771-.033-1.004.82-.873 1.437.13 2.395-.471 4.797-1.615 6.897-.33.876.984 1.559 1.512.785a14.276 14.276 0 001.761-8.54.865.865 0 00-.785-.579zm-30.195.666c-.774-.06-1.032.785-.905 1.407.117 2.41.732 4.81 1.858 6.945.528.774 1.84.09 1.51-.786a15.932 15.932 0 01-1.672-6.874.876.876 0 00-.79-.692zm24.57 11.817c-.762.099-1.243.835-1.919 1.16-1.514 1.002-3.237 1.632-4.978 2.092-.864.423-.307 1.855.616 1.591 2.528-.578 4.93-1.75 6.913-3.421.469-.522.07-1.42-.631-1.422zm-19.16.042c-.845.001-1.12 1.228-.395 1.628 1.665 1.401 3.667 2.348 5.76 2.912.618.178 1.482.565 1.893-.177.355-.628-.226-1.297-.87-1.326-1.972-.515-3.912-1.285-5.5-2.594-.26-.213-.522-.472-.888-.443z"
   })));
 
@@ -35776,11 +36232,11 @@
   var StartEventNonInterruptingMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$f({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$f({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M23.621 13.524L16 7.99l-7.622 5.534 2.911 8.952h9.422l2.911-8.952zm-1.016.33l-2.523 7.759h-8.165l-2.524-7.76L16 9.059l6.606 4.796zM16.132 0c-1.51.016-3.055.139-4.492.614-.854.442-.266 1.861.651 1.578 2.266-.58 4.656-.596 6.944-.144.935.063 1.21-1.391.318-1.674-1.118-.26-2.274-.361-3.42-.374zm8.865 2.777c-.931-.1-1.262 1.29-.425 1.666 1.863 1.364 3.222 3.298 4.322 5.296.617.737 1.875-.145 1.398-.979-1.184-2.275-2.808-4.384-4.923-5.866a.863.863 0 00-.372-.117zM6.55 3.2c-.734.078-1.196.762-1.735 1.206C3.552 5.656 2.55 7.147 1.681 8.69c-.31.533-.71 1.33-.03 1.767.615.432 1.282-.132 1.446-.742.796-1.475 1.746-2.89 2.934-4.08.43-.548 1.292-.822 1.34-1.595a.874.874 0 00-.822-.839zm24.582 11.078c-.771-.033-1.004.82-.873 1.437.13 2.395-.471 4.797-1.615 6.897-.33.876.984 1.559 1.512.785a14.276 14.276 0 001.761-8.54.865.865 0 00-.785-.579zm-30.195.666c-.774-.06-1.032.785-.905 1.407.117 2.41.732 4.81 1.858 6.945.528.774 1.84.09 1.51-.786a15.932 15.932 0 01-1.672-6.874.876.876 0 00-.79-.692zm24.57 11.817c-.762.099-1.243.835-1.919 1.16-1.514 1.002-3.237 1.632-4.978 2.092-.864.423-.307 1.855.616 1.591 2.528-.578 4.93-1.75 6.913-3.421.469-.522.07-1.42-.631-1.422zm-19.16.042c-.845.001-1.12 1.228-.395 1.628 1.665 1.401 3.667 2.348 5.76 2.912.618.178 1.482.565 1.893-.177.355-.628-.226-1.297-.87-1.326-1.972-.515-3.912-1.285-5.5-2.594-.26-.213-.522-.472-.888-.443z"
   })));
 
@@ -35788,11 +36244,11 @@
   var StartEventNonInterruptingParallelMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$e({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$e({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M13.503 9.016v4.428H9.075v4.98h4.428v4.428h4.98v-4.427h4.428v-4.981h-4.427V9.016h-4.981zm.83.83h3.32v4.428h4.428v3.32h-4.428v4.428h-3.32v-4.454H9.905v-3.294h4.428V9.846zM16.12 0h-.232l-.22.004h-.012l-.221.006h-.012l-.22.01h-.012l-.22.013h-.012l-.22.016h-.012l-.22.019h-.005l-.006.001-.22.021h-.006l-.005.001-.22.025h-.011l-.22.028h-.005l-.006.002-.219.03h-.005l-.006.001-.218.033-.006.001-.006.001-.217.036-.006.001-.006.001-.217.039-.006.001-.006.001-.216.042-.006.001-.006.001-.215.045-.006.001-.006.002-.215.047-.006.002-.006.001-.214.05-.006.002-.006.002-.115.029-.152.053-.14.081-.122.106-.1.126-.075.143-.047.154-.018.16.012.16.042.156.07.145.095.13.118.11.137.086.15.059.158.03h.161l.132-.022.11-.028.202-.047.203-.046.208-.043.202-.039.206-.037.206-.034.205-.03.208-.03.205-.025.209-.023.208-.02.21-.017.209-.015.207-.011.21-.009.21-.006.207-.003h.21l.21.002.207.005.207.008.212.011.207.014.208.017.209.019.208.022.205.025.206.028.207.03.208.035.205.036.202.039.052.01.16.018.16-.012.156-.042.146-.07.13-.096.109-.119.085-.136.06-.15.03-.159v-.16l-.03-.16-.059-.15-.086-.136-.109-.118-.13-.096-.145-.07-.128-.038-.057-.011-.006-.002h-.006l-.216-.042-.006-.001-.006-.001-.217-.039H18.9l-.006-.002-.217-.035-.006-.001-.006-.001-.218-.032-.006-.001-.006-.001-.218-.03h-.006l-.006-.001-.219-.027h-.011l-.22-.024-.005-.001h-.006l-.22-.021h-.006l-.006-.001-.22-.017-.005-.001h-.006L17.06.03h-.012l-.22-.012h-.012l-.22-.01h-.012l-.22-.005h-.012L16.132 0h-.012zm8.715 2.783l-.157.034-.149.063-.134.089-.116.112-.092.132-.067.147-.038.157-.008.16.021.16.051.153.079.141.103.124.102.087.052.038h.001l.087.064v.001l.082.061.002.001.076.059h.001l.084.065.082.066.002.001.079.063.002.002.077.063.081.067.002.002.077.065.076.065.001.002.08.07.078.07h.002l.075.068.077.072.002.001.073.069.077.073.072.07.002.001.077.076.07.07v.001l.075.076.07.073.002.001.074.079.002.002.069.074.069.075.074.082.07.08.002.001.068.079h.001l.067.079.068.082.065.078.001.002.068.083.067.084.063.081.001.002.067.087.002.002.063.084.001.001.064.087.008.01.008.01.095.12.093.121.09.119.087.119.088.122.086.123.084.12.081.122.001.002.084.126.08.126.08.127.077.126.079.131.074.127.075.131.073.131.07.13.07.133.069.133.045.09.086.137.109.119.13.096.144.07.156.042.16.013.16-.017.155-.047.143-.075.126-.1.106-.121.082-.14.054-.151.025-.16-.005-.16-.035-.158-.05-.124-.048-.095-.002-.004-.002-.004-.073-.14-.002-.005-.002-.004-.074-.14-.002-.004-.002-.004-.076-.14-.002-.003-.002-.004-.077-.139-.003-.004-.002-.004-.078-.138-.003-.004-.002-.003-.08-.137-.002-.004-.003-.004-.081-.136-.002-.004-.003-.004-.083-.136-.002-.003-.002-.004-.085-.135-.002-.004-.003-.003-.085-.134-.003-.004-.002-.004-.087-.132-.003-.004-.003-.004-.088-.132-.003-.003-.002-.004-.09-.13-.003-.005-.003-.003-.091-.13-.003-.004-.002-.004-.093-.129-.003-.003-.003-.004-.094-.128-.003-.004-.003-.003-.095-.127-.003-.004-.003-.004-.097-.125-.003-.004-.003-.004-.09-.114-.06-.082-.003-.003-.002-.003-.069-.091-.002-.004-.002-.003-.07-.09-.003-.003-.002-.003-.07-.09-.003-.003-.002-.003-.071-.09-.002-.003-.003-.002-.072-.089-.002-.003-.002-.003-.073-.088-.002-.003-.002-.002-.074-.087-.002-.003-.002-.003-.074-.086-.003-.003-.002-.003-.074-.086-.003-.002-.002-.003-.075-.085-.003-.003-.002-.002-.076-.084-.002-.003-.003-.003-.076-.083-.002-.003-.003-.003-.077-.082-.002-.003-.003-.002-.077-.082-.003-.003-.003-.002-.078-.081-.002-.003-.003-.003-.078-.08-.003-.002-.003-.003-.079-.08-.002-.002-.003-.002-.08-.08-.002-.002-.003-.002-.08-.078-.003-.003-.003-.002-.08-.077-.003-.003-.003-.002-.082-.077-.002-.002-.003-.002-.082-.076-.003-.002-.002-.003-.083-.075-.003-.002-.002-.003-.084-.074-.002-.002-.003-.002-.084-.074-.003-.002-.002-.002-.085-.073-.002-.002-.003-.003-.085-.071-.003-.003-.002-.002-.086-.07-.003-.003-.002-.002-.086-.07-.003-.003-.003-.002-.086-.07-.003-.002-.003-.002-.087-.069-.002-.002-.003-.002-.088-.068-.002-.002-.003-.002-.088-.067-.003-.003-.003-.002-.088-.066-.003-.002-.003-.002-.089-.066-.003-.002-.003-.002-.057-.042-.14-.082-.15-.055-.16-.026-.16.004zM6.377 3.21l-.157.037-.148.066-.111.074-.007.006-.003.002-.003.002-.086.069-.003.002-.002.002-.086.07-.003.002-.002.002-.086.07-.002.003-.003.002-.085.071-.002.002-.003.003-.084.071-.003.003-.002.002-.084.072-.003.003-.002.002-.083.073-.003.003-.002.002-.083.074-.002.002-.003.003-.082.074-.003.003-.002.002-.081.076-.003.002-.003.002-.08.077-.003.002-.003.003-.08.076-.002.003-.003.002-.08.078-.002.002-.003.003-.079.078-.002.003-.003.002-.078.08-.003.002-.002.002-.078.08-.002.003-.003.002-.077.08-.003.004-.002.002-.077.081-.002.003-.003.003-.076.082-.002.002-.003.003-.075.082-.002.003-.003.003-.074.083-.003.003-.002.003-.074.084-.003.003-.002.002-.074.085-.002.003-.002.003-.073.085-.003.003-.002.003-.072.086-.002.003-.003.003-.071.087-.003.003-.002.002-.07.088-.003.003-.002.003-.07.088-.003.003-.002.003-.07.09-.002.002-.002.003-.069.09-.002.003-.003.003-.068.09-.002.003-.002.003-.067.092-.003.003-.002.003-.067.092-.002.003-.002.003-.066.092-.002.003-.002.004-.066.093-.002.003-.002.003-.065.094-.002.003-.002.004-.064.094-.002.003-.002.004-.063.095-.002.003-.002.003-.063.097-.002.003-.002.003-.046.073-.05.07-.003.002-.002.003-.067.093-.003.003-.002.003-.066.094-.002.003-.002.003-.066.094-.002.003-.002.003-.064.094-.002.004-.002.003-.064.094-.002.004-.002.003-.062.095-.002.003-.002.003-.062.096-.002.003-.002.003-.06.096-.003.003-.002.003-.06.096-.001.004-.002.003-.059.096-.002.004-.002.003-.058.097-.002.003-.001.003-.057.098-.002.003-.002.003-.056.098-.002.003-.002.003-.055.098-.002.004-.001.003-.055.098-.001.004-.002.003-.054.099-.001.003-.002.003-.052.1-.002.002-.002.004-.051.1-.002.002-.002.004-.05.1-.002.003-.002.003-.05.1v.003l-.002.004-.05.1v.003l-.002.004-.048.1-.002.004-.001.003-.047.101-.002.003-.001.004-.013.027-.052.152-.024.16.006.16.037.157.064.148.091.133.114.114.134.09.147.065.157.036.162.006.159-.024.152-.053.14-.08.122-.105.1-.126.066-.117.01-.023.044-.095.045-.095.002-.003.042-.087.048-.097.048-.095v-.001l.048-.092.001-.001.047-.09.05-.093.002-.002.049-.09.052-.092.001-.002.051-.089.001-.002.051-.087.053-.088.001-.002.055-.091.057-.091.057-.09.001-.002.057-.089.055-.083.001-.002.06-.09.06-.088.062-.089.001-.001.06-.084.063-.088.065-.089.017-.023.016-.025.06-.094.059-.09v-.002l.058-.086.057-.086.001-.001.062-.09.062-.088.001-.002.06-.085.002-.002.06-.082.063-.087.064-.084.002-.002.061-.08.065-.084.064-.08v-.001l.067-.083.067-.082.07-.083.069-.08.063-.074.074-.083.068-.077.002-.002.07-.076.07-.075.072-.077.001-.001.067-.07.076-.078.002-.002.07-.07.075-.075.002-.002.072-.07.075-.072.002-.002.073-.069.074-.068.001-.001.08-.073.076-.068.002-.002.072-.063v-.001l.078-.067.079-.068.002-.001.08-.068.002-.002.077-.063.082-.066.001-.001.075-.06.002-.002.006-.004.117-.111.094-.131.068-.146.04-.156.01-.161-.019-.16-.049-.154-.076-.141-.102-.125-.123-.105-.14-.079-.153-.052-.16-.023-.16.007zm24.596 11.088l-.156.04-.146.067-.131.094-.112.117-.087.135-.061.15-.033.157-.004.134.007.142.005.152.004.15.002.149v.153l.001.011v.015l.004.11.002.11v.002l.002.106v.321l-.003.102-.002.106-.004.107-.005.105-.006.106-.006.106-.008.106v.002l-.008.103v.002l-.01.1-.01.105-.01.105-.013.105-.012.099v.002l-.014.108-.014.1-.016.105-.016.103v.002l-.017.099-.018.104-.019.103v.002l-.019.097-.02.104-.022.103v.001l-.022.098-.023.103v.002l-.024.096-.025.103v.002l-.024.096-.027.102v.003l-.026.093v.001l-.029.103v.002l-.03.099-.028.097v.002l-.03.095-.03.096v.001l-.033.1-.031.095v.002l-.035.1v.003l-.034.094v.003l-.035.096v.001l-.034.09v.002l-.038.098-.036.093v.002l-.038.095-.079.194-.08.188-.085.189-.087.19-.09.184-.092.183-.095.184-.05.093-.064.148-.034.158-.005.16.026.16.054.151.082.14.106.12.127.1.143.075.154.046.16.017.161-.013.156-.042.144-.071.13-.096.109-.119.072-.112.053-.099.003-.005.003-.006.102-.195.003-.006.003-.006.098-.196.003-.006.003-.006.096-.197.002-.006.003-.006.093-.2.002-.006.003-.006.09-.2.002-.006.003-.007.086-.202.003-.006.002-.006.084-.203.002-.005.001-.005.04-.102.002-.003.001-.003.04-.103.001-.003.001-.003.04-.103v-.004l.001-.003.039-.103v-.003l.002-.003.037-.104.001-.003.001-.003.037-.104v-.004l.002-.003.035-.104.002-.003v-.004l.035-.104.002-.004v-.003l.034-.105.002-.003v-.003l.034-.105v-.004l.002-.003.032-.106.001-.003.001-.003.031-.106.001-.003.001-.004.031-.106.001-.003.001-.004.03-.106v-.003l.002-.004.028-.107.001-.003.001-.003.028-.107.001-.004.001-.003.027-.107.001-.004v-.003l.027-.108.001-.003v-.004l.026-.108.001-.003v-.004l.025-.108.001-.003v-.004l.025-.108v-.004l.001-.003.023-.109v-.003l.001-.004.022-.109v-.003l.002-.004.02-.109.001-.004v-.003l.02-.11.002-.003v-.004l.02-.11v-.007l.019-.11v-.003l.001-.004.017-.11v-.004l.001-.003.017-.11v-.008l.016-.11v-.004l.001-.004.015-.11v-.008l.015-.111v-.008l.013-.111v-.007l.013-.112v-.007l.011-.112v-.004l.001-.004.01-.112v-.007l.01-.112v-.008l.008-.112v-.008l.007-.113v-.007l.007-.113v-.008l.005-.113v-.007l.005-.114v-.007l.003-.114v-.007l.003-.114v-.129l.001-.114v-.13l-.003-.114v-.008l-.003-.115v-.007l-.003-.102v-.155l-.003-.158v-.01l-.004-.158v-.01l-.006-.158v-.01l-.007-.148-.023-.16-.051-.152-.08-.14-.103-.124-.125-.102-.142-.077-.153-.05-.16-.02-.161.01zm-30.213.66l-.157.034-.149.063-.134.09-.115.113-.092.132-.067.147-.037.156-.009.134.001.11V15.95l.006.22v.012l.01.22v.012l.012.22v.006l.001.006.015.22v.005l.001.006.018.22.001.006v.006l.022.219v.006l.001.006.024.219.001.006v.006l.028.218.001.006v.006l.031.218.001.006.001.006.033.218.001.006.001.005.037.218v.006l.002.005.04.217v.006l.001.006.043.216.001.006.001.006.046.216v.005l.002.006.048.215.002.006.001.006.051.214.002.006v.006l.055.214.002.005.001.006.057.213.002.006.001.005.06.213.002.005.001.006.063.212.002.005.001.006.066.21.002.006.002.006.068.21.002.005.002.005.07.21.003.005.002.005.074.208.002.006.002.005.077.207.002.006.002.005.08.206.002.005.002.006.082.204.002.006.002.005.086.204.002.005.002.006.088.202.002.005.003.006.09.2.003.006.002.005.094.2.002.006.003.005.096.199.002.005.003.005.03.062.086.137.11.118.128.097.145.07.156.043.16.013.16-.017.155-.047.143-.074.127-.1.106-.121.081-.14.055-.15.025-.16-.005-.161-.034-.158-.05-.124-.028-.055-.092-.19-.087-.188-.087-.192-.083-.19-.08-.193-.078-.194-.076-.196-.073-.195-.07-.197-.067-.198-.065-.199-.063-.2-.059-.2-.056-.2-.055-.204-.05-.201-.049-.202-.046-.205-.043-.206-.04-.203-.038-.207-.034-.204-.032-.207-.028-.205-.026-.207-.023-.208-.02-.207-.018-.207-.014-.208-.011-.207-.009-.208-.005-.207-.002-.104-.017-.16-.046-.155-.074-.143-.1-.126-.121-.107-.139-.081-.152-.055-.159-.025-.161.004zm24.585 11.83l-.156.039-.146.068-.11.076-.015.012-.163.129-.166.127-.168.125-.17.124-.17.12-.172.118-.173.115-.176.114-.177.111-.18.11-.178.105-.182.104-.182.101-.184.1-.184.095-.189.095-.186.09-.188.089-.19.086-.19.082-.193.081-.195.078-.191.074-.197.073-.195.07-.196.065-.198.064-.198.061-.2.058-.2.055-.2.052-.2.049-.151.035-.153.05-.141.078-.125.103-.103.124-.078.14-.05.154-.022.16.009.16.038.157.067.147.093.132.116.112.134.089.149.062.158.034.16.003.133-.02.158-.035.006-.002.006-.001.213-.052.006-.002.007-.001.212-.056.006-.001.006-.002.212-.058.006-.002.006-.002.211-.061.006-.002.006-.002.21-.064.006-.002.006-.002.21-.067.005-.002.006-.002.208-.07.006-.002.006-.003.207-.073.006-.002.006-.002.206-.077.006-.002.005-.002.206-.08.005-.001.006-.003.204-.082.006-.002.005-.002.203-.085.006-.003.005-.002.202-.088.006-.002.005-.003.2-.09.006-.003.006-.003.2-.093.005-.003.005-.002.198-.096.006-.003.005-.003.197-.099.005-.002.005-.003.196-.102.005-.002.005-.003.195-.105.005-.002.005-.003.193-.107.005-.003.005-.003.191-.11.005-.003.005-.003.19-.112.005-.003.005-.003.189-.115.005-.003.005-.003.187-.117.005-.003.004-.004.186-.12.005-.003.004-.003.184-.122.005-.003.005-.004.182-.125.004-.003.005-.003.18-.128.005-.003.005-.003.179-.13.004-.003.005-.004.177-.132.004-.004.005-.003.175-.135.005-.003.004-.004.173-.137.005-.003.004-.004.019-.015.115-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.052-.153-.079-.14-.103-.124-.125-.102-.142-.078-.153-.05-.16-.02-.16.01zm-19.17.054l-.153.051-.14.079-.124.103-.103.125-.077.141-.05.153-.02.16.009.161.04.156.067.147.093.131.095.094.047.04.005.004.005.004.17.14.005.004.005.004.172.137.004.004.005.003.086.067.003.002.003.002.087.067.003.002.003.002.088.066.002.003.003.002.089.065.002.002.003.002.09.065.002.002.003.002.09.064.002.002.003.002.09.063.003.002.003.002.09.063.003.002.003.002.092.062.002.002.003.002.092.061.003.002.003.002.092.06.003.003.003.001.093.06.003.002.003.002.093.06.003.001.003.002.094.058.003.002.003.002.095.058.003.001.003.002.095.057.003.002.003.002.095.056.003.002.003.002.096.055.004.002.003.001.096.055.003.002.003.002.098.053.003.002.003.002.097.053.004.002.003.001.098.053.003.001.003.002.099.052.003.001.003.002.1.05.003.002.003.002.1.05.003.002.003.001.1.05h.003l.004.003.1.048.004.001.003.002.101.048.003.001.004.002.101.046.004.002.003.001.102.046.004.002.003.001.103.045.003.002.003.001.103.045.004.001.003.002.104.043.003.001.004.002.104.042.003.002.004.001.104.042.004.001.003.002.105.04.004.002.003.001.106.04.003.002h.004l.106.04.004.001.003.002.107.038.003.001.004.001.107.038.003.001.004.001.107.037.004.001.004.001.108.036.003.001.004.001.108.035.004.001.003.001.11.034.003.001.004.001.109.033.004.002h.003l.11.033h.004l.003.002.11.031.004.001.004.001.084.023.081.028.004.001.003.001.109.037.003.001.004.001.109.036.003.001.004.001.109.035h.003l.004.002.11.033.003.001.003.001.11.033.003.001.004.001.109.031.004.002h.003l.11.031.003.001.004.001.11.03h.003l.003.001.11.029h.004l.003.002.11.027.003.001.004.001.11.027h.003l.004.001.004.001.16.022.16-.008.157-.038.147-.067.132-.092.112-.116.09-.134.062-.149.034-.157.004-.161-.025-.16-.055-.151-.082-.139-.107-.12-.127-.1-.143-.074-.124-.04h-.003l-.104-.025-.103-.026h-.002l-.095-.026h-.001l-.101-.027h-.002l-.1-.028h-.002l-.103-.03-.104-.032-.097-.03h-.002l-.103-.033-.102-.033-.101-.034-.106-.036-.027-.01-.027-.007-.107-.03-.104-.029-.104-.03h-.002l-.097-.03-.102-.032-.102-.032-.102-.034-.103-.035-.096-.034-.1-.036-.101-.037h-.002l-.094-.036-.096-.037-.097-.04h-.002l-.099-.04-.098-.042h-.002l-.092-.04-.097-.043-.095-.043-.097-.044h-.002l-.09-.043-.094-.045-.094-.046-.093-.047-.09-.046-.096-.05-.088-.047-.002-.001-.09-.049-.094-.052-.002-.002-.087-.049-.087-.05h-.002l-.088-.053h-.001l-.09-.055-.086-.052-.002-.001-.089-.055-.084-.054h-.002l-.09-.059h-.001l-.085-.056-.001-.001-.084-.056-.082-.056h-.001l-.086-.06-.082-.058H7.79l-.086-.062-.002-.002-.08-.058-.081-.06h-.001l-.085-.064-.002-.002-.076-.058-.002-.002-.082-.064-.161-.128-.162-.133-.04-.034-.132-.092-.147-.066-.157-.038-.16-.008-.16.022z",
     opacity: ".98"
   })));
@@ -35801,11 +36257,11 @@
   var StartEventNonInterruptingSignalIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$d({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$d({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16.007 8.82L9.21 21.022h13.596L16.007 8.82zm0 1.775l5.328 9.563H10.68l5.327-9.563zM16.14.386c-1.571.236-4.195-.284-4.9 1.381.619 1.703 2.745.069 4.085.365 1.421-.13 2.84.2 4.235.259C21.27.784 18.19.344 17 .413a20.456 20.456 0 00-.86-.027zM25 3.162c-2.19.694.401 2.26 1.181 3.094 1.083 1.152 1.954 2.484 2.715 3.864 1.48 1.005 1.845-1.26.81-2.03-1.158-1.897-2.613-3.704-4.513-4.89l-.192-.038zm-18.438.423c-1.793.712-2.909 2.548-4.01 4.061-.773.814-2.211 3.653.005 3.211 1.123-1.469 1.87-3.306 3.267-4.614.664-.7 2.73-2.013.738-2.658zm24.57 11.072c-1.659.435-.468 2.667-.99 3.895a13.427 13.427 0 01-1.497 4.435c-.23 1.659 1.991 1.165 2.018-.199a14.277 14.277 0 001.254-7.552.865.865 0 00-.785-.579zm-30.18.666c-1.677.386-.633 2.667-.608 3.876.371 1.623.792 3.35 1.79 4.696 2.382.321.571-2.338.292-3.492a15.92 15.92 0 01-.684-4.39.877.877 0 00-.79-.69zm24.558 11.81c-1.755.865-3.303 2.266-5.274 2.765-1.162-.016-3.074 1.271-1.331 2.102 2.66-.447 5.163-1.733 7.236-3.445.472-.506.06-1.432-.631-1.421zm-19.151.043c-2.004.786.416 2.405 1.43 2.913 1.608.904 3.379 1.636 5.208 1.877 1.77-.804-.228-2.094-1.357-2.073-1.75-.537-3.403-1.396-4.798-2.586l-.227-.104-.256-.027z"
   })));
 
@@ -35813,11 +36269,11 @@
   var StartEventNonInterruptingTimerIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$c({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$c({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.991 8.7c-3.018-.042-5.92 1.925-7.03 4.725-1.138 2.695-.509 6.011 1.537 8.102 1.99 2.142 5.267 2.93 8.013 1.927 2.877-.98 4.99-3.826 5.067-6.87.153-2.956-1.624-5.88-4.299-7.135a7.551 7.551 0 00-3.288-.75zm0 1.383c2.758-.052 5.372 1.972 6.014 4.654.704 2.578-.482 5.516-2.79 6.867-2.358 1.48-5.682 1.085-7.617-.919-2.043-1.97-2.407-5.38-.84-7.743 1.11-1.764 3.149-2.88 5.233-2.86zm1.962 1.764l-2.074 3.762c-.64.068-.793 1.04-.202 1.3.39.27.696-.18 1.052-.165h3.17v-.865h-3.182l1.993-3.614-.757-.418zM16.12.358h-.232l-.22.004h-.012l-.221.006h-.012l-.22.01h-.012l-.22.013h-.012l-.22.016h-.012l-.22.019h-.005l-.006.001-.22.021h-.006l-.005.001-.22.025h-.011l-.22.028h-.005l-.006.002-.219.03h-.005l-.006.001-.218.033-.006.001-.006.001-.217.036-.006.001-.006.001-.217.039-.006.001-.006.001-.216.042-.006.001-.006.001-.215.045-.006.001-.006.002-.215.047-.006.002-.006.001-.214.05-.006.002-.006.002-.115.029-.152.053-.14.081-.122.106-.1.126-.075.143-.047.154-.018.16.012.16.042.156.07.145.095.13.118.11.137.086.15.059.158.03h.161l.132-.022.11-.028.202-.047.203-.046.208-.043.202-.039.206-.037.206-.034.205-.03.208-.03.205-.025.209-.023.208-.02.21-.017.209-.015.207-.011.21-.009.21-.006.207-.003h.21l.21.002.207.005.207.008.212.011.207.014.208.017.209.019.208.022.205.025.206.028.207.03.208.035.205.036.202.039.052.01.16.018.16-.012.156-.042.146-.07.13-.096.109-.119.085-.136.06-.15.03-.159v-.16l-.03-.16-.059-.15-.086-.136L19.823.9l-.13-.096-.145-.07-.128-.038-.057-.011-.006-.002h-.006L19.135.64l-.006-.001-.006-.001-.217-.039H18.9l-.006-.002-.217-.035-.006-.001-.006-.001-.218-.032-.006-.001-.006-.001-.218-.03h-.006l-.006-.001-.219-.027h-.011l-.22-.024-.005-.001h-.006l-.22-.021h-.006L17.512.42l-.22-.017-.005-.001h-.006l-.22-.015h-.012l-.22-.012h-.012l-.22-.01h-.012l-.22-.005h-.012l-.221-.003h-.012zm8.715 2.783l-.157.034-.149.063-.134.089-.116.112-.092.132-.067.147-.038.157-.008.16.021.16.051.153.079.141.103.124.102.087.052.038h.001l.087.064v.001l.082.061.002.001.076.059h.001l.084.065.082.066.002.001.079.063.002.002.077.063.081.067.002.002.077.065.076.065.001.002.08.07.078.07h.002l.075.068.077.072.002.001.073.069.077.073.072.07.002.001.077.076.07.07v.001l.075.076.07.073.002.001.074.079.002.002.069.074.069.075.074.082.07.08.002.001.068.079h.001l.067.079.068.082.065.078.001.002.068.083.067.084.063.081.001.002.067.087.002.002.063.084.001.001.064.087.008.01.008.01.095.12.093.121.09.119.087.119.088.122.086.123.084.12.081.122.001.002.084.126.08.126.08.127.077.126.079.131.074.127.075.131.073.131.07.13.07.133.069.133.045.09.086.137.109.119.13.096.144.07.156.042.16.013.16-.017.155-.047.143-.075.126-.1.106-.121.082-.14.054-.151.025-.16-.005-.16-.035-.158-.05-.124-.048-.095-.002-.004-.002-.004-.073-.14-.002-.005-.002-.004-.074-.14-.002-.004-.002-.004-.076-.14-.002-.003-.002-.004-.077-.139-.003-.004-.002-.004-.078-.138-.003-.004-.002-.003-.08-.137-.002-.004-.003-.004-.081-.136-.002-.004-.003-.004-.083-.136-.002-.003-.002-.004-.085-.135-.002-.004-.003-.003-.085-.134-.003-.004-.002-.004-.087-.132-.003-.004-.003-.004-.088-.132-.003-.003-.002-.004-.09-.13-.003-.005-.003-.003-.091-.13-.003-.004-.002-.004-.093-.129-.003-.003-.003-.004-.094-.128-.003-.004-.003-.003-.095-.127-.003-.004-.003-.004-.097-.125-.003-.004-.003-.004-.09-.114-.06-.082-.003-.003-.002-.003-.069-.091-.002-.004-.002-.003-.07-.09-.003-.003-.002-.003-.07-.09-.003-.003-.002-.003-.071-.09-.002-.003-.003-.002-.072-.089-.002-.003-.002-.003-.073-.088-.002-.003-.002-.002-.074-.087-.002-.003-.002-.003-.074-.086-.003-.003-.002-.003-.074-.086-.003-.002-.002-.003-.075-.085-.003-.003-.002-.002-.076-.084-.002-.003-.003-.003-.076-.083-.002-.003-.003-.003-.077-.082-.002-.003-.003-.002-.077-.082-.003-.003-.003-.002-.078-.081-.002-.003-.003-.003-.078-.08-.003-.002-.003-.003-.079-.08-.002-.002-.003-.002-.08-.08-.002-.002-.003-.002-.08-.078-.003-.003-.003-.002-.08-.077-.003-.003-.003-.002-.082-.077-.002-.002-.003-.002-.082-.076-.003-.002-.002-.003-.083-.075-.003-.002-.002-.003-.084-.074-.002-.002-.003-.002-.084-.074-.003-.002-.002-.002-.085-.073-.002-.002-.003-.003-.085-.071-.003-.003-.002-.002-.086-.07-.003-.003-.002-.002-.086-.07-.003-.003-.003-.002-.086-.07-.003-.002-.003-.002-.087-.069-.002-.002-.003-.002-.088-.068-.002-.002-.003-.002-.088-.067-.003-.003-.003-.002-.088-.066-.003-.002-.003-.002-.089-.066-.003-.002-.003-.002-.057-.042-.14-.082-.15-.055-.16-.026-.16.004zm-18.458.426l-.157.037-.148.066-.111.074-.007.006-.003.002-.003.002-.086.069-.003.002-.002.002-.086.07-.003.002-.002.002-.086.07-.002.003-.003.002-.085.071-.002.002-.003.003-.084.071-.003.003-.002.002-.084.072-.003.003-.002.002-.083.073-.003.003-.002.002-.083.074-.002.002-.003.003-.082.074-.003.003-.002.002-.081.076-.003.002-.003.002-.08.077-.003.002-.003.003-.08.076-.002.003-.003.002-.08.078-.002.002-.003.003-.079.078-.002.003-.003.002-.078.08-.003.002-.002.002-.078.08-.002.003-.003.002-.077.08-.003.004-.002.002-.077.081-.002.003-.003.003-.076.082-.002.002-.003.003-.075.082-.002.003-.003.003-.074.083-.003.003-.002.003-.074.084-.003.003-.002.002-.074.085-.002.003-.002.003-.073.085-.003.003-.002.003-.072.086-.002.003-.003.003-.071.087-.003.003-.002.002-.07.088-.003.003-.002.003-.07.088-.003.003-.002.003-.07.09-.002.002-.002.003-.069.09-.002.003-.003.003-.068.09-.002.003-.002.003-.067.092-.003.003-.002.003-.067.092-.002.003-.002.003-.066.092-.002.003-.002.004-.066.093-.002.003-.002.003-.065.094-.002.003-.002.004-.064.094-.002.003-.002.004-.063.095-.002.003-.002.003-.063.097-.002.003-.002.003-.046.073-.05.07-.003.002-.002.003-.067.093-.003.003-.002.003-.066.094-.002.003-.002.003-.066.094-.002.003-.002.003-.064.094-.002.004-.002.003-.064.094-.002.004-.002.003-.062.095-.002.003-.002.003-.062.096-.002.003-.002.003-.06.096-.003.003-.002.003-.06.096-.001.004-.002.003-.059.096-.002.004-.002.003-.058.097-.002.003-.001.003-.057.098-.002.003-.002.003-.056.098-.002.003-.002.003-.055.098-.002.004-.001.003-.055.098-.001.004-.002.003-.054.099-.001.003-.002.003-.052.1-.002.002-.002.004-.051.1-.002.002-.002.004-.05.1-.002.003-.002.003-.05.1v.003l-.002.004-.05.1V9.5l-.002.004-.048.1-.002.004-.001.003-.047.101-.002.003-.001.004-.013.027-.052.152-.024.16.006.16.037.157.064.148.091.133.114.114.134.09.147.065.157.036.162.006.159-.024.152-.053.14-.08.122-.105.1-.126.066-.117.01-.023.044-.095.045-.095.002-.003.042-.087.048-.097.048-.095v-.001l.048-.092.001-.001.047-.09.05-.093.002-.002.049-.09.052-.092.001-.002.051-.089.001-.002.051-.087.053-.088.001-.002.055-.091.057-.091.057-.09.001-.002.057-.089.055-.083.001-.002.06-.09.06-.088.062-.089.001-.001.06-.084.063-.088.065-.089.017-.023.016-.025.06-.094.059-.09v-.002l.058-.086.057-.086.001-.001.062-.09.062-.088.001-.002.06-.085.002-.002.06-.082.063-.087.064-.084.002-.002.061-.08.065-.084.064-.08v-.001l.067-.083.067-.082.07-.083.069-.08.063-.074.074-.083.068-.077.002-.002.07-.076.07-.075.072-.077.001-.001.067-.07.076-.078.002-.002.07-.07.075-.075.002-.002.072-.07.075-.072.002-.002.073-.069.074-.068.001-.001.08-.073.076-.068.002-.002.072-.063v-.001l.078-.067.079-.068.002-.001.08-.068.002-.002.077-.063.082-.066.001-.001.075-.06.002-.002.006-.004.117-.111.094-.131.068-.146.04-.156.01-.161-.019-.16-.049-.154-.076-.141-.102-.125-.123-.105-.14-.079-.153-.052-.16-.023-.16.007zm24.596 11.088l-.156.04-.146.067-.131.094-.112.117-.087.135-.061.15-.033.157-.004.134.007.142.005.152.004.15.002.149v.153l.001.011v.015l.004.11.002.11v.002l.002.106v.321l-.003.102-.002.106-.004.107-.005.105-.006.106-.006.106-.008.106v.002l-.008.103v.002l-.01.1-.01.105-.01.105-.013.105-.012.099v.002l-.014.108-.014.1-.016.105-.016.103v.002l-.017.099-.018.104-.019.103v.002l-.019.097-.02.104-.022.103v.001l-.022.098-.023.103v.002l-.024.096-.025.103v.002l-.024.096-.027.102v.003l-.026.093v.001l-.029.103v.002l-.03.099-.028.097v.002l-.03.095-.03.096v.001l-.033.1-.031.095v.002l-.035.1v.003l-.034.094v.003l-.035.096v.001l-.034.09v.002l-.038.098-.036.093v.002l-.038.095-.079.194-.08.188-.085.189-.087.19-.09.184-.092.183-.095.184-.05.093-.064.148-.034.158-.005.16.026.16.054.151.082.14.106.12.127.1.143.075.154.046.16.017.161-.013.156-.042.144-.071.13-.096.109-.119.072-.112.053-.099.003-.005.003-.006.102-.195.003-.006.003-.006.098-.196.003-.006.003-.006.096-.197.002-.006.003-.006.093-.2.002-.006.003-.006.09-.2.002-.006.003-.007.086-.202.003-.006.002-.006.084-.203.002-.005.001-.005.04-.102.002-.003.001-.003.04-.103.001-.003.001-.003.04-.103v-.004l.001-.003.039-.103v-.003l.002-.003.037-.104.001-.003.001-.003.037-.104v-.004l.002-.003.035-.104.002-.003v-.004l.035-.104.002-.004v-.003l.034-.105.002-.003v-.003l.034-.105v-.004l.002-.003.032-.106.001-.003.001-.003.031-.106.001-.003.001-.004.031-.106.001-.003.001-.004.03-.106v-.003l.002-.004.028-.107.001-.003.001-.003.028-.107.001-.004.001-.003.027-.107.001-.004v-.003l.027-.108.001-.003v-.004l.026-.108.001-.003v-.004l.025-.108.001-.003v-.004l.025-.108v-.004l.001-.003.023-.109v-.003l.001-.004.022-.109v-.003l.002-.004.02-.109.001-.004v-.003l.02-.11.002-.003v-.004l.02-.11v-.007l.019-.11v-.003l.001-.004.017-.11v-.004l.001-.003.017-.11v-.008l.016-.11v-.004l.001-.004.015-.11v-.008l.015-.111v-.008l.013-.111v-.007l.013-.112v-.007l.011-.112v-.004l.001-.004.01-.112v-.007l.01-.112v-.008l.008-.112v-.008l.007-.113v-.007l.007-.113v-.008l.005-.113v-.007l.005-.114v-.007l.003-.114v-.007l.003-.114v-.129l.001-.114v-.13l-.003-.114V16.5l-.003-.115v-.007l-.003-.102v-.155l-.003-.158v-.01l-.004-.158v-.01l-.006-.158v-.01l-.007-.148-.023-.16-.051-.152-.08-.14-.103-.124-.125-.102-.142-.077-.153-.05-.16-.02-.161.01zm-30.213.66l-.157.034-.149.063-.134.09-.115.113-.092.132-.067.147-.037.156-.009.134.001.11V16.308l.006.22v.012l.01.22v.012l.012.22v.006l.001.006.015.22v.005l.001.006.018.22.001.006v.006l.022.219v.006l.001.006.024.219.001.006v.006l.028.218.001.006v.006l.031.218.001.006.001.006.033.218.001.006.001.005.037.218v.006l.002.005.04.217v.006l.001.006.043.216.001.006.001.006.046.216v.005l.002.006.048.215.002.006.001.006.051.214.002.006v.006l.055.214.002.005.001.006.057.213.002.006.001.005.06.213.002.005.001.006.063.212.002.005.001.006.066.21.002.006.002.006.068.21.002.005.002.005.07.21.003.005.002.005.074.208.002.006.002.005.077.207.002.006.002.005.08.206.002.005.002.006.082.204.002.006.002.005.086.204.002.005.002.006.088.202.002.005.003.006.09.2.003.006.002.005.094.2.002.006.003.005.096.199.002.005.003.005.03.062.086.137.11.118.128.097.145.07.156.043.16.013.16-.017.155-.047.143-.074.127-.1.106-.121.081-.14.055-.15.025-.16-.005-.161-.034-.158-.05-.124-.028-.055-.092-.19-.087-.188-.087-.192-.083-.19-.08-.193-.078-.194-.076-.196-.073-.195-.07-.197-.067-.198-.065-.199-.063-.2-.059-.2-.056-.2-.055-.204-.05-.201-.049-.202-.046-.205-.043-.206-.04-.203-.038-.207-.034-.204-.032-.207-.028-.205-.026-.207-.023-.208-.02-.207-.018-.207-.014-.208-.011-.207-.009-.208-.005-.207-.002-.104-.017-.16-.046-.155-.074-.143-.1-.126-.121-.107-.139-.081-.152-.055-.159-.025-.161.004zm24.585 11.83l-.156.039-.146.068-.11.076-.015.012-.163.129-.166.127-.168.125-.17.124-.17.12-.172.118-.173.115-.176.114-.177.111-.18.11-.178.105-.182.104-.182.101-.184.1-.184.095-.189.095-.186.09-.188.089-.19.086-.19.082-.193.081-.195.078-.191.074-.197.073-.195.07-.196.065-.198.064-.198.061-.2.058-.2.055-.2.052-.2.049-.151.035-.153.05-.141.078-.125.103-.103.124-.078.14-.05.154-.022.16.009.16.038.157.067.147.093.132.116.112.134.089.149.062.158.034.16.003.133-.02.158-.035.006-.002.006-.001.213-.052.006-.002.007-.001.212-.056.006-.001.006-.002.212-.058.006-.002.006-.002.211-.061.006-.002.006-.002.21-.064.006-.002.006-.002.21-.067.005-.002.006-.002.208-.07.006-.002.006-.003.207-.073.006-.002.006-.002.206-.077.006-.002.005-.002.206-.08.005-.001.006-.003.204-.082.006-.002.005-.002.203-.085.006-.003.005-.002.202-.088.006-.002.005-.003.2-.09.006-.003.006-.003.2-.093.005-.003.005-.002.198-.096.006-.003.005-.003.197-.099.005-.002.005-.003.196-.102.005-.002.005-.003.195-.105.005-.002.005-.003.193-.107.005-.003.005-.003.191-.11.005-.003.005-.003.19-.112.005-.003.005-.003.189-.115.005-.003.005-.003.187-.117.005-.003.004-.004.186-.12.005-.003.004-.003.184-.122.005-.003.005-.004.182-.125.004-.003.005-.003.18-.128.005-.003.005-.003.179-.13.004-.003.005-.004.177-.132.004-.004.005-.003.175-.135.005-.003.004-.004.173-.137.005-.003.004-.004.019-.015.115-.113.092-.132.066-.147.038-.157.008-.16-.022-.16-.052-.153-.079-.14-.103-.124-.125-.102-.142-.078-.153-.05-.16-.02-.16.01zm-19.17.054l-.153.051-.14.079-.124.103-.103.125-.077.141-.05.153-.02.16.009.161.04.156.067.147.093.131.095.094.047.04.005.004.005.004.17.14.005.004.005.004.172.137.004.004.005.003.086.067.003.002.003.002.087.067.003.002.003.002.088.066.002.003.003.002.089.065.002.002.003.002.09.065.002.002.003.002.09.064.002.002.003.002.09.063.003.002.003.002.09.063.003.002.003.002.092.062.002.002.003.002.092.061.003.002.003.002.092.06.003.003.003.001.093.06.003.002.003.002.093.06.003.001.003.002.094.058.003.002.003.002.095.058.003.001.003.002.095.057.003.002.003.002.095.056.003.002.003.002.096.055.004.002.003.001.096.055.003.002.003.002.098.053.003.002.003.002.097.053.004.002.003.001.098.053.003.001.003.002.099.052.003.001.003.002.1.05.003.002.003.002.1.05.003.002.003.001.1.05h.003l.004.003.1.048.004.001.003.002.101.048.003.001.004.002.101.046.004.002.003.001.102.046.004.002.003.001.103.045.003.002.003.001.103.045.004.001.003.002.104.043.003.001.004.002.104.042.003.002.004.001.104.042.004.001.003.002.105.04.004.002.003.001.106.04.003.002h.004l.106.04.004.001.003.002.107.038.003.001.004.001.107.038.003.001.004.001.107.037.004.001.004.001.108.036.003.001.004.001.108.035.004.001.003.001.11.034.003.001.004.001.109.033.004.002h.003l.11.033h.004l.003.002.11.031.004.001.004.001.084.023.081.028.004.001.003.001.109.037.003.001.004.001.109.036.003.001.004.001.109.035h.003l.004.002.11.033.003.001.003.001.11.033.003.001.004.001.109.031.004.002h.003l.11.031.003.001.004.001.11.03h.003l.003.001.11.029h.004l.003.002.11.027.003.001.004.001.11.027h.003l.004.001.004.001.16.022.16-.008.157-.038.147-.067.132-.092.112-.116.09-.134.062-.149.034-.157.004-.161-.025-.16-.055-.151-.082-.139-.107-.12-.127-.1-.143-.074-.124-.04h-.003l-.104-.025-.103-.026h-.002l-.095-.026h-.001l-.101-.027h-.002l-.1-.028h-.002l-.103-.03-.104-.032-.097-.03h-.002l-.103-.033-.102-.033-.101-.034-.106-.036-.027-.01-.027-.007-.107-.03-.104-.029-.104-.03h-.002l-.097-.03-.102-.032-.102-.032-.102-.034-.103-.035-.096-.034-.1-.036-.101-.037h-.002l-.094-.036-.096-.037-.097-.04h-.002l-.099-.04-.098-.042h-.002l-.092-.04-.097-.043-.095-.043-.097-.044h-.002l-.09-.043-.094-.045-.094-.046-.093-.047-.09-.046-.096-.05-.088-.047-.002-.001-.09-.049-.094-.052-.002-.002-.087-.049-.087-.05h-.002l-.088-.053h-.001l-.09-.055-.086-.052-.002-.001-.089-.055-.084-.054h-.002l-.09-.059h-.001l-.085-.056-.001-.001-.084-.056-.082-.056h-.001l-.086-.06-.082-.058H7.79l-.086-.062-.002-.002-.08-.058-.081-.06h-.001l-.085-.064-.002-.002-.076-.058-.002-.002-.082-.064-.161-.128-.162-.133-.04-.034-.132-.092-.147-.066-.157-.038-.16-.008-.16.022z"
   })));
 
@@ -35825,11 +36281,11 @@
   var StartEventNoneIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$b({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$b({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.847.004C9.61-.016 3.624 4.014 1.257 9.78-1.235 15.49.06 22.581 4.42 27.034c4.193 4.513 11.101 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.268.403-6.228-3.26-12.441-8.87-15.154A15.924 15.924 0 0015.846.004zm.439 1.729c6.105.033 11.856 4.45 13.435 10.359 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.625-4.814-3.84-6.538-10.94-4.067-16.57 2.14-5.206 7.515-8.775 13.147-8.71.097-.001.194-.002.29-.001z"
   })));
 
@@ -35837,11 +36293,11 @@
   var StartEventParallelMultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$a({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$a({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.847 0C9.61-.02 3.624 4.01 1.257 9.775-1.235 15.485.06 22.577 4.42 27.03c4.193 4.513 11.101 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.268.403-6.228-3.26-12.441-8.87-15.154A15.924 15.924 0 0015.846 0zm.439 1.729c6.105.033 11.856 4.45 13.435 10.359 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.625C2.101 23.17.377 16.07 2.848 10.44c2.134-5.2 7.522-8.78 13.147-8.71.097-.001.194-.002.29-.001zM13.504 9.08v4.427H9.077v4.98h4.427v4.427h4.98v-4.427h4.428v-4.98h-4.427V9.08h-4.98zm.83.83h3.32v4.427h4.428v3.32h-4.427v4.427h-3.32v-4.453H9.906v-3.294h4.427V9.91z"
   })));
 
@@ -35849,11 +36305,11 @@
   var StartEventSignalIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$9({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$9({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M15.995.005C9.705-.08 3.643 3.968 1.257 9.78-1.235 15.49.06 22.581 4.42 27.034c4.193 4.513 11.102 6.17 16.887 4.058 5.996-2.042 10.423-7.93 10.664-14.269.403-6.227-3.26-12.44-8.87-15.153A15.924 15.924 0 0015.994.005zm0 1.73c6.213-.108 12.122 4.355 13.726 10.357 1.678 5.653-.592 12.198-5.463 15.547-5.06 3.719-12.564 3.45-17.343-.626-4.814-3.838-6.538-10.939-4.067-16.57 2.14-5.205 7.515-8.774 13.147-8.708zm0 6.776L9.19 20.724H22.8L15.995 8.511zm0 1.777l5.332 9.572H10.662l5.333-9.572z"
   })));
 
@@ -35861,11 +36317,11 @@
   var StartEventTimerIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$8({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$8({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M16 0C7.174 0 0 7.174 0 16s7.174 16 16 16 16-7.174 16-16S24.826 0 16 0zm0 1.73c7.892 0 14.27 6.378 14.27 14.27 0 7.891-6.379 14.27-14.27 14.27S1.73 23.891 1.73 16C1.73 8.108 8.108 1.73 16 1.73zm-.143 6.676c-2.967.02-5.797 1.97-6.89 4.727-1.138 2.695-.51 6.012 1.537 8.102 1.99 2.142 5.268 2.932 8.014 1.928 2.878-.98 4.992-3.827 5.068-6.87.153-2.957-1.624-5.881-4.3-7.137a7.552 7.552 0 00-3.43-.75zm.27 1.383c2.71.012 5.254 2.015 5.886 4.656.704 2.577-.482 5.517-2.791 6.867-2.358 1.48-5.682 1.085-7.618-.918-2.043-1.971-2.407-5.381-.84-7.745 1.11-1.763 3.15-2.88 5.234-2.86h.13zm1.833 1.765l-2.074 3.763c-.64.068-.793 1.04-.202 1.3.39.27.696-.18 1.052-.165h3.17v-.865h-3.181l1.992-3.615-.757-.418z"
   })));
 
@@ -35873,11 +36329,11 @@
   var SubprocessCollapsedIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$7({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$7({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M5.637 3A5.644 5.644 0 000 8.637v15.417a5.644 5.644 0 005.637 5.637h20.726A5.644 5.644 0 0032 24.054V8.637A5.644 5.644 0 0026.363 3H5.637zm0 1.778h20.726a3.83 3.83 0 013.859 3.859v15.417a3.83 3.83 0 01-3.859 3.858h-4.201V16.695H9.838v11.217H5.637a3.83 3.83 0 01-3.859-3.858V8.637a3.83 3.83 0 013.859-3.859zm5.33 13.046h10.066v10.065H10.967V17.824zm4.189 1.431V22.06H12.35v1.689h2.804V26.554h1.69V23.749h2.804V22.06h-2.804V19.255h-1.69z"
   })));
 
@@ -35885,11 +36341,11 @@
   var SubprocessExpandedIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$6({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$6({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M5.636 3A5.642 5.642 0 000 8.636v15.418a5.643 5.643 0 005.636 5.636h20.728A5.643 5.643 0 0032 24.054V8.636A5.642 5.642 0 0026.364 3H5.636zm0 1.778h20.728a3.83 3.83 0 013.858 3.858v15.418a3.83 3.83 0 01-3.858 3.858h-4.203V16.723H9.84v11.189H5.636a3.83 3.83 0 01-3.858-3.858V8.636a3.83 3.83 0 013.858-3.858zm5.331 13.074h10.066v10.06H10.967v-10.06zm1.336 3.996v1.711h7.394v-1.71h-7.394z"
   })));
 
@@ -35897,11 +36353,11 @@
   var TaskNoneIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$5({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$5({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M6.494 2.667C2.916 2.667 0 5.57 0 9.142v13.383C0 26.097 2.916 29 6.494 29h19.012C29.084 29 32 26.097 32 22.525V9.142c0-3.572-2.916-6.475-6.494-6.475H6.494zm0 2h19.012c2.509 0 4.494 1.98 4.494 4.475v13.383C30 25.02 28.015 27 25.506 27H6.494C3.985 27 2 25.02 2 22.525V9.142c0-2.495 1.985-4.475 4.494-4.475z"
   })));
 
@@ -35909,11 +36365,11 @@
   var TextAnnotationicon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$4({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$4({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M22.087 0v31.647H32v-1.788h-8.125V1.788H32V0h-9.913zm-2.924 13.999l-2.737 2.167 2.167 2.738 2.738-2.167-2.168-2.738zm-5.475 4.335L10.95 20.5l2.168 2.738 2.737-2.168-2.167-2.737zm-5.475 4.335l-2.738 2.167 2.168 2.738 2.737-2.168-2.167-2.737zm-5.476 4.335L0 29.17l2.167 2.738 2.738-2.168-2.168-2.737z"
   })));
 
@@ -35921,11 +36377,11 @@
   var TransactionIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$3({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$3({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     d: "M5.422 3A5.424 5.424 0 000 8.422v15.822a5.424 5.424 0 005.422 5.423h21.156A5.424 5.424 0 0032 24.244V8.422A5.424 5.424 0 0026.578 3H5.422zm0 1.244h21.156a4.155 4.155 0 014.178 4.178v15.822a4.155 4.155 0 01-4.178 4.178H5.422a4.155 4.155 0 01-4.178-4.178V8.422a4.155 4.155 0 014.178-4.178zm1.056 1.778a3.373 3.373 0 00-3.367 3.366v13.89a3.373 3.373 0 003.367 3.366h19.044a3.373 3.373 0 003.367-3.366V9.388a3.373 3.373 0 00-3.367-3.366H6.478zm0 1.245h19.044c1.187 0 2.122.935 2.122 2.121v13.89a2.104 2.104 0 01-2.122 2.122H6.478a2.104 2.104 0 01-2.122-2.122V9.388c0-1.186.935-2.121 2.122-2.121z"
   })));
 
@@ -35933,11 +36389,11 @@
   var UserTaskIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$2({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$2({
     xmlns: "http://www.w3.org/2000/svg",
     width: "32",
     height: "32"
-  }, props), /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("path", {
     fillRule: "evenodd",
     d: "M10.263 7.468c-1.698 0-2.912 1.305-2.915 2.791v.001c0 .45.121.924.311 1.352.138.309.308.593.516.82-1.235.423-2.683 1.119-3.414 2.49l-.04.075v4.44h11.083v-4.44l-.04-.074c-.72-1.352-2.136-2.047-3.36-2.471.597-.608.774-1.392.774-2.192-.004-1.487-1.218-2.792-2.915-2.792zm-1.16 1.583c.08 0 .165.003.26.008.757.045 1.012.181 1.207.31.196.13.334.252.851.268.404-.016.598-.087.737-.169.056-.033.103-.067.152-.1.128.275.197.578.198.893 0 .894-.154 1.52-.975 2.034l.08.604c.171.052.348.11.527.171.025.105.054.242.073.387.02.153.029.311.016.43a.422.422 0 01-.056.19c-.417.417-1.157.66-1.908.66-.75 0-1.49-.243-1.908-.66a.422.422 0 01-.056-.19 1.949 1.949 0 01.016-.43c.02-.146.049-.284.074-.388.177-.062.352-.118.521-.17l.048-.648a.616.616 0 00-.126-.118c-.183-.138-.405-.44-.562-.793-.157-.353-.254-.757-.254-1.08 0-.387.105-.758.297-1.079l.11-.04c.143-.046.339-.09.679-.09zm-1.448 4.304l-.002.014c-.025.185-.04.387-.018.589.021.202.074.42.248.593.595.594 1.494.857 2.382.857.889 0 1.788-.263 2.382-.857.174-.174.227-.391.249-.593a2.496 2.496 0 00-.018-.59l-.002-.01c.903.396 1.776.963 2.258 1.81v3.599H13.53v-2.538h-.67v2.538H7.651v-2.538h-.67v2.538H5.39v-3.599c.483-.849 1.359-1.416 2.264-1.813zM6.495 3C2.914 3 0 5.903 0 9.475v13.383c0 3.572 2.916 6.475 6.494 6.475h19.012c3.578 0 6.494-2.903 6.494-6.475V9.475C32 5.903 29.084 3 25.506 3H6.494zm0 2h19.01C28.016 5 30 6.98 30 9.475v13.383c0 2.495-1.985 4.475-4.494 4.475H6.494C3.985 27.333 2 25.353 2 22.858V9.475C2 6.98 3.985 5 6.494 5z"
   })));
@@ -36110,7 +36566,7 @@
       if (elementTemplates) {
         const template = getTemplate(element, elementTemplates);
         if (template && template.icon) {
-          return () => o("img", {
+          return () => u("img", {
             class: "bio-properties-panel-header-template-icon",
             width: "32",
             height: "32",
@@ -36188,19 +36644,19 @@
   var EmptyIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends$1({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends$1({
     xmlns: "http://www.w3.org/2000/svg",
     xmlnsXlink: "http://www.w3.org/1999/xlink",
     width: "64",
     height: "64"
-  }, props), /*#__PURE__*/Cn.createElement("defs", null, /*#__PURE__*/Cn.createElement("rect", {
+  }, props), /*#__PURE__*/wn.createElement("defs", null, /*#__PURE__*/wn.createElement("rect", {
     id: "a",
     width: "57",
     height: "47",
     x: "3",
     y: "8",
     rx: "7"
-  }), /*#__PURE__*/Cn.createElement("mask", {
+  }), /*#__PURE__*/wn.createElement("mask", {
     id: "b",
     width: "57",
     height: "47",
@@ -36209,18 +36665,18 @@
     fill: "#fff",
     maskContentUnits: "userSpaceOnUse",
     maskUnits: "objectBoundingBox"
-  }, /*#__PURE__*/Cn.createElement("use", {
+  }, /*#__PURE__*/wn.createElement("use", {
     xlinkHref: "#a"
-  }))), /*#__PURE__*/Cn.createElement("g", {
+  }))), /*#__PURE__*/wn.createElement("g", {
     fill: "none",
     fillRule: "evenodd"
-  }, /*#__PURE__*/Cn.createElement("path", {
+  }, /*#__PURE__*/wn.createElement("path", {
     fill: "#818798",
     d: "M52 11a5 5 0 015 5v31a5 5 0 01-5 5H11a5 5 0 01-5-5V16a5 5 0 015-5h41zm0 2H11a3 3 0 00-2.995 2.824L8 16v31a3 3 0 002.824 2.995L11 50h41a3 3 0 002.995-2.824L55 47V16a3 3 0 00-2.824-2.995L52 13z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     fill: "#D5D7DD",
     d: "M16 24h31v6H16zM21 33h21v6H21z"
-  }), /*#__PURE__*/Cn.createElement("use", {
+  }), /*#__PURE__*/wn.createElement("use", {
     stroke: "#B9BCC6",
     strokeDasharray: "5 2",
     strokeWidth: "2",
@@ -36232,15 +36688,15 @@
   var MultipleIcon = (({
     styles = {},
     ...props
-  }) => /*#__PURE__*/Cn.createElement("svg", _extends({
+  }) => /*#__PURE__*/wn.createElement("svg", _extends({
     xmlns: "http://www.w3.org/2000/svg",
     xmlnsXlink: "http://www.w3.org/1999/xlink",
     width: "128",
     height: "64"
-  }, props), /*#__PURE__*/Cn.createElement("defs", null, /*#__PURE__*/Cn.createElement("path", {
+  }, props), /*#__PURE__*/wn.createElement("defs", null, /*#__PURE__*/wn.createElement("path", {
     id: "a",
     d: "M9 9h110v47H9z"
-  }), /*#__PURE__*/Cn.createElement("mask", {
+  }), /*#__PURE__*/wn.createElement("mask", {
     id: "b",
     width: "110",
     height: "47",
@@ -36249,33 +36705,33 @@
     fill: "#fff",
     maskContentUnits: "userSpaceOnUse",
     maskUnits: "objectBoundingBox"
-  }, /*#__PURE__*/Cn.createElement("use", {
+  }, /*#__PURE__*/wn.createElement("use", {
     xlinkHref: "#a"
-  }))), /*#__PURE__*/Cn.createElement("g", {
+  }))), /*#__PURE__*/wn.createElement("g", {
     fill: "none",
     fillRule: "evenodd"
-  }, /*#__PURE__*/Cn.createElement("path", {
+  }, /*#__PURE__*/wn.createElement("path", {
     fill: "#818798",
     d: "M25 20.272L37.728 33 25 45.728 12.272 33 25 20.272zm0 2.829L15.1 33l9.9 9.9 9.9-9.9-9.9-9.9z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     fill: "#D5D7DD",
     d: "M17 47h16v6H17z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     fill: "#818798",
     d: "M35 32h27v2H35z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     fill: "#818798",
     d: "M60 30v6l6-3z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     fill: "#D5D7DD",
     d: "M80 34h21v6H80z"
-  }), /*#__PURE__*/Cn.createElement("g", null, /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("g", null, /*#__PURE__*/wn.createElement("path", {
     fill: "#818798",
     d: "M111 12a5 5 0 015 5v31a5 5 0 01-5 5H70a5 5 0 01-5-5V17a5 5 0 015-5h41zm0 2H70a3 3 0 00-3 3v31a3 3 0 003 3h41a3 3 0 003-3V17a3 3 0 00-3-3z"
-  }), /*#__PURE__*/Cn.createElement("path", {
+  }), /*#__PURE__*/wn.createElement("path", {
     fill: "#D5D7DD",
     d: "M75 25h31v6H75z"
-  })), /*#__PURE__*/Cn.createElement("use", {
+  })), /*#__PURE__*/wn.createElement("use", {
     stroke: "#B9BCC6",
     strokeDasharray: "5 2",
     strokeWidth: "2",
@@ -36308,7 +36764,8 @@
       getProviders,
       layoutConfig: initialLayoutConfig,
       descriptionConfig,
-      tooltipConfig
+      tooltipConfig,
+      feelPopupContainer
     } = props;
     const canvas = injector.get('canvas');
     const elementRegistry = injector.get('elementRegistry');
@@ -36471,9 +36928,9 @@
         tooltip
       });
     };
-    return o(BpmnPropertiesPanelContext.Provider, {
+    return u(BpmnPropertiesPanelContext.Provider, {
       value: bpmnPropertiesPanelContext,
-      children: o(PropertiesPanel, {
+      children: u(PropertiesPanel, {
         element: selectedElement,
         headerProvider: PanelHeaderProvider,
         placeholderProvider: PanelPlaceholderProvider(translate),
@@ -36484,6 +36941,7 @@
         descriptionLoaded: onDescriptionLoaded,
         tooltipConfig: tooltipConfig,
         tooltipLoaded: onTooltipLoaded,
+        feelPopupContainer: feelPopupContainer,
         eventBus: eventBus
       })
     });
@@ -36565,13 +37023,15 @@
         parent,
         layout: layoutConfig,
         description: descriptionConfig,
-        tooltip: tooltipConfig
+        tooltip: tooltipConfig,
+        feelPopupContainer
       } = config || {};
       this._eventBus = eventBus;
       this._injector = injector;
       this._layoutConfig = layoutConfig;
       this._descriptionConfig = descriptionConfig;
       this._tooltipConfig = tooltipConfig;
+      this._feelPopupContainer = feelPopupContainer;
       this._container = domify$1('<div style="height: 100%" class="bio-properties-panel-container"></div>');
       var commandStack = injector.get('commandStack', false);
       commandStack && setupKeyboard(this._container, eventBus, commandStack);
@@ -36676,19 +37136,20 @@
       if (isImplicitRoot(element)) {
         return;
       }
-      D$1(o(BpmnPropertiesPanel, {
+      q$2(u(BpmnPropertiesPanel, {
         element: element,
         injector: this._injector,
         getProviders: this._getProviders.bind(this),
         layoutConfig: this._layoutConfig,
         descriptionConfig: this._descriptionConfig,
-        tooltipConfig: this._tooltipConfig
+        tooltipConfig: this._tooltipConfig,
+        feelPopupContainer: this._feelPopupContainer
       }), this._container);
       this._eventBus.fire('propertiesPanel.rendered');
     }
     _destroy() {
       if (this._container) {
-        D$1(null, this._container);
+        q$2(null, this._container);
         this._eventBus.fire('propertiesPanel.destroyed');
       }
     }
@@ -36770,7 +37231,7 @@
   };
 
   var index$3 = {
-    __depends__: [Commands, index$4],
+    __depends__: [Commands, index$1$1, index$4],
     __init__: ['propertiesPanel'],
     propertiesPanel: ['type', BpmnPropertiesPanelRenderer]
   };
@@ -36794,7 +37255,7 @@
         }
       }
     }, [options]);
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       ...props
     });
   }
@@ -37349,17 +37810,17 @@
   };
 
   /**
-   * Create a new element and set its parent.
+   * Create a new element and (optionally) set its parent.
    *
-   * @param {String} elementType of the new element
-   * @param {Object} properties of the new element in key-value pairs
-   * @param {moddle.object} parent of the new element
-   * @param {BpmnFactory} factory which creates the new element
+   * @param {string} type
+   * @param {Object} properties
+   * @param {import('bpmn-js/lib/model/Types').ModdleElement} parent
+   * @param {import('bpmn-js/lib/features/modeling/BpmnFactory').default} bpmnFactory
    *
-   * @returns {djs.model.Base} element which is created
+   * @returns {import('bpmn-js/lib/model/Types').ModdleElement}
    */
-  function createElement(elementType, properties, parent, factory) {
-    const element = factory.create(elementType, properties);
+  function createElement(type, properties, parent, bpmnFactory) {
+    const element = bpmnFactory.create(type, properties);
     if (parent) {
       element.$parent = parent;
     }
@@ -38953,20 +39414,20 @@
   function getTimerEventDefinitionValueDescription$2(timerDefinitionType, translate) {
     switch (timerDefinitionType) {
       case 'timeDate':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A specific point in time defined as ISO 8601 combined date and time representation.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "2019-10-01T12:00:00Z"
               }), " - ", translate('UTC time')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "2019-10-02T08:09:40+02:00"
               }), " - ", translate('UTC plus 2 hours zone offset')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.org/manual/latest/reference/bpmn20/events/timer-events/#time-date",
             target: "_blank",
             rel: "noopener",
@@ -38974,20 +39435,20 @@
           })]
         });
       case 'timeCycle':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A cycle defined as ISO 8601 repeating intervals format.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "R5/PT10S"
               }), " - ", translate('every 10 seconds, up to 5 times')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "R/P1D"
               }), " - ", translate('every day, infinitely')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.org/manual/latest/reference/bpmn20/events/timer-events/#time-cycle",
             target: "_blank",
             rel: "noopener",
@@ -38995,24 +39456,24 @@
           })]
         });
       case 'timeDuration':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A time duration defined as ISO 8601 durations format.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "PT15S"
               }), " - ", translate('15 seconds')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "PT1H30M"
               }), " - ", translate('1 hour and 30 minutes')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "P14D"
               }), " - ", translate('14 days')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.org/manual/latest/reference/bpmn20/events/timer-events/#time-duration",
             target: "_blank",
             rel: "noopener",
@@ -39201,8 +39662,8 @@
   /**
    * Get extension elements of business object. Optionally filter by type.
    *
-   * @param  {ModdleElement} businessObject
-   * @param  {String} [type=undefined]
+   * @param {ModdleElement} businessObject
+   * @param {string} [type=undefined]
    * @returns {Array<ModdleElement>}
    */
   function getExtensionElementsList(businessObject, type = undefined) {
@@ -39812,7 +40273,7 @@
     return combineArrays$2(scopeVariables, parentsScopeVariables);
   }
   function getVariablesForElement(element, additionalExtractors = []) {
-    return getVariablesForScope$1(getScope$2(element), getRootElement$1(element), additionalExtractors);
+    return getVariablesForScope$1(getScope$2(element), getRootElement$2(element), additionalExtractors);
   }
   function getScope$2(element) {
     const bo = getBusinessObject(element);
@@ -39821,7 +40282,7 @@
     }
     return bo.id;
   }
-  function getRootElement$1(element) {
+  function getRootElement$2(element) {
     const businessObject = getBusinessObject(element);
     if (is$3(businessObject, 'bpmn:Participant')) {
       return businessObject.processRef;
@@ -39852,13 +40313,9 @@
   var getVariablesForElement_1 = zeebe.getVariablesForElement = getVariablesForElement;
   zeebe.getVariablesForScope = getVariablesForScope$1;
 
-  function useServiceIfAvailable(service, fallback) {
-    const resolved = useService(service, false);
-    if (!resolved) {
-      return fallback;
-    }
-    return resolved;
-  }
+  const fallbackResolver = {
+    getVariablesForElement: bo => getVariablesForElement_1(bo)
+  };
   function withVariableContext(Component) {
     return props => {
       const {
@@ -39868,12 +40325,10 @@
       const bo = (bpmnElement || element).businessObject;
       const [variables, setVariables] = h([]);
       const eventBus = useService('eventBus');
-      const variableResolver = useServiceIfAvailable('variableResolver', {
-        getVariablesForElement: getVariablesForElement_1
-      });
+      const variableResolver = useServiceIfAvailable('variableResolver', fallbackResolver);
       p(() => {
         const extractVariables = async () => {
-          const variables = await variableResolver.getVariablesForElement(bo);
+          const variables = await variableResolver.getVariablesForElement(bo, element);
           setVariables(variables.map(variable => {
             return {
               ...variable,
@@ -39893,11 +40348,21 @@
           eventBus.off('commandStack.changed', callback);
         };
       }, [bo]);
-      return o(Component, {
+      return u(Component, {
         ...props,
         variables: variables
       });
     };
+  }
+
+  // helpers //////////
+
+  function useServiceIfAvailable(service, fallback) {
+    const resolved = useService(service, false);
+    if (!resolved) {
+      return fallback;
+    }
+    return resolved;
   }
 
   function withTooltipContainer(Component) {
@@ -39906,7 +40371,7 @@
         const config = useService('config');
         return config && config.propertiesPanel && config.propertiesPanel.feelTooltipContainer;
       }, []);
-      return o(Component, {
+      return u(Component, {
         ...props,
         tooltipContainer: tooltipContainer
       });
@@ -40735,12 +41200,66 @@
     });
   }
 
+  const FORM_KEY_PREFIX = 'camunda-forms:bpmn:',
+    USER_TASK_FORM_ID_PREFIX = 'UserTaskForm_';
+  const FORM_TYPES = {
+    CAMUNDA_FORM_EMBEDDED: 'camunda-form-embedded',
+    CAMUNDA_FORM_LINKED: 'camunda-form-linked',
+    CUSTOM_FORM: 'custom-form'
+  };
+  function getFormDefinition(element) {
+    const businessObject = getBusinessObject$1(element);
+    const formDefinitions = getExtensionElementsList(businessObject, 'zeebe:FormDefinition');
+    return formDefinitions[0];
+  }
+  function getUserTaskForm(element, rootElement) {
+    rootElement = rootElement || getRootElement$1(element);
+    const formDefinition = getFormDefinition(element);
+    if (!formDefinition) {
+      return;
+    }
+    const formKey = formDefinition.get('formKey');
+    const userTaskForms = getExtensionElementsList(rootElement, 'zeebe:UserTaskForm');
+    return userTaskForms.find(userTaskForm => {
+      return userTaskFormIdToFormKey(userTaskForm.get('id')) === formKey;
+    });
+  }
+  function userTaskFormIdToFormKey(userTaskFormId) {
+    return `${FORM_KEY_PREFIX}${userTaskFormId}`;
+  }
+  function createUserTaskFormId() {
+    return nextId(USER_TASK_FORM_ID_PREFIX);
+  }
+  function getRootElement$1(element) {
+    const businessObject = getBusinessObject$1(element);
+    let parent = businessObject;
+    while (parent.$parent && !is$4(parent, 'bpmn:Process')) {
+      parent = parent.$parent;
+    }
+    return parent;
+  }
+  function getFormType$1(element) {
+    const formDefinition = getFormDefinition(element);
+    if (!formDefinition) {
+      return;
+    }
+    const formId = formDefinition.get('formId'),
+      formKey = formDefinition.get('formKey');
+    if (isDefined(formId)) {
+      return FORM_TYPES.CAMUNDA_FORM_LINKED;
+    }
+    if (isDefined(formKey)) {
+      if (getUserTaskForm(element)) {
+        return FORM_TYPES.CAMUNDA_FORM_EMBEDDED;
+      }
+      return FORM_TYPES.CUSTOM_FORM;
+    }
+  }
+
   function FormProps$1(props) {
     const {
-      element,
-      injector
+      element
     } = props;
-    const formHelper = injector.invoke(FormHelper);
     if (!is$4(element, 'bpmn:UserTask')) {
       return [];
     }
@@ -40749,13 +41268,20 @@
       component: FormType$1,
       isEdited: isEdited$3
     }];
-    if (isCamundaForm(element, formHelper)) {
+    const formType = getFormType$1(element);
+    if (formType === FORM_TYPES.CAMUNDA_FORM_EMBEDDED) {
       entries.push({
         id: 'formConfiguration',
         component: FormConfiguration,
         isEdited: isEdited$1
       });
-    } else if (isCustomKey(element, formHelper)) {
+    } else if (formType === FORM_TYPES.CAMUNDA_FORM_LINKED) {
+      entries.push({
+        id: 'formId',
+        component: FormId,
+        isEdited: isEdited
+      });
+    } else if (formType === FORM_TYPES.CUSTOM_FORM) {
       entries.push({
         id: 'customFormKey',
         component: CustomFormKey,
@@ -40768,26 +41294,20 @@
     const {
       element
     } = props;
-    const translate = useService('translate');
-    const injector = useService('injector');
-    const formHelper = injector.invoke(FormHelper);
+    const injector = useService('injector'),
+      translate = useService('translate');
     const getValue = () => {
-      const formDefinition = formHelper.getFormDefinition(element);
-      const userTaskForm = formHelper.getUserTaskForm(element);
-      if (formDefinition) {
-        if (userTaskForm) {
-          return 'camundaForm';
-        }
-        return 'formKey';
-      }
-      return '';
+      return getFormType$1(element) || '';
     };
     const setValue = value => {
-      formHelper.resetForm(element);
-      if (value === 'camundaForm') {
-        formHelper.setUserTaskForm(element, '');
-      } else if (value === 'formKey') {
-        formHelper.setFormDefinition(element, '');
+      if (value === FORM_TYPES.CAMUNDA_FORM_EMBEDDED) {
+        setUserTaskForm(injector, element, '');
+      } else if (value === FORM_TYPES.CAMUNDA_FORM_LINKED) {
+        setFormId(injector, element, '');
+      } else if (value === FORM_TYPES.CUSTOM_FORM) {
+        setCustomFormKey(injector, element, '');
+      } else {
+        removeFormDefinition(injector, element);
       }
     };
     const getOptions = () => {
@@ -40795,10 +41315,13 @@
         value: '',
         label: translate('<none>')
       }, {
-        value: 'camundaForm',
-        label: translate('Camunda forms')
+        value: FORM_TYPES.CAMUNDA_FORM_LINKED,
+        label: translate('Camunda Form (linked)')
       }, {
-        value: 'formKey',
+        value: FORM_TYPES.CAMUNDA_FORM_EMBEDDED,
+        label: translate('Camunda Form (embedded)')
+      }, {
+        value: FORM_TYPES.CUSTOM_FORM,
         label: translate('Custom form key')
       }];
     };
@@ -40815,16 +41338,14 @@
     const {
       element
     } = props;
-    const injector = useService('injector');
-    const debounce = useService('debounceInput');
-    const translate = useService('translate');
-    const formHelper = injector.invoke(FormHelper);
+    const debounce = useService('debounceInput'),
+      injector = useService('injector'),
+      translate = useService('translate');
     const getValue = () => {
-      const userTaskForm = formHelper.getUserTaskForm(element);
-      return userTaskForm.get('body');
+      return getUserTaskForm(element).get('body');
     };
     const setValue = value => {
-      formHelper.setUserTaskForm(element, value);
+      setUserTaskForm(injector, element, isUndefined(value) ? '' : value);
     };
     return TextAreaEntry({
       element,
@@ -40836,20 +41357,40 @@
       debounce
     });
   }
+  function FormId(props) {
+    const {
+      element
+    } = props;
+    const debounce = useService('debounceInput'),
+      injector = useService('injector'),
+      translate = useService('translate');
+    const getValue = () => {
+      return getFormDefinition(element).get('formId');
+    };
+    const setValue = value => {
+      setFormId(injector, element, isUndefined(value) ? '' : value);
+    };
+    return TextfieldEntry({
+      element,
+      id: 'formId',
+      label: translate('Form ID'),
+      getValue,
+      setValue,
+      debounce
+    });
+  }
   function CustomFormKey(props) {
     const {
       element
     } = props;
-    const injector = useService('injector');
-    const debounce = useService('debounceInput');
-    const translate = useService('translate');
-    const formHelper = injector.invoke(FormHelper);
+    const debounce = useService('debounceInput'),
+      injector = useService('injector'),
+      translate = useService('translate');
     const getValue = () => {
-      const formDefinition = formHelper.getFormDefinition(element);
-      return formDefinition.get('formKey');
+      return getFormDefinition(element).get('formKey');
     };
     const setValue = value => {
-      formHelper.setFormDefinition(element, value);
+      setCustomFormKey(injector, element, isUndefined(value) ? '' : value);
     };
     return TextfieldEntry({
       element,
@@ -40860,210 +41401,207 @@
       debounce
     });
   }
-  const USER_TASK_FORM_PREFIX = 'userTaskForm_';
-  function FormHelper(bpmnFactory, commandStack) {
-    function getFormDefinition(element) {
-      const businessObject = getBusinessObject$1(element);
-      const formDefinitions = getExtensionElementsList(businessObject, 'zeebe:FormDefinition');
-      return formDefinitions[0];
-    }
-    function getUserTaskForm(element, parent) {
-      const rootElement = parent || getRootElement(element);
-
-      // (1) get form definition from user task
-      const formDefinition = getFormDefinition(element);
-      if (isUndefined(formDefinition)) {
-        return;
-      }
-      const formKey = formDefinition.get('formKey');
-
-      // (2) retrieve user task form via form key
-      const userTaskForm = findUserTaskForm(formKey, rootElement);
-      return userTaskForm;
-    }
-    function ensureTaskForm(element, values) {
-      let commands = [];
-      const rootElement = getRootElement(element);
-
-      // (1) ensure root element extension elements
-      let rootExtensionElements = rootElement.get('extensionElements');
-      if (!rootExtensionElements) {
-        rootExtensionElements = createElement('bpmn:ExtensionElements', {
-          values: []
-        }, rootElement, bpmnFactory);
-        commands.push(UpdateModdlePropertiesCmd(element, rootElement, {
-          extensionElements: rootExtensionElements
-        }));
-      }
-
-      // (2) ensure user task form
-      let userTaskForm = getUserTaskForm(element);
-
-      // (2.1) create user task form if doesn't exist
-      if (!userTaskForm) {
-        userTaskForm = createUserTaskForm(values, rootExtensionElements, bpmnFactory);
-        commands.push(UpdateModdlePropertiesCmd(element, rootExtensionElements, {
-          values: [...rootExtensionElements.get('values'), userTaskForm]
-        }));
-      }
-      commands.push(UpdateModdlePropertiesCmd(element, userTaskForm, values));
-      return commands;
-    }
-    function ensureFormDefinition(element, customFormKey) {
-      const businessObject = getBusinessObject$1(element);
-      let commands = [];
-
-      // (1) ensure extension elements
-      let extensionElements = businessObject.get('extensionElements');
-      if (isUndefined(extensionElements)) {
-        extensionElements = createElement('bpmn:ExtensionElements', {
-          values: []
-        }, businessObject, bpmnFactory);
-        commands.push(UpdateModdlePropertiesCmd(element, businessObject, {
-          extensionElements: extensionElements
-        }));
-      }
-
-      // (2) ensure form definition
-      let formDefinition = getFormDefinition(element);
-
-      // (2.1) create if doesn't exist
-      if (!formDefinition) {
-        let formKey = customFormKey;
-        if (isUndefined(formKey)) {
-          const formId = createFormId();
-          formKey = createFormKey(formId);
-        }
-        formDefinition = createFormDefinition({
-          formKey
-        }, extensionElements, bpmnFactory);
-        commands.push(UpdateModdlePropertiesCmd(element, extensionElements, {
-          values: [...extensionElements.get('values'), formDefinition]
-        }));
-      }
-
-      // (2.2) update existing form definition with custom key
-      else if (customFormKey) {
-        commands.push(UpdateModdlePropertiesCmd(element, formDefinition, {
-          formKey: customFormKey
-        }));
-      }
-      return {
-        formId: resolveFormId(formDefinition.get('formKey')),
-        commands
-      };
-    }
-    function setFormDefinition(element, customFormKey) {
-      const {
-        commands
-      } = ensureFormDefinition(element, customFormKey);
-      commandStack.execute('properties-panel.multi-command-executor', commands);
-    }
-    function setUserTaskForm(element, value) {
-      const {
-        formId,
-        commands: formDefCommands
-      } = ensureFormDefinition(element);
-      const userTaskCommands = ensureTaskForm(element, {
-        id: formId,
-        body: value
-      });
-      const commands = formDefCommands.concat(userTaskCommands);
-      commandStack.execute('properties-panel.multi-command-executor', commands);
-    }
-    function unsetFormDefinition(element) {
-      const businessObject = getBusinessObject$1(element),
-        extensionElements = businessObject.get('extensionElements');
-      let commands = [];
-      const formDefinition = getFormDefinition(element);
-      if (!formDefinition) {
-        return commands;
-      }
-      let values = without(extensionElements.get('values'), formDefinition);
-      commands.push(UpdateModdlePropertiesCmd(element, extensionElements, {
-        values
-      }));
-      return commands;
-    }
-    function resetForm(element) {
-      const rootElement = getRootElement(element),
-        rootExtensionElements = rootElement.get('extensionElements');
-
-      // (1) remove form definition
-      const commands = unsetFormDefinition(element);
-
-      // (2) remove referenced user task form
-      const userTaskForm = getUserTaskForm(element);
-      if (!userTaskForm) {
-        commandStack.execute('properties-panel.multi-command-executor', commands);
-        return;
-      }
-      const values = without(rootExtensionElements.get('values'), userTaskForm);
-      commands.push(UpdateModdlePropertiesCmd(element, rootExtensionElements, {
-        values
-      }));
-      commandStack.execute('properties-panel.multi-command-executor', commands);
-    }
-    function createFormKey(formId) {
-      return 'camunda-forms:bpmn:' + formId;
-    }
-    function createFormId() {
-      return nextId(USER_TASK_FORM_PREFIX);
-    }
-    function resolveFormId(formKey) {
-      return formKey.split(':')[2];
-    }
-    function createFormDefinition(properties, extensionElements, bpmnFactory) {
-      return createElement('zeebe:FormDefinition', properties, extensionElements, bpmnFactory);
-    }
-    function createUserTaskForm(properties, extensionElements, bpmnFactory) {
-      return createElement('zeebe:UserTaskForm', properties, extensionElements, bpmnFactory);
-    }
-    function findUserTaskForm(formKey, rootElement) {
-      const forms = getExtensionElementsList(rootElement, 'zeebe:UserTaskForm');
-      return find$1(forms, function (userTaskForm) {
-        return createFormKey(userTaskForm.id) === formKey;
-      });
-    }
-    function getRootElement(element) {
-      const businessObject = getBusinessObject$1(element);
-      let parent = businessObject;
-      while (parent.$parent && !is$4(parent, 'bpmn:Process')) {
-        parent = parent.$parent;
-      }
-      return parent;
-    }
-    return {
-      getFormDefinition,
-      getUserTaskForm,
-      setFormDefinition,
-      setUserTaskForm,
-      resetForm
-    };
-  }
-  FormHelper.$inject = ['bpmnFactory', 'commandStack'];
 
   // helpers /////////////
 
-  function UpdateModdlePropertiesCmd(element, businessObject, newProperties) {
+  /**
+   * @typedef { { cmd: string, context: Object } } Command
+   * @typedef {Command[]} Commands
+   *
+   * @typedef {import('diagram-js/lib/model/Types').Element} Element
+   * @typedef {import('bpmn-js/lib/model/Types').ModdleElement} ModdleElement
+   *
+   * @param {import('didi').Injector} Injector
+   */
+
+  /**
+   * @param {Injector} injector
+   * @param {Element} element
+   *
+   * @returns { {
+   *   commands: Commands,
+   *   extensionElements: ModdleElement
+   * } }
+   */
+  function getOrCreateExtensionElements(injector, element, moddleElement) {
+    const businessObject = moddleElement || getBusinessObject$1(element);
+    let extensionElements = businessObject.get('extensionElements');
+    if (extensionElements) {
+      return {
+        commands: [],
+        extensionElements
+      };
+    }
+    const bpmnFactory = injector.get('bpmnFactory');
+    extensionElements = createElement('bpmn:ExtensionElements', {
+      values: []
+    }, businessObject, bpmnFactory);
+    return {
+      commands: [createUpdateModdlePropertiesCommand(element, businessObject, {
+        extensionElements
+      })],
+      extensionElements
+    };
+  }
+
+  /**
+   * @param {Injector} injector
+   * @param {Element} element
+   *
+   * @returns { {
+  *   commands: Commands,
+  *   formDefinition: ModdleElement
+  * } }
+  */
+  function getOrCreateFormDefintition(injector, element) {
+    let formDefinition = getFormDefinition(element);
+    if (formDefinition) {
+      return {
+        commands: [],
+        formDefinition
+      };
+    }
+    const {
+      extensionElements,
+      commands
+    } = getOrCreateExtensionElements(injector, element);
+    formDefinition = createFormDefinition(injector, {}, extensionElements);
+    return {
+      commands: [...commands, createUpdateModdlePropertiesCommand(element, extensionElements, {
+        values: [...extensionElements.get('values'), formDefinition]
+      })],
+      formDefinition
+    };
+  }
+
+  /**
+   * @param {Injector} injector
+   * @param {Element} element
+   *
+   * @returns { {
+   *   commands: Commands,
+   *   formDefinition: ModdleElement,
+   *   userTaskForm: ModdleElement
+   * } }
+   */
+  function getOrCreateUserTaskForm(injector, element) {
+    let userTaskForm = getUserTaskForm(element);
+    if (userTaskForm) {
+      return {
+        commands: [],
+        formDefinition: getFormDefinition(element),
+        userTaskForm
+      };
+    }
+    const rootElement = getRootElement$1(element);
+    const {
+      extensionElements,
+      commands: extensionElementsCommands
+    } = getOrCreateExtensionElements(injector, element, rootElement);
+    const {
+      formDefinition,
+      commands: formDefinitionCommands
+    } = getOrCreateFormDefintition(injector, element);
+    const formId = createUserTaskFormId();
+    userTaskForm = createUserTaskForm(injector, {
+      id: formId
+    }, extensionElements);
+    return {
+      commands: [...extensionElementsCommands, ...formDefinitionCommands, createUpdateModdlePropertiesCommand(element, extensionElements, {
+        values: [...extensionElements.get('values'), userTaskForm]
+      }), createUpdateModdlePropertiesCommand(element, formDefinition, {
+        formKey: userTaskFormIdToFormKey(formId)
+      })],
+      formDefinition,
+      userTaskForm
+    };
+  }
+  function setFormId(injector, element, formId) {
+    let {
+      commands,
+      formDefinition
+    } = getOrCreateFormDefintition(injector, element);
+    const commandStack = injector.get('commandStack');
+    commandStack.execute('properties-panel.multi-command-executor', [...commands, createUpdateModdlePropertiesCommand(element, formDefinition, {
+      formId
+    })]);
+  }
+  function setCustomFormKey(injector, element, formKey) {
+    let {
+      commands,
+      formDefinition
+    } = getOrCreateFormDefintition(injector, element);
+    const commandStack = injector.get('commandStack');
+    commandStack.execute('properties-panel.multi-command-executor', [...commands, createUpdateModdlePropertiesCommand(element, formDefinition, {
+      formKey
+    })]);
+  }
+  function setUserTaskForm(injector, element, body) {
+    let {
+      commands,
+      userTaskForm
+    } = getOrCreateUserTaskForm(injector, element);
+    const commandStack = injector.get('commandStack');
+    commandStack.execute('properties-panel.multi-command-executor', [...commands, createUpdateModdlePropertiesCommand(element, userTaskForm, {
+      body
+    })]);
+  }
+  function removeFormDefinition(injector, element) {
+    const formDefinition = getFormDefinition(element);
+
+    /**
+     * @type {import('bpmn-js/lib/features/modeling/Modeling').default}
+     */
+    const modeling = injector.get('modeling');
+    if (formDefinition) {
+      const businessObject = getBusinessObject$1(element),
+        extensionElements = businessObject.get('extensionElements');
+      modeling.updateModdleProperties(element, extensionElements, {
+        values: without(extensionElements.get('values'), formDefinition)
+      });
+    }
+  }
+
+  /**
+   * @param {Injector} injector
+   * @param {Object} properties
+   * @param {ModdleElement} parent
+   *
+   * @returns {ModdleElement}
+   */
+  function createFormDefinition(injector, properties, parent) {
+    const bpmnFactory = injector.get('bpmnFactory');
+    return createElement('zeebe:FormDefinition', properties, parent, bpmnFactory);
+  }
+
+  /**
+   * @param {Injector} injector
+   * @param {Object} properties
+   * @param {ModdleElement} parent
+   *
+   * @returns {ModdleElement}
+   */
+  function createUserTaskForm(injector, properties, parent) {
+    const bpmnFactory = injector.get('bpmnFactory');
+    return createElement('zeebe:UserTaskForm', properties, parent, bpmnFactory);
+  }
+
+  /**
+   * @param {Element} element
+   * @param {ModdleElement} moddleElement
+   * @param {Object} properties
+   *
+   * @returns {Command}
+   */
+  function createUpdateModdlePropertiesCommand(element, moddleElement, properties) {
     return {
       cmd: 'element.updateModdleProperties',
       context: {
         element,
-        moddleElement: businessObject,
-        properties: newProperties
+        moddleElement,
+        properties
       }
     };
-  }
-  function isCamundaForm(element, formHelper) {
-    const formDefinition = formHelper.getFormDefinition(element);
-    const userTaskForm = formHelper.getUserTaskForm(element);
-    return formDefinition && userTaskForm;
-  }
-  function isCustomKey(element, formHelper) {
-    const formDefinition = formHelper.getFormDefinition(element);
-    const userTaskForm = formHelper.getUserTaskForm(element);
-    return formDefinition && !userTaskForm;
   }
 
   function Header(props) {
@@ -41385,10 +41923,10 @@
       id: 'propagateAllParentVariables',
       label: translate('Propagate all variables'),
       switcherLabel: propagateAllParentVariables ? translate('On') : translate('Off'),
-      tooltip: o("div", {
-        children: [o("p", {
+      tooltip: u("div", {
+        children: [u("p", {
           children: translate('If turned on, all variables from this process instance will be propagated to the child process instance.')
-        }), o("p", {
+        }), u("p", {
           children: translate('Otherwise, only variables defined via input mappings will be propagated.')
         })]
       }),
@@ -41688,7 +42226,6 @@
 
       // (3) create parameter
       const newParameter = createElement('zeebe:Input', {
-        source: '',
         target: nextId('InputVariable_')
       }, ioMapping, bpmnFactory);
 
@@ -41772,6 +42309,9 @@
     };
     const setValue = value => {
       const commands = [];
+      const properties = {
+        correlationKey: value
+      };
       const message = getMessage(element);
       let extensionElements = message.get('extensionElements');
 
@@ -41791,11 +42331,11 @@
           }
         });
       }
-
-      // (2) ensure subscription
       let subscription = getSubscription(element);
+
+      // (2a) add subscription with correlation key
       if (!subscription) {
-        subscription = createElement('zeebe:Subscription', {}, extensionElements, bpmnFactory);
+        subscription = createElement('zeebe:Subscription', properties, extensionElements, bpmnFactory);
         commands.push({
           cmd: 'element.updateModdleProperties',
           context: {
@@ -41806,21 +42346,19 @@
             }
           }
         });
+      } else {
+        // (2b) update existing subscription's correlation key
+        commands.push({
+          cmd: 'element.updateModdleProperties',
+          context: {
+            element,
+            properties,
+            moddleElement: subscription
+          }
+        });
       }
 
-      // (3) update subscription correlation key
-      commands.push({
-        cmd: 'element.updateModdleProperties',
-        context: {
-          element,
-          moddleElement: subscription,
-          properties: {
-            correlationKey: value
-          }
-        }
-      });
-
-      // (4) commit all updates
+      // (3) commit all updates
       commandStack.execute('properties-panel.multi-command-executor', commands);
     };
     return FeelEntryWithVariableContext({
@@ -42189,10 +42727,10 @@
       id: 'propagateAllChildVariables',
       label: translate('Propagate all child process variables'),
       switcherLabel: propagateAllChildVariables ? translate('On') : translate('Off'),
-      tooltip: o("div", {
-        children: [o("p", {
+      tooltip: u("div", {
+        children: [u("p", {
           children: translate('If turned on, all variables from the child process instance will be propagated to the parent process instance.')
-        }), o("p", {
+        }), u("p", {
           children: translate('Otherwise, only variables defined via output mappings will be propagated.')
         })]
       }),
@@ -42363,7 +42901,6 @@
 
       // (3) create parameter
       const newParameter = createElement('zeebe:Output', {
-        source: '',
         target: nextId('OutputVariable_')
       }, ioMapping, bpmnFactory);
 
@@ -43437,20 +43974,20 @@
   function getTimerEventDefinitionValueDescription$1(timerDefinitionType, translate) {
     switch (timerDefinitionType) {
       case 'timeDate':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A specific point in time defined as ISO 8601 combined date and time representation.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "2019-10-01T12:00:00Z"
               }), " - ", translate('UTC time')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "2019-10-02T08:09:40+02:00"
               }), " - ", translate('UTC plus 2 hours zone offset')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.io/docs/reference/bpmn-processes/timer-events/timer-events#time-date",
             target: "_blank",
             rel: "noopener",
@@ -43459,24 +43996,24 @@
           })]
         });
       case 'timeCycle':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A cycle defined as ISO 8601 repeating intervals format, or a cron expression.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "R5/PT10S"
               }), " - ", translate('every 10 seconds, up to 5 times')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "R/P1D"
               }), " - ", translate('every day, infinitely')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "0 0 9-17 * * MON-FRI"
               }), " - ", translate('every hour on the hour from 9-5 p.m. UTC Monday-Friday')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.io/docs/reference/bpmn-processes/timer-events/timer-events#time-cycle",
             target: "_blank",
             rel: "noopener",
@@ -43485,24 +44022,24 @@
           })]
         });
       case 'timeDuration':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A time duration defined as ISO 8601 durations format.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "PT15S"
               }), " - ", translate('15 seconds')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "PT1H30M"
               }), " - ", translate('1 hour and 30 minutes')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "P14D"
               }), " - ", translate('14 days')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.io/docs/reference/bpmn-processes/timer-events/timer-events#time-duration",
             target: "_blank",
             rel: "noopener",
@@ -44368,7 +44905,7 @@
         calledElement: value || ''
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElement",
       label: translate('Called element'),
@@ -44406,7 +44943,7 @@
       value: 'versionTag',
       label: translate('version tag')
     }];
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       element: element,
       id: "calledElementBinding",
       label: translate('Binding'),
@@ -44430,7 +44967,7 @@
         calledElementVersion: value
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementVersion",
       label: translate('Version'),
@@ -44454,7 +44991,7 @@
         calledElementVersionTag: value
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementVersionTag",
       label: translate('Version tag'),
@@ -44478,7 +45015,7 @@
         calledElementTenantId: value
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementTenantId",
       label: translate('Tenant ID'),
@@ -44529,7 +45066,7 @@
         caseRef: value || ''
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementCaseRef",
       label: translate('Case ref'),
@@ -44563,7 +45100,7 @@
       value: 'version',
       label: translate('version')
     }];
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       element: element,
       id: "calledElementCaseBinding",
       label: translate('Binding'),
@@ -44587,7 +45124,7 @@
         caseVersion: value
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementCaseVersion",
       label: translate('Version'),
@@ -44611,7 +45148,7 @@
         caseTenantId: value
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementCaseTenantId",
       label: translate('Tenant ID'),
@@ -44683,7 +45220,7 @@
       value: 'delegateExpression',
       label: translate('Delegate expression')
     }];
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       element: element,
       id: "calledElementDelegateVariableMappingType",
       label: translate('Delegate Variable Mapping'),
@@ -44708,7 +45245,7 @@
         variableMappingClass: undefined
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementVariableMappingDelegateExpression",
       label: translate('Delegate Expression'),
@@ -44733,7 +45270,7 @@
         variableMappingClass: value || ''
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementVariableMappingClass",
       label: translate('Delegate Class'),
@@ -44836,7 +45373,7 @@
       value: 'cmmn',
       label: translate('CMMN')
     }];
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       element: element,
       id: "calledElementType",
       label: translate('Type'),
@@ -44910,7 +45447,7 @@
       const businessKeyItems = camundaInList.filter(camundaIn => camundaIn.get('businessKey') !== undefined);
       removeExtensionElements(element, businessObject, businessKeyItems, commandStack);
     }
-    return o(CheckboxEntry, {
+    return u(CheckboxEntry, {
       element: element,
       id: "calledElementBusinessKey",
       label: translate('Business key'),
@@ -44936,7 +45473,7 @@
         }
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "calledElementBusinessKeyExpression",
       label: translate('Business key expression'),
@@ -45135,7 +45672,7 @@
       value: 'expression',
       label: translate('Expression')
     }];
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       element: element,
       id: "conditionType",
       label: translate('Type'),
@@ -45161,7 +45698,7 @@
       }, bpmnFactory);
       updateCondition(element, commandStack, conditionExpression);
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "conditionExpression",
       label: translate('Condition Expression'),
@@ -45227,7 +45764,7 @@
         }
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "conditionScriptLanguage",
       label: translate('Format'),
@@ -45295,7 +45832,7 @@
         }
       });
     };
-    return o(TextAreaEntry, {
+    return u(TextAreaEntry, {
       element: element,
       id: "conditionScriptValue",
       label: translate('Script'),
@@ -45324,7 +45861,7 @@
         }
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: true,
       id: "conditionScriptResource",
       label: translate('Resource'),
@@ -45371,7 +45908,7 @@
         }
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "conditionVariableName",
       label: translate('Variable name'),
@@ -45399,7 +45936,7 @@
         }
       });
     };
-    return o(TextfieldEntry, {
+    return u(TextfieldEntry, {
       element: element,
       id: "conditionVariableEvents",
       label: translate('Variable events'),
@@ -45845,7 +46382,7 @@
       item
     } = props;
     const id = `${idPrefix}-listItem-${index}`;
-    return o(ListItem, {
+    return u(ListItem, {
       idPrefix: id,
       element: element,
       item: item
@@ -45940,7 +46477,7 @@
       setValue
     } = props;
     const debounce = useService('debounceInput', true);
-    return o(Simple, {
+    return u(Simple, {
       id: id,
       getValue: getValue,
       setValue: setValue,
@@ -45974,7 +46511,7 @@
     } = props;
     const id = `${idPrefix}-mapEntry-${index}`;
     const translate = useService('translate');
-    return o(CollapsibleEntry, {
+    return u(CollapsibleEntry, {
       id: id,
       element: element,
       entries: MapEntry({
@@ -47948,7 +48485,7 @@
     } = props;
     const translate = useService('translate');
     const id = `${idPrefix}-value-${index}`;
-    return o(CollapsibleEntry, {
+    return u(CollapsibleEntry, {
       id: id,
       element: element,
       entries: FormFieldValue({
@@ -47993,7 +48530,7 @@
         }
       });
     }
-    return o(List, {
+    return u(List, {
       element: element,
       autoFocusEntry: `[data-entry-id="${id}-value-${values.length - 1}"] input`,
       id: id,
@@ -48014,7 +48551,7 @@
     } = props;
     const translate = useService('translate');
     const id = `${idPrefix}-constraint-${index}`;
-    return o(CollapsibleEntry, {
+    return u(CollapsibleEntry, {
       id: id,
       element: element,
       entries: FormFieldConstraint({
@@ -48085,7 +48622,7 @@
         }
       });
     }
-    return o(List, {
+    return u(List, {
       element: element,
       autoFocusEntry: `[data-entry-id="${id}-constraint-${constraints.length - 1}"] input`,
       id: id,
@@ -48106,7 +48643,7 @@
     } = props;
     const translate = useService('translate');
     const id = `${idPrefix}-property-${index}`;
-    return o(CollapsibleEntry, {
+    return u(CollapsibleEntry, {
       id: id,
       element: element,
       entries: FormFieldProperty({
@@ -48177,7 +48714,7 @@
         }
       });
     }
-    return o(List, {
+    return u(List, {
       element: element,
       autoFocusEntry: true,
       id: id,
@@ -48534,7 +49071,7 @@
     };
     const setValue = value => {
       modeling.updateProperties(element, {
-        'camunda:formKey': value
+        'camunda:formKey': isUndefined(value) ? '' : value
       });
     };
     return TextfieldEntry({
@@ -48559,7 +49096,7 @@
     };
     const setValue = value => {
       modeling.updateProperties(element, {
-        'camunda:formRef': value
+        'camunda:formRef': isUndefined(value) ? '' : value
       });
     };
     return TextfieldEntry({
@@ -50985,20 +51522,20 @@
   function getTimerEventDefinitionValueDescription(timerDefinitionType, translate) {
     switch (timerDefinitionType) {
       case 'timeDate':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A specific point in time defined as ISO 8601 combined date and time representation.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "2019-10-01T12:00:00Z"
               }), " - ", translate('UTC time')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "2019-10-02T08:09:40+02:00"
               }), " - ", translate('UTC plus 2 hours zone offset')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.org/manual/latest/reference/bpmn20/events/timer-events/#time-date",
             target: "_blank",
             rel: "noopener",
@@ -51006,24 +51543,24 @@
           })]
         });
       case 'timeCycle':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A cycle defined as ISO 8601 repeating intervals format, or a cron expression.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "R5/PT10S"
               }), " - ", translate('every 10 seconds, up to 5 times')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "R/P1D"
               }), " - ", translate('every day, infinitely')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "0 0 9-17 * * MON-FRI"
               }), " - ", translate('every hour on the hour from 9-5 p.m. UTC Monday-Friday')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.org/manual/latest/reference/bpmn20/events/timer-events/#time-cycle",
             target: "_blank",
             rel: "noopener",
@@ -51031,24 +51568,24 @@
           })]
         });
       case 'timeDuration':
-        return o("div", {
-          children: [o("p", {
+        return u("div", {
+          children: [u("p", {
             children: translate('A time duration defined as ISO 8601 durations format.')
-          }), o("ul", {
-            children: [o("li", {
-              children: [o("code", {
+          }), u("ul", {
+            children: [u("li", {
+              children: [u("code", {
                 children: "PT15S"
               }), " - ", translate('15 seconds')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "PT1H30M"
               }), " - ", translate('1 hour and 30 minutes')]
-            }), o("li", {
-              children: [o("code", {
+            }), u("li", {
+              children: [u("code", {
                 children: "P14D"
               }), " - ", translate('14 days')]
             })]
-          }), o("a", {
+          }), u("a", {
             href: "https://docs.camunda.org/manual/latest/reference/bpmn20/events/timer-events/#time-duration",
             target: "_blank",
             rel: "noopener",
@@ -51310,7 +51847,7 @@
         label: translate('end')
       }];
     }
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       id: id,
       label: translate('Event type'),
       getValue: getValue,
@@ -51365,7 +51902,7 @@
     function getOptions() {
       return getListenerTypeOptions(translate);
     }
-    return o(SelectEntry, {
+    return u(SelectEntry, {
       id: id,
       label: translate('Listener type'),
       getValue: getValue,
@@ -51435,7 +51972,7 @@
       open
     } = props;
     const fieldId = `${idPrefix}-field-${index}`;
-    return o(CollapsibleEntry, {
+    return u(CollapsibleEntry, {
       id: fieldId,
       element: element,
       entries: FieldInjection({
@@ -51476,7 +52013,7 @@
         }
       });
     }
-    return o(List, {
+    return u(List, {
       id: id,
       element: element,
       label: translate('Field injection'),
@@ -52223,7 +52760,7 @@
         })]
       };
     });
-    return o(ListGroup, {
+    return u(ListGroup, {
       ...props,
       items: items,
       shouldSort: false
@@ -52271,14 +52808,14 @@
     } = props;
     const translate = useService('translate');
     const id = idPrefix + '-scope';
-    return o("div", {
+    return u("div", {
       "data-entry-id": id,
       class: "bio-properties-panel-entry",
-      children: [o("b", {
+      children: [u("b", {
         style: "font-weight: bold",
         class: "bio-properties-panel-label",
         children: translate('Scope')
-      }), o("label", {
+      }), u("label", {
         id: prefixId(id),
         class: "bio-properties-panel-label",
         children: variable.scope
@@ -52293,14 +52830,14 @@
     const translate = useService('translate');
     const id = idPrefix + '-createdIn';
     const origin = variable.origin.join(', ');
-    return o("div", {
+    return u("div", {
       "data-entry-id": id,
       class: "bio-properties-panel-entry",
-      children: [o("b", {
+      children: [u("b", {
         style: "font-weight: bold",
         class: "bio-properties-panel-label",
         children: translate('Created in')
-      }), o("label", {
+      }), u("label", {
         id: prefixId(id),
         class: "bio-properties-panel-label",
         children: origin
@@ -53333,8 +53870,8 @@
   const TooltipProvider = {
     'group-assignmentDefinition': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Define who the task is assigned to. One or all of the following attributes can be specified simultaneously. '), o("a", {
+      return u("div", {
+        children: [translate('Define who the task is assigned to. One or all of the following attributes can be specified simultaneously. '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/user-tasks/#assignments",
           target: "_blank",
           rel: "noopener",
@@ -53345,8 +53882,8 @@
     },
     'group-condition': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Define a boolean condition expression that defines when this flow is taken. '), o("a", {
+      return u("div", {
+        children: [translate('Define a boolean condition expression that defines when this flow is taken. '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/exclusive-gateways/#conditions",
           target: "_blank",
           rel: "noopener",
@@ -53357,8 +53894,8 @@
     },
     'group-businessRuleImplementation': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Evaluate a business rule, for example a DMN. To add a custom implementation, use a job worker. '), o("a", {
+      return u("div", {
+        children: [translate('Evaluate a business rule, for example a DMN. To add a custom implementation, use a job worker. '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/business-rule-tasks/#defining-a-task",
           target: "_blank",
           rel: "noopener",
@@ -53369,8 +53906,8 @@
     },
     'group-scriptImplementation': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Implement a script task using an inline FEEL expression. To add a custom implementation, use a job worker. '), o("a", {
+      return u("div", {
+        children: [translate('Implement a script task using an inline FEEL expression. To add a custom implementation, use a job worker. '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/script-tasks/#defining-a-script-task",
           target: "_blank",
           rel: "noopener",
@@ -53381,8 +53918,8 @@
     },
     'group-form': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Embed a form created with the Camunda Forms editor. To associate a custom form, application, or URL to the user task, specify a form key. '), o("a", {
+      return u("div", {
+        children: [translate('Link or embed a form created with the Camunda Forms editor. To associate a custom form, application, or URL to the user task, specify a form key. '), u("a", {
           href: "https://docs.camunda.io/docs/guides/utilizing-forms/#connect-your-form-to-a-bpmn-diagram",
           target: "_blank",
           rel: "noopener",
@@ -53394,20 +53931,20 @@
     'group-message': element => {
       const translate = useService('translate');
       if (is$4(element, 'bpmn:ReceiveTask')) {
-        return o("div", {
-          children: [translate('Define the name of the message (e.g. '), o("code", {
+        return u("div", {
+          children: [translate('Define the name of the message (e.g. '), u("code", {
             children: "Money collected"
-          }), translate(') and the '), o("code", {
+          }), translate(') and the '), u("code", {
             children: "correlationKey"
-          }), translate(' expression (e.g. '), o("code", {
+          }), translate(' expression (e.g. '), u("code", {
             children: "= orderId"
-          }), translate(')'), translate(' to subscribe to. '), translate('Learn more how to '), o("a", {
+          }), translate(')'), translate(' to subscribe to. '), translate('Learn more how to '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/send-tasks",
             target: "_blank",
             rel: "noopener",
             title: translate('Send task documentation'),
             children: translate('send ')
-          }), translate('and '), o("a", {
+          }), translate('and '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/receive-tasks",
             target: "_blank",
             rel: "noopener",
@@ -53416,14 +53953,14 @@
           })]
         });
       }
-      return o("div", {
-        children: [translate('Define the name of the message (e.g. '), o("code", {
+      return u("div", {
+        children: [translate('Define the name of the message (e.g. '), u("code", {
           children: "Money collected"
-        }), translate(') and the '), o("code", {
+        }), translate(') and the '), u("code", {
           children: "correlationKey"
-        }), translate(' expression (e.g. '), o("code", {
+        }), translate(' expression (e.g. '), u("code", {
           children: "= orderId"
-        }), translate(')'), translate(' to subscribe to. '), o("a", {
+        }), translate(')'), translate(' to subscribe to. '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/message-events/#messages",
           target: "_blank",
           rel: "noopener",
@@ -53434,12 +53971,12 @@
     },
     'group-calledElement': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Define the ID of the process to call (e.g. '), " ", o("code", {
+      return u("div", {
+        children: [translate('Define the ID of the process to call (e.g. '), " ", u("code", {
           children: "shipping-process"
-        }), translate(' or '), o("code", {
+        }), translate(' or '), u("code", {
           children: "= \"shipping-\" + tenantId"
-        }), " ", translate('). '), o("a", {
+        }), " ", translate('). '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/call-activities/",
           target: "_blank",
           rel: "noopener",
@@ -53451,10 +53988,10 @@
     'group-taskDefinition': element => {
       const translate = useService('translate');
       if (is$4(element, 'bpmn:ServiceTask')) {
-        return o("div", {
-          children: [translate('Specify which job workers handle the task work to execute a service (e.g. '), o("code", {
+        return u("div", {
+          children: [translate('Specify which job workers handle the task work to execute a service (e.g. '), u("code", {
             children: "order-items"
-          }), translate('). '), o("a", {
+          }), translate('). '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/service-tasks",
             target: "_blank",
             rel: "noopener",
@@ -53464,8 +54001,8 @@
         });
       }
       if (is$4(element, 'bpmn:BusinessRuleTask')) {
-        return o("div", {
-          children: [translate('Specify which job workers handle the task work to evaluate business rules. '), o("a", {
+        return u("div", {
+          children: [translate('Specify which job workers handle the task work to evaluate business rules. '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/business-rule-tasks/#job-worker-implementation",
             target: "_blank",
             rel: "noopener",
@@ -53475,8 +54012,8 @@
         });
       }
       if (is$4(element, 'bpmn:ScriptTask')) {
-        return o("div", {
-          children: [translate('Specify which job workers handle the task work to execute a script. '), o("a", {
+        return u("div", {
+          children: [translate('Specify which job workers handle the task work to execute a script. '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/script-tasks/#defining-a-task",
             target: "_blank",
             rel: "noopener",
@@ -53486,12 +54023,12 @@
         });
       }
       if (is$4(element, 'bpmn:SendTask')) {
-        return o("div", {
-          children: [translate('Specify which job workers handle the task work to send a message (e.g. '), o("code", {
+        return u("div", {
+          children: [translate('Specify which job workers handle the task work to send a message (e.g. '), u("code", {
             children: "kafka"
-          }), translate(' or '), o("code", {
+          }), translate(' or '), u("code", {
             children: "mail"
-          }), translate('). '), o("a", {
+          }), translate('). '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/send-tasks/#defining-a-task",
             target: "_blank",
             rel: "noopener",
@@ -53501,8 +54038,8 @@
         });
       }
       if (is$4(element, 'bpmn:ThrowEvent')) {
-        return o("div", {
-          children: [translate('Specify which job workers handle the event work. '), o("a", {
+        return u("div", {
+          children: [translate('Specify which job workers handle the event work. '), u("a", {
             href: "https://docs.camunda.io/docs/components/modeler/bpmn/message-events/#message-throw-events",
             target: "_blank",
             rel: "noopener",
@@ -53514,10 +54051,10 @@
     },
     'group-multiInstance': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Execute this task for each element of a given collection. '), o("br", {}), translate('Define an input collection expression that defines the collection to iterate over (e.g. '), o("code", {
+      return u("div", {
+        children: [translate('Execute this task for each element of a given collection. '), u("br", {}), translate('Define an input collection expression that defines the collection to iterate over (e.g. '), u("code", {
           children: "= items"
-        }), translate('). '), translate('To collect the output define the output collection and the output element expressions. '), o("a", {
+        }), translate('). '), translate('To collect the output define the output collection and the output element expressions. '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/multi-instance/#defining-the-collection-to-iterate-over",
           target: "_blank",
           rel: "noopener",
@@ -53528,10 +54065,10 @@
     },
     'group-error': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Define an error code (e.g. '), o("code", {
+      return u("div", {
+        children: [translate('Define an error code (e.g. '), u("code", {
           children: "order-not-found"
-        }), translate('). '), o("a", {
+        }), translate('). '), u("a", {
           href: "https://docs.camunda.io/docs/components/modeler/bpmn/error-events/#defining-the-error",
           target: "_blank",
           rel: "noopener",
@@ -53542,8 +54079,8 @@
     },
     'group-inputs': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Create a new local variable in the scope of this task. '), o("a", {
+      return u("div", {
+        children: [translate('Create a new local variable in the scope of this task. '), u("a", {
           href: "https://docs.camunda.io/docs/components/concepts/variables/#input-mappings",
           target: "_blank",
           rel: "noopener",
@@ -53554,8 +54091,8 @@
     },
     'group-outputs': element => {
       const translate = useService('translate');
-      return o("div", {
-        children: [translate('Customize how result variables are merged into the global scope of the process instance. '), o("a", {
+      return u("div", {
+        children: [translate('Customize how result variables are merged into the global scope of the process instance. '), u("a", {
           href: "https://docs.camunda.io/docs/components/concepts/variables/#output-mappings",
           target: "_blank",
           rel: "noopener",

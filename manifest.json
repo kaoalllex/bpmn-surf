@@ -22,7 +22,8 @@
             "resources": [         
                 "main.js",      
                 "utils.js",    
-                "differ.js",
+                "bpmn-differ.js",
+                "dmn-differ.js",
                 "styles.css",
             
                 "libs/bpmn-js/bpmn-modeler.production.min.js",
@@ -36,6 +37,22 @@
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.ttf",
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff",
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff2",
+
+                "libs/dmn-js/dmn-viewer.development.js",
+                "libs/dmn-js/assets/dmn-js-decision-table-controls.css",
+                "libs/dmn-js/assets/dmn-js-decision-table.css",
+                "libs/dmn-js/assets/dmn-js-shared.css",
+                "libs/dmn-js/assets/dmn-js-literal-expression.css",
+                "libs/dmn-js/assets/dmn-font/css/dmn.css",
+                "libs/dmn-js/assets/dmn-font/css/dmn-embedded.css",
+                "libs/dmn-js/assets/dmn-font/css/dmn-codes.css",
+                "libs/dmn-js/assets/dmn-font/font/dmn.svg",
+                "libs/dmn-js/assets/dmn-font/font/dmn.woff",
+                "libs/dmn-js/assets/dmn-font/font/dmn.eot",
+                "libs/dmn-js/assets/dmn-font/font/dmn.woff2",
+                "libs/dmn-js/assets/dmn-font/font/dmn.ttf",
+                "libs/dmn-js/assets/dmn-js-drd.css",
+                "libs/dmn-js/assets/diagram-js.css",
 
                 "libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js",
                 "libs/bpmn-js-properties-panel/assets/element-templates.css",

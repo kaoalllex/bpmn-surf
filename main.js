@@ -1,9 +1,18 @@
 const BUTTON_ID = 'btn_77844bf3d4e842caa0d88194431197c0';
-const MSG_ID = 'msg_71e23e639965407fb9c87f100a56c898';
+
+const MSG_BPMN_ID = 'msg_bpmn_71e23e639965407fb9c87f100a56c898';
+const MSG_DMN_ID = 'msg_dmn_71e23e639965407fb9c87f100a56c898';
+
 const DEFAULT_MASTER_COMMIT_ID = 'master';
 
 const SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
 const SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
+
+const BPMN_FILE_EXT = '.bpmn';
+const DMN_FILE_EXT = '.dmn';
+
+const BPMN_FILE_TYPE = 'bpmn';
+const DMN_FILE_TYPE = 'dmn';
 
 let camundaBpmnModdle = null;
 
@@ -24,7 +33,7 @@ async function isMasterBpmnFileShowing() {
     await delay(200);
     const href = window.location.href;
     // console.debug('href: ' + href);
-    return href.includes('/-/blob/') && href.endsWith('.bpmn');
+    return href.includes('/-/blob/') && href.endsWith(BPMN_FILE_EXT);
 }
 
 function getProjectUrl() {
@@ -57,10 +66,6 @@ function findSelectedFilePath(dataPathElems) {
     }
     if (!filePath) {
         console.debug('cannot get file path from data-path element');
-        return null;
-    }
-    if (!filePath.endsWith('.bpmn')) {
-        console.debug('selected file is not bpmn');
         return null;
     }
     return filePath;
@@ -144,7 +149,18 @@ async function loadScripts(doc) {
     await addStylesheet('libs/bpmn-js/assets/diagram-js.css', doc);
     await addStylesheet('libs/bpmn-js/assets/bpmn-font/css/bpmn.css', doc);
     await addScript('libs/bpmn-js/bpmn-modeler.production.min.js', doc);
-    // await addScript('libs/bpmn-js/bpmn-modeler.development.js', doc);
+
+    await addStylesheet('libs/dmn-js/assets/diagram-js.css', doc);
+    await addStylesheet('libs/dmn-js/assets/dmn-js-decision-table-controls.css', doc);
+    await addStylesheet('libs/dmn-js/assets/dmn-js-decision-table.css', doc);
+    await addStylesheet('libs/dmn-js/assets/dmn-js-drd.css', doc);
+    await addStylesheet('libs/dmn-js/assets/dmn-js-literal-expression.css', doc);
+    await addStylesheet('libs/dmn-js/assets/dmn-js-shared.css', doc);
+    await addStylesheet('libs/dmn-js/assets/dmn-font/css/dmn.css', doc);
+
+    // TODO: when uses production.min then get error:
+    //  It looks like you're using a minified copy of the development build of Inferno...
+    await addScript('libs/dmn-js/dmn-viewer.development.js', doc);
 
     // properties panel
     await addStylesheet('libs/bpmn-js-properties-panel/assets/element-templates.css', doc);
@@ -153,7 +169,8 @@ async function loadScripts(doc) {
 
     await addStylesheet('styles.css', doc);
     await addScript('utils.js', doc);
-    await addScript('differ.js', doc);
+    await addScript('bpmn-differ.js', doc);
+    await addScript('dmn-differ.js', doc);
 }
 
 async function loadCamundaBpmnModdle() {
@@ -170,7 +187,7 @@ function getTitle(fileName) {
     return fileName.replace(/(.{31})/g, "$1 ");
 }
 
-async function openDiffer(params) {
+async function openDiffer(params, msgId) {
     console.debug('opening differ...');
     const newWindow = window.open('about:blank');
     console.debug('setting title...');
@@ -179,7 +196,7 @@ async function openDiffer(params) {
     await loadScripts(newWindow.document);
     console.debug('loading scripts...done');
     const msg = {
-        id: MSG_ID,
+        id: msgId,
         params: params
     }
     console.debug('sending message', msg);
@@ -199,9 +216,22 @@ async function addShowDiffButton(projectUrl) {
 
     const filePath = findSelectedFilePath(dataPathElems);
     if (filePath == null) {
-        console.debug('bpmn file not selected');
+        console.debug('file not selected');
         return;
     }
+
+    let fileType = null;
+    if (filePath.endsWith(BPMN_FILE_EXT)) {
+        fileType = BPMN_FILE_TYPE;
+        console.debug('selected file is bpmn');
+    } else if (filePath.endsWith(DMN_FILE_EXT)) {
+        fileType = DMN_FILE_TYPE;
+        console.debug('selected file is dmn');
+    } else {
+        console.debug('selected file is neither bpmn nor dmn');
+        return null;
+    }
+
     const fileName = getFileNameFromPath(filePath);
 
     const mrCommitId = await getMrCommitId();
@@ -233,11 +263,14 @@ async function addShowDiffButton(projectUrl) {
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
     };
+    const buttonName = fileType === BPMN_FILE_TYPE ? 'Show schema diff' : 'Show decision diff';
+    const msgId = fileType === BPMN_FILE_TYPE ? MSG_BPMN_ID : MSG_DMN_ID;
+
     addButtonToPage(
-        'Show schema diff',
+        buttonName,
         SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR,
         true,
-        () => openDiffer(params)
+        () => openDiffer(params, msgId)
     );
 }
 
@@ -379,7 +412,7 @@ async function addShowMasterButton(projectUrl) {
         'Show schema',
         SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR,
         false,
-        () => openDiffer(params)
+        () => openDiffer(params, MSG_BPMN_ID)
     );
 }
 
