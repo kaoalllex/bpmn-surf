@@ -451,7 +451,7 @@ async function showBpmnMaster() {
     if (mrBpmnXml) {
         highlightDiffs(masterBpmnXml, mrBpmnXml, DiffType.DELETE);
     } else {
-        console.debug('bpmn not exists in MR branch');
+        console.debug('file not exists in MR branch');
     }
 }
 
@@ -464,7 +464,7 @@ async function showBpmnMr() {
     if (masterBpmnXml) {
         highlightDiffs(mrBpmnXml, masterBpmnXml, DiffType.ADD);
     } else {
-        console.debug('bpmn not exists in Master branch');
+        console.debug('file not exists in Master branch');
     }
 }
 
@@ -880,11 +880,6 @@ function getAttributesDiffs(diffs, nodeATagName, nodeAAttrs, nodeBAttrs) {
             }
         }
     }
-}
-
-function parseXml(xml) {
-    const parser = new DOMParser();
-    return parser.parseFromString(xml, 'text/xml');
 }
 
 function paintDiffs(diffType, shapeIdList, rowIdList) {

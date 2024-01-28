@@ -252,15 +252,15 @@ function setDmnViewportFullyVisible() {
 }
 
 function changeDmnViewportZoom(delta) {
-    console.debug('current zoom = ' + currentZoom + '; delta = ' + delta);
+    // console.debug('current zoom = ' + currentZoom + '; delta = ' + delta);
     let newZoom = Math.round(currentZoom * (1 + delta));
 
     if (newZoom < MIN_DMN_VIEWPORT_ZOOM) {
-        console.debug('min');
+        // console.debug('min');
         newZoom = MIN_DMN_VIEWPORT_ZOOM;
     }
     else if (newZoom > MAX_DMN_VIEWPORT_ZOOM) {
-        console.debug('max');
+        // console.debug('max');
         newZoom = MAX_DMN_VIEWPORT_ZOOM;
     }
 
@@ -270,14 +270,14 @@ function changeDmnViewportZoom(delta) {
 function setZoom(zoom) {
     dmnTableContainer.style.zoom = zoom + '%';
     currentZoom = zoom;
-    console.debug('new zoom = ' + zoom);
+    // console.debug('new zoom = ' + zoom);
 }
 
 function isFullyVisible() {
     const containerHeight = dmnTableContainer.getBoundingClientRect().height;
     const tableHeight = dmnTable.getBoundingClientRect().height;
     const res = tableHeight <= containerHeight;
-    console.debug('isFullyVisible = ' + res);
+    // console.debug('isFullyVisible = ' + res);
     return res;
 }
 
@@ -341,11 +341,11 @@ async function showDmnMr() {
     await showDmn(mrDmnXml);
     setBranchName(MR_BRANCH_NAME);
 
-    // if (masterBpmnXml) {
-    //     highlightDiffs(mrBpmnXml, masterBpmnXml, DiffType.ADD);
-    // } else {
-    //     console.debug('bpmn not exists in Master branch');
-    // }
+    if (masterDmnXml) {
+        highlightDmnDiffs(mrDmnXml, masterDmnXml, DiffType.ADD);
+    } else {
+        console.debug('file not exists in Master branch');
+    }
 }
 
 async function showDmnMaster() {
@@ -354,16 +354,16 @@ async function showDmnMaster() {
     await showDmn(masterDmnXml);
     setBranchName(MASTER_BRANCH_NAME);
 
-    // if (mrBpmnXml) {
-    //     highlightDiffs(masterBpmnXml, mrBpmnXml, DiffType.DELETE);
-    // } else {
-    //     console.debug('bpmn not exists in MR branch');
-    // }
+    if (mrDmnXml) {
+        highlightDmnDiffs(masterDmnXml, mrDmnXml, DiffType.DELETE);
+    } else {
+        console.debug('file not exists in MR branch');
+    }
 }
 
 async function showDmn(dmnXml) {
     const scrollTop = dmnTableContainer ? dmnTableContainer.scrollTop : 0;
-    console.debug('scroll top: ' + scrollTop);
+    // console.debug('scroll top: ' + scrollTop);
 
     dmnTableContainer = null;
     dmnTable = null;
@@ -379,6 +379,111 @@ async function showDmn(dmnXml) {
     }
     fitDmnViewport();
     dmnTableContainer.scrollTop = scrollTop;
+}
+
+function highlightDmnDiffs(myXml, otherXml, diffTypeForMissing) {
+    console.debug('show diff...');
+
+    const myDoc = parseXml(myXml);
+    const myDecisionTableNode = myDoc.getElementsByTagName('decisionTable')[0];
+    const myRuleNodes = myDecisionTableNode.getElementsByTagName('rule');
+
+    const otherDoc = parseXml(otherXml);
+
+    const missingRuleIds = [];
+    const changedRuleIdToDiffsMap = new Map();
+
+    for (const myRuleNode of myRuleNodes) {
+        const id = myRuleNode.getAttribute('id');
+        const otherRuleNode = otherDoc.getElementById(id);
+
+        if (!otherRuleNode) {
+            missingRuleIds.push(id);
+        }
+        else {
+            const diffs = compareRuleNodes(myRuleNode, otherRuleNode);
+            if (diffs) {
+                // console.debug(`rule nodes with id '${id}' have diffs: `, diffs);
+                changedRuleIdToDiffsMap.set(id, diffs);
+            }
+        }
+    }
+
+    paintDmnDiffs(diffTypeForMissing, missingRuleIds, changedRuleIdToDiffsMap);
+}
+
+function compareRuleNodes(ruleNodeA, ruleNodeB) {
+    const diffs = [];
+
+    for (const childA of ruleNodeA.childNodes) {
+        const tagChildA = childA.tagName;
+        if (tagChildA === 'description') {
+            const descrB = ruleNodeB.querySelector('description');
+            if (descrB && childA.textContent !== descrB.textContent) {
+                diffs.push('description');
+            }
+        } else if (tagChildA === 'inputEntry' || tagChildA === 'outputEntry') {
+            const entryId = childA.getAttribute('id');
+            const entryB = ruleNodeB.querySelector(`[id="${entryId}"]`);
+            if (entryB && childA.outerHTML !== entryB.outerHTML) {
+                diffs.push(entryId);
+            }
+        }
+    }
+
+    if (diffs.length > 0) {
+        return diffs;
+    } else {
+        return null;
+    }
+}
+
+function paintDmnDiffs(diffTypeForMissing, missingRuleIds, changedRuleIdToDiffsMap) {
+    if (missingRuleIds.length > 0) {
+        // console.debug('missingRuleIds', missingRuleIds);
+
+        for (const missingRuleId of missingRuleIds) {
+            const ruleRow = findRuleRowElem(missingRuleId);
+            if (ruleRow) {
+                ruleRow.style.backgroundColor = diffTypeForMissing.shapeColor;
+            }
+        }
+    }
+    if (changedRuleIdToDiffsMap.size > 0) {
+        // console.debug('changedRuleIdToDiffsMap', changedRuleIdToDiffsMap);
+
+        for (const [ruleId, diffs] of changedRuleIdToDiffsMap) {
+            const ruleRow = findRuleRowElem(ruleId);
+            if (ruleRow) {
+                for (const diff of diffs) {
+                    const diffCell = findDiffCell(ruleRow, diff);
+                    if (diffCell) {
+                        diffCell.style.backgroundColor = DiffType.CHANGE.shapeColor;
+                    } else {
+                        console.info(`cannot find diff cell '${diff}' of rule with id '${ruleId}'`);
+                    }
+                }
+            }
+        }
+    }
+}
+
+function findDiffCell(ruleRow, diff) {
+    if (diff === 'description') {
+        return ruleRow.querySelector(`.cell.annotation`);
+    } else { // inputEntry/outputEntry id
+        return ruleRow.querySelector(`[data-element-id="${diff}"]`);
+    }
+}
+
+function findRuleRowElem(ruleId) {
+    const ruleIndexCell = document.querySelector(`.rule-index[data-row-id="${ruleId}"]`);
+    if (ruleIndexCell && ruleIndexCell.parentElement) {
+        return ruleIndexCell.parentElement;
+    } else {
+        console.info('cannot find rule row elem by rule id: ' + ruleId);
+        return null;
+    }
 }
 
 function main() {

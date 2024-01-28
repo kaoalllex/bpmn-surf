@@ -71,3 +71,8 @@ function appendTimeToConsoleLogs() {
     console.warn = new Proxy(console.warn, handler);
     console.error = new Proxy(console.error, handler);
 }
+
+function parseXml(xml) {
+    const parser = new DOMParser();
+    return parser.parseFromString(xml, 'text/xml');
+}
