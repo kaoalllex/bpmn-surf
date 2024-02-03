@@ -382,16 +382,140 @@ async function showDmn(dmnXml) {
 }
 
 function highlightDmnDiffs(myXml, otherXml, diffTypeForMissing) {
-    console.debug('show diff...');
+    console.debug('highlight diffs...');
 
     const myDoc = parseXml(myXml);
-    const myDecisionTableNode = myDoc.getElementsByTagName('decisionTable')[0];
-    const myRuleNodes = myDecisionTableNode.getElementsByTagName('rule');
-
     const otherDoc = parseXml(otherXml);
 
+    const myDecisionNode = myDoc.getElementsByTagName('decision')[0];
+    const myDecisionTableNode = myDecisionNode.getElementsByTagName('decisionTable')[0];
+
+    // analize diffs in header
+    compareHeaders(diffTypeForMissing, myDecisionNode, myDecisionTableNode, otherDoc);
+
+    // analize diffs in rules
+    compareRules(diffTypeForMissing, myDecisionTableNode, otherDoc);
+}
+
+function compareHeaders(diffTypeForMissing, myDecisionNode, myDecisionTableNode, otherDoc) {
+    const otherDecisionNode = otherDoc.getElementsByTagName('decision')[0];
+    const otherDecisionTableNode = otherDecisionNode.getElementsByTagName('decisionTable')[0];
+
+    // header
+    const headerDiffs = []; // will contains html-elem class name
+    if (myDecisionNode.getAttribute('name') !== otherDecisionNode.getAttribute('name')) {
+        headerDiffs.push("div.decision-table-name");
+    }
+    if (myDecisionTableNode.getAttribute('hitPolicy') !== otherDecisionTableNode.getAttribute('hitPolicy')) {
+        headerDiffs.push("span.hit-policy-value");
+    }
+    paintDmnHeaderDiffs(headerDiffs);
+
+    // inputs
+    const missingInputIds = [];
+    const changedInputIds = [];
+    const myInputNodes = myDecisionTableNode.getElementsByTagName('input');
+    for (const myInputNode of myInputNodes) {
+        const id = myInputNode.getAttribute('id');
+        const otherInputNode = otherDoc.getElementById(id);
+
+        if (!otherInputNode) {
+            missingInputIds.push(id);
+        }
+        else {
+            if (myInputNode.outerHTML !== otherInputNode.outerHTML) {
+                changedInputIds.push(id);
+            }
+        }
+    }
+    paintDmnInputDiffs(diffTypeForMissing, missingInputIds, changedInputIds);
+
+    //outputs
+    // TODO: used labels instead of ids because html does not contain id attr for outputs
+    const missingOutputLabels = [];
+    const changedOutputLabels = [];
+    const myOutputNodes = myDecisionTableNode.getElementsByTagName('output');
+    for (const myOutputNode of myOutputNodes) {
+        const id = myOutputNode.getAttribute('id');
+        const label = myOutputNode.getAttribute('label');
+        const otherOutputNode = otherDoc.getElementById(id);
+
+        if (!otherOutputNode) {
+            missingOutputLabels.push(label);
+        }
+        else {
+            if (myOutputNode.outerHTML !== otherOutputNode.outerHTML) {
+                changedOutputLabels.push(label);
+            }
+        }
+    }
+    paintDmnOutputDiffs(diffTypeForMissing, missingOutputLabels, changedOutputLabels);
+}
+
+function paintDmnHeaderDiffs(headerDiffs) {
+    if (headerDiffs.length === 0) {
+        return;
+    }
+
+    // console.debug(`header have diffs: ` + headerDiffs);
+    for (const headerDiff of headerDiffs) {
+        const cell = document.querySelector(headerDiff);
+        if (cell) {
+            cell.style.backgroundColor = DiffType.CHANGE.shapeColor;
+        }
+    }
+}
+
+function paintDmnInputDiffs(diffTypeForMissing, missingInputIds, changedInputIds) {
+    if (missingInputIds.length > 0) {
+        // console.debug('missingInputIds', missingInputIds);
+        for (const missingInputId of missingInputIds) {
+            const cell = document.querySelector(`.input-cell[data-col-id="${missingInputId}"]`);
+            if (cell) {
+                cell.style.backgroundColor = diffTypeForMissing.shapeColor;
+            }
+        }
+    }
+
+    if (changedInputIds.length > 0) {
+        // console.debug('changedInputIds', changedInputIds);
+        for (const changedInputId of changedInputIds) {
+            const cell = document.querySelector(`.input-cell[data-col-id="${changedInputId}"]`);
+            if (cell) {
+                cell.style.backgroundColor = DiffType.CHANGE.shapeColor;
+            }
+        }
+    }
+}
+
+function paintDmnOutputDiffs(diffTypeForMissing, missingOutputLabels, changedOutputLabels) {
+    const outputLabelElems = Array.from(document.querySelectorAll('.output-label'));
+
+    if (missingOutputLabels.length > 0) {
+        console.debug('missingOutputLabels', missingOutputLabels);
+        for (const missingOutputLabel of missingOutputLabels) {
+            const cell = outputLabelElems.find(e => e.textContent === missingOutputLabel);
+            if (cell && cell.parentElement) {
+                cell.parentElement.style.backgroundColor = diffTypeForMissing.shapeColor;
+            }
+        }
+    }
+
+    if (changedOutputLabels.length > 0) {
+        console.debug('changedOutputLabels', changedOutputLabels);
+        for (const changedOutputLabel of changedOutputLabels) {
+            const cell = outputLabelElems.find(e => e.textContent === changedOutputLabel);
+            if (cell && cell.parentElement) {
+                cell.parentElement.style.backgroundColor = DiffType.CHANGE.shapeColor;
+            }
+        }
+    }
+}
+
+function compareRules(diffTypeForMissing, myDecisionTableNode, otherDoc) {
     const missingRuleIds = [];
     const changedRuleIdToDiffsMap = new Map();
+    const myRuleNodes = myDecisionTableNode.getElementsByTagName('rule');
 
     for (const myRuleNode of myRuleNodes) {
         const id = myRuleNode.getAttribute('id');
@@ -409,7 +533,7 @@ function highlightDmnDiffs(myXml, otherXml, diffTypeForMissing) {
         }
     }
 
-    paintDmnDiffs(diffTypeForMissing, missingRuleIds, changedRuleIdToDiffsMap);
+    paintDmnRulesDiffs(diffTypeForMissing, missingRuleIds, changedRuleIdToDiffsMap);
 }
 
 function compareRuleNodes(ruleNodeA, ruleNodeB) {
@@ -438,7 +562,7 @@ function compareRuleNodes(ruleNodeA, ruleNodeB) {
     }
 }
 
-function paintDmnDiffs(diffTypeForMissing, missingRuleIds, changedRuleIdToDiffsMap) {
+function paintDmnRulesDiffs(diffTypeForMissing, missingRuleIds, changedRuleIdToDiffsMap) {
     if (missingRuleIds.length > 0) {
         // console.debug('missingRuleIds', missingRuleIds);
 
