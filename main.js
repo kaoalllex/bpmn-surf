@@ -28,12 +28,21 @@ async function isDiffsTabActive() {
     return href.includes('/-/merge_requests/') && href.includes('/diffs');
 }
 
-async function isMasterBpmnFileShowing() {
+async function getMasterBpmnOrDmnShowingFileType() {
     // wait for the href will updated
     await delay(200);
     const href = window.location.href;
     // console.debug('href: ' + href);
-    return href.includes('/-/blob/') && href.endsWith(BPMN_FILE_EXT);
+    if (!href.includes('/-/blob/')) {
+        return null;
+    }
+    if (href.endsWith(BPMN_FILE_EXT)) {
+        return BPMN_FILE_TYPE;
+    }
+    if (href.endsWith(DMN_FILE_EXT)) {
+        return DMN_FILE_TYPE;
+    }
+    return null;
 }
 
 function getProjectUrl() {
@@ -380,8 +389,8 @@ async function getMrLastCommitId() {
     return mrLastCommitId;
 }
 
-async function addShowMasterButton(projectUrl) {
-    console.debug('adding show master button...');
+async function addShowMasterButton(fileType, projectUrl) {
+    console.debug(`adding show master ${fileType} button...`);
 
     const regex = /\/-\/blob\/([a-f0-9]+|master)\/(.*)/;
     const match = window.location.href.match(regex);
@@ -408,11 +417,14 @@ async function addShowMasterButton(projectUrl) {
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
     };
+    const buttonName = fileType === BPMN_FILE_TYPE ? 'Show schema' : 'Show decision';
+    const msgId = fileType === BPMN_FILE_TYPE ? MSG_BPMN_ID : MSG_DMN_ID;
+
     addButtonToPage(
-        'Show schema',
+        buttonName,
         SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR,
         false,
-        () => openDiffer(params, MSG_BPMN_ID)
+        () => openDiffer(params, msgId)
     );
 }
 
@@ -443,13 +455,16 @@ async function start(event) {
     }
     console.debug('diffs tab is not active');
 
-    const masterBpmnFileShowing = await isMasterBpmnFileShowing();
-    if (masterBpmnFileShowing) {
-        await addShowMasterButton(projectUrl);
+    const masterBpmnOrDmnShowingFileType = await getMasterBpmnOrDmnShowingFileType();
+    if (masterBpmnOrDmnShowingFileType === BPMN_FILE_TYPE) {
+        await addShowMasterButton(BPMN_FILE_TYPE, projectUrl);
         return;
+    } else if (masterBpmnOrDmnShowingFileType === DMN_FILE_TYPE) {
+        await addShowMasterButton(DMN_FILE_TYPE, projectUrl);
+        return;
+    } else {
+        console.debug('master bpmn or dmn file is not showing');
     }
-    console.debug('master bpmn file is not showing');
-
 }
 
 function main() {

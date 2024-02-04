@@ -6,9 +6,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://*/*/-/merge_requests/*/diffs*",
-                "https://*/*/-/blob/*/*.bpmn",
-                "https://*/*/-/blob/*/*.dmn"
+                "https://gitlab.example.com/*"
             ],
             "js": [
                 "utils.js",
