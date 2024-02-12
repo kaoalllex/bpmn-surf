@@ -1,5 +1,4 @@
 const MSG_BPMN_ID = 'msg_bpmn_71e23e639965407fb9c87f100a56c898';
-const DEFAULT_MASTER_COMMIT_ID = 'master';
 
 const BPMN_DIV_ID = 'bpmnDiv_12345bf3d4e842caa0d88194431197c0';
 const BPMN_CANVAS_ID = 'bpmnCanvas_12345bf3d4e842caa0d88194431197c0';
@@ -11,11 +10,8 @@ let isBpmnPropsCellHidden = false;
 
 let isHighlightEnabled = false;
 
-const MASTER_BRANCH_NAME = 'Master';
-const MR_BRANCH_NAME = 'MR';
-const MASTER_BRANCH_COLOR = 'darkred';
+const TARGET_BRANCH_COLOR = 'darkred';
 const MR_BRANCH_COLOR = 'darkblue';
-
 const MIN_VIEWPORT_ZOOM = 0.1;
 const MAX_VIEWPORT_ZOOM = 3.0;
 const IN_OUT_DELTA_VIEWPORT_ZOOM = 0.15;
@@ -23,9 +19,12 @@ const WHEEL_DELTA_VIEWPORT_ZOOM = 0.03;
 
 let projectUrl = null;
 let mrCommitId = null;
-let masterCommitId = null;
+let branchCommitId = null;
 let filePath = null;
 let fileName = null;
+
+let targetBranchName = 'Master';
+let mrBranchName = 'MR';
 
 let bpmnPropertiesPanelModule = null;
 let bpmnPropertiesProviderModule = null;
@@ -43,7 +42,7 @@ let bpmnJSOverlays = null;
 let canvasElem = null;
 let canvasMousePosition = null;
 
-let masterBpmnXml = null;
+let branchBpmnXml = null;
 let mrBpmnXml = null;
 
 let branchNameTextElement = null;
@@ -154,24 +153,25 @@ function createHeader(parentElem) {
     downloadButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     downloadButton.style.margin = '3px';
     downloadButton.addEventListener('click', (event) => {
-        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
-            downloadBranchFile(masterBpmnXml, MASTER_BRANCH_NAME);
+        if (branchNameTextElement.textContent === targetBranchName) {
+            downloadBranchFile(branchBpmnXml, targetBranchName);
         } else {
-            downloadBranchFile(mrBpmnXml, MR_BRANCH_NAME);
+            downloadBranchFile(mrBpmnXml, mrBranchName);
         }
     });
     cellDownloadButton.appendChild(downloadButton);
 
     // branch name
     const cellBranchName = document.createElement('td');
-    cellBranchName.style.minWidth = '130px';
+    cellBranchName.style.minWidth = '300px';
     row.appendChild(cellBranchName);
 
-    branchNameTextElement = document.createTextNode(MR_BRANCH_NAME);
+    branchNameTextElement = document.createTextNode('');
     branchNameSpanElement = document.createElement('span');
     branchNameSpanElement.style.fontSize = '20px';
     branchNameSpanElement.style.fontWeight = 'bold';
     branchNameSpanElement.style.color = MR_BRANCH_COLOR;
+    branchNameSpanElement.style.whiteSpace = 'nowrap';
     branchNameSpanElement.appendChild(branchNameTextElement);
 
     cellBranchName.appendChild(document.createTextNode('Branch: '));
@@ -190,19 +190,19 @@ function createHeader(parentElem) {
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
         switchButton.style.margin = '3px';
         switchButton.addEventListener('click', (event) => {
-            if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) { // current Master - switch to MR
+            if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
                 if (mrBpmnXml) {
                     showBpmnMr();
                 } else {
                     // may be this file was removed
-                    alertFileNotExistInBranch(MR_BRANCH_NAME);
+                    alertFileNotExistInBranch(mrBranchName);
                 }
-            } else { // current MR - try to switch to Master
-                if (masterBpmnXml) {
-                    showBpmnMaster();
+            } else { // current MR - try to switch to Branch
+                if (branchBpmnXml) {
+                    showBpmnBranch();
                 } else {
                     // may be this file is new
-                    alertFileNotExistInBranch(MASTER_BRANCH_NAME);
+                    alertFileNotExistInBranch(targetBranchName);
                 }
             }
         });
@@ -293,11 +293,11 @@ function createHeader(parentElem) {
 }
 
 function setBranchName(branchName) {
-    if (branchName === MASTER_BRANCH_NAME) {
-        branchNameTextElement.textContent = MASTER_BRANCH_NAME;
-        branchNameSpanElement.style.color = MASTER_BRANCH_COLOR;
+    if (branchName === targetBranchName) {
+        branchNameTextElement.textContent = targetBranchName;
+        branchNameSpanElement.style.color = TARGET_BRANCH_COLOR;
     } else {
-        branchNameTextElement.textContent = MR_BRANCH_NAME;
+        branchNameTextElement.textContent = mrBranchName;
         branchNameSpanElement.style.color = MR_BRANCH_COLOR;
     }
 }
@@ -443,14 +443,14 @@ function selectElementById() {
     }
 }
 
-async function showBpmnMaster() {
-    console.debug('showing master bpmn xml file...');
-    requireDefined(masterBpmnXml, 'masterBpmnXml');
-    await showBpmn(masterBpmnXml);
-    setBranchName(MASTER_BRANCH_NAME);
+async function showBpmnBranch() {
+    console.debug('showing branch bpmn xml file...');
+    requireDefined(branchBpmnXml, 'branchBpmnXml');
+    await showBpmn(branchBpmnXml);
+    setBranchName(targetBranchName);
 
     if (mrBpmnXml) {
-        highlightDiffs(masterBpmnXml, mrBpmnXml, DiffType.DELETE);
+        highlightDiffs(branchBpmnXml, mrBpmnXml, DiffType.DELETE);
     } else {
         console.debug('file not exists in MR branch');
     }
@@ -460,12 +460,12 @@ async function showBpmnMr() {
     console.debug('showing mr bpmn xml file...');
     requireDefined(mrBpmnXml, 'mrBpmnXml');
     await showBpmn(mrBpmnXml);
-    setBranchName(MR_BRANCH_NAME);
+    setBranchName(mrBranchName);
 
-    if (masterBpmnXml) {
-        highlightDiffs(mrBpmnXml, masterBpmnXml, DiffType.ADD);
+    if (branchBpmnXml) {
+        highlightDiffs(mrBpmnXml, branchBpmnXml, DiffType.ADD);
     } else {
-        console.debug('file not exists in Master branch');
+        console.debug('file not exists in target branch');
     }
 }
 
@@ -1078,7 +1078,7 @@ function showConditionExpression() {
 
 function drawFormattedCondition(parentElem, conditionExpressionElem) {
     const conditions = nodeIdToConditions.get(selectedElementId);
-    if (conditions) { // when comparing master and mr branches
+    if (conditions) { // when comparing target branch and mr branches
         const myCondParts = formatCondition(conditions[0]);
         const otherCondParts = formatCondition(conditions[1]);
 
@@ -1086,7 +1086,7 @@ function drawFormattedCondition(parentElem, conditionExpressionElem) {
             const exists = otherCondParts.includes(part);
             drawConditionPart(parentElem, part, exists);
         }
-    } else { // when viewing master branch only
+    } else { // when viewing target branch branch only
         const myCondParts = formatCondition(conditionExpressionElem.value);
         for (const part of myCondParts) {
             drawConditionPart(parentElem, part, true);
@@ -1100,8 +1100,8 @@ function drawConditionPart(parentElem, part, exists) {
     elem.textContent = part;
     if (!exists) {
         let color = null;
-        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
-            color = '#ff8888'; // the 'delete' color for master
+        if (branchNameTextElement.textContent === targetBranchName) {
+            color = '#ff8888'; // the 'delete' color for branch
         } else {
             color = '#88ff88'; // the 'add' color for mr
         }
@@ -1315,8 +1315,9 @@ async function setPropertiesPanelContainerMaxHeight() {
 
 function initBpmnDiff(params) {
     projectUrl = requireDefined(params.projectUrl, 'projectUrl');
-    mrCommitId = params.mrCommitId; // may be undefined when showing schema from master
-    masterCommitId = requireDefined(params.masterCommitId, 'masterCommitId');
+    mrCommitId = params.mrCommitId; // may be undefined when showing schema from branch only
+    branchCommitId = requireDefined(params.branchCommitId, 'branchCommitId');
+    targetBranchName = branchCommitId;
     filePath = requireDefined(params.filePath, 'filePath');
     fileName = requireDefined(params.fileName, 'fileName');
 
@@ -1369,9 +1370,9 @@ async function showBpmnDiff(params) {
 
     hideModelerPallete();
 
-    console.debug('loading master bpmn xml...');
-    masterBpmnXml = null;
-    masterBpmnXml = await loadBpmnXml(masterCommitId);
+    console.debug('loading branch bpmn xml...');
+    branchBpmnXml = null;
+    branchBpmnXml = await loadBpmnXml(branchCommitId);
 
     console.debug('loading mr bpmn xml...');
     mrBpmnXml = null;
@@ -1384,7 +1385,7 @@ async function showBpmnDiff(params) {
     if (mrBpmnXml) {
         await showBpmnMr();
     } else {
-        await showBpmnMaster();
+        await showBpmnBranch();
     }
 
     // show canvas after the differ is completely rendered
@@ -1401,7 +1402,7 @@ function main() {
     appendTimeToConsoleLogs();
 
     window.addEventListener('message', async function (msg) {
-        console.debug('message received', msg);
+        // console.debug('message received', msg);
         if (msg.origin !== window.origin || msg.data.id !== MSG_BPMN_ID) {
             console.debug(`skip message: msg.origin = ${msg.origin}; msg.data.id = ${msg.data.id}`);
             return;

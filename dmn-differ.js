@@ -9,7 +9,7 @@ const DMN_NEW_VERSION_XMLNS = "https://www.omg.org/spec/DMN/20191111/MODEL/";
 let dmnJS = null;
 let currentZoom = null
 
-let masterDmnXml = null;
+let branchDmnXml = null;
 let mrDmnXml = null;
 
 const MIN_DMN_VIEWPORT_ZOOM = 10;
@@ -90,24 +90,25 @@ function createDmnHeader(parentElem) {
     downloadButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     downloadButton.style.margin = '3px';
     downloadButton.addEventListener('click', (event) => {
-        if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) {
-            downloadBranchFile(masterDmnXml, MASTER_BRANCH_NAME);
+        if (branchNameTextElement.textContent === targetBranchName) {
+            downloadBranchFile(branchDmnXml, targetBranchName);
         } else {
-            downloadBranchFile(mrDmnXml, MR_BRANCH_NAME);
+            downloadBranchFile(mrDmnXml, mrBranchName);
         }
     });
     cellDownloadButton.appendChild(downloadButton);
 
     // branch name
     const cellBranchName = document.createElement('td');
-    cellBranchName.style.minWidth = '130px';
+    cellBranchName.style.minWidth = '300px';
     row.appendChild(cellBranchName);
 
-    branchNameTextElement = document.createTextNode(MR_BRANCH_NAME);
+    branchNameTextElement = document.createTextNode('');
     branchNameSpanElement = document.createElement('span');
     branchNameSpanElement.style.fontSize = '20px';
     branchNameSpanElement.style.fontWeight = 'bold';
     branchNameSpanElement.style.color = MR_BRANCH_COLOR;
+    branchNameSpanElement.style.whiteSpace = 'nowrap';
     branchNameSpanElement.appendChild(branchNameTextElement);
 
     cellBranchName.appendChild(document.createTextNode('Branch: '));
@@ -126,19 +127,19 @@ function createDmnHeader(parentElem) {
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
         switchButton.style.margin = '3px';
         switchButton.addEventListener('click', (event) => {
-            if (branchNameTextElement.textContent === MASTER_BRANCH_NAME) { // current Master - switch to MR
+            if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
                 if (mrDmnXml) {
                     showDmnMr();
                 } else {
                     // may be this file was removed
-                    alertFileNotExistInBranch(MR_BRANCH_NAME);
+                    alertFileNotExistInBranch(mrBranchName);
                 }
-            } else { // current MR - try to switch to Master
-                if (masterDmnXml) {
-                    showDmnMaster();
+            } else { // current MR - try to switch to Branch
+                if (branchDmnXml) {
+                    showDmnBranch();
                 } else {
                     // may be this file is new
-                    alertFileNotExistInBranch(MASTER_BRANCH_NAME);
+                    alertFileNotExistInBranch(targetBranchName);
                 }
             }
         });
@@ -283,8 +284,9 @@ function isFullyVisible() {
 
 function initDmnDiff(params) {
     projectUrl = requireDefined(params.projectUrl, 'projectUrl');
-    mrCommitId = params.mrCommitId; // may be undefined when showing schema from master
-    masterCommitId = requireDefined(params.masterCommitId, 'masterCommitId');
+    mrCommitId = params.mrCommitId; // may be undefined when showing schema from branch only
+    branchCommitId = requireDefined(params.branchCommitId, 'branchCommitId');
+    targetBranchName = branchCommitId;
     filePath = requireDefined(params.filePath, 'filePath');
     fileName = requireDefined(params.fileName, 'fileName');
 }
@@ -305,9 +307,9 @@ async function showDmnDiff(params) {
     });
     console.debug('dmn js created');
 
-    console.debug('loading master dmn xml...');
-    masterDmnXml = null;
-    masterDmnXml = await loadDmnXml(masterCommitId);
+    console.debug('loading branch dmn xml...');
+    branchDmnXml = null;
+    branchDmnXml = await loadDmnXml(branchCommitId);
 
     console.debug('loading mr dmn xml...');
     mrDmnXml = null;
@@ -320,7 +322,7 @@ async function showDmnDiff(params) {
     if (mrDmnXml) {
         await showDmnMr();
     } else {
-        await showDmnMaster();
+        await showDmnBranch();
     }
 
     console.debug('making canvas visible...');
@@ -339,23 +341,23 @@ async function showDmnMr() {
     console.debug('showing mr dmn xml file...');
     requireDefined(mrDmnXml, 'mrDmnXml');
     await showDmn(mrDmnXml);
-    setBranchName(MR_BRANCH_NAME);
+    setBranchName(mrBranchName);
 
-    if (masterDmnXml) {
-        highlightDmnDiffs(mrDmnXml, masterDmnXml, DiffType.ADD);
+    if (branchDmnXml) {
+        highlightDmnDiffs(mrDmnXml, branchDmnXml, DiffType.ADD);
     } else {
-        console.debug('file not exists in Master branch');
+        console.debug('file not exists in target branch');
     }
 }
 
-async function showDmnMaster() {
-    console.debug('showing master dmn xml file...');
-    requireDefined(masterDmnXml, 'masterDmnXml');
-    await showDmn(masterDmnXml);
-    setBranchName(MASTER_BRANCH_NAME);
+async function showDmnBranch() {
+    console.debug('showing branch dmn xml file...');
+    requireDefined(branchDmnXml, 'branchDmnXml');
+    await showDmn(branchDmnXml);
+    setBranchName(targetBranchName);
 
     if (mrDmnXml) {
-        highlightDmnDiffs(masterDmnXml, mrDmnXml, DiffType.DELETE);
+        highlightDmnDiffs(branchDmnXml, mrDmnXml, DiffType.DELETE);
     } else {
         console.debug('file not exists in MR branch');
     }
@@ -614,7 +616,7 @@ function main() {
     appendTimeToConsoleLogs();
 
     window.addEventListener('message', async function (msg) {
-        console.debug('message received', msg);
+        // console.debug('message received', msg);
         if (msg.origin !== window.origin || msg.data.id !== MSG_DMN_ID) {
             console.debug(`skip message: msg.origin = ${msg.origin}; msg.data.id = ${msg.data.id}`);
             return;

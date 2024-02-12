@@ -3,16 +3,19 @@ const BUTTON_ID = 'btn_77844bf3d4e842caa0d88194431197c0';
 const MSG_BPMN_ID = 'msg_bpmn_71e23e639965407fb9c87f100a56c898';
 const MSG_DMN_ID = 'msg_dmn_71e23e639965407fb9c87f100a56c898';
 
-const DEFAULT_MASTER_COMMIT_ID = 'master';
+const DEFAULT_BRANCH_COMMIT_ID = 'master';
 
 const SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
-const SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
+const SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
 
 const BPMN_FILE_EXT = '.bpmn';
 const DMN_FILE_EXT = '.dmn';
 
 const BPMN_FILE_TYPE = 'bpmn';
 const DMN_FILE_TYPE = 'dmn';
+
+let projectUrl = null;
+let projectName = null;
 
 let camundaBpmnModdle = null;
 
@@ -28,7 +31,7 @@ async function isDiffsTabActive() {
     return href.includes('/-/merge_requests/') && href.includes('/diffs');
 }
 
-async function getMasterBpmnOrDmnShowingFileType() {
+async function getBranchBpmnOrDmnShowingFileType() {
     // wait for the href will updated
     await delay(200);
     const href = window.location.href;
@@ -45,11 +48,17 @@ async function getMasterBpmnOrDmnShowingFileType() {
     return null;
 }
 
-function getProjectUrl() {
+function readProjectUrlAndName() {
     const href = window.location.href;
-    const res = href.substring(0, href.indexOf('/-/'));
-    // console.debug('project url: ' + res);
-    return res;
+    projectUrl = href.substring(0, href.indexOf('/-/'));
+    if (projectUrl == null) {
+        console.error('cannot get project url');
+        return false;
+    }
+    projectName = projectUrl.substring(projectUrl.lastIndexOf('/') + 1);
+
+    console.debug(`project url: ${projectUrl}; project name: ${projectName}`);
+    return true;
 }
 
 async function findDataPathElements() {
@@ -213,7 +222,7 @@ async function openDiffer(params, msgId) {
     console.debug('opening differ...done');
 }
 
-async function addShowDiffButton(projectUrl) {
+async function addShowDiffButton() {
     console.debug('adding show diff button...');
 
     const dataPathElems = await findDataPathElements();
@@ -256,7 +265,7 @@ async function addShowDiffButton(projectUrl) {
         return;
     }
 
-    const masterCommitId = await getMasterCommitId(projectUrl, mrCommitId);
+    const masterCommitId = await getMasterCommitId(mrCommitId);
     if (!masterCommitId) {
         console.info('master commit id not found!');
         // go on: will use lastest master commit in differ
@@ -267,7 +276,7 @@ async function addShowDiffButton(projectUrl) {
     const params = {
         projectUrl: projectUrl,
         mrCommitId: mrCommitId,
-        masterCommitId: masterCommitId,
+        branchCommitId: masterCommitId,
         filePath: filePath,
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
@@ -283,14 +292,15 @@ async function addShowDiffButton(projectUrl) {
     );
 }
 
-async function getMasterCommitId(projectUrl, mrCommitId) {
+async function getMasterCommitId(mrCommitId) {
     console.debug('getting master commit id...');
 
-    await loadMasterCommitInfo(projectUrl);
+    await loadMasterCommitInfo();
     const mrCommitEntryIndex = findMasterCommitEntryById(mrCommitId);
     if (mrCommitEntryIndex === -1) {
         console.debug('MR is not merged');
-        return DEFAULT_MASTER_COMMIT_ID;
+        // TODO: get target branch commit id for MR
+        return DEFAULT_BRANCH_COMMIT_ID;
     }
 
     console.debug('MR is already merged!');
@@ -310,7 +320,7 @@ async function getMasterCommitId(projectUrl, mrCommitId) {
     return masterCommitId;
 }
 
-async function loadMasterCommitInfo(projectUrl) {
+async function loadMasterCommitInfo() {
     console.debug('loading master commit entries...');
     if (masterCommitEntries) {
         console.debug('loading master commit entries...done (use cache)');
@@ -389,21 +399,22 @@ async function getMrLastCommitId() {
     return mrLastCommitId;
 }
 
-async function addShowMasterButton(fileType, projectUrl) {
-    console.debug(`adding show master ${fileType} button...`);
+async function addShowBranchButton(fileType) {
+    console.debug(`adding show branch ${fileType} button...`);
 
-    const regex = /\/-\/blob\/([a-f0-9]+|master)\/(.*)/;
+    const regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
+    console.debug('regex: ' + regex);
     const match = window.location.href.match(regex);
     console.debug('match: ', match);
     if (!match || match.length < 3) {
-        console.warn('cannot get master commit id and bpmn file path from url', window.location.href);
+        console.warn('cannot get branch commit id and bpmn file path from url', window.location.href);
         return;
     }
-    const masterCommitId = match[1];
+    const branchCommitId = match[1];
     const filePath = match[2];
     const fileName = getFileNameFromPath(filePath);
 
-    console.debug('masterCommitId: ' + masterCommitId);
+    console.debug('branchCommitId: ' + branchCommitId);
     console.debug('filePath: ' + filePath);
     console.debug('fileName: ' + fileName);
 
@@ -412,7 +423,7 @@ async function addShowMasterButton(fileType, projectUrl) {
     const params = {
         projectUrl: projectUrl,
         mrCommitId: null,
-        masterCommitId: masterCommitId,
+        branchCommitId: branchCommitId,
         filePath: filePath,
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
@@ -422,7 +433,7 @@ async function addShowMasterButton(fileType, projectUrl) {
 
     addButtonToPage(
         buttonName,
-        SHOW_MASTER_BTN_PARENT_CONTAINER_SELECTOR,
+        SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR,
         false,
         () => openDiffer(params, msgId)
     );
@@ -441,29 +452,28 @@ async function start(event) {
     }
     removeElement(BUTTON_ID);
 
-    const projectUrl = getProjectUrl();
-    if (projectUrl == null) {
-        console.error('cannot get project url');
+    const projectUrlDone = readProjectUrlAndName();
+    if (!projectUrlDone) {
         return;
     }
 
     const diffsTabActive = await isDiffsTabActive();
     if (diffsTabActive) {
         console.debug('diffs tab is active');
-        await addShowDiffButton(projectUrl);
+        await addShowDiffButton();
         return;
     }
     console.debug('diffs tab is not active');
 
-    const masterBpmnOrDmnShowingFileType = await getMasterBpmnOrDmnShowingFileType();
-    if (masterBpmnOrDmnShowingFileType === BPMN_FILE_TYPE) {
-        await addShowMasterButton(BPMN_FILE_TYPE, projectUrl);
+    const branchBpmnOrDmnShowingFileType = await getBranchBpmnOrDmnShowingFileType();
+    if (branchBpmnOrDmnShowingFileType === BPMN_FILE_TYPE) {
+        await addShowBranchButton(BPMN_FILE_TYPE);
         return;
-    } else if (masterBpmnOrDmnShowingFileType === DMN_FILE_TYPE) {
-        await addShowMasterButton(DMN_FILE_TYPE, projectUrl);
+    } else if (branchBpmnOrDmnShowingFileType === DMN_FILE_TYPE) {
+        await addShowBranchButton(DMN_FILE_TYPE);
         return;
     } else {
-        console.debug('master bpmn or dmn file is not showing');
+        console.debug('branch bpmn or dmn file is not showing');
     }
 }
 
