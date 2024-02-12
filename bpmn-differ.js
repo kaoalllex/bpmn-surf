@@ -38,6 +38,7 @@ let bpmnJSElementRegistry = null;
 let bpmnJSModeling = null;
 let bpmnJSSelection = null;
 let bpmnJSEventBus = null;
+let bpmnJSOverlays = null;
 
 let canvasElem = null;
 let canvasMousePosition = null;
@@ -982,36 +983,75 @@ async function onSelectedElementChanged(elemId) {
     }
     highlightDiffPropGroup();
     showConditionExpression();
-    // test();
+    // addCallActivityOverlay();
 }
 
-function test() {
+let currentOverlayId = null;
+
+function addCallActivityOverlay() {
+    if (currentOverlayId) {
+        bpmnJSOverlays.remove(currentOverlayId);
+        currentOverlayId = null;
+    }
+
     const elem = bpmnJSElementRegistry.get(selectedElementId);
-    if (elem.type !== 'bpmn:ServiceTask') {
+    if (elem.type !== 'bpmn:CallActivity') {
         return;
     }
-    try {
-        const svg = bpmnJSCanvas.getGraphics(elem);
-        const visual = svg.firstElementChild;
-        // const rect = svg.firstElementChild.firstElementChild;
-        // console.log('rect', rect);
+    const processId = getCallActivityProcessId(elem);
+    if (!processId) {
+        return;
+    }
 
-        const pathElems = visual.querySelectorAll('path');
-        pathElems.forEach(function (elem) {
-            elem.style.stroke = '#2222ff';
-            elem.style.strokeWidth = '2';
-            elem.style.pointerEvents = 'auto';
-            elem.style.cursor = 'pointer';
-            elem.addEventListener('click', handleClick);
-        });
+    currentOverlayId = bpmnJSOverlays.add(selectedElementId, 'note', {
+        position: {
+            bottom: 0,
+            right: 0
+        },
+        html: '<div class="dive-in-call-activity">Dive in</div>'
+    });
 
-    } catch (error) {
-        console.log('error', error);
+    const overlayElem = document.querySelector(`.djs-overlay.djs-overlay-note[data-overlay-id="${currentOverlayId}"]`);
+    if (overlayElem) {
+        overlayElem.addEventListener('click', (event) => openProcessBpmn(processId));
+    } else {
+        console.warn('cannot find overlay element by id: ' + currentOverlayId);
     }
 }
 
-function handleClick() {
-    console.info('?????');
+function getCallActivityProcessId(callActivityElement) {
+    try {
+        return callActivityElement.businessObject.calledElement;
+    } catch (error) {
+        console.warn('cannot get calledElement for call activity element', error);
+        return null;
+    }
+}
+
+function openProcessBpmn(processId) {
+    console.info('openProcessBpmn: ' + processId);
+    // TODO: how to find bpmn-file by processId?
+    //  file may has different name not equals to processId...
+    //      how many bpmn-files have a name different from the processId?
+    //  file may be in another folder...
+
+    // как можно обойти все дерево файлов проекта:
+    // 1) найти ИД проекта (для SE - это Project ID: 9169)
+    // - выполнить запрос https://gitlab.example.com/api/v4/projects/?search=example-service&simple=true
+    // - в полученном списке выбрать тот, у которого 
+    //  "path_with_namespace": "example-group/example-service"
+    //      где "example-group/example-service" взять из текущего урла проекта
+    //  тк могут быть клоны нашего проекта
+    // ! ну или искать ИД на странице
+    //  
+    // 2) рекурсивно выполнять запрос:
+    // - сначала файлы в корне: https://gitlab.example.com/api/v4/projects/9169/repository/tree?&per_page=100&path=configMap
+    // - среди них выбираем только те, у которых type=tree
+    // - для каждого такого выполняем запрос (например, path=configMap):
+    //  https://gitlab.example.com/api/v4/projects/9169/repository/tree?&per_page=100&path=configMap
+    // - если внутри тоже есть папки (tree), то продолжаем углубляться:
+    //  https://gitlab.example.com/api/v4/projects/9169/repository/tree?recursive=false&per_page=100&path=configMap/features
+    // - просто файлы будут иметь type=blob
 }
 
 function showConditionExpression() {
@@ -1318,6 +1358,7 @@ async function showBpmnDiff(params) {
     bpmnJSModeling = bpmnJS.get('modeling');
     bpmnJSSelection = bpmnJS.get('selection');
     bpmnJSEventBus = bpmnJS.get('eventBus');
+    bpmnJSOverlays = bpmnJS.get('overlays');
 
     bpmnJSEventBus.on('selection.changed', function (event) {
         if (event.newSelection.length !== 1) {

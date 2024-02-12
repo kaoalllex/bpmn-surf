@@ -31,7 +31,18 @@
 }
 
 /* dmn styles */
-
 .dmn-decision-table-container .cell {
     font-size: 14px;
+}
+
+
+/* others */
+.dive-in-call-activity {
+    padding: 3px 6px 2px;
+    border: 1px solid hsl(225, 10%, 75%);
+    border-radius: 2px;
+    background-color: hsl(225, 10%, 97%);
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
 }
