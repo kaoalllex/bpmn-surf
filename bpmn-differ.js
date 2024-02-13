@@ -19,6 +19,7 @@ const WHEEL_DELTA_VIEWPORT_ZOOM = 0.03;
 
 let projectUrl = null;
 let mrCommitId = null;
+let localFileContent = null;
 let branchCommitId = null;
 let filePath = null;
 let fileName = null;
@@ -182,8 +183,8 @@ function createHeader(parentElem) {
     cellBranchButton.style.minWidth = '70px';
     row.appendChild(cellBranchButton);
 
-    // show the switch branch button only if MR hash is defined
-    if (mrCommitId) {
+    // show the switch branch button only if MR or Local file is defined
+    if (mrCommitId || localFileContent) {
         const switchButton = document.createElement('button');
         switchButton.style.width = '90px';
         switchButton.textContent = 'Switch';
@@ -569,9 +570,10 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     // properties to be ignored
     // because there is no property group to highlight
     ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP],
+    ['bpmn:multiInstanceLoopCharacteristics/isSequential', IGNORED_DIFF_PROPERTY_GROUP],
 
     // TODO: select the title of the properties panel
-    ['bpmn:startEvent/isInterrupting', IGNORED_DIFF_PROPERTY_GROUP],
+    ['bpmn:startEvent/isInterrupting', IGNORED_DIFF_PROPERTY_GROUP]
 ]);
 
 function findDiffPropertyGroup(diff) {
@@ -1316,6 +1318,14 @@ async function setPropertiesPanelContainerMaxHeight() {
 function initBpmnDiff(params) {
     projectUrl = requireDefined(params.projectUrl, 'projectUrl');
     mrCommitId = params.mrCommitId; // may be undefined when showing schema from branch only
+    localFileContent = params.localFileContent;
+    if (mrCommitId && localFileContent) {
+        console.error('Only one of these parameters must be defined: mrCommitId or localFileContent');
+        return;
+    }
+    if (localFileContent) {
+        mrBranchName = 'local';
+    }
     branchCommitId = requireDefined(params.branchCommitId, 'branchCommitId');
     targetBranchName = branchCommitId;
     filePath = requireDefined(params.filePath, 'filePath');
@@ -1374,12 +1384,15 @@ async function showBpmnDiff(params) {
     branchBpmnXml = null;
     branchBpmnXml = await loadBpmnXml(branchCommitId);
 
-    console.debug('loading mr bpmn xml...');
     mrBpmnXml = null;
     if (mrCommitId) {
+        console.debug('loading mr bpmn xml...');
         mrBpmnXml = await loadBpmnXml(mrCommitId);
+    } else if (localFileContent) {
+        console.debug('using local file context as mr');
+        mrBpmnXml = localFileContent;
     } else {
-        console.debug('mr commit id is undefined');
+        console.debug('mr commit id or localFileContent is undefined');
     }
 
     if (mrBpmnXml) {

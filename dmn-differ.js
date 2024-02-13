@@ -119,8 +119,8 @@ function createDmnHeader(parentElem) {
     cellBranchButton.style.minWidth = '70px';
     row.appendChild(cellBranchButton);
 
-    // show the switch branch button only if MR hash is defined
-    if (mrCommitId) {
+    // show the switch branch button only if MR or Local file is defined
+    if (mrCommitId || localFileContent) {
         const switchButton = document.createElement('button');
         switchButton.style.width = '90px';
         switchButton.textContent = 'Switch';
@@ -285,6 +285,14 @@ function isFullyVisible() {
 function initDmnDiff(params) {
     projectUrl = requireDefined(params.projectUrl, 'projectUrl');
     mrCommitId = params.mrCommitId; // may be undefined when showing schema from branch only
+    localFileContent = params.localFileContent;
+    if (mrCommitId && localFileContent) {
+        console.error('Only one of these parameters must be defined: mrCommitId or localFileContent');
+        return;
+    }
+    if (localFileContent) {
+        mrBranchName = 'local';
+    }
     branchCommitId = requireDefined(params.branchCommitId, 'branchCommitId');
     targetBranchName = branchCommitId;
     filePath = requireDefined(params.filePath, 'filePath');
@@ -311,10 +319,13 @@ async function showDmnDiff(params) {
     branchDmnXml = null;
     branchDmnXml = await loadDmnXml(branchCommitId);
 
-    console.debug('loading mr dmn xml...');
     mrDmnXml = null;
     if (mrCommitId) {
+        console.debug('loading mr dmn xml...');
         mrDmnXml = await loadDmnXml(mrCommitId);
+    } else if (localFileContent) {
+        console.debug('using local file context as mr');
+        mrDmnXml = localFileContent;
     } else {
         console.debug('mr commit id is undefined');
     }

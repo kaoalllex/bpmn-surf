@@ -113,20 +113,44 @@ function findDiffHeadSha() {
     }
 }
 
-function addButtonToPage(buttonText, parentContainerSelector, appendAtTheEnd, onButtonClickFunc) {
+function addButtonToPage(
+    fileType,
+    buttonText,
+    parentContainerSelector,
+    appendAtTheEnd,
+    onButtonClickFunc,
+    needToSelectLocalFile
+) {
     // removing the button again because sometimes two buttons appear
     removeElement(BUTTON_ID);
+
+    const buttonContainer = document.createElement('div');
+    buttonContainer.id = BUTTON_ID
+    buttonContainer.className = 'gl-display-flex';
 
     const button = document.createElement('button');
     button.id = BUTTON_ID + '-btn';
     button.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     button.textContent = buttonText;
     button.addEventListener('mouseup', onButtonClickFunc);
-
-    const buttonContainer = document.createElement('div');
-    buttonContainer.id = BUTTON_ID
-    buttonContainer.className = 'gl-display-flex';
     buttonContainer.appendChild(button);
+
+    if (needToSelectLocalFile) {
+        const fileInput = document.createElement('input');
+        fileInput.id = BUTTON_ID + '-input';
+        fileInput.type = 'file';
+        fileInput.accept = fileType === BPMN_FILE_TYPE ? '.bpmn' : '.dmn';
+        fileInput.style.display = 'none';
+        fileInput.addEventListener('change', (event) => localFileSelected(event, onButtonClickFunc));
+        buttonContainer.appendChild(fileInput);
+
+        const button2 = document.createElement('button');
+        button2.id = BUTTON_ID + '-btn2';
+        button2.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+        button2.textContent = 'Show diff with local';
+        button2.addEventListener('mouseup', () => { fileInput.click(); });
+        buttonContainer.appendChild(button2);
+    }
 
     const parentContainer = document.querySelector(parentContainerSelector);
     if (!parentContainer) {
@@ -138,6 +162,33 @@ function addButtonToPage(buttonText, parentContainerSelector, appendAtTheEnd, on
     } else {
         parentContainer.prepend(buttonContainer);
     }
+}
+
+function localFileSelected(event, onButtonClickFunc) {
+    const file = event.target.files[0];
+    if (!file) {
+        console.error('Cannot select local file');
+        return;
+    }
+    console.debug('Selected local file: ' + file.name);
+
+    // reset input-element value to catch change-event next time
+    // even if the same value will selected
+    event.target.value = '';
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const content = e.target.result;
+        console.debug('Selected local file has been read');
+        const extParams = {
+            localFileContent: content
+        };
+        onButtonClickFunc(extParams);
+    };
+    reader.onerror = function (e) {
+        console.error('Error while reading local file ' + file.name, e.target.error);
+    };
+    reader.readAsText(file);
 }
 
 async function addStylesheet(fileName, doc) {
@@ -205,7 +256,7 @@ function getTitle(fileName) {
     return fileName.replace(/(.{31})/g, "$1 ");
 }
 
-async function openDiffer(params, msgId) {
+async function openDiffer(params, extParams, msgId) {
     console.debug('opening differ...');
     const newWindow = window.open('about:blank');
     console.debug('setting title...');
@@ -213,11 +264,15 @@ async function openDiffer(params, msgId) {
     console.debug('loading scripts...');
     await loadScripts(newWindow.document);
     console.debug('loading scripts...done');
+
+    if (extParams) {
+        params = { ...params, ...extParams };
+    }
     const msg = {
         id: msgId,
         params: params
     }
-    console.debug('sending message', msg);
+    console.debug('sending message...');
     newWindow.postMessage(msg, '*');
     console.debug('opening differ...done');
 }
@@ -285,10 +340,12 @@ async function addShowDiffButton() {
     const msgId = fileType === BPMN_FILE_TYPE ? MSG_BPMN_ID : MSG_DMN_ID;
 
     addButtonToPage(
+        fileType,
         buttonName,
         SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR,
         true,
-        () => openDiffer(params, msgId)
+        () => openDiffer(params, null, msgId),
+        false
     );
 }
 
@@ -403,9 +460,8 @@ async function addShowBranchButton(fileType) {
     console.debug(`adding show branch ${fileType} button...`);
 
     const regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
-    console.debug('regex: ' + regex);
     const match = window.location.href.match(regex);
-    console.debug('match: ', match);
+    // console.debug('match: ', match);
     if (!match || match.length < 3) {
         console.warn('cannot get branch commit id and bpmn file path from url', window.location.href);
         return;
@@ -432,10 +488,12 @@ async function addShowBranchButton(fileType) {
     const msgId = fileType === BPMN_FILE_TYPE ? MSG_BPMN_ID : MSG_DMN_ID;
 
     addButtonToPage(
+        fileType,
         buttonName,
         SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR,
         false,
-        () => openDiffer(params, msgId)
+        (extParams) => openDiffer(params, extParams, msgId),
+        true
     );
 }
 
