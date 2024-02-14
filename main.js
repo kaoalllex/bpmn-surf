@@ -320,9 +320,9 @@ async function addShowDiffButton() {
         return;
     }
 
-    const masterCommitId = await getMasterCommitId(mrCommitId);
-    if (!masterCommitId) {
-        console.info('master commit id not found!');
+    const targetCommitId = await getTargetCommitId(mrCommitId);
+    if (!targetCommitId) {
+        console.info('target commit id not found!');
         // go on: will use lastest master commit in differ
     }
 
@@ -331,7 +331,7 @@ async function addShowDiffButton() {
     const params = {
         projectUrl: projectUrl,
         mrCommitId: mrCommitId,
-        branchCommitId: masterCommitId,
+        branchCommitId: targetCommitId,
         filePath: filePath,
         fileName: fileName,
         camundaBpmnModdle: camundaBpmnModdle
@@ -349,17 +349,17 @@ async function addShowDiffButton() {
     );
 }
 
-async function getMasterCommitId(mrCommitId) {
-    console.debug('getting master commit id...');
+async function getTargetCommitId(mrCommitId) {
+    console.debug('getting target commit id...');
 
+    // TODO: need to analize not master commits but commits from MR target branch
     await loadMasterCommitInfo();
+
     const mrCommitEntryIndex = findMasterCommitEntryById(mrCommitId);
     if (mrCommitEntryIndex === -1) {
         console.debug('MR is not merged');
-        // TODO: get target branch commit id for MR
-        return DEFAULT_BRANCH_COMMIT_ID;
+        return getMrTargetBranchName(mrCommitId);;
     }
-
     console.debug('MR is already merged!');
 
     const masterCommitEntryIndex = mrCommitEntryIndex + 1;
@@ -375,6 +375,40 @@ async function getMasterCommitId(mrCommitId) {
     console.debug('master commit id: ' + masterCommitId);
 
     return masterCommitId;
+}
+
+function getMrTargetBranchName(mrCommitId) {
+    const pageDescrElem = document.querySelector('div.detail-page-description');
+    if (!pageDescrElem) {
+        console.warn('Cannot get MR detail page description element');
+        return null;
+    }
+
+    const branchName = findLastAElemText(pageDescrElem);
+    console.debug('target branch name: ' + branchName);
+    return branchName;
+}
+
+function findLastAElemText(pageDescrElem) {
+    // assume that the page description element has the structure:
+    // <div>
+    //     <span>...</span>
+    //     <a >...</a> requested to merge <a >...</a>
+    //     <button>...</button> into <a>...</a>
+    //     <time >...</time>
+    // </div>
+    // and try to find <a> which comes immediately after the text "into"
+    let getNext = false;
+    for (node of pageDescrElem.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('into')) {
+            getNext = true;
+            continue;
+        }
+        if (getNext && node.tagName === 'A') {
+            return node.textContent;
+        }
+    }
+    return null;
 }
 
 async function loadMasterCommitInfo() {
@@ -439,7 +473,7 @@ async function getMrLastCommitId() {
     // but now the current href is <projectUrl>/-/merge_requests/<MR number>/diffs[#hash]
     const href = window.location.href;
     const getMrCommitInfoUrl = href.substring(0, href.indexOf('/diffs')) + '/commits.json';
-    // console.debug('mr commit info url: ' + getMrCommitInfoUrl);
+    console.debug('mr commit info url: ' + getMrCommitInfoUrl);
 
     const mrCommitInfo = await loadFileContent(getMrCommitInfoUrl, true);
 
