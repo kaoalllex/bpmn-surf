@@ -3,8 +3,6 @@ const BUTTON_ID = 'btn_77844bf3d4e842caa0d88194431197c0';
 const MSG_BPMN_ID = 'msg_bpmn_71e23e639965407fb9c87f100a56c898';
 const MSG_DMN_ID = 'msg_dmn_71e23e639965407fb9c87f100a56c898';
 
-const DEFAULT_BRANCH_COMMIT_ID = 'master';
-
 const SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
 const SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
 
@@ -181,7 +179,8 @@ function localFileSelected(event, onButtonClickFunc) {
         const content = e.target.result;
         console.debug('Selected local file has been read');
         const extParams = {
-            localFileContent: content
+            localFileContent: content,
+            mrBranchName: 'local file',
         };
         onButtonClickFunc(extParams);
     };
@@ -320,7 +319,10 @@ async function addShowDiffButton() {
         return;
     }
 
-    const targetCommitId = await getTargetCommitId(mrCommitId);
+    const mrBranchNames = getMrSourceAndTargetBranchName();
+    console.debug('mr branch names', mrBranchNames);
+
+    const targetCommitId = await getTargetCommitId(mrCommitId, mrBranchNames.targetBranchName);
     if (!targetCommitId) {
         console.info('target commit id not found!');
         // go on: will use lastest master commit in differ
@@ -331,6 +333,7 @@ async function addShowDiffButton() {
     const params = {
         projectUrl: projectUrl,
         mrCommitId: mrCommitId,
+        mrBranchName: mrBranchNames.sourceBranchName,
         branchCommitId: targetCommitId,
         filePath: filePath,
         fileName: fileName,
@@ -349,7 +352,7 @@ async function addShowDiffButton() {
     );
 }
 
-async function getTargetCommitId(mrCommitId) {
+async function getTargetCommitId(mrCommitId, mrTargetBranchName) {
     console.debug('getting target commit id...');
 
     // TODO: need to analize not master commits but commits from MR target branch
@@ -358,7 +361,7 @@ async function getTargetCommitId(mrCommitId) {
     const mrCommitEntryIndex = findMasterCommitEntryById(mrCommitId);
     if (mrCommitEntryIndex === -1) {
         console.debug('MR is not merged');
-        return getMrTargetBranchName(mrCommitId);;
+        return mrTargetBranchName;
     }
     console.debug('MR is already merged!');
 
@@ -377,19 +380,13 @@ async function getTargetCommitId(mrCommitId) {
     return masterCommitId;
 }
 
-function getMrTargetBranchName(mrCommitId) {
+function getMrSourceAndTargetBranchName() {
     const pageDescrElem = document.querySelector('div.detail-page-description');
     if (!pageDescrElem) {
         console.warn('Cannot get MR detail page description element');
         return null;
     }
 
-    const branchName = findLastAElemText(pageDescrElem);
-    console.debug('target branch name: ' + branchName);
-    return branchName;
-}
-
-function findLastAElemText(pageDescrElem) {
     // assume that the page description element has the structure:
     // <div>
     //     <span>...</span>
@@ -397,18 +394,28 @@ function findLastAElemText(pageDescrElem) {
     //     <button>...</button> into <a>...</a>
     //     <time >...</time>
     // </div>
-    // and try to find <a> which comes immediately after the text "into"
-    let getNext = false;
+    // and try to find <a> which comes immediately before and after the text "into"
+    let srcBranchName = null;
+    let trgBranchName = null;
+    let isNextATargetBranchName = false;
     for (node of pageDescrElem.childNodes) {
         if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('into')) {
-            getNext = true;
+            isNextATargetBranchName = true;
             continue;
         }
-        if (getNext && node.tagName === 'A') {
-            return node.textContent;
+        if (node.tagName === 'A') {
+            if (isNextATargetBranchName) {
+                trgBranchName = node.textContent;
+                break;
+            } else {
+                srcBranchName = node.textContent;
+            }
         }
     }
-    return null;
+    return {
+        sourceBranchName: srcBranchName,
+        targetBranchName: trgBranchName
+    };
 }
 
 async function loadMasterCommitInfo() {
@@ -513,6 +520,7 @@ async function addShowBranchButton(fileType) {
     const params = {
         projectUrl: projectUrl,
         mrCommitId: null,
+        mrBranchName: null,
         branchCommitId: branchCommitId,
         filePath: filePath,
         fileName: fileName,

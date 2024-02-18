@@ -302,9 +302,7 @@ function initDmnDiff(params) {
         console.error('Only one of these parameters must be defined: mrCommitId or localFileContent');
         return;
     }
-    if (localFileContent) {
-        mrBranchName = 'local';
-    }
+    mrBranchName = params.mrBranchName;
     branchCommitId = requireDefined(params.branchCommitId, 'branchCommitId');
     targetBranchName = branchCommitId;
     filePath = requireDefined(params.filePath, 'filePath');
