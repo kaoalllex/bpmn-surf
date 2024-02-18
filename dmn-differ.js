@@ -134,32 +134,30 @@ function createDmnHeader(parentElem) {
     cellBranchButton.style.textAlign = 'right';
     row2.appendChild(cellBranchButton);
 
-    // show the switch branch button only if MR or Local file is defined
-    if (mrCommitId || localFileContent) {
-        const switchButton = document.createElement('button');
-        switchButton.style.width = '120px';
-        switchButton.textContent = 'Switch branch';
-        switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        switchButton.style.margin = '3px';
-        switchButton.addEventListener('click', (event) => {
-            if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
-                if (mrDmnXml) {
-                    showDmnMr();
-                } else {
-                    // may be this file was removed
-                    alertFileNotExistInBranch(mrBranchName);
-                }
-            } else { // current MR - try to switch to Branch
-                if (branchDmnXml) {
-                    showDmnBranch();
-                } else {
-                    // may be this file is new
-                    alertFileNotExistInBranch(targetBranchName);
-                }
+    const switchButton = document.createElement('button');
+    switchButton.disabled = !isMrBranchDefined();
+    switchButton.style.width = '120px';
+    switchButton.textContent = 'Switch branch';
+    switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    switchButton.style.margin = '3px';
+    switchButton.addEventListener('click', (event) => {
+        if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
+            if (mrDmnXml) {
+                showDmnMr();
+            } else {
+                // may be this file was removed
+                alertFileNotExistInBranch(mrBranchName);
             }
-        });
-        cellBranchButton.appendChild(switchButton);
-    }
+        } else { // current MR - try to switch to Branch
+            if (branchDmnXml) {
+                showDmnBranch();
+            } else {
+                // may be this file is new
+                alertFileNotExistInBranch(targetBranchName);
+            }
+        }
+    });
+    cellBranchButton.appendChild(switchButton);
 
     // View
     const cellView = document.createElement('td');
@@ -197,15 +195,15 @@ function createDmnHeader(parentElem) {
     });
     cellView.appendChild(fitButton);
 
-    const fullyVisibleButton = document.createElement('button');
-    fullyVisibleButton.style.width = '120px';
-    fullyVisibleButton.textContent = 'Show full';
-    fullyVisibleButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    fullyVisibleButton.style.margin = '3px';
-    fullyVisibleButton.addEventListener('click', (event) => {
+    const showFullButton = document.createElement('button');
+    showFullButton.style.width = '120px';
+    showFullButton.textContent = 'Show full';
+    showFullButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    showFullButton.style.margin = '3px';
+    showFullButton.addEventListener('click', (event) => {
         setDmnViewportFullyVisible();
     });
-    cellView.appendChild(fullyVisibleButton);
+    cellView.appendChild(showFullButton);
 
     // close button
     const cellCloseButton = document.createElement('td');

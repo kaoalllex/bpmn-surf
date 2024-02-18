@@ -198,32 +198,30 @@ function createHeader(parentElem) {
     cellBranchButton.style.textAlign = 'right';
     row2.appendChild(cellBranchButton);
 
-    // show the switch branch button only if MR or Local file is defined
-    if (mrCommitId || localFileContent) {
-        const switchButton = document.createElement('button');
-        switchButton.style.width = '120px';
-        switchButton.textContent = 'Switch branch';
-        switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        switchButton.style.margin = '3px';
-        switchButton.addEventListener('click', (event) => {
-            if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
-                if (mrBpmnXml) {
-                    showBpmnMr();
-                } else {
-                    // may be this file was removed
-                    alertFileNotExistInBranch(mrBranchName);
-                }
-            } else { // current MR - try to switch to Branch
-                if (branchBpmnXml) {
-                    showBpmnBranch();
-                } else {
-                    // may be this file is new
-                    alertFileNotExistInBranch(targetBranchName);
-                }
+    const switchButton = document.createElement('button');
+    switchButton.disabled = !isMrBranchDefined();
+    switchButton.style.width = '120px';
+    switchButton.textContent = 'Switch branch';
+    switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    switchButton.style.margin = '3px';
+    switchButton.addEventListener('click', (event) => {
+        if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
+            if (mrBpmnXml) {
+                showBpmnMr();
+            } else {
+                // may be this file was removed
+                alertFileNotExistInBranch(mrBranchName);
             }
-        });
-        cellBranchButton.appendChild(switchButton);
-    }
+        } else { // current MR - try to switch to Branch
+            if (branchBpmnXml) {
+                showBpmnBranch();
+            } else {
+                // may be this file is new
+                alertFileNotExistInBranch(targetBranchName);
+            }
+        }
+    });
+    cellBranchButton.appendChild(switchButton);
 
     // View
     const cellView = document.createElement('td');
@@ -262,6 +260,7 @@ function createHeader(parentElem) {
     cellView.appendChild(fitButton);
 
     const highlightButton = document.createElement('button');
+    highlightButton.disabled = !isMrBranchDefined();
     highlightButton.style.width = '120px';
     highlightButton.textContent = 'Highlight On';
     highlightButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
@@ -319,6 +318,10 @@ function createHeader(parentElem) {
         fitViewport(true);
     });
     cellHideShowPropsButton.appendChild(hideShowPropsButton);
+}
+
+function isMrBranchDefined() {
+    return mrCommitId || localFileContent;
 }
 
 function setBranchName(branchName) {
