@@ -130,23 +130,32 @@ function createHeader(parentElem) {
     table.style.width = '100%';
     parentElem.appendChild(table);
 
-    const row = document.createElement('tr');
-    table.appendChild(row);
+    const row1 = document.createElement('tr');
+    table.appendChild(row1);
+    const row2 = document.createElement('tr');
+    table.appendChild(row2);
+
+    // file label
+    const cellFileLabel = document.createElement('td');
+    cellFileLabel.style.minWidth = '60px';
+    cellFileLabel.style.height = '32px';
+    cellFileLabel.appendChild(document.createTextNode('File:'));
+    row1.appendChild(cellFileLabel);
 
     // file name
     const cellFileName = document.createElement('td');
-    row.appendChild(cellFileName);
+    row1.appendChild(cellFileName);
 
     const fileNameSpan = document.createElement('span');
-    fileNameSpan.style.fontSize = '18px';
-    fileNameSpan.style.fontWeight = 'bold';
     fileNameSpan.appendChild(document.createTextNode(fileName));
+    fileNameSpan.style.fontSize = '20px';
+    fileNameSpan.style.fontWeight = 'bold';
     cellFileName.appendChild(fileNameSpan);
 
     // download file button
     const cellDownloadButton = document.createElement('td');
     cellDownloadButton.style.width = '100%';
-    row.appendChild(cellDownloadButton);
+    row1.appendChild(cellDownloadButton);
 
     const downloadButton = document.createElement('button');
     downloadButton.style.width = '90px';
@@ -162,10 +171,17 @@ function createHeader(parentElem) {
     });
     cellDownloadButton.appendChild(downloadButton);
 
+    // branch label
+    const cellBranchLabel = document.createElement('td');
+    cellBranchLabel.style.height = '32px';
+    cellBranchLabel.appendChild(document.createTextNode('Branch:'));
+    row2.appendChild(cellBranchLabel);
+
     // branch name
     const cellBranchName = document.createElement('td');
-    cellBranchName.style.minWidth = '300px';
-    row.appendChild(cellBranchName);
+    cellBranchName.style.width = '100%';
+    cellBranchName.setAttribute("colspan", "2");
+    row2.appendChild(cellBranchName);
 
     branchNameTextElement = document.createTextNode('');
     branchNameSpanElement = document.createElement('span');
@@ -174,20 +190,19 @@ function createHeader(parentElem) {
     branchNameSpanElement.style.color = MR_BRANCH_COLOR;
     branchNameSpanElement.style.whiteSpace = 'nowrap';
     branchNameSpanElement.appendChild(branchNameTextElement);
-
-    cellBranchName.appendChild(document.createTextNode('Branch: '));
     cellBranchName.appendChild(branchNameSpanElement);
 
     // switch branch button
     const cellBranchButton = document.createElement('td');
     cellBranchButton.style.minWidth = '70px';
-    row.appendChild(cellBranchButton);
+    cellBranchButton.style.textAlign = 'right';
+    row2.appendChild(cellBranchButton);
 
     // show the switch branch button only if MR or Local file is defined
     if (mrCommitId || localFileContent) {
         const switchButton = document.createElement('button');
-        switchButton.style.width = '90px';
-        switchButton.textContent = 'Switch';
+        switchButton.style.width = '120px';
+        switchButton.textContent = 'Switch branch';
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
         switchButton.style.margin = '3px';
         switchButton.addEventListener('click', (event) => {
@@ -212,21 +227,9 @@ function createHeader(parentElem) {
 
     // View
     const cellView = document.createElement('td');
-    cellView.style.minWidth = '450px';
+    cellView.style.whiteSpace = 'nowrap';
     cellView.style.textAlign = "right";
-    row.appendChild(cellView);
-
-    cellView.appendChild(document.createTextNode('View: '));
-
-    const fitButton = document.createElement('button');
-    fitButton.style.width = '80px';
-    fitButton.textContent = 'Fit';
-    fitButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-    fitButton.style.margin = '3px';
-    fitButton.addEventListener('click', (event) => {
-        fitViewport(true);
-    });
-    cellView.appendChild(fitButton);
+    row1.appendChild(cellView);
 
     const zoomInButton = document.createElement('button');
     zoomInButton.style.width = '90px';
@@ -248,8 +251,18 @@ function createHeader(parentElem) {
     });
     cellView.appendChild(zoomOutButton);
 
+    const fitButton = document.createElement('button');
+    fitButton.style.width = '90px';
+    fitButton.textContent = 'Fit view';
+    fitButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    fitButton.style.margin = '3px';
+    fitButton.addEventListener('click', (event) => {
+        fitViewport(true);
+    });
+    cellView.appendChild(fitButton);
+
     const highlightButton = document.createElement('button');
-    highlightButton.style.width = '110px';
+    highlightButton.style.width = '120px';
     highlightButton.textContent = 'Highlight On';
     highlightButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     highlightButton.style.margin = '3px';
@@ -265,11 +278,26 @@ function createHeader(parentElem) {
     });
     cellView.appendChild(highlightButton);
 
+    // close button
+    const cellCloseButton = document.createElement('td');
+    cellCloseButton.style.textAlign = 'right';
+    row1.appendChild(cellCloseButton);
+
+    const closeButton = document.createElement('button');
+    closeButton.style.width = '90px';
+    closeButton.textContent = 'Close';
+    closeButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    closeButton.style.margin = '3px';
+    closeButton.addEventListener('click', (event) => {
+        window.close();
+    });
+    cellCloseButton.appendChild(closeButton);
+
     // hide/show props button
     const cellHideShowPropsButton = document.createElement('td');
     cellHideShowPropsButton.style.minWidth = '300px';
     cellHideShowPropsButton.style.textAlign = 'right';
-    row.appendChild(cellHideShowPropsButton);
+    row2.appendChild(cellHideShowPropsButton);
 
     const hideShowPropsButton = document.createElement('button');
     hideShowPropsButton.textContent = 'Hide properties';
