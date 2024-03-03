@@ -354,7 +354,7 @@ async function showDmnDiff(params) {
 
 async function loadDmnXml(commitId) {
     const fileUrl = `${projectUrl}/-/raw/${commitId}/${filePath}`;
-    console.debug('loading dmn xml from: ' + fileUrl);
+    // console.debug('loading dmn xml from: ' + fileUrl);
     return await loadFileContent(fileUrl, false);
 }
 

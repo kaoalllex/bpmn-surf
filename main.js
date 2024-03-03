@@ -12,13 +12,19 @@ const DMN_FILE_EXT = '.dmn';
 const BPMN_FILE_TYPE = 'bpmn';
 const DMN_FILE_TYPE = 'dmn';
 
+const INDEX_NOT_FOUND = -1;
+
 let projectUrl = null;
 let projectName = null;
+
+let mrIid = null;
+let mrInfoUrl = null;
 
 let camundaBpmnModdle = null;
 
 let mrLastCommitId = null;
 let masterCommitEntries = null;
+let filteredByTitleMasterCommitEntries = null;
 
 
 async function isDiffsTabActive() {
@@ -55,8 +61,32 @@ function readProjectUrlAndName() {
     }
     projectName = projectUrl.substring(projectUrl.lastIndexOf('/') + 1);
 
-    console.debug(`project url: ${projectUrl}; project name: ${projectName}`);
+    // console.debug(`project url: ${projectUrl}; project name: ${projectName}`);
     return true;
+}
+
+function initMrIidAndInfoUrl() {
+    // MR info url has format:
+    //   https://<gitlab-host>/api/v4/projects/<project-group-name>%2F<project name>/merge_requests/<mr iid>
+    // Project url has format:
+    //   https://<gitlab-host>/<project-group-name>/<project name>
+    // but now the current href has format:
+    //   <projectUrl>/-/merge_requests/<MR iid>/diffs[#hash]
+
+    const beforeIidLen = projectUrl.length + '/-/merge_requests/'.length;
+    mrIid = window.location.href.substring(beforeIidLen);
+
+    let slashIndex = mrIid.indexOf('/');
+    if (slashIndex !== -1) {
+        mrIid = mrIid.substring(0, slashIndex);
+    }
+    // console.debug('mrIid: ' + mrIid);
+
+    mrInfoUrl = projectUrl.substring(0, projectUrl.length - projectName.length - 1);
+    slashIndex = mrInfoUrl.lastIndexOf('/');
+    mrInfoUrl = mrInfoUrl.substring(0, slashIndex) + '/api/v4/projects/' + mrInfoUrl.substring(slashIndex + 1) +
+        '%2F' + projectName + '/merge_requests/' + mrIid;
+    // console.debug('mrInfoUrl: ' + mrInfoUrl);
 }
 
 async function findDataPathElements() {
@@ -319,10 +349,11 @@ async function addShowDiffButton() {
         return;
     }
 
+    const mrCommitTitle = await getMrCommitTitle();
     const mrBranchNames = getMrSourceAndTargetBranchName();
     console.debug('mr branch names', mrBranchNames);
 
-    const targetCommitId = await getTargetCommitId(mrCommitId, mrBranchNames.targetBranchName);
+    const targetCommitId = await getTargetCommitId(mrCommitId, mrCommitTitle, mrBranchNames.targetBranchName);
     if (!targetCommitId) {
         console.info('target commit id not found!');
         // go on: will use lastest master commit in differ
@@ -352,32 +383,41 @@ async function addShowDiffButton() {
     );
 }
 
-async function getTargetCommitId(mrCommitId, mrTargetBranchName) {
+async function getMrCommitTitle() {
+    const content = await loadFileContent(mrInfoUrl, true);
+    const mrInfo = JSON.parse(content);
+    console.debug('mr title: ' + mrInfo.title);
+    return mrInfo.title;
+}
+
+async function getTargetCommitId(mrCommitId, mrCommitTitle, mrTargetBranchName) {
+    // getting the target commit (and its id) algorithm:
+    // 1) if MR is not merged - get the latest commit from the target branch
+    //      and it is mrTargetBranchName
+    // 2) when MR is already merged - try to find a commit that comes immediately before 
+    //      the commit that resulted from the merge of this MR
     console.debug('getting target commit id...');
 
-    // TODO: need to analize not master commits but commits from MR target branch
-    await loadMasterCommitInfo();
+    // TODO: when MR contained several commits and was merged by squashing,
+    //  findTargetBranchPreviousCommitId will fail to find targetCommitId
+    //  because mrCommitId will not be among the commits of the target branch
+    let targetCommitId = await findTargetBranchPreviousCommitId(mrCommitId);
+    if (!targetCommitId) {
+        // try to find commit id resulting as a merge MR by squashing
+        // it will be different from mrCommitId (this function parameter)
+        const actualMrCommitId = await findTargetBranchCommitIdByTitle(mrCommitTitle);
+        if (actualMrCommitId) {
+            // and try to find prev commit by by this actual mr commit id
+            targetCommitId = await findTargetBranchPreviousCommitId(actualMrCommitId);
+        }
+    }
 
-    const mrCommitEntryIndex = findMasterCommitEntryById(mrCommitId);
-    if (mrCommitEntryIndex === -1) {
-        console.debug('MR is not merged');
+    if (!targetCommitId) {
+        console.debug('MR is not merged. Target commit id is target branch name: ' + mrTargetBranchName);
         return mrTargetBranchName;
     }
-    console.debug('MR is already merged!');
-
-    const masterCommitEntryIndex = mrCommitEntryIndex + 1;
-    if (masterCommitEntryIndex >= masterCommitEntries.length) {
-        console.warn('masterCommitEntryIndex is out of range! array length: ' + masterCommitEntries.length);
-        return null;
-    }
-
-    const masterCommitEntry = masterCommitEntries[masterCommitEntryIndex];
-    const masterCommitEntryIdElemText = masterCommitEntry.querySelector('id').textContent;
-
-    const masterCommitId = masterCommitEntryIdElemText.substring(masterCommitEntryIdElemText.lastIndexOf('/') + 1);
-    console.debug('master commit id: ' + masterCommitId);
-
-    return masterCommitId;
+    console.debug('MR is already merged. Target commit id is previous before the merged MR commit: ' + targetCommitId);
+    return targetCommitId;
 }
 
 function getMrSourceAndTargetBranchName() {
@@ -418,34 +458,105 @@ function getMrSourceAndTargetBranchName() {
     };
 }
 
-async function loadMasterCommitInfo() {
+async function loadMasterCommitEntries() {
     console.debug('loading master commit entries...');
     if (masterCommitEntries) {
         console.debug('loading master commit entries...done (use cache)');
         return;
     }
 
-    const getMasterCommitInfoUrl = projectUrl + '/-/commits/master?format=atom&limit=100';
-    // console.debug('master commit info url: ' + getMasterCommitInfoUrl);
+    // TODO: this approach does not guarantee that we will load a sufficient number of commits
+    const [page1, page2, page3, page4, page5] = await Promise.all([
+        loadMasterCommitEntriesPage(1),
+        loadMasterCommitEntriesPage(2),
+        loadMasterCommitEntriesPage(3),
+        loadMasterCommitEntriesPage(4),
+        loadMasterCommitEntriesPage(5),
+    ]);
+    masterCommitEntries = [...page1, ...page2, ...page3, ...page4, ...page5];
 
-    const masterCommitInfo = await loadFileContent(getMasterCommitInfoUrl, true);
-
-    // find MR commit id among master's commits
-    const parser = new DOMParser();
-    const masterCommitInfoDoc = parser.parseFromString(masterCommitInfo, 'text/xml');
-    masterCommitEntries = Array.from(masterCommitInfoDoc.getElementsByTagName('entry'));
     console.debug('loading master commit entries...done');
 }
 
-function findMasterCommitEntryById(commitId) {
-    if (!masterCommitEntries) {
-        console.warn('master commit entries is undefined');
-        return -1;
+async function loadMasterCommitEntriesPage(pageNumber) {
+    const offset = (pageNumber - 1) * 100;
+    const url = projectUrl + '/-/commits/master?format=atom&limit=100&offset=' + offset;
+    // console.debug('url: ' + url);
+    const content = await loadFileContent(url, true);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/xml');
+    return Array.from(doc.getElementsByTagName('entry'));
+}
+
+async function loadFilteredByTitleMasterCommitEntries(commitTitle) {
+    console.debug('loading master commit entries filtered by title...');
+    if (filteredByTitleMasterCommitEntries) {
+        console.debug('loading master commit entries filtered by title...done (use cache)');
+        return;
     }
-    return masterCommitEntries.findIndex(entry => {
+
+    const url = projectUrl + '/-/commits/master?format=atom&search=' + encodeURIComponent(commitTitle);
+    // console.debug('url: ' + url);
+    const content = await loadFileContent(url, true);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/xml');
+    filteredByTitleMasterCommitEntries = Array.from(doc.getElementsByTagName('entry'));
+
+    console.debug('loading master commit entries filtered by title...done');
+}
+
+async function findTargetBranchPreviousCommitId(commitId) {
+    // TODO: now Target branch is always Master
+
+    // loads master commit entries, find entry with requested commit id, 
+    // gets next (earlier) entry and returns its id
+    console.debug('try to find target branch previous commit id for commit id: ' + commitId);
+
+    await loadMasterCommitEntries();
+
+    const index = masterCommitEntries.findIndex(entry => {
         const idElement = entry.querySelector('id');
         return idElement && idElement.textContent.includes(commitId);
     });
+    if (index == INDEX_NOT_FOUND) {
+        // console.debug('entry not found');
+        return null;
+    }
+    // console.debug('found entry index: ' + index);
+
+    const nextIndex = index + 1;
+    if (nextIndex >= masterCommitEntries.length) {
+        console.warn('next index is out of range! array length: ' + masterCommitEntries.length);
+        return null;
+    }
+
+    const entry = masterCommitEntries[nextIndex];
+    const idElemText = entry.querySelector('id').textContent;
+    const foundCommitId = idElemText.substring(idElemText.lastIndexOf('/') + 1);
+    // console.debug('found commit id: ' + foundCommitId);
+    return foundCommitId;
+}
+
+async function findTargetBranchCommitIdByTitle(commitTitle) {
+    console.debug('try to find target branch commit id by title: ' + commitTitle);
+
+    await loadFilteredByTitleMasterCommitEntries(commitTitle);
+
+    const index = filteredByTitleMasterCommitEntries.findIndex(entry => {
+        const titleElement = entry.querySelector('title');
+        return titleElement && titleElement.textContent.includes(commitTitle);
+    });
+    if (index == INDEX_NOT_FOUND) {
+        // console.debug('entry not found');
+        return null;
+    }
+    // console.debug('found entry index: ' + index);
+
+    const entry = filteredByTitleMasterCommitEntries[index];
+    const idElemText = entry.querySelector('id').textContent;
+    const foundCommitId = idElemText.substring(idElemText.lastIndexOf('/') + 1);
+    // console.debug('found commit id: ' + foundCommitId);
+    return foundCommitId;
 }
 
 /**
@@ -471,16 +582,16 @@ async function getMrLastCommitId() {
     console.debug('getting mr last commit id...');
 
     if (mrLastCommitId) {
-        console.debug('mr last commit id (from cache): ' + mrLastCommitId);
+        // console.debug('mr last commit id (from cache): ' + mrLastCommitId);
         return mrLastCommitId;
     }
 
     // get url for loading MR commits info
-    // the url format is: <projectUrl>/-/merge_requests/<MR number>/commits.json
-    // but now the current href is <projectUrl>/-/merge_requests/<MR number>/diffs[#hash]
+    // the url format is: <projectUrl>/-/merge_requests/<MR iid>/commits.json
+    // but now the current href is <projectUrl>/-/merge_requests/<MR iid>/diffs[#hash]
     const href = window.location.href;
     const getMrCommitInfoUrl = href.substring(0, href.indexOf('/diffs')) + '/commits.json';
-    console.debug('mr commit info url: ' + getMrCommitInfoUrl);
+    // console.debug('mr commit info url: ' + getMrCommitInfoUrl);
 
     const mrCommitInfo = await loadFileContent(getMrCommitInfoUrl, true);
 
@@ -493,7 +604,7 @@ async function getMrLastCommitId() {
         return null;
     }
     mrLastCommitId = match[1];
-    console.debug('mr last commit id: ' + mrLastCommitId);
+    // console.debug('mr last commit id: ' + mrLastCommitId);
     return mrLastCommitId;
 }
 
@@ -556,6 +667,8 @@ async function start(event) {
     if (!projectUrlDone) {
         return;
     }
+
+    initMrIidAndInfoUrl();
 
     const diffsTabActive = await isDiffsTabActive();
     if (diffsTabActive) {

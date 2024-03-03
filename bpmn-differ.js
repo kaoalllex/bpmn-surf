@@ -1323,7 +1323,7 @@ function resetHighlightedDiffPropGroup() {
 
 async function loadBpmnXml(commitId) {
     const fileUrl = `${projectUrl}/-/raw/${commitId}/${filePath}`;
-    console.debug('loading bpmn xml from: ' + fileUrl);
+    // console.debug('loading bpmn xml from: ' + fileUrl);
     return await loadFileContent(fileUrl, false);
 }
 
