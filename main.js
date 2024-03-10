@@ -15,7 +15,10 @@ const DMN_FILE_TYPE = 'dmn';
 const INDEX_NOT_FOUND = -1;
 
 let projectUrl = null;
+let projectHostUrl = null;
+let projectGroupName = null;
 let projectName = null;
+let projectId = null;
 
 let mrIid = null;
 let mrInfoUrl = null;
@@ -52,17 +55,61 @@ async function getBranchBpmnOrDmnShowingFileType() {
     return null;
 }
 
-function readProjectUrlAndName() {
+/**
+ * init project url, host url, name, group name and id
+ */
+async function initProjectParams() {
     const href = window.location.href;
     projectUrl = href.substring(0, href.indexOf('/-/'));
-    if (projectUrl == null) {
-        console.error('cannot get project url');
+    if (!projectUrl) {
+        // it is not error - maybe current url is root of the project page
+        console.debug('cannot get project url');
         return false;
     }
-    projectName = projectUrl.substring(projectUrl.lastIndexOf('/') + 1);
+    const parts = projectUrl.split('/');
+    if (parts.length < 3) {
+        console.error('cannot get project group name and name from url: ' + projectUrl);
+        return false;
+    }
+    projectGroupName = parts[parts.length - 2];
+    projectName = parts[parts.length - 1];
 
-    // console.debug(`project url: ${projectUrl}; project name: ${projectName}`);
+    parts.pop();
+    parts.pop();
+    projectHostUrl = parts.join('/');
+
+    projectId = await getProjectId(projectHostUrl, projectGroupName, projectName);
+    if (!projectId) {
+        console.error('cannot get project id');
+        return false;
+    }
+
+    console.debug(`project params: 
+        url: ${projectUrl}; 
+        host url: ${projectHostUrl}; 
+        group name: ${projectGroupName}; 
+        name: ${projectName}; 
+        id = ${projectId}`
+    );
     return true;
+}
+
+async function getProjectId(projectHostUrl, projectGroupName, projectName) {
+    // 1) load all projects info by name: https://<gitlab-host>/api/v4/projects/?simple=true&search=<project name>
+    // 2) find by field "path_with_namespace" == <project-group-name>/<projct name>
+    // 3) get "id" field value
+
+    const url = projectHostUrl + '/api/v4/projects/?simple=true&search=' + projectName;
+    const content = await loadFileContent(url, true);
+    const protectInfoArr = JSON.parse(content);
+
+    const pathWithNs = projectGroupName + '/' + projectName;
+    const protectInfo = protectInfoArr.find(i => i.path_with_namespace === pathWithNs);
+    if (!protectInfo) {
+        return null;
+    }
+
+    return protectInfo.id;
 }
 
 function initMrIidAndInfoUrl() {
@@ -220,57 +267,6 @@ function localFileSelected(event, onButtonClickFunc) {
     reader.readAsText(file);
 }
 
-async function addStylesheet(fileName, doc) {
-    return new Promise((resolve, reject) => {
-        const link = doc.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = chrome.runtime.getURL(fileName);
-        doc.head.appendChild(link);
-        link.onload = () => { resolve(link); };
-        link.onerror = () => { reject(new Error(`Loading failed: ${fileName}`)); };
-    });
-}
-
-async function addScript(fileName, doc) {
-    return new Promise((resolve, reject) => {
-        const script = doc.createElement('script');
-        script.src = chrome.runtime.getURL(fileName);
-        doc.head.appendChild(script);
-        script.onload = () => { resolve(script); };
-        script.onerror = () => { reject(new Error(`Loading failed: ${fileName}`)); };
-    });
-}
-
-async function loadScripts(doc) {
-    // modeler
-    await addStylesheet('libs/bpmn-js/assets/bpmn-js.css', doc);
-    await addStylesheet('libs/bpmn-js/assets/diagram-js.css', doc);
-    await addStylesheet('libs/bpmn-js/assets/bpmn-font/css/bpmn.css', doc);
-    await addScript('libs/bpmn-js/bpmn-modeler.production.min.js', doc);
-
-    await addStylesheet('libs/dmn-js/assets/diagram-js.css', doc);
-    await addStylesheet('libs/dmn-js/assets/dmn-js-decision-table-controls.css', doc);
-    await addStylesheet('libs/dmn-js/assets/dmn-js-decision-table.css', doc);
-    await addStylesheet('libs/dmn-js/assets/dmn-js-drd.css', doc);
-    await addStylesheet('libs/dmn-js/assets/dmn-js-literal-expression.css', doc);
-    await addStylesheet('libs/dmn-js/assets/dmn-js-shared.css', doc);
-    await addStylesheet('libs/dmn-js/assets/dmn-font/css/dmn.css', doc);
-
-    // TODO: when uses production.min then get error:
-    //  It looks like you're using a minified copy of the development build of Inferno...
-    await addScript('libs/dmn-js/dmn-viewer.development.js', doc);
-
-    // properties panel
-    await addStylesheet('libs/bpmn-js-properties-panel/assets/element-templates.css', doc);
-    await addStylesheet('libs/bpmn-js-properties-panel/assets/properties-panel.css', doc);
-    await addScript('libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js', doc);
-
-    await addStylesheet('styles.css', doc);
-    await addScript('utils.js', doc);
-    await addScript('bpmn-differ.js', doc);
-    await addScript('dmn-differ.js', doc);
-}
-
 async function loadCamundaBpmnModdle() {
     if (camundaBpmnModdle) {
         // skip loading if already loaded 
@@ -279,31 +275,6 @@ async function loadCamundaBpmnModdle() {
     const moddlePath = chrome.runtime.getURL('libs/camunda-bpmn-moddle/resources/camunda.json');
     const moddleContent = await loadFileContent(moddlePath, true);
     camundaBpmnModdle = JSON.parse(moddleContent);
-}
-
-function getTitle(fileName) {
-    return fileName.replace(/(.{31})/g, "$1 ");
-}
-
-async function openDiffer(params, extParams, msgId) {
-    console.debug('opening differ...');
-    const newWindow = window.open('about:blank');
-    console.debug('setting title...');
-    newWindow.document.title = getTitle(params.fileName);
-    console.debug('loading scripts...');
-    await loadScripts(newWindow.document);
-    console.debug('loading scripts...done');
-
-    if (extParams) {
-        params = { ...params, ...extParams };
-    }
-    const msg = {
-        id: msgId,
-        params: params
-    }
-    console.debug('sending message...');
-    newWindow.postMessage(msg, '*');
-    console.debug('opening differ...done');
 }
 
 async function addShowDiffButton() {
@@ -363,6 +334,8 @@ async function addShowDiffButton() {
 
     const params = {
         projectUrl: projectUrl,
+        projectHostUrl: projectHostUrl,
+        projectId: projectId,
         mrCommitId: mrCommitId,
         mrBranchName: mrBranchNames.sourceBranchName,
         branchCommitId: targetCommitId,
@@ -378,7 +351,12 @@ async function addShowDiffButton() {
         buttonName,
         SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR,
         true,
-        () => openDiffer(params, null, msgId),
+        () => openDiffer(
+            params,
+            null,
+            msgId,
+            (resourceName) => chrome.runtime.getURL(resourceName)
+        ),
         false
     );
 }
@@ -461,7 +439,7 @@ function getMrSourceAndTargetBranchName() {
 async function loadMasterCommitEntries() {
     console.debug('loading master commit entries...');
     if (masterCommitEntries) {
-        console.debug('loading master commit entries...done (use cache)');
+        console.debug('loading master commit entries...done (used cache)');
         return;
     }
 
@@ -491,7 +469,7 @@ async function loadMasterCommitEntriesPage(pageNumber) {
 async function loadFilteredByTitleMasterCommitEntries(commitTitle) {
     console.debug('loading master commit entries filtered by title...');
     if (filteredByTitleMasterCommitEntries) {
-        console.debug('loading master commit entries filtered by title...done (use cache)');
+        console.debug('loading master commit entries filtered by title...done (used cache)');
         return;
     }
 
@@ -610,14 +588,22 @@ async function getMrLastCommitId() {
 
 async function addShowBranchButton(fileType) {
     console.debug(`adding show branch ${fileType} button...`);
+    const href = window.location.href;
 
-    const regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
-    const match = window.location.href.match(regex);
+    // TODO: not working for all cases: need to get filename from gitlab api
+    let regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
+    let match = href.match(regex);
     // console.debug('match: ', match);
     if (!match || match.length < 3) {
-        console.warn('cannot get branch commit id and bpmn file path from url', window.location.href);
-        return;
+        regex = `\/-\/blob\/(master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-zA-Z-_./]+)\/(.*)`;
+        match = href.match(regex);
+        // console.debug('match: ', match);
+        if (!match || match.length < 3) {
+            console.warn('cannot get branch commit id and bpmn file path from url: ' + href);
+            return;
+        }
     }
+    
     const branchCommitId = match[1];
     const filePath = match[2];
     const fileName = getFileNameFromPath(filePath);
@@ -630,6 +616,8 @@ async function addShowBranchButton(fileType) {
 
     const params = {
         projectUrl: projectUrl,
+        projectHostUrl: projectHostUrl,
+        projectId: projectId,
         mrCommitId: null,
         mrBranchName: null,
         branchCommitId: branchCommitId,
@@ -645,7 +633,12 @@ async function addShowBranchButton(fileType) {
         buttonName,
         SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR,
         false,
-        (extParams) => openDiffer(params, extParams, msgId),
+        (extParams) => openDiffer(
+            params,
+            extParams,
+            msgId,
+            (resourceName) => chrome.runtime.getURL(resourceName)
+        ),
         true
     );
 }
@@ -663,12 +656,12 @@ async function start(event) {
     }
     removeElement(BUTTON_ID);
 
-    const projectUrlDone = readProjectUrlAndName();
-    if (!projectUrlDone) {
+    const projectParamsDone = await initProjectParams();
+    if (!projectParamsDone) {
         return;
     }
 
-    initMrIidAndInfoUrl();
+    initMrIidAndInfoUrl(); // todo: do not call when it is not MR
 
     const diffsTabActive = await isDiffsTabActive();
     if (diffsTabActive) {

@@ -18,6 +18,8 @@ const IN_OUT_DELTA_VIEWPORT_ZOOM = 0.15;
 const WHEEL_DELTA_VIEWPORT_ZOOM = 0.03;
 
 let projectUrl = null;
+let projectHostUrl = null;
+let projectId = null;
 let mrCommitId = null;
 let localFileContent = null;
 let branchCommitId = null;
@@ -62,6 +64,9 @@ let highlightedPropGroupElems = null;
 
 // map: elem id -> [current branch condition, other branch condition]
 let nodeIdToConditions = new Map();
+
+let processIdToBpmnFilePathMap = null;
+
 
 function createBpmnDiv() {
     const bpmnDiv = document.createElement('div');
@@ -613,7 +618,7 @@ function findDiffPropertyGroup(diff) {
         return res;
     }
 
-    const diffShort = diff.slice(diff.indexOf("/") + 1);
+    const diffShort = diff.slice(diff.indexOf('/') + 1);
     return DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
 }
 
@@ -1016,7 +1021,7 @@ async function onSelectedElementChanged(elemId) {
     }
     highlightDiffPropGroup();
     showConditionExpression();
-    // addCallActivityOverlay();
+    addCallActivityOverlay();
 }
 
 let currentOverlayId = null;
@@ -1036,17 +1041,25 @@ function addCallActivityOverlay() {
         return;
     }
 
+    let needToLoadData = false;
+    let label = 'Dive in';
+    if (!processIdToBpmnFilePathMap) {
+        needToLoadData = true;
+        label = 'Load process';
+        // TODO: show 'Loading...' while data is loading
+    }
+
     currentOverlayId = bpmnJSOverlays.add(selectedElementId, 'note', {
         position: {
             bottom: 0,
             right: 0
         },
-        html: '<div class="dive-in-call-activity">Dive in</div>'
+        html: '<div class="dive-in-call-activity">' + label + '</div>'
     });
 
     const overlayElem = document.querySelector(`.djs-overlay.djs-overlay-note[data-overlay-id="${currentOverlayId}"]`);
     if (overlayElem) {
-        overlayElem.addEventListener('click', (event) => openProcessBpmn(processId));
+        overlayElem.addEventListener('click', (event) => onDiveInProcessEvent(needToLoadData, processId));
     } else {
         console.warn('cannot find overlay element by id: ' + currentOverlayId);
     }
@@ -1061,30 +1074,184 @@ function getCallActivityProcessId(callActivityElement) {
     }
 }
 
-function openProcessBpmn(processId) {
-    console.info('openProcessBpmn: ' + processId);
-    // TODO: how to find bpmn-file by processId?
-    //  file may has different name not equals to processId...
-    //      how many bpmn-files have a name different from the processId?
-    //  file may be in another folder...
+let isDiveInProcessEventHandlingNow = false;
 
-    // как можно обойти все дерево файлов проекта:
-    // 1) найти ИД проекта (для SE - это Project ID: 9169)
-    // - выполнить запрос https://gitlab.example.com/api/v4/projects/?search=example-service&simple=true
-    // - в полученном списке выбрать тот, у которого 
-    //  "path_with_namespace": "example-group/example-service"
-    //      где "example-group/example-service" взять из текущего урла проекта
-    //  тк могут быть клоны нашего проекта
-    // ! ну или искать ИД на странице
-    //  
-    // 2) рекурсивно выполнять запрос:
-    // - сначала файлы в корне: https://gitlab.example.com/api/v4/projects/9169/repository/tree?&per_page=100&path=configMap
-    // - среди них выбираем только те, у которых type=tree
-    // - для каждого такого выполняем запрос (например, path=configMap):
-    //  https://gitlab.example.com/api/v4/projects/9169/repository/tree?&per_page=100&path=configMap
-    // - если внутри тоже есть папки (tree), то продолжаем углубляться:
-    //  https://gitlab.example.com/api/v4/projects/9169/repository/tree?recursive=false&per_page=100&path=configMap/features
-    // - просто файлы будут иметь type=blob
+async function onDiveInProcessEvent(needToLoadData, processId) {
+    if (isDiveInProcessEventHandlingNow) {
+        return;
+    }
+
+    // TODO:
+    // из-за того, что при первом клике долго и асинхронно грузим bpmn-файлы,
+    // то хром блокирует открытие новой вкладки.
+    // хотя при последующих кликах, когда данные уже в кеше, то все норм - не блокирует.
+    // Нужно: 
+    // 1) починить блокирование - или заранее где то асинхронно грузить файлы
+    //  (но это может не помочь, тк есть вероятность, что придется перегружать - см. loadProcessIdOfProjectBpmnFiles)
+    //  или после асинхронной загрузки как то повторно слать событие
+    // 2) загруженные данные надо кешировать в БД хрома, а то приходится их грузить на каждой вкладке
+
+    isDiveInProcessEventHandlingNow = true;
+    try {
+        // TODO: this call may takes a lot of times.. try to show wait cursor?
+        const processParams = await loadProcessParamsByProcessId(processId);
+        if (!processParams) {
+            console.debug('process params loading failed');
+            return;
+        }
+        if (needToLoadData) {
+            addCallActivityOverlay();
+            return;
+        }
+        const params = {
+            projectUrl: projectUrl,
+            projectHostUrl: projectHostUrl,
+            projectId: projectId,
+            mrCommitId: null,
+            mrBranchName: null,
+            branchCommitId: branchCommitId,
+            filePath: processParams.filePath,
+            fileName: processParams.fileName,
+            camundaBpmnModdle: camundaBpmnModdle
+        };
+        await openDiffer(
+            params,
+            null,
+            MSG_BPMN_ID,
+            // find href in the head of this document
+            // because chrome.runtime.getURL not working in this new tab
+            (resourceName) => getLinkOrScriptHref(resourceName)
+        );
+    } finally {
+        isDiveInProcessEventHandlingNow = false;
+    }
+}
+
+async function loadProcessParamsByProcessId(processId) {
+    console.debug('loading process params for process: ' + processId);
+
+    await loadProjectBpmnFiles();
+
+    const bpmnFilePath = await findBpmnFilePathByProcessId(processId);
+    if (!bpmnFilePath) {
+        console.error('cannot find bpmn file path by process id: ' + processId);
+        return null;
+    }
+    // console.debug(`found bpmn file path by process id '${processId}': ${bpmnFilePath}`);
+
+    const bpmnFileName = bpmnFilePath.substring(bpmnFilePath.lastIndexOf('/') + 1);
+
+    return {
+        filePath: bpmnFilePath,
+        fileName: bpmnFileName
+    };
+}
+
+function getLinkOrScriptHref(resourceName) {
+    for (const script of document.scripts) {
+        if (script.src.endsWith(resourceName)) {
+            return script.src;
+        }
+    }
+    for (const styleSheet of document.styleSheets) {
+        if (styleSheet.href.endsWith(resourceName)) {
+            return styleSheet.href;
+        }
+    }
+    console.error('cannot find url of link or style sheet: ' + resourceName);
+    return null;
+}
+
+async function findBpmnFilePathByProcessId(processId) {
+    // try to find by process id
+    let res = processIdToBpmnFilePathMap.get(processId);
+    if (res) {
+        // console.debug('found by case 1');
+        return res;
+    }
+
+    if (processId.endsWith('Process')) {
+        // try to find by <process id> without 'Process' suffix
+        const processIdWithoutProcessSuffix = processId.slice(0, -'Process'.length);
+        // console.debug('processIdWithoutProcessSuffix: ' + processIdWithoutProcessSuffix);
+        res = processIdToBpmnFilePathMap.get(processIdWithoutProcessSuffix);
+        if (res) {
+            // console.debug('found by case 2');
+            return res;
+        }
+    } else {
+        // try to find by "<process id>Process"
+        const processIdWithProcessSuffix = processId + 'Process';
+        // console.debug('processIdWithProcessSuffix: ' + processIdWithProcessSuffix);
+        res = processIdToBpmnFilePathMap.get(processIdWithProcessSuffix);
+        if (res) {
+            // console.debug('found by case 3');
+            return res;
+        }
+    }
+
+    // ok... let's go through all the bpmn files and get the process ID from their contents
+    loadProcessIdOfProjectBpmnFiles();
+
+    // and once again try to find bpmn file path by process id
+    res = processIdToBpmnFilePathMap.get(processId);
+    if (res) {
+        // console.debug('found by case 4');
+        return res;
+    }
+
+    return null;
+}
+
+async function loadProjectBpmnFiles() {
+    console.debug('loading project files...');
+    if (processIdToBpmnFilePathMap) {
+        console.debug('loading project files...done (used cache)');
+        return;
+    }
+
+    const tmpMap = new Map();
+    const bpmnFilePaths = await loadBpmnFilePaths(projectHostUrl, projectId);
+    for (const bpmnFilePath of bpmnFilePaths) {
+        const fileName = getFileNameWithoutExtensionFromPath(bpmnFilePath);
+        // for now assume that the file name is equal to the process id
+        const processId = capitalizeFirstLetter(fileName);
+        tmpMap.set(processId, bpmnFilePath);
+    }
+    // console.debug('processIdToBpmnFilePath', tmpMap);
+
+    processIdToBpmnFilePathMap = tmpMap;
+    console.debug('loading project files...done');
+}
+
+async function loadBpmnFilePaths(projectHostUrl, projectId) {
+    const treeUrlTemplate = projectHostUrl + '/api/v4/projects/' +
+        projectId + '/repository/tree?ref=master&recursive=true&per_page=100&page=';
+    // console.debug('treeUrlTemplate = ' + treeUrlTemplate);
+
+    const bpmnFilePaths = [];
+    let pageNum = 0;
+    while (true) {
+        pageNum++;
+        const url = treeUrlTemplate + pageNum;
+        const content = await loadFileContent(url, true);
+        const items = JSON.parse(content);
+        if (items.length === 0) {
+            break;
+        }
+
+        const paths = items
+            .filter(i => i.type === 'blob' && i.path.endsWith('.bpmn'))
+            .map(i => i.path);
+        bpmnFilePaths.push(...paths);
+    }
+    // console.debug('bpmnFilePaths', bpmnFilePaths);
+    return bpmnFilePaths;
+}
+
+async function loadProcessIdOfProjectBpmnFiles() {
+    console.debug('loadProcessIdOfProjectBpmnFiles not implemented!!!');
+    // TODO: not inmplemented yet
 }
 
 function showConditionExpression() {
@@ -1348,6 +1515,8 @@ async function setPropertiesPanelContainerMaxHeight() {
 
 function initBpmnDiff(params) {
     projectUrl = requireDefined(params.projectUrl, 'projectUrl');
+    projectHostUrl = requireDefined(params.projectHostUrl, 'projectHostUrl');
+    projectId = requireDefined(params.projectId, 'projectId');
     mrCommitId = params.mrCommitId; // may be undefined when showing schema from branch only
     localFileContent = params.localFileContent;
     if (mrCommitId && localFileContent) {

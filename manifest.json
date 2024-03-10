@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.13",
+    "version": "0.14",
     "description": "BPMN 2.0 schemas and DMN visual differ for Gitlab",
     "content_scripts": [
         {
@@ -19,13 +19,12 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": [         
-                "main.js",      
-                "utils.js",    
+            "resources": [
+                "main.js",
+                "utils.js",
                 "bpmn-differ.js",
                 "dmn-differ.js",
                 "styles.css",
-            
                 "libs/bpmn-js/bpmn-modeler.production.min.js",
                 "libs/bpmn-js/assets/bpmn-js.css",
                 "libs/bpmn-js/assets/diagram-js.css",
@@ -37,7 +36,6 @@
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.ttf",
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff",
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff2",
-
                 "libs/dmn-js/dmn-viewer.development.js",
                 "libs/dmn-js/assets/dmn-js-decision-table-controls.css",
                 "libs/dmn-js/assets/dmn-js-decision-table.css",
@@ -53,11 +51,9 @@
                 "libs/dmn-js/assets/dmn-font/font/dmn.ttf",
                 "libs/dmn-js/assets/dmn-js-drd.css",
                 "libs/dmn-js/assets/diagram-js.css",
-
                 "libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js",
                 "libs/bpmn-js-properties-panel/assets/element-templates.css",
                 "libs/bpmn-js-properties-panel/assets/properties-panel.css",
-
                 "libs/camunda-bpmn-moddle/resources/camunda.json"
             ],
             "matches": [
