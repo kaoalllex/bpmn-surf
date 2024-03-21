@@ -1041,12 +1041,15 @@ function addCallActivityOverlay() {
         return;
     }
 
-    let needToLoadData = false;
-    let label = 'Dive in';
+    let divLabel = 'Dive in';
+    let divClass = 'dive-in-call-activity';
     if (!processIdToBpmnFilePathMap) {
-        needToLoadData = true;
-        label = 'Load process';
-        // TODO: show 'Loading...' while data is loading
+        if (isDiveInProcessEventHandlingNow) {
+            divLabel = 'Loading process...';
+            divClass = 'dive-in-call-activity-waiting';
+        } else {
+            divLabel = 'Load process';
+        }
     }
 
     currentOverlayId = bpmnJSOverlays.add(selectedElementId, 'note', {
@@ -1054,14 +1057,18 @@ function addCallActivityOverlay() {
             bottom: 0,
             right: 0
         },
-        html: '<div class="dive-in-call-activity">' + label + '</div>'
+        html: '<div class="' + divClass + '">' + divLabel + '</div>'
     });
 
-    const overlayElem = document.querySelector(`.djs-overlay.djs-overlay-note[data-overlay-id="${currentOverlayId}"]`);
-    if (overlayElem) {
-        overlayElem.addEventListener('click', (event) => onDiveInProcessEvent(needToLoadData, processId));
-    } else {
-        console.warn('cannot find overlay element by id: ' + currentOverlayId);
+    if (!isDiveInProcessEventHandlingNow) {
+        const overlayElem = document.querySelector(
+            `.djs-overlay.djs-overlay-note[data-overlay-id="${currentOverlayId}"]`
+        );
+        if (overlayElem) {
+            overlayElem.addEventListener('click', (event) => onDiveInProcessEvent(processId));
+        } else {
+            console.warn('cannot find overlay element by id: ' + currentOverlayId);
+        }
     }
 }
 
@@ -1076,10 +1083,12 @@ function getCallActivityProcessId(callActivityElement) {
 
 let isDiveInProcessEventHandlingNow = false;
 
-async function onDiveInProcessEvent(needToLoadData, processId) {
+async function onDiveInProcessEvent(processId) {
     if (isDiveInProcessEventHandlingNow) {
         return;
     }
+
+    const dataWillBeLoaded = !processIdToBpmnFilePathMap;
 
     // TODO:
     // из-за того, что при первом клике долго и асинхронно грузим bpmn-файлы,
@@ -1093,37 +1102,42 @@ async function onDiveInProcessEvent(needToLoadData, processId) {
 
     isDiveInProcessEventHandlingNow = true;
     try {
-        // TODO: this call may takes a lot of times.. try to show wait cursor?
+        if (dataWillBeLoaded) {
+            // for refresh overlay label
+            addCallActivityOverlay();
+        }
         const processParams = await loadProcessParamsByProcessId(processId);
         if (!processParams) {
             console.debug('process params loading failed');
             return;
         }
-        if (needToLoadData) {
-            addCallActivityOverlay();
-            return;
+        if (!dataWillBeLoaded) {
+            const params = {
+                projectUrl: projectUrl,
+                projectHostUrl: projectHostUrl,
+                projectId: projectId,
+                mrCommitId: null,
+                mrBranchName: null,
+                branchCommitId: branchCommitId,
+                filePath: processParams.filePath,
+                fileName: processParams.fileName,
+                camundaBpmnModdle: camundaBpmnModdle
+            };
+            await openDiffer(
+                params,
+                null,
+                MSG_BPMN_ID,
+                // find href in the head of this document
+                // because chrome.runtime.getURL not working in this new tab
+                (resourceName) => getLinkOrScriptHref(resourceName)
+            );
         }
-        const params = {
-            projectUrl: projectUrl,
-            projectHostUrl: projectHostUrl,
-            projectId: projectId,
-            mrCommitId: null,
-            mrBranchName: null,
-            branchCommitId: branchCommitId,
-            filePath: processParams.filePath,
-            fileName: processParams.fileName,
-            camundaBpmnModdle: camundaBpmnModdle
-        };
-        await openDiffer(
-            params,
-            null,
-            MSG_BPMN_ID,
-            // find href in the head of this document
-            // because chrome.runtime.getURL not working in this new tab
-            (resourceName) => getLinkOrScriptHref(resourceName)
-        );
     } finally {
         isDiveInProcessEventHandlingNow = false;
+        if (dataWillBeLoaded) {
+            // for refresh overlay label
+            addCallActivityOverlay();
+        }
     }
 }
 
@@ -1191,7 +1205,7 @@ async function findBpmnFilePathByProcessId(processId) {
     }
 
     // ok... let's go through all the bpmn files and get the process ID from their contents
-    loadProcessIdOfProjectBpmnFiles();
+    await extractProcessIdFromProjectBpmnFiles();
 
     // and once again try to find bpmn file path by process id
     res = processIdToBpmnFilePathMap.get(processId);
@@ -1249,9 +1263,29 @@ async function loadBpmnFilePaths(projectHostUrl, projectId) {
     return bpmnFilePaths;
 }
 
-async function loadProcessIdOfProjectBpmnFiles() {
-    console.debug('loadProcessIdOfProjectBpmnFiles not implemented!!!');
-    // TODO: not inmplemented yet
+async function extractProcessIdFromProjectBpmnFiles() {
+    // console.debug('extracting process id from bpmn files...', processIdToBpmnFilePathMap);
+
+    const refreshedMap = new Map();
+    for (const [oldKey, filePath] of processIdToBpmnFilePathMap) {
+        const processId = await extractProcessIdFromBpmnFile(filePath);
+        const newKey = processId !== null ? processId : oldKey;
+        refreshedMap.set(newKey, filePath);
+    }
+    processIdToBpmnFilePathMap = refreshedMap;
+    // console.debug('extracting process id from bpmn files...done', processIdToBpmnFilePathMap);
+}
+
+const getProcessIdFromBpmnContentRegex = /<bpmn:process id="([^"]+)"/;
+
+async function extractProcessIdFromBpmnFile(filePath) {
+    const content = await loadBpmnXml2(branchCommitId, filePath);
+    const match = content.match(getProcessIdFromBpmnContentRegex);
+    if (match) {
+        return match[1];
+    } else {
+        return null;
+    }
 }
 
 function showConditionExpression() {
@@ -1489,8 +1523,12 @@ function resetHighlightedDiffPropGroup() {
 }
 
 async function loadBpmnXml(commitId) {
+    return await loadBpmnXml2(commitId, filePath);
+}
+
+async function loadBpmnXml2(commitId, filePath) {
     const fileUrl = `${projectUrl}/-/raw/${commitId}/${filePath}`;
-    // console.debug('loading bpmn xml from: ' + fileUrl);
+    console.debug('loading bpmn xml from: ' + fileUrl);
     return await loadFileContent(fileUrl, false);
 }
 
