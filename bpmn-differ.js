@@ -22,9 +22,11 @@ let projectHostUrl = null;
 let projectId = null;
 let mrCommitId = null;
 let localFileContent = null;
-let branchCommitId = null;
+let branchCommitId = null; // todo: this is actually the name of target branch
 let filePath = null;
 let fileName = null;
+
+let latestBranchCommitId = null;
 
 let targetBranchName = 'Master';
 let mrBranchName = 'MR';
@@ -404,6 +406,7 @@ function handleCanvasWheelEvent(event) {
     }
 }
 
+// TODO: parameter force is always true, so maybe it's better to remove it?
 function fitViewport(force = false) {
     const viewbox = bpmnJSCanvas.viewbox();
     // console.debug(viewbox);
@@ -448,7 +451,7 @@ async function showBpmnInternal(bpmnXml) {
         return;
     }
 
-    fitViewport();
+    fitViewport(true);
 }
 
 async function showBpmn(bpmnXml) {
@@ -584,6 +587,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['bpmn:escalationEventDefinition', 'Escalation'],
 
     ['camunda:executionListener', 'Execution listeners'],
+    ['camunda:executionListener/delegateExpression', 'Execution listeners'],
 
     ['bpmn:timeDuration', 'Timer'],
 
@@ -1021,12 +1025,12 @@ async function onSelectedElementChanged(elemId) {
     }
     highlightDiffPropGroup();
     showConditionExpression();
-    addCallActivityOverlay();
+    await showCallActivityDiveInOverlay();
 }
 
 let currentOverlayId = null;
 
-function addCallActivityOverlay() {
+async function showCallActivityDiveInOverlay() {
     if (currentOverlayId) {
         bpmnJSOverlays.remove(currentOverlayId);
         currentOverlayId = null;
@@ -1039,6 +1043,11 @@ function addCallActivityOverlay() {
     const processId = getCallActivityProcessId(elem);
     if (!processId) {
         return;
+    }
+
+    // try to restore map
+    if (!processIdToBpmnFilePathMap) {
+        await restoreProcessIdToBpmnFilePathMapFromLocalStorage();
     }
 
     let divLabel = 'Dive in';
@@ -1104,7 +1113,7 @@ async function onDiveInProcessEvent(processId) {
     try {
         if (dataWillBeLoaded) {
             // for refresh overlay label
-            addCallActivityOverlay();
+            await showCallActivityDiveInOverlay();
         }
         const processParams = await loadProcessParamsByProcessId(processId);
         if (!processParams) {
@@ -1116,8 +1125,8 @@ async function onDiveInProcessEvent(processId) {
                 projectUrl: projectUrl,
                 projectHostUrl: projectHostUrl,
                 projectId: projectId,
-                mrCommitId: null,
-                mrBranchName: null,
+                mrCommitId: mrCommitId,
+                mrBranchName: mrBranchName,
                 branchCommitId: branchCommitId,
                 filePath: processParams.filePath,
                 fileName: processParams.fileName,
@@ -1136,7 +1145,7 @@ async function onDiveInProcessEvent(processId) {
         isDiveInProcessEventHandlingNow = false;
         if (dataWillBeLoaded) {
             // for refresh overlay label
-            addCallActivityOverlay();
+            await showCallActivityDiveInOverlay();
         }
     }
 }
@@ -1148,7 +1157,7 @@ async function loadProcessParamsByProcessId(processId) {
 
     const bpmnFilePath = await findBpmnFilePathByProcessId(processId);
     if (!bpmnFilePath) {
-        console.error('cannot find bpmn file path by process id: ' + processId);
+        console.info('cannot find bpmn file path by process id: ' + processId);
         return null;
     }
     // console.debug(`found bpmn file path by process id '${processId}': ${bpmnFilePath}`);
@@ -1225,7 +1234,7 @@ async function loadProjectBpmnFiles() {
     }
 
     const tmpMap = new Map();
-    const bpmnFilePaths = await loadBpmnFilePaths(projectHostUrl, projectId);
+    const bpmnFilePaths = await loadBpmnFilePaths();
     for (const bpmnFilePath of bpmnFilePaths) {
         const fileName = getFileNameWithoutExtensionFromPath(bpmnFilePath);
         // for now assume that the file name is equal to the process id
@@ -1234,13 +1243,13 @@ async function loadProjectBpmnFiles() {
     }
     // console.debug('processIdToBpmnFilePath', tmpMap);
 
-    processIdToBpmnFilePathMap = tmpMap;
+    await updateProcessIdToBpmnFilePathMap(tmpMap);
     console.debug('loading project files...done');
 }
 
-async function loadBpmnFilePaths(projectHostUrl, projectId) {
-    const treeUrlTemplate = projectHostUrl + '/api/v4/projects/' +
-        projectId + '/repository/tree?ref=master&recursive=true&per_page=100&page=';
+async function loadBpmnFilePaths() {
+    const treeUrlTemplate = projectHostUrl + '/api/v4/projects/' + projectId +
+        '/repository/tree?ref=' + branchCommitId + '&recursive=true&per_page=100&page=';
     // console.debug('treeUrlTemplate = ' + treeUrlTemplate);
 
     const bpmnFilePaths = [];
@@ -1272,8 +1281,75 @@ async function extractProcessIdFromProjectBpmnFiles() {
         const newKey = processId !== null ? processId : oldKey;
         refreshedMap.set(newKey, filePath);
     }
-    processIdToBpmnFilePathMap = refreshedMap;
+    await updateProcessIdToBpmnFilePathMap(refreshedMap);
     // console.debug('extracting process id from bpmn files...done', processIdToBpmnFilePathMap);
+}
+
+async function updateProcessIdToBpmnFilePathMap(newMap) {
+    processIdToBpmnFilePathMap = newMap;
+
+    const key = await getProcessIdToBpmnFilePathMapLocalStorageKey();
+    const value = JSON.stringify(Array.from(newMap.entries()));
+    localStorage.setItem(key, value);
+
+    // console.debug(`processIdToBpmnFilePathMap stored (${newMap.size} items)`);
+}
+
+async function restoreProcessIdToBpmnFilePathMapFromLocalStorage() {
+    // console.debug('restoring processIdToBpmnFilePathMap...');
+    const key = await getProcessIdToBpmnFilePathMapLocalStorageKey();
+    const value = localStorage.getItem(key);
+
+    if (!value) {
+        // console.debug('restoring processIdToBpmnFilePathMap...no data found');
+        return;
+    }
+
+    const map = new Map(JSON.parse(value));
+    processIdToBpmnFilePathMap = map;
+    // console.debug(`restoring processIdToBpmnFilePathMap...done (${map.size} items)`);
+}
+
+async function getProcessIdToBpmnFilePathMapLocalStorageKey() {
+    let latestCommitId = await getLatestBranchCommitId();
+
+    // keyPrefix    = processIdToBpmnFilePathMap#<projectId>#<branchCommitId>#<latestCommitId>
+    // fullKey      = <keyPrefix>#<latestCommitId>
+    const keyPrefix = `processIdToBpmnFilePathMap#${projectId}#${branchCommitId}`;
+    const fullKey = `${keyPrefix}#${latestCommitId}`;
+
+    // check if value exists
+    const value = localStorage.getItem(fullKey);
+    if (!value) {
+        // remove old keys
+        const oldKeys = Object.keys(localStorage).filter((key) => key.startsWith(keyPrefix));
+        if (oldKeys.length > 0) {
+            oldKeys.forEach(key => localStorage.removeItem(key));
+            // console.debug('removed old keys from local storage', oldKeys);
+        }
+    }
+
+    return fullKey;
+}
+
+async function getLatestBranchCommitId() {
+    // console.debug('loading latest branch commit id...');
+    if (latestBranchCommitId) {
+        // console.debug('loading latest branch commit id...done (used cache): ' + latestBranchCommitId);
+        return latestBranchCommitId;
+    }
+
+    const url = projectHostUrl + '/api/v4/projects/' + projectId +
+        '/repository/commits?ref_name=' + branchCommitId;
+    // console.debug('branchCommitsUrl = ' + url);
+
+    const content = await loadFileContent(url, true);
+    const items = JSON.parse(content);
+
+    latestBranchCommitId = (items.length === 0 ? 'undefined' : items[0].id);
+    // console.debug('loading latest branch commit id...done: ' + latestBranchCommitId);
+
+    return latestBranchCommitId;
 }
 
 const getProcessIdFromBpmnContentRegex = /<bpmn:process id="([^"]+)"/;
@@ -1528,7 +1604,7 @@ async function loadBpmnXml(commitId) {
 
 async function loadBpmnXml2(commitId, filePath) {
     const fileUrl = `${projectUrl}/-/raw/${commitId}/${filePath}`;
-    console.debug('loading bpmn xml from: ' + fileUrl);
+    // console.debug('loading bpmn xml from: ' + fileUrl);
     return await loadFileContent(fileUrl, false);
 }
 
@@ -1579,7 +1655,7 @@ async function showBpmnDiff(params) {
     console.debug('init done');
 
     createBpmnDiv();
-    console.debug('bpmn div created');
+    // console.debug('bpmn div created');
 
     bpmnJS = new BpmnJS({
         container: '#' + BPMN_CANVAS_ID,
@@ -1598,7 +1674,7 @@ async function showBpmnDiff(params) {
             camunda: camundaBpmnModdle
         }
     });
-    console.debug('bpmn js created');
+    // console.debug('bpmn js created');
 
     bpmnJSCanvas = bpmnJS.get('canvas');
     bpmnJSElementRegistry = bpmnJS.get('elementRegistry');
@@ -1638,7 +1714,7 @@ async function showBpmnDiff(params) {
     }
 
     // show canvas after the differ is completely rendered
-    console.debug('making canvas visible...');
+    // console.debug('making canvas visible...');
     canvasElem.style.visibility = 'visible';
 
     // set max-height of the properties panel container to enable scrollbar display when needed

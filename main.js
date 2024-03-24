@@ -588,24 +588,15 @@ async function getMrLastCommitId() {
 
 async function addShowBranchButton(fileType) {
     console.debug(`adding show branch ${fileType} button...`);
-    const href = window.location.href;
 
-    // TODO: not working for all cases: need to get filename from gitlab api
-    let regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
-    let match = href.match(regex);
-    // console.debug('match: ', match);
-    if (!match || match.length < 3) {
-        regex = `\/-\/blob\/(master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-zA-Z-_./]+)\/(.*)`;
-        match = href.match(regex);
-        // console.debug('match: ', match);
-        if (!match || match.length < 3) {
-            console.warn('cannot get branch commit id and bpmn file path from url: ' + href);
-            return;
-        }
+    const res = extractBranchCommitIdAndFilePath();
+    if (!res) {
+        return;
     }
-    
-    const branchCommitId = match[1];
-    const filePath = match[2];
+    console.debug('extracted BranchCommitIdAndFilePath res: ', res);
+
+    const branchCommitId = res.branchCommitId;
+    const filePath = res.filePath;
     const fileName = getFileNameFromPath(filePath);
 
     console.debug('branchCommitId: ' + branchCommitId);
@@ -641,6 +632,72 @@ async function addShowBranchButton(fileType) {
         ),
         true
     );
+}
+
+function extractBranchCommitIdAndFilePath() {
+    let branchCommitId = extractBranchCommitIdByDocSelectorCase1();
+    if (!branchCommitId) {
+        branchCommitId = extractBranchCommitIdByDocSelectorCase2();
+    }
+    return extractBranchCommitIdAndFilePathByRegex(branchCommitId);
+}
+
+function extractBranchCommitIdByDocSelectorCase1() {
+    let elem = document.querySelector('div.ref-selector');
+    if (!elem) {
+        console.debug('cannot extract branch commit id and bpmn file path by doc selector case 1: ref-selector not found');
+        return null;
+    }
+    
+    elem = elem.querySelector('.gl-dropdown-button-text');
+    if (!elem) {
+        console.debug('cannot extract branch commit id and bpmn file path by doc selector case 1: gl-dropdown-button-text not found');
+        return null;
+    }
+
+    return elem.innerText;
+}
+
+function extractBranchCommitIdByDocSelectorCase2() {
+    let elem = document.querySelector('button.js-project-refs-dropdown');
+    if (!elem) {
+        console.debug('cannot extract branch commit id and bpmn file path by doc selector case 2: refs-dropdown not found');
+        return null;
+    }
+
+    elem = elem.querySelector('.dropdown-toggle-text');
+    if (!elem) {
+        console.debug('cannot extract branch commit id and bpmn file path by doc selector case 2: dropdown-toggle-text not found');
+        return null;
+    }
+
+    return elem.innerText;
+}
+
+function extractBranchCommitIdAndFilePathByRegex(branchCommitId) {
+    const href = window.location.href;
+
+    // TODO: not working for all cases: need to get filename from gitlab api
+    let regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
+    let match = href.match(regex);
+    // console.debug('match: ', match);
+    if (!match || match.length < 3) {
+        if (!branchCommitId) {
+            branchCommitId = 'master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-zA-Z-_./]+';
+        }
+        regex = `\/-\/blob\/(` + branchCommitId + `)\/(.*)`;
+        match = href.match(regex);
+        // console.debug('match: ', match);
+        if (!match || match.length < 3) {
+            console.warn('cannot extract branch commit id and bpmn file path by regex from url: ' + href);
+            return null;
+        }
+    }
+
+    return {
+        branchCommitId: match[1],
+        filePath: match[2]
+    };
 }
 
 async function start(event) {
