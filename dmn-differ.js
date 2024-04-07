@@ -315,7 +315,7 @@ async function showDmnDiff(params) {
     console.debug('init done');
 
     createDmnDiv();
-    console.debug('dmn div created');
+    // console.debug('dmn div created');
 
     dmnJS = new DmnJS({
         container: '#' + DMN_CANVAS_ID,
@@ -323,7 +323,7 @@ async function showDmnDiff(params) {
             bindTo: window
         }
     });
-    console.debug('dmn js created');
+    // console.debug('dmn js created');
 
     console.debug('loading branch dmn xml...');
     branchDmnXml = null;
@@ -346,10 +346,20 @@ async function showDmnDiff(params) {
         await showDmnBranch();
     }
 
-    console.debug('making canvas visible...');
+    hidePoweredByLabel();
+
+    // console.debug('making canvas visible...');
     canvasElem.style.visibility = 'visible';
 
     console.debug('ready!');
+}
+
+function hidePoweredByLabel() {
+    try {
+        document.querySelector('.bjs-powered-by').style.display = 'none';
+    } catch (error) {
+        console.warn('powered by label not found', error);
+    }
 }
 
 async function loadDmnXml(commitId) {
@@ -378,7 +388,7 @@ async function showDmnBranch() {
     setBranchName(targetBranchName);
 
     if (mrDmnXml) {
-        highlightDmnDiffs(branchDmnXml, mrDmnXml, DiffType.DELETE);
+        highlightDmnDiffs(branchDmnXml, mrDmnXml, DiffType.REMOVE);
     } else {
         console.debug('file not exists in MR branch');
     }
@@ -405,7 +415,7 @@ async function showDmn(dmnXml) {
 }
 
 function highlightDmnDiffs(myXml, otherXml, diffTypeForMissing) {
-    console.debug('highlight diffs...');
+    // console.debug('highlight diffs...');
 
     const myDoc = parseXml(myXml);
     const otherDoc = parseXml(otherXml);
@@ -515,7 +525,7 @@ function paintDmnOutputDiffs(diffTypeForMissing, missingOutputLabels, changedOut
     const outputLabelElems = Array.from(document.querySelectorAll('.output-label'));
 
     if (missingOutputLabels.length > 0) {
-        console.debug('missingOutputLabels', missingOutputLabels);
+        // console.debug('missingOutputLabels', missingOutputLabels);
         for (const missingOutputLabel of missingOutputLabels) {
             const cell = outputLabelElems.find(e => e.textContent === missingOutputLabel);
             if (cell && cell.parentElement) {
@@ -525,7 +535,7 @@ function paintDmnOutputDiffs(diffTypeForMissing, missingOutputLabels, changedOut
     }
 
     if (changedOutputLabels.length > 0) {
-        console.debug('changedOutputLabels', changedOutputLabels);
+        // console.debug('changedOutputLabels', changedOutputLabels);
         for (const changedOutputLabel of changedOutputLabels) {
             const cell = outputLabelElems.find(e => e.textContent === changedOutputLabel);
             if (cell && cell.parentElement) {
