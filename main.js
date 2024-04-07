@@ -80,7 +80,7 @@ async function initProjectParams() {
 
     projectId = await getProjectId(projectHostUrl, projectGroupName, projectName);
     if (!projectId) {
-        console.error('cannot get project id');
+        console.debug('cannot get project id');
         return false;
     }
 

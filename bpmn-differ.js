@@ -53,6 +53,11 @@ let mrBpmnXml = null;
 let branchNameTextElement = null;
 let branchNameSpanElement = null;
 
+let changedTextElement = null;
+let addedRemovedLabelElement = null;
+let addedRemovedTextElement = null;
+let changesTable = null;
+
 let missingShapeIds = [];
 let missingRowIds = [];
 let changedShapeIds = [];
@@ -87,15 +92,16 @@ function createBpmnDiv() {
 
     //-----------------------------------------------------
     const table = document.createElement('table');
-    table.style.width = '100%';
     table.style.height = '100%';
     // table.border = 5;
 
     const row1 = document.createElement('tr');
     const row2 = document.createElement('tr');
+    const row3 = document.createElement('tr');
     row2.style.height = '100%';
     table.appendChild(row1);
     table.appendChild(row2);
+    table.appendChild(row3);
     bpmnDiv.appendChild(table);
 
     //--- header
@@ -106,7 +112,6 @@ function createBpmnDiv() {
 
     //--- canvas & props
     const canvasPropsTable = document.createElement('table');
-    canvasPropsTable.style.width = '100%';
     canvasPropsTable.style.height = '100%';
     row2.appendChild(canvasPropsTable);
     const tableCanvasPropsRow = document.createElement('tr');
@@ -129,12 +134,101 @@ function createBpmnDiv() {
     bpmnPropsCell.style.minWidth = '300px';
     bpmnPropsCell.style.maxWidth = '600px';
     tableCanvasPropsRow.appendChild(bpmnPropsCell);
+
+    //--- footer
+    if (isMrBranchDefined()) {
+        const footerCell = document.createElement('td');
+        footerCell.setAttribute('align', 'right');
+        row3.appendChild(footerCell);
+        createFooter(footerCell);
+    }
+}
+
+function createFooter(parentElem) {
+    const table = document.createElement('table');
+    // table.border = 3;
+    parentElem.appendChild(table);
+
+    const row1 = document.createElement('tr');
+    table.appendChild(row1);
+    const row2 = document.createElement('tr');
+    table.appendChild(row2);
+
+    //------ header
+    const cellChangedLabel = document.createElement('td');
+    cellChangedLabel.style.minWidth = '70px';
+    cellChangedLabel.style.height = '32px';
+    cellChangedLabel.style.textAlign = 'right';
+    cellChangedLabel.appendChild(document.createTextNode('Changed:'));
+    row1.appendChild(cellChangedLabel);
+
+    changedTextElement = document.createTextNode('');
+    const cellChanged = document.createElement('td');
+    cellChanged.style.minWidth = '200px';
+    cellChanged.style.height = '32px';
+    cellChanged.appendChild(changedTextElement);
+    row1.appendChild(cellChanged);
+
+    addedRemovedLabelElement = document.createTextNode('');
+    const cellAddedRemovedLabel = document.createElement('td');
+    cellAddedRemovedLabel.style.minWidth = '75px';
+    cellAddedRemovedLabel.style.height = '32px';
+    cellAddedRemovedLabel.style.textAlign = 'right';
+    cellAddedRemovedLabel.appendChild(addedRemovedLabelElement);
+    row1.appendChild(cellAddedRemovedLabel);
+
+    addedRemovedTextElement = document.createTextNode('');
+    const cellAddedRemoved = document.createElement('td');
+    cellAddedRemoved.style.minWidth = '200px';
+    cellAddedRemoved.style.height = '32px';
+    cellAddedRemoved.appendChild(addedRemovedTextElement);
+    row1.appendChild(cellAddedRemoved);
+
+    //----- body
+    const cellBody = document.createElement('td');
+    cellBody.setAttribute("colspan", "5");
+    const changesTableDiv = document.createElement('div');
+    changesTableDiv.style.maxHeight = 250;
+    changesTableDiv.style.overflowY = 'auto';
+    cellBody.appendChild(changesTableDiv);
+    row2.appendChild(cellBody);
+
+    changesTable = document.createElement('table');
+    changesTable.className = 'table-fixed-header changes-table';
+    changesTableDiv.appendChild(changesTable);
+
+    // button
+    const cellShowChangesButton = document.createElement('td');
+    cellShowChangesButton.style.width = '100%';
+    cellShowChangesButton.style.textAlign = 'right';
+    row1.appendChild(cellShowChangesButton);
+
+    const showChangesButton = document.createElement('button');
+    showChangesButton.textContent = 'Show changes';
+    changesTableDiv.style.display = 'none';
+
+    showChangesButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+    showChangesButton.style.width = '130px';
+    showChangesButton.style.margin = '3px';
+    showChangesButton.addEventListener('click', () => {
+        if (changesTableDiv.style.display === 'block') {
+            showChangesButton.textContent = 'Show changes';
+            changesTableDiv.style.display = 'none';
+            resetChangeTableRowSelection();
+        } else {
+            showChangesButton.textContent = 'Hide changes';
+            changesTableDiv.style.display = 'block';
+        }
+        // doesn't always work the first time so call fitViewport twice
+        fitViewport(true);
+        fitViewport(true);
+    });
+    cellShowChangesButton.appendChild(showChangesButton);
 }
 
 function createHeader(parentElem) {
     const table = document.createElement('table');
     // table.border = 3;
-    table.style.width = '100%';
     parentElem.appendChild(table);
 
     const row1 = document.createElement('tr');
@@ -406,7 +500,6 @@ function handleCanvasWheelEvent(event) {
     }
 }
 
-// TODO: parameter force is always true, so maybe it's better to remove it?
 function fitViewport(force = false) {
     const viewbox = bpmnJSCanvas.viewbox();
     // console.debug(viewbox);
@@ -451,7 +544,7 @@ async function showBpmnInternal(bpmnXml) {
         return;
     }
 
-    fitViewport(true);
+    fitViewport();
 }
 
 async function showBpmn(bpmnXml) {
@@ -490,7 +583,7 @@ async function showBpmnBranch() {
     setBranchName(targetBranchName);
 
     if (mrBpmnXml) {
-        highlightDiffs(branchBpmnXml, mrBpmnXml, DiffType.DELETE);
+        highlightDiffs(branchBpmnXml, mrBpmnXml, DiffType.REMOVE);
     } else {
         console.debug('file not exists in MR branch');
     }
@@ -511,14 +604,17 @@ async function showBpmnMr() {
 
 class DiffType {
     static ADD = {
+        name: 'added',
         shapeColor: '#88ff88',
         rowColor: '#00aa00'
     }
     static CHANGE = {
+        name: 'changed',
         shapeColor: '#8888ff',
         rowColor: '#0000aa'
     }
-    static DELETE = {
+    static REMOVE = {
+        name: 'removed',
         shapeColor: '#ff8888',
         rowColor: '#aa0000'
     }
@@ -644,7 +740,8 @@ function isFormFieldProperty(node) {
 
 function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
     const myDoc = parseXml(myXml);
-    const myPocessNode = myDoc.getElementsByTagName(PROCESS_TAG_NAME)[0];
+    const myPocessNode = Array.from(myDoc.getElementsByTagName(PROCESS_TAG_NAME))
+        .filter(elem => elem.getAttribute('isExecutable') === 'true')[0];
     const myNodesWithIdAttr = myPocessNode.querySelectorAll('[id]');
 
     const otherDoc = parseXml(otherXml);
@@ -717,6 +814,8 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
 
     paintDiffs(diffTypeForMissing, missingShapeIds, missingRowIds);
     paintDiffs(DiffType.CHANGE, changedShapeIds, changedRowIds);
+
+    fillChangesTable(myPocessNode, diffTypeForMissing, missingShapeIds, missingRowIds, changedShapeIds, changedRowIds);
 
     highlightShapesAndRows();
 }
@@ -954,6 +1053,188 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
             .map(id => bpmnJSElementRegistry.get(id))
             .filter(item => item);
         bpmnJSModeling.setColor(rows, { stroke: diffType.rowColor });
+    }
+}
+
+function fillChangesTable(rootBpmnNode, diffTypeForMissing, missingShapeIds, missingRowIds, changedShapeIds, changedRowIds) {
+    // do not add rows to the change table yet
+    const changedElems = getElemsForChangesTable(changedShapeIds, DiffType.CHANGE);
+    const missingElems = getElemsForChangesTable(missingShapeIds, diffTypeForMissing);
+
+    if (diffTypeForMissing === DiffType.ADD) {
+        addedRemovedLabelElement.textContent = 'Added:';
+    } else {
+        addedRemovedLabelElement.textContent = 'Removed:';
+    }
+    changedTextElement.textContent = `${changedElems.length} elements (${changedRowIds.length} rows)`;
+    addedRemovedTextElement.textContent = `${missingElems.length} elements (${missingRowIds.length} rows)`;
+
+    // remove all old rows from changesTable
+    changesTable.innerHTML = "";
+
+    const allElems = [...changedElems, ...missingElems];
+    if (allElems.length === 0) {
+        return;
+    }
+
+    addHeaderToChangesTable();
+    const tbody = document.createElement('tbody');
+    changesTable.appendChild(tbody);
+
+    const sortedElems = sortChangedElems(rootBpmnNode, allElems);
+
+    for (const [elem, diffType] of sortedElems) {
+        addRowToChangesTable(tbody, diffType, elem);
+    }
+}
+
+// this sorting reflects the order in which elements are added to the bpmn schema,
+// not the sequence of elements passing through it
+function sortChangedElems(rootBpmnNode, elemToDiffTypeArray) {
+    const idToIndexMap = new Map();
+    Array.from(rootBpmnNode.querySelectorAll('[id]'))
+        .map(elem => elem.getAttribute('id'))
+        .filter(id => id)
+        .forEach((id, index) => {
+            idToIndexMap.set(id, index);
+        });
+
+    elemToDiffTypeArray.sort(([elemA, dtA], [elemB, dtB]) => {
+        const indexA = idToIndexMap.get(elemA.id);
+        const indexB = idToIndexMap.get(elemB.id);
+        return indexA - indexB;
+    });
+
+    return elemToDiffTypeArray;
+}
+
+function getElemsForChangesTable(elemIds, diffType) {
+    return elemIds
+        .map(id => bpmnJSElementRegistry.get(id))
+        .filter(elem => elem && elem.type !== 'bpmn:Association')
+        .map(elem => [elem, diffType]);
+}
+
+function addHeaderToChangesTable() {
+    const thead = document.createElement('thead');
+    changesTable.appendChild(thead);
+
+    const row = document.createElement('tr');
+    thead.appendChild(row);
+
+    const cellChange = document.createElement('th');
+    cellChange.style.minWidth = '60px';
+    cellChange.appendChild(document.createTextNode('Change'));
+    row.appendChild(cellChange);
+
+    const cellId = document.createElement('th');
+    cellId.style.minWidth = '60px';
+    cellId.appendChild(document.createTextNode('Id'));
+    row.appendChild(cellId);
+
+    const cellName = document.createElement('th');
+    cellName.style.minWidth = '200px';
+    cellName.appendChild(document.createTextNode('Name'));
+    row.appendChild(cellName);
+
+    const cellType = document.createElement('th');
+    cellType.style.minWidth = '200px';
+    cellType.appendChild(document.createTextNode('Type'));
+    row.appendChild(cellType);
+
+    const cellProps = document.createElement('th');
+    cellProps.style.width = '100%';
+    cellProps.appendChild(document.createTextNode('Propepties'));
+    row.appendChild(cellProps);
+}
+
+function addRowToChangesTable(tbody, diffType, elem) {
+    const elemId = elem.id;
+    let name = '';
+    let type = '';
+    let propsHtml = '';
+    if (elem && elem.di && elem.di.bpmnElement) {
+        const bpmnElement = elem.di.bpmnElement;
+
+        name = bpmnElement.name;
+        type = bpmnElement.$type;
+        if (type.startsWith('bpmn:')) {
+            type = type.slice(5);
+        }
+
+        switch (type) {
+            case 'ServiceTask':
+                if (bpmnElement.delegateExpression) {
+                    propsHtml = `delegate = ${bpmnElement.delegateExpression}`;
+                } else if (bpmnElement.topic) {
+                    propsHtml = `topic = ${bpmnElement.topic}`;
+                } else if (bpmnElement.expression) {
+                    propsHtml = `expression = ${bpmnElement.expression}`;
+                }
+                propsHtml += '<br>';
+
+            case 'CallActivity':
+                propsHtml += `
+                    asyncBefore = ${bpmnElement.asyncBefore}<br>
+                    asyncAfter = ${bpmnElement.asyncAfter}<br>
+                    exclusive = ${bpmnElement.exclusive}`;
+                break;
+
+            default:
+        }
+        // console.debug('bpmnElement', bpmnElement);
+    }
+
+    const row = document.createElement('tr');
+    tbody.appendChild(row);
+
+    const cellChange = document.createElement('td');
+    cellChange.style.backgroundColor = diffType.shapeColor;
+    cellChange.appendChild(document.createTextNode(diffType.name));
+    row.appendChild(cellChange);
+
+    const cellId = document.createElement('td');
+    cellId.appendChild(document.createTextNode(elemId));
+    row.appendChild(cellId);
+
+    const cellName = document.createElement('td');
+    cellName.appendChild(document.createTextNode(name));
+    row.appendChild(cellName);
+
+    const cellType = document.createElement('td');
+    cellType.appendChild(document.createTextNode(type));
+    row.appendChild(cellType);
+
+    const cellProps = document.createElement('td');
+    cellProps.innerHTML = propsHtml;
+    row.appendChild(cellProps);
+
+    row.addEventListener('click', (event) => onChangeTableRowSelected(row, elemId));
+}
+
+let changeTableSelectedRow = null;
+let changeTableSelectedElem = null;
+
+function onChangeTableRowSelected(row, elemId) {
+    resetChangeTableRowSelection();
+
+    changeTableSelectedRow = row;
+    changeTableSelectedRow.style.backgroundColor = '#ffffdd';
+
+    changeTableSelectedElem = bpmnJSElementRegistry.get(elemId);
+    if (changeTableSelectedElem) {
+        addElementMarker(changeTableSelectedElem, BIG_HIGHLIGHTING_MARKER);
+    } else {
+        console.warn('onChangeTableRowSelected: bpmn elem not found by id: ' + elemId);
+    }
+}
+
+function resetChangeTableRowSelection() {
+    if (changeTableSelectedRow) {
+        changeTableSelectedRow.style.backgroundColor = '#ffffff';
+    }
+    if (changeTableSelectedElem) {
+        removeElementMarker(changeTableSelectedElem, BIG_HIGHLIGHTING_MARKER);
     }
 }
 
@@ -1376,7 +1657,7 @@ function showConditionExpression() {
     // hide native expression container
     conditionExpressionElem.style.display = 'none';
 
-    // add new expression container, previously delete a possible duplicate
+    // add new expression container, previously remove a possible duplicate
     removeElement(BPMN_PROPS_CONDITION_ID);
 
     const div = document.createElement('div');
@@ -1411,7 +1692,7 @@ function drawConditionPart(parentElem, part, exists) {
     if (!exists) {
         let color = null;
         if (branchNameTextElement.textContent === targetBranchName) {
-            color = '#ff8888'; // the 'delete' color for branch
+            color = '#ff8888'; // the 'remove' color for branch
         } else {
             color = '#88ff88'; // the 'add' color for mr
         }
@@ -1608,11 +1889,16 @@ async function loadBpmnXml2(commitId, filePath) {
     return await loadFileContent(fileUrl, false);
 }
 
-function hideModelerPallete() {
+function hideModelerPalleteAndPoweredByLabel() {
     try {
         document.getElementsByClassName('djs-palette')[0].style.display = 'none';
     } catch (error) {
         console.warn('modeler pallete not found', error);
+    }
+    try {
+        document.querySelector('.bjs-powered-by').style.display = 'none';
+    } catch (error) {
+        console.warn('powered by label not found', error);
     }
 }
 
@@ -1690,7 +1976,7 @@ async function showBpmnDiff(params) {
         onSelectedElementChanged(event.newSelection[0].id);
     });
 
-    hideModelerPallete();
+    hideModelerPalleteAndPoweredByLabel();
 
     console.debug('loading branch bpmn xml...');
     branchBpmnXml = null;

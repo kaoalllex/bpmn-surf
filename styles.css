@@ -36,7 +36,7 @@
 }
 
 
-/* others */
+/* dive-in */
 .dive-in-call-activity {
     padding: 3px 6px 2px;
     border: 1px solid hsl(225, 10%, 75%);
@@ -55,4 +55,43 @@
     white-space: nowrap;
     user-select: none;
     cursor: wait;
+}
+
+/* changes table */
+.changes-table th,
+.changes-table td {
+    border: 1px solid black;
+    border-style: dotted;
+}
+.changes-table th {
+    height: 32px;
+    text-align: left;
+}
+.changes-table td {
+    vertical-align: top;
+}
+
+.table-fixed-header { 
+    overflow: auto; 
+    font-size: 16px;
+}
+
+.table-fixed-header thead th { 
+    position: sticky; 
+    top: 0; 
+    z-index: 1; 
+}
+
+/* tables common style */
+table  { 
+    border-collapse: collapse; 
+    width: 100%; 
+}
+
+th, td { 
+    padding: 2px 2px; 
+}
+
+th { 
+    background: #eee; 
 }
