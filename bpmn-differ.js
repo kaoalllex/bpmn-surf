@@ -1249,11 +1249,15 @@ const BIG_HIGHLIGHTING_MARKER = 'highlight-diff-big';
 
 function switchHighlighting() {
     // console.debug('isHighlightEnabled = ' + isHighlightEnabled);
-
     const elems = getShapesAndRowsElementsForHighlighting();
 
     if (isHighlightEnabled) {
-        elems.forEach(elem => addElementMarker(elem, BIG_HIGHLIGHTING_MARKER));
+        elems.forEach(elem => {
+            // if elem is selected, highlighting does not work
+            // so remove 'selected' marker
+            removeElementMarker(elem, 'selected');
+            addElementMarker(elem, BIG_HIGHLIGHTING_MARKER);
+        });
         highlightingTimeoutId = setTimeout(() => {
             elems.forEach(elem => {
                 removeElementMarker(elem, BIG_HIGHLIGHTING_MARKER);
