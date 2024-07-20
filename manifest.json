@@ -1,14 +1,16 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.15",
+    "version": "0.16",
     "description": "BPMN 2.0 schemas and DMN visual differ for Gitlab",
     "content_scripts": [
         {
             "matches": [
-                "https://gitlab.example.com/*"
+                "https://gitlab.example.com/*",
+                "https://gitlab.com/*"
             ],
             "js": [
+                "config.js",
                 "utils.js",
                 "main.js"
             ]

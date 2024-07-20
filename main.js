@@ -46,10 +46,11 @@ async function getBranchBpmnOrDmnShowingFileType() {
     if (!href.includes('/-/blob/')) {
         return null;
     }
-    if (href.endsWith(BPMN_FILE_EXT)) {
+    const hrefWithoutParams = href.split('?')[0]
+    if (hrefWithoutParams.endsWith(BPMN_FILE_EXT)) {
         return BPMN_FILE_TYPE;
     }
-    if (href.endsWith(DMN_FILE_EXT)) {
+    if (hrefWithoutParams.endsWith(DMN_FILE_EXT)) {
         return DMN_FILE_TYPE;
     }
     return null;
@@ -148,9 +149,11 @@ async function findDataPathElements() {
 }
 
 function findSelectedFilePath(dataPathElems) {
+    console.debug('dataPathElems!!!!', dataPathElems);
     let filePath;
     for (const elem of dataPathElems) {
-        if (elem.classList.contains('is-active')) {
+        if (elem.classList.contains('diff-file')) {
+            console.debug('found!!!');
             filePath = elem.getAttribute('data-path');
             if (filePath) {
                 break;
@@ -458,7 +461,7 @@ async function loadMasterCommitEntries() {
 
 async function loadMasterCommitEntriesPage(pageNumber) {
     const offset = (pageNumber - 1) * 100;
-    const url = projectUrl + '/-/commits/master?format=atom&limit=100&offset=' + offset;
+    const url = projectUrl + '/-/commits/' + MASTER_BRANCH_NAME + '?format=atom&limit=100&offset=' + offset;
     // console.debug('url: ' + url);
     const content = await loadFileContent(url, true);
     const parser = new DOMParser();
@@ -473,7 +476,7 @@ async function loadFilteredByTitleMasterCommitEntries(commitTitle) {
         return;
     }
 
-    const url = projectUrl + '/-/commits/master?format=atom&search=' + encodeURIComponent(commitTitle);
+    const url = projectUrl + '/-/commits/' + MASTER_BRANCH_NAME + '?format=atom&search=' + encodeURIComponent(commitTitle);
     // console.debug('url: ' + url);
     const content = await loadFileContent(url, true);
     const parser = new DOMParser();
@@ -694,9 +697,12 @@ function extractBranchCommitIdAndFilePathByRegex(branchCommitId) {
         }
     }
 
+    // remove url params
+    const filePath = match[2].split('?')[0];
+
     return {
         branchCommitId: match[1],
-        filePath: match[2]
+        filePath: filePath
     };
 }
 

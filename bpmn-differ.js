@@ -251,6 +251,7 @@ function createHeader(parentElem) {
     fileNameSpan.appendChild(document.createTextNode(fileName));
     fileNameSpan.style.fontSize = '20px';
     fileNameSpan.style.fontWeight = 'bold';
+    fileNameSpan.style.whiteSpace = 'nowrap';
     cellFileName.appendChild(fileNameSpan);
 
     // download file button
