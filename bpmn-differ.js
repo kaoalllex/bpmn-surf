@@ -690,6 +690,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
 
     ['calledElement', 'Called element'],
     ['businessKey', 'Called element'],
+    ['bpmn:callActivity/camunda:calledElementBinding', 'Called element'],
 
     ['camunda:jobPriority', 'Job execution'],
     ['camunda:failedJobRetryTimeCycle', 'Job execution'],
