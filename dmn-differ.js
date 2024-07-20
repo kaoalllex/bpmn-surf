@@ -346,8 +346,6 @@ async function showDmnDiff(params) {
         await showDmnBranch();
     }
 
-    hidePoweredByLabel();
-
     // console.debug('making canvas visible...');
     canvasElem.style.visibility = 'visible';
 
@@ -359,6 +357,20 @@ function hidePoweredByLabel() {
         document.querySelector('.bjs-powered-by').style.display = 'none';
     } catch (error) {
         console.warn('powered by label not found', error);
+    }
+}
+
+async function switchToViewTableMode() {
+    const switchToTableButton = document.querySelector('.dmn-icon-decision-table');
+    if (switchToTableButton) {
+        switchToTableButton.click();
+    }
+
+    const viewDrdButton = await doWithAttempts(function () {
+        return document.querySelector('.view-drd');
+    }, attempts = 2, delayMs = 50);
+    if (viewDrdButton) {
+        viewDrdButton.style.display = 'none';
     }
 }
 
@@ -410,6 +422,8 @@ async function showDmn(dmnXml) {
         console.error('dmn loading error', err);
         return;
     }
+    switchToViewTableMode();
+    hidePoweredByLabel();
     fitDmnViewport();
     dmnTableContainer.scrollTop = scrollTop;
 }
