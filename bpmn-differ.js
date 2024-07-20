@@ -929,8 +929,10 @@ function findChildrenDiffs(nodeA, nodeB) {
 }
 
 function nodeToDiffs(node) {
+    // console.debug('nodeToDiffs', node);
     if (node.tagName === 'bpmn:extensionElements' || node.tagName === 'camunda:inputOutput') {
         const children = getAllNotTextChildren(node);
+        // console.debug('getAllNotTextChildren res', children);
         let res = [];
         for (const child of children) {
             res = res.concat(nodeToDiffs(child));
@@ -951,7 +953,7 @@ function getAllNotTextChildren(node) {
         return res;
     }
     console.warn('not text child not found');
-    return [node];
+    return [];
 }
 
 function findDifferentChilder(childrenA, childrenB) {
