@@ -149,11 +149,9 @@ async function findDataPathElements() {
 }
 
 function findSelectedFilePath(dataPathElems) {
-    console.debug('dataPathElems!!!!', dataPathElems);
     let filePath;
     for (const elem of dataPathElems) {
         if (elem.classList.contains('diff-file')) {
-            console.debug('found!!!');
             filePath = elem.getAttribute('data-path');
             if (filePath) {
                 break;
@@ -291,6 +289,7 @@ async function addShowDiffButton() {
     }
 
     const filePath = findSelectedFilePath(dataPathElems);
+    // console.debug('filePath = ' + filePath, dataPathElems);
     if (filePath == null) {
         console.debug('file not selected');
         return;
