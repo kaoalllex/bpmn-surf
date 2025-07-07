@@ -62,6 +62,7 @@ let missingShapeIds = [];
 let missingRowIds = [];
 let changedShapeIds = [];
 let changedRowIds = [];
+let changedMessages = [];
 
 let selectedElementId = null;
 
@@ -623,6 +624,7 @@ class DiffType {
 
 const PROCESS_TAG_NAME = 'bpmn:process';
 const SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
+const MESSAGE_TAG_NAME = 'bpmn:message';
 
 const ROW_TAG_NAMES = [
     'bpmn:sequenceFlow',
@@ -746,11 +748,13 @@ function isFormFieldProperty(node) {
 
 function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
     const myDoc = parseXml(myXml);
+    const otherDoc = parseXml(otherXml);
+
+    findChangedMessages(myDoc, otherDoc);
+
     const myPocessNode = Array.from(myDoc.getElementsByTagName(PROCESS_TAG_NAME))
         .filter(elem => elem.getAttribute('isExecutable') === 'true')[0];
     const myNodesWithIdAttr = myPocessNode.querySelectorAll('[id]');
-
-    const otherDoc = parseXml(otherXml);
 
     missingShapeIds = [];
     missingRowIds = [];
@@ -824,6 +828,24 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
     fillChangesTable(myPocessNode, diffTypeForMissing, missingShapeIds, missingRowIds, changedShapeIds, changedRowIds);
 
     highlightShapesAndRows();
+}
+
+function findChangedMessages(myDoc, otherDoc) {
+    changedMessages = [];
+    const myMessageNodes = Array.from(myDoc.getElementsByTagName(MESSAGE_TAG_NAME))
+
+    for (const myNode of myMessageNodes) {
+        const id = myNode.getAttribute('id');
+        const otherNode = otherDoc.getElementById(id);
+        if (!otherNode) {
+            continue;
+        }
+        const diffs = compareNodes(null, myNode, otherNode);
+        if (diffs) {
+            changedMessages.push(id);
+        }
+    }
+    // console.debug('changedMessages', changedMessages);
 }
 
 /**
@@ -1024,12 +1046,16 @@ function getAttributesDiffs(diffs, nodeATagName, nodeAAttrs, nodeBAttrs) {
 
         // node.getAttribute(attName) not working and returns null so uses method 'find'
         const attrB = nodeBAttrs.find(a => a.name === attName);
-        if (!attrB || attrA.value !== attrB.value) {
+        if (!attrB || attrA.value !== attrB.value || isChangedMessageRef(attrA)) {
             if (!diffs.includes(attName)) {
                 diffs.push(nodeATagName + "/" + attName);
             }
         }
     }
+}
+
+function isChangedMessageRef(attr) {
+    return attr.name === 'messageRef' && changedMessages.includes(attr.value);
 }
 
 function paintDiffs(diffType, shapeIdList, rowIdList) {
