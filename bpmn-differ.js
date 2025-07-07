@@ -682,6 +682,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['camunda:outputParameter', 'Outputs'],
 
     ['bpmn:escalationEventDefinition', 'Escalation'],
+    ['bpmn:escalationEventDefinition/camunda:escalationCodeVariable', 'Escalation'],
 
     ['camunda:executionListener', 'Execution listeners'],
     ['camunda:executionListener/delegateExpression', 'Execution listeners'],
@@ -709,6 +710,9 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     // because there is no property group to highlight
     ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP],
     ['bpmn:multiInstanceLoopCharacteristics/isSequential', IGNORED_DIFF_PROPERTY_GROUP],
+    ['bpmn:boundaryEvent/attachedToRef', IGNORED_DIFF_PROPERTY_GROUP],
+    ['bpmn:outputSet', IGNORED_DIFF_PROPERTY_GROUP],
+    ['bpmn:inputSet', IGNORED_DIFF_PROPERTY_GROUP],
 
     // TODO: select the title of the properties panel
     ['bpmn:startEvent/isInterrupting', IGNORED_DIFF_PROPERTY_GROUP]
