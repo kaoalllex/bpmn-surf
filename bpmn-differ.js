@@ -932,7 +932,7 @@ function compareChildNodesWithTagName(nodeA, nodeB, tagName) {
 }
 
 function findChildNodeByTagName(node, tagName) {
-    for (child of node.childNodes) {
+    for (const child of node.childNodes) {
         if (child.tagName === tagName) {
             return child;
         }
@@ -970,7 +970,7 @@ function nodeToDiffs(node) {
 
 function getAllNotTextChildren(node) {
     const res = [];
-    for (child of node.childNodes) {
+    for (const child of node.childNodes) {
         if (child.nodeType !== Node.TEXT_NODE) {
             res.push(child);
         }

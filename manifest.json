@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.16",
+    "version": "0.17",
     "description": "BPMN 2.0 schemas and DMN visual differ for Gitlab",
     "content_scripts": [
         {
@@ -12,6 +12,8 @@
             "js": [
                 "config.js",
                 "utils.js",
+                "repo-provider.js",
+                "gitlab-repo-provider.js",
                 "main.js"
             ]
         }
