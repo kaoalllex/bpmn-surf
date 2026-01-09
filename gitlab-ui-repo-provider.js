@@ -1,0 +1,101 @@
+class GitLabUIRepoProvider extends UIRepoProvider {
+    #buttonId = 'btn_77844bf3d4e842caa0d88194431197c0';
+    #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
+    #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
+
+    addButton({ fileType, buttonType, needToSelectLocalFile, onButtonClickFunc }) {
+        this.reset();
+
+        const parentContainerSelector = buttonType === UI_BUTTON_TYPE.DIFF
+            ? this.#SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR
+            : this.#SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR;
+
+        const appendAtTheEnd = buttonType === UI_BUTTON_TYPE.DIFF;
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.id = this.#buttonId;
+        buttonContainer.className = 'gl-display-flex';
+
+        const button = document.createElement('button');
+        button.id = this.#buttonId + '-btn';
+        button.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+        button.textContent = this.#getButtonText(fileType, buttonType);
+        button.addEventListener('mouseup', onButtonClickFunc);
+        buttonContainer.appendChild(button);
+
+        if (needToSelectLocalFile) {
+            const fileInput = document.createElement('input');
+            fileInput.id = this.#buttonId + '-input';
+            fileInput.type = 'file';
+            fileInput.accept = fileType.extension;
+            fileInput.style.display = 'none';
+            fileInput.addEventListener('change', (event) => this.#localFileSelected(event, onButtonClickFunc));
+            buttonContainer.appendChild(fileInput);
+
+            const button2 = document.createElement('button');
+            button2.id = this.#buttonId + '-btn2';
+            button2.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+            button2.textContent = 'Show diff with local';
+            button2.addEventListener('mouseup', () => { fileInput.click(); });
+            buttonContainer.appendChild(button2);
+        }
+
+        const parentContainer = document.querySelector(parentContainerSelector);
+        if (!parentContainer) {
+            console.error('Cannot find button parent container by selector', parentContainerSelector);
+            return;
+        }
+        if (appendAtTheEnd) {
+            parentContainer.appendChild(buttonContainer);
+        } else {
+            parentContainer.prepend(buttonContainer);
+        }
+    }
+
+    reset() {
+        removeElement(this.#buttonId);
+    }
+
+    isOwnButtonClick(event) {
+        if (!event || !event.target || !event.target.id) {
+            return false;
+        }
+        return event.target.id.startsWith(this.#buttonId);
+    }
+
+    #getButtonText(fileType, buttonType) {
+        if (buttonType === UI_BUTTON_TYPE.DIFF) {
+            return fileType === FILE_TYPE_BPMN ? 'Show schema diff' : 'Show decision diff';
+        }
+        if (buttonType === UI_BUTTON_TYPE.BRANCH) {
+            return fileType === FILE_TYPE_BPMN ? 'Show schema' : 'Show decision';
+        }
+        throw new Error(`Unexpected buttonType: ${buttonType}`);
+    }
+
+    #localFileSelected(event, onButtonClickFunc) {
+        const file = event.target.files[0];
+        if (!file) {
+            console.error('Cannot select local file');
+            return;
+        }
+        console.debug('Selected local file: ' + file.name);
+
+        event.target.value = '';
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const content = e.target.result;
+            console.debug('Selected local file has been read');
+            const extParams = {
+                localFileContent: content,
+                mrBranchName: 'local file',
+            };
+            onButtonClickFunc(extParams);
+        };
+        reader.onerror = function (e) {
+            console.error('Error while reading local file ' + file.name, e.target.error);
+        };
+        reader.readAsText(file);
+    }
+}

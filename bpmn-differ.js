@@ -22,7 +22,7 @@ let projectHostUrl = null;
 let projectId = null;
 let mrCommitId = null;
 let localFileContent = null;
-let branchCommitId = null; // todo: this is actually the name of target branch
+let branchCommitId = null; // TODO: this is actually the name of target branch
 let filePath = null;
 let fileName = null;
 
@@ -70,7 +70,7 @@ let nodeIdToDiffsMap = new Map();
 let highlightedPropGroups = null;
 let highlightedPropGroupElems = null;
 
-// map: elem id -> [current branch condition, other branch condition]
+// Map: element id -> [current branch condition, other branch condition]
 let nodeIdToConditions = new Map();
 
 let processIdToBpmnFilePathMap = null;
@@ -91,7 +91,6 @@ function createBpmnDiv() {
     bpmnDiv.style.zIndex = '9999';
     document.body.appendChild(bpmnDiv);
 
-    //-----------------------------------------------------
     const table = document.createElement('table');
     table.style.height = '100%';
     // table.border = 5;
@@ -123,7 +122,7 @@ function createBpmnDiv() {
     canvasCell.id = BPMN_CANVAS_ID;
     canvasCell.style.height = '100%';
     canvasCell.style.width = '100%';
-    canvasCell.style.visibility = 'hidden'; // initially the canvas is hidden
+    canvasCell.style.visibility = 'hidden'; // Initially the canvas is hidden
     tableCanvasPropsRow.appendChild(canvasCell);
     canvasElem = canvasCell;
     addCanvasEventHandlers(canvasElem);
@@ -220,7 +219,7 @@ function createFooter(parentElem) {
             showChangesButton.textContent = 'Hide changes';
             changesTableDiv.style.display = 'block';
         }
-        // doesn't always work the first time so call fitViewport twice
+        // Doesn't always work the first time, so call fitViewport twice
         fitViewport(true);
         fitViewport(true);
     });
@@ -255,7 +254,6 @@ function createHeader(parentElem) {
     fileNameSpan.style.whiteSpace = 'nowrap';
     cellFileName.appendChild(fileNameSpan);
 
-    // download file button
     const cellDownloadButton = document.createElement('td');
     cellDownloadButton.style.width = '100%';
     row1.appendChild(cellDownloadButton);
@@ -308,18 +306,18 @@ function createHeader(parentElem) {
     switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     switchButton.style.margin = '3px';
     switchButton.addEventListener('click', (event) => {
-        if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
+        if (branchNameTextElement.textContent === targetBranchName) { // Current branch - switch to MR
             if (mrBpmnXml) {
                 showBpmnMr();
             } else {
-                // may be this file was removed
+                // File may have been removed
                 alertFileNotExistInBranch(mrBranchName);
             }
-        } else { // current MR - try to switch to Branch
+        } else { // Current MR - try to switch to branch
             if (branchBpmnXml) {
                 showBpmnBranch();
             } else {
-                // may be this file is new
+                // File may be new
                 alertFileNotExistInBranch(targetBranchName);
             }
         }
@@ -416,7 +414,7 @@ function createHeader(parentElem) {
             bpmnPropsCell.style.display = 'none';
             isBpmnPropsCellHidden = true;
         }
-        // doesn't always work the first time so call fitViewport twice
+        // Doesn't always work the first time, so call fitViewport twice
         fitViewport(true);
         fitViewport(true);
     });
@@ -504,7 +502,6 @@ function handleCanvasWheelEvent(event) {
 
 function fitViewport(force = false) {
     const viewbox = bpmnJSCanvas.viewbox();
-    // console.debug(viewbox);
     const needToFit = viewbox.inner.width > viewbox.outer.width;
 
     if (needToFit && !isViewportAlreadyFitted() || force) {
@@ -708,8 +705,7 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
 
     ['bpmn:documentation', 'Documentation'],
 
-    // properties to be ignored
-    // because there is no property group to highlight
+    // Properties to be ignored because there is no property group to highlight
     ['bpmn:terminateEventDefinition', IGNORED_DIFF_PROPERTY_GROUP],
     ['bpmn:multiInstanceLoopCharacteristics/isSequential', IGNORED_DIFF_PROPERTY_GROUP],
     ['bpmn:boundaryEvent/attachedToRef', IGNORED_DIFF_PROPERTY_GROUP],
@@ -765,7 +761,7 @@ function highlightDiffs(myXml, otherXml, diffTypeForMissing) {
 
     for (const myNode of myNodesWithIdAttr) {
         if (isFormFieldProperty(myNode)) {
-            // will compare form-field-properties as parts of bpmn:userTask nodes
+            // Will compare form-field-properties as parts of bpmn:userTask nodes
             continue;
         }
 
@@ -875,14 +871,14 @@ function compareNodes(parentNode, nodeA, nodeB) {
     }
 
     if (isNodeConnector(nodeA)) {
-        // do not compare connectors
+        // Do not compare connectors
         return null;
     }
 
     let diffs = compareNodesAttributes(nodeA, nodeB);
 
     if (isSubProcess(nodeA)) {
-        // do not compare children of subprocesses (they will be compared separately)
+        // Do not compare children of subprocesses (they will be compared separately)
         // except 'multiInstanceLoopCharacteristics' and 'extensionElements' nodes
         const milcDiffs = compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:multiInstanceLoopCharacteristics');
         diffs = concatDiffs(diffs, milcDiffs);
@@ -1032,7 +1028,7 @@ function getAttributesDiffs(diffs, nodeATagName, nodeAAttrs, nodeBAttrs) {
     // checks that all attributes of nodeA exist in nodeB and have the same value
     for (const attrA of nodeAAttrs) {
         const attName = attrA.name;
-        // skip:
+        // Skip:
         // - connectors attributes
         // - gateway's 'default' att
         // - 'id' att (it can belong to the messageEventDefinition elem)
@@ -1044,7 +1040,7 @@ function getAttributesDiffs(diffs, nodeATagName, nodeAAttrs, nodeBAttrs) {
             continue;
         }
 
-        // node.getAttribute(attName) not working and returns null so uses method 'find'
+        // node.getAttribute(attName) not working and returns null, so uses method 'find'
         const attrB = nodeBAttrs.find(a => a.name === attName);
         if (!attrB || attrA.value !== attrB.value || isChangedMessageRef(attrA)) {
             if (!diffs.includes(attName)) {
@@ -1065,7 +1061,7 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
             .filter(item => item);
         bpmnJSModeling.setColor(shapes, { fill: diffType.shapeColor });
 
-        // paint the TextAnnotation elements because setColor() does not work for them
+        // Paint the TextAnnotation elements because setColor() does not work for them
         for (const shape of shapes) {
             try {
                 if (shape.type === 'bpmn:TextAnnotation') {
@@ -1076,7 +1072,7 @@ function paintDiffs(diffType, shapeIdList, rowIdList) {
                         .style.fill = diffType.shapeColor;
                 }
             } catch (error) {
-                // maybe the shape does not have the type property 
+                // Maybe the shape does not have the type property
                 // or the element to set the style cannot be found
                 // so, ignore it
             }
@@ -1103,7 +1099,7 @@ function fillChangesTable(rootBpmnNode, diffTypeForMissing, missingShapeIds, mis
     changedTextElement.textContent = `${changedElems.length} elements (${changedRowIds.length} rows)`;
     addedRemovedTextElement.textContent = `${missingElems.length} elements (${missingRowIds.length} rows)`;
 
-    // remove all old rows from changesTable
+    // Remove all old rows from changesTable
     changesTable.innerHTML = "";
 
     const allElems = [...changedElems, ...missingElems];
@@ -1122,7 +1118,7 @@ function fillChangesTable(rootBpmnNode, diffTypeForMissing, missingShapeIds, mis
     }
 }
 
-// this sorting reflects the order in which elements are added to the bpmn schema,
+// This sorting reflects the order in which elements are added to the bpmn schema,
 // not the sequence of elements passing through it
 function sortChangedElems(rootBpmnNode, elemToDiffTypeArray) {
     const idToIndexMap = new Map();
@@ -1283,7 +1279,7 @@ function switchHighlighting() {
 
     if (isHighlightEnabled) {
         elems.forEach(elem => {
-            // if elem is selected, highlighting does not work
+            // If elem is selected, highlighting does not work
             // so remove 'selected' marker
             removeElementMarker(elem, 'selected');
             addElementMarker(elem, BIG_HIGHLIGHTING_MARKER);
@@ -1324,7 +1320,7 @@ function addElementMarker(element, marker) {
     try {
         bpmnJSCanvas.addMarker(element, marker);
     } catch (error) {
-        // some elements does not have property `id` so addMarker() throw error
+        // Some elements do not have property `id`, so addMarker() throws error
     }
 }
 
@@ -1332,7 +1328,7 @@ function removeElementMarker(element, marker) {
     try {
         bpmnJSCanvas.removeMarker(element, marker);
     } catch (error) {
-        // some elements does not have property `id` so addMarker() throw error
+        // Some elements do not have property `id`, so removeMarker() throws error
     }
 }
 
@@ -1364,7 +1360,7 @@ async function showCallActivityDiveInOverlay() {
         return;
     }
 
-    // try to restore map
+    // Try to restore map
     if (!processIdToBpmnFilePathMap) {
         await restoreProcessIdToBpmnFilePathMapFromLocalStorage();
     }
@@ -1431,7 +1427,7 @@ async function onDiveInProcessEvent(processId) {
     isDiveInProcessEventHandlingNow = true;
     try {
         if (dataWillBeLoaded) {
-            // for refresh overlay label
+            // For refresh overlay label
             await showCallActivityDiveInOverlay();
         }
         const processParams = await loadProcessParamsByProcessId(processId);
@@ -1455,7 +1451,7 @@ async function onDiveInProcessEvent(processId) {
                 params,
                 null,
                 MSG_BPMN_ID,
-                // find href in the head of this document
+                // Find href in the head of this document
                 // because chrome.runtime.getURL not working in this new tab
                 (resourceName) => getLinkOrScriptHref(resourceName)
             );
@@ -1463,7 +1459,7 @@ async function onDiveInProcessEvent(processId) {
     } finally {
         isDiveInProcessEventHandlingNow = false;
         if (dataWillBeLoaded) {
-            // for refresh overlay label
+            // For refresh overlay label
             await showCallActivityDiveInOverlay();
         }
     }
@@ -1505,7 +1501,7 @@ function getLinkOrScriptHref(resourceName) {
 }
 
 async function findBpmnFilePathByProcessId(processId) {
-    // try to find by process id
+    // Try to find by process id
     let res = processIdToBpmnFilePathMap.get(processId);
     if (res) {
         // console.debug('found by case 1');
@@ -1513,18 +1509,16 @@ async function findBpmnFilePathByProcessId(processId) {
     }
 
     if (processId.endsWith('Process')) {
-        // try to find by <process id> without 'Process' suffix
+        // Try to find by <process id> without 'Process' suffix
         const processIdWithoutProcessSuffix = processId.slice(0, -'Process'.length);
-        // console.debug('processIdWithoutProcessSuffix: ' + processIdWithoutProcessSuffix);
         res = processIdToBpmnFilePathMap.get(processIdWithoutProcessSuffix);
         if (res) {
             // console.debug('found by case 2');
             return res;
         }
     } else {
-        // try to find by "<process id>Process"
+        // Try to find by "<process id>Process"
         const processIdWithProcessSuffix = processId + 'Process';
-        // console.debug('processIdWithProcessSuffix: ' + processIdWithProcessSuffix);
         res = processIdToBpmnFilePathMap.get(processIdWithProcessSuffix);
         if (res) {
             // console.debug('found by case 3');
@@ -1532,10 +1526,10 @@ async function findBpmnFilePathByProcessId(processId) {
         }
     }
 
-    // ok... let's go through all the bpmn files and get the process ID from their contents
+    // Go through all the bpmn files and get the process ID from their contents
     await extractProcessIdFromProjectBpmnFiles();
 
-    // and once again try to find bpmn file path by process id
+    // Once again try to find bpmn file path by process id
     res = processIdToBpmnFilePathMap.get(processId);
     if (res) {
         // console.debug('found by case 4');
@@ -1556,7 +1550,7 @@ async function loadProjectBpmnFiles() {
     const bpmnFilePaths = await loadBpmnFilePaths();
     for (const bpmnFilePath of bpmnFilePaths) {
         const fileName = getFileNameWithoutExtensionFromPath(bpmnFilePath);
-        // for now assume that the file name is equal to the process id
+        // For now assume that the file name is equal to the process id
         const processId = capitalizeFirstLetter(fileName);
         tmpMap.set(processId, bpmnFilePath);
     }
@@ -1632,15 +1626,15 @@ async function restoreProcessIdToBpmnFilePathMapFromLocalStorage() {
 async function getProcessIdToBpmnFilePathMapLocalStorageKey() {
     let latestCommitId = await getLatestBranchCommitId();
 
-    // keyPrefix    = processIdToBpmnFilePathMap#<projectId>#<branchCommitId>#<latestCommitId>
-    // fullKey      = <keyPrefix>#<latestCommitId>
+    // keyPrefix = processIdToBpmnFilePathMap#<projectId>#<branchCommitId>#<latestCommitId>
+    // fullKey = <keyPrefix>#<latestCommitId>
     const keyPrefix = `processIdToBpmnFilePathMap#${projectId}#${branchCommitId}`;
     const fullKey = `${keyPrefix}#${latestCommitId}`;
 
-    // check if value exists
+    // Check if value exists
     const value = localStorage.getItem(fullKey);
     if (!value) {
-        // remove old keys
+        // Remove old keys
         const oldKeys = Object.keys(localStorage).filter((key) => key.startsWith(keyPrefix));
         if (oldKeys.length > 0) {
             oldKeys.forEach(key => localStorage.removeItem(key));
@@ -1692,10 +1686,10 @@ function showConditionExpression() {
     if (!conditionExpressionElem) {
         return;
     }
-    // hide native expression container
+    // Hide native expression container
     conditionExpressionElem.style.display = 'none';
 
-    // add new expression container, previously remove a possible duplicate
+    // Add new expression container, previously remove a possible duplicate
     removeElement(BPMN_PROPS_CONDITION_ID);
 
     const div = document.createElement('div');
@@ -1707,7 +1701,7 @@ function showConditionExpression() {
 
 function drawFormattedCondition(parentElem, conditionExpressionElem) {
     const conditions = nodeIdToConditions.get(selectedElementId);
-    if (conditions) { // when comparing target branch and mr branches
+    if (conditions) { // When comparing target branch and mr branches
         const myCondParts = formatCondition(conditions[0]);
         const otherCondParts = formatCondition(conditions[1]);
 
@@ -1715,7 +1709,7 @@ function drawFormattedCondition(parentElem, conditionExpressionElem) {
             const exists = otherCondParts.includes(part);
             drawConditionPart(parentElem, part, exists);
         }
-    } else { // when viewing target branch branch only
+    } else { // When viewing target branch only
         const myCondParts = formatCondition(conditionExpressionElem.value);
         for (const part of myCondParts) {
             drawConditionPart(parentElem, part, true);
@@ -1730,9 +1724,9 @@ function drawConditionPart(parentElem, part, exists) {
     if (!exists) {
         let color = null;
         if (branchNameTextElement.textContent === targetBranchName) {
-            color = '#ff8888'; // the 'remove' color for branch
+            color = '#ff8888'; // The 'remove' color for branch
         } else {
-            color = '#88ff88'; // the 'add' color for mr
+            color = '#88ff88'; // The 'add' color for mr
         }
         elem.style.backgroundColor = color;
     }
@@ -1849,7 +1843,7 @@ function formatCondition(condition) {
                 if (starting) {
                     break;
                 }
-            // else no break and go to default branch
+            // Else no break and go to default branch
 
             default:
                 symbolArr.push(symbol);
@@ -1877,7 +1871,7 @@ function flushString(resultArr, symbolArr, indentSize) {
 
 async function hideSchemaEditorControls() {
     document.querySelector('.djs-context-pad').style.display = 'none';
-    // sometimes controls appear with delay
+    // Sometimes controls appear with delay
     // so hide controls again after some delay
     await delay(100);
     document.querySelector('.djs-context-pad').style.display = 'none';
@@ -2037,11 +2031,10 @@ async function showBpmnDiff(params) {
         await showBpmnBranch();
     }
 
-    // show canvas after the differ is completely rendered
-    // console.debug('making canvas visible...');
+    // Show canvas after the differ is completely rendered
     canvasElem.style.visibility = 'visible';
 
-    // set max-height of the properties panel container to enable scrollbar display when needed
+    // Set max-height of the properties panel container to enable scrollbar display when needed
     await setPropertiesPanelContainerMaxHeight();
 
     console.debug('ready!');

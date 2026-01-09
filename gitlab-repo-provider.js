@@ -1,23 +1,12 @@
 /**
- * Реализация провайдера для GitLab
- * Содержит всю специфику работы с GitLab: парсинг URL, DOM-моделей, API
+ * GitLab provider implementation
+ * Contains all GitLab-specific logic: URL parsing, DOM models, API
  */
 class GitLabRepoProvider extends RepoProvider {
     constructor() {
         super();
-        this.projectInfo = {
-            url: null,
-            hostUrl: null,
-            groupName: null,
-            name: null,
-            id: null
-        };
-        this.mergeRequestInfo = {
-            iid: null,
-            infoUrl: null,
-            lastCommitId: null,
-            title: null
-        };
+        this.projectInfo = new ProjectInfo();
+        this.mergeRequestInfo = new MergeRequestInfo();
         this.#masterCommitEntries = null;
         this.#filteredByTitleMasterCommitEntries = null;
     }
@@ -51,14 +40,7 @@ class GitLabRepoProvider extends RepoProvider {
             return false;
         }
 
-        console.debug(`project params: 
-            url: ${this.projectInfo.url}; 
-            host url: ${this.projectInfo.hostUrl}; 
-            group name: ${this.projectInfo.groupName}; 
-            name: ${this.projectInfo.name}; 
-            id: ${this.projectInfo.id}`
-        );
-
+        this.projectInfo.logDebug();
         return true;
     }
 
@@ -79,11 +61,11 @@ class GitLabRepoProvider extends RepoProvider {
             return null;
         }
         const hrefWithoutParams = href.split('?')[0];
-        if (hrefWithoutParams.endsWith('.bpmn')) {
-            return 'bpmn';
+        if (hrefWithoutParams.endsWith(FILE_TYPE_BPMN.extension)) {
+            return FILE_TYPE_BPMN;
         }
-        if (hrefWithoutParams.endsWith('.dmn')) {
-            return 'dmn';
+        if (hrefWithoutParams.endsWith(FILE_TYPE_DMN.extension)) {
+            return FILE_TYPE_DMN;
         }
         return null;
     }
@@ -126,7 +108,7 @@ class GitLabRepoProvider extends RepoProvider {
             '%2F' + this.projectInfo.name + '/merge_requests/' + this.mergeRequestInfo.iid;
         this.mergeRequestInfo.infoUrl = mrInfoUrl;
 
-        // Загружаем title при инициализации
+        // Load title during initialization
         try {
             const content = await loadFileContent(this.mergeRequestInfo.infoUrl, true);
             const mrInfo = JSON.parse(content);
@@ -138,8 +120,8 @@ class GitLabRepoProvider extends RepoProvider {
         }
     }
 
-    getMergeRequestTitle() {
-        return this.mergeRequestInfo.title;
+    getMergeRequestInfo() {
+        return this.mergeRequestInfo;
     }
 
     getMergeRequestBranchNames() {
@@ -210,7 +192,7 @@ class GitLabRepoProvider extends RepoProvider {
         return this.#extractBranchCommitIdAndFilePathByRegex(branchCommitId);
     }
 
-    // ==== Приватные поля и методы ====
+    // ==== Private fields and methods ====
 
     #masterCommitEntries = null;
     #filteredByTitleMasterCommitEntries = null;

@@ -89,10 +89,6 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-//---------------------------------------------------------
-// open differ window utils
-//---------------------------------------------------------
-
 function getTitle(fileName) {
     return fileName.replace(/(.{31})/g, "$1 ");
 }
@@ -126,7 +122,6 @@ async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc) {
 }
 
 async function loadScripts(doc, getResourceUrlByNameFunc) {
-    // modeler
     await addStylesheet('libs/bpmn-js/assets/bpmn-js.css', doc, getResourceUrlByNameFunc);
     await addStylesheet('libs/bpmn-js/assets/diagram-js.css', doc, getResourceUrlByNameFunc);
     await addStylesheet('libs/bpmn-js/assets/bpmn-font/css/bpmn.css', doc, getResourceUrlByNameFunc);

@@ -11,9 +11,16 @@
             ],
             "js": [
                 "config.js",
+                "models.js",
                 "utils.js",
                 "repo-provider.js",
+                "ui-repo-provider.js",
                 "gitlab-repo-provider.js",
+                "gitlab-ui-repo-provider.js",
+                "camunda-bpmn-moddle-manager.js",
+                "page-reloader.js",
+                "file-type-detector.js",
+                "app.js",
                 "main.js"
             ]
         }

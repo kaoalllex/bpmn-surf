@@ -31,7 +31,6 @@ function createDmnDiv() {
     dmnDiv.style.zIndex = '9999';
     document.body.appendChild(dmnDiv);
 
-    //-----------------------------------------------------
     const table = document.createElement('table');
     table.style.width = '100%';
     table.style.height = '100%';
@@ -55,7 +54,7 @@ function createDmnDiv() {
     canvasCell.id = DMN_CANVAS_ID;
     canvasCell.style.height = '100%';
     canvasCell.style.width = '100%';
-    canvasCell.style.visibility = 'hidden'; // initially the canvas is hidden
+    canvasCell.style.visibility = 'hidden'; // Initially the canvas is hidden
     tableCanvasPropsRow.appendChild(canvasCell);
     canvasElem = canvasCell;
 }
@@ -141,18 +140,18 @@ function createDmnHeader(parentElem) {
     switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
     switchButton.style.margin = '3px';
     switchButton.addEventListener('click', (event) => {
-        if (branchNameTextElement.textContent === targetBranchName) { // current Branch - switch to MR
+        if (branchNameTextElement.textContent === targetBranchName) { // Current branch - switch to MR
             if (mrDmnXml) {
                 showDmnMr();
             } else {
-                // may be this file was removed
+                // File may have been removed
                 alertFileNotExistInBranch(mrBranchName);
             }
-        } else { // current MR - try to switch to Branch
+        } else { // Current MR - try to switch to branch
             if (branchDmnXml) {
                 showDmnBranch();
             } else {
-                // may be this file is new
+                // File may be new
                 alertFileNotExistInBranch(targetBranchName);
             }
         }

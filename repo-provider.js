@@ -1,43 +1,33 @@
 /**
- * DTO для хранения информации о ветках merge request
- */
-class MergeRequestBranchNames {
-    constructor(sourceBranchName, targetBranchName) {
-        this.sourceBranchName = sourceBranchName;
-        this.targetBranchName = targetBranchName;
-    }
-}
-
-/**
- * Базовый интерфейс провайдера репозитория
+ * Base interface for repository provider
  */
 class RepoProvider {
     /**
-     * Проверяет, доступен ли данный провайдер для текущей страницы
-     * @returns {boolean} true если провайдер может работать с текущей страницей
+     * Checks if this provider is available for the current page
+     * @returns {boolean} true if the provider can work with the current page
      */
     isAvailable() {
         throw new Error('isAvailable() must be implemented');
     }
 
     /**
-     * Инициализирует провайдер и определяет параметры проекта
-     * @returns {Promise<boolean>} true если инициализация успешна
+     * Initializes the provider and determines project parameters
+     * @returns {Promise<boolean>} true if initialization is successful
      */
     async init() {
         throw new Error('init() must be implemented');
     }
 
     /**
-     * Возвращает информацию о проекте
-     * @returns {Object} объект с полями: url, hostUrl, groupName, name, id
+     * Returns project information
+     * @returns {ProjectInfo} object with fields: url, hostUrl, groupName, name, id
      */
     getProjectInfo() {
         throw new Error('getProjectInfo() must be implemented');
     }
 
     /**
-     * Проверяет, активна ли вкладка с diff'ами MR
+     * Checks if the MR diffs tab is active
      * @returns {Promise<boolean>}
      */
     async isDiffsTabActive() {
@@ -45,23 +35,23 @@ class RepoProvider {
     }
 
     /**
-     * Определяет тип файла (bpmn или dmn), если просматривается файл в ветке
-     * @returns {Promise<string|null>} 'bpmn', 'dmn' или null
+     * Determines file type (bpmn or dmn) if viewing a file in a branch
+     * @returns {Promise<FileType|null>} FILE_TYPE_BPMN, FILE_TYPE_DMN or null
      */
     async getBranchFileType() {
         throw new Error('getBranchFileType() must be implemented');
     }
 
     /**
-     * Находит выбранный файл в diff'е MR
-     * @returns {Promise<string|null>} путь к файлу или null
+     * Finds the selected file in MR diff
+     * @returns {Promise<string|null>} file path or null
      */
     async findSelectedFilePath() {
         throw new Error('findSelectedFilePath() must be implemented');
     }
 
     /**
-     * Инициализирует информацию о MR
+     * Initializes MR information
      * @returns {Promise<void>}
      */
     async initMergeRequestInfo() {
@@ -69,23 +59,23 @@ class RepoProvider {
     }
 
     /**
-     * Получает заголовок MR
-     * @returns {string|null} заголовок MR или null если еще не вызывали initMergeRequestInfo
+     * Gets MR information
+     * @returns {MergeRequestInfo|null} object with MR information or null if initMergeRequestInfo hasn't been called yet
      */
-    getMergeRequestTitle() {
-        throw new Error('getMergeRequestTitle() must be implemented');
+    getMergeRequestInfo() {
+        throw new Error('getMergeRequestInfo() must be implemented');
     }
 
     /**
-     * Получает имена исходной и целевой веток MR
-     * @returns {MergeRequestBranchNames|null} объект с информацией о ветках или null
+     * Gets source and target branch names of MR
+     * @returns {MergeRequestBranchNames|null} object with branch information or null
      */
     getMergeRequestBranchNames() {
         throw new Error('getMergeRequestBranchNames() must be implemented');
     }
 
     /**
-     * Получает ID последнего коммита в MR
+     * Gets the last commit ID in MR
      * @returns {Promise<string|null>}
      */
     async getMergeRequestCommitId() {
@@ -93,19 +83,19 @@ class RepoProvider {
     }
 
     /**
-     * Получает ID целевого коммита для сравнения
-     * @param {string} mrCommitId - ID коммита MR
-     * @param {string} mrTitle - заголовок MR
-     * @param {string} targetBranchName - имя целевой ветки
-     * @returns {Promise<string>} ID коммита или имя ветки
+     * Gets target commit ID for comparison
+     * @param {string} mrCommitId - MR commit ID
+     * @param {string} mrTitle - MR title
+     * @param {string} targetBranchName - target branch name
+     * @returns {Promise<string>} commit ID or branch name
      */
     async getTargetCommitId(mrCommitId, mrTitle, targetBranchName) {
         throw new Error('getTargetCommitId() must be implemented');
     }
 
     /**
-     * Извлекает информацию о коммите и пути файла из URL просмотра ветки
-     * @returns {Object|null} объект с полями: branchCommitId, filePath или null
+     * Extracts commit and file path information from branch view URL
+     * @returns {Object|null} object with fields: branchCommitId, filePath or null
      */
     extractBranchCommitIdAndFilePath() {
         throw new Error('extractBranchCommitIdAndFilePath() must be implemented');
