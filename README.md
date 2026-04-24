@@ -1,30 +1,50 @@
-# Bpmn diff
+# BPMN Diff
 
-Google Chrome extension that enables visual comparison of BPMN 2.0 diagrams 
-included in GitLab merge requests.
+Расширение браузера для просмотра и визуального сравнения BPMN 2.0 и DMN диаграмм в GitLab.
 
-## Prerequisites
+## Требования
 
-This extension should be compatible with chromium-based web browsers that support v3 extensions.
+- Google Chrome
+- Другие Chromium-браузеры с поддержкой Chrome Extension Manifest V3
 
-## Installation
+## Установка
 
-- Open the extensions page in your browser: `chrome://extensions`
-- Toggle the `Developer mode` (a toggle button at the top right of the extensions page)
-- Click the button `Load unpacked`
-- Select the folder containing the unpacked extension release
+1. Откройте страницу расширений: `chrome://extensions`
+2. Включите **Режим разработчика** (переключатель в правом верхнем углу)
+3. Нажмите кнопку **Загрузить распакованное** (Load unpacked)
+4. Выберите папку с распакованным расширением
 
-## Usage
+## Возможности
 
-TODO
+- Сравнение двух версий BPMN/DMN диаграмм в GitLab MR (ветка MR vs. target branch)
+- Сравнение с локальными файлами
+- Подсветка изменений: добавленные, удалённые и изменённые элементы
+- Управление масштабом и навигацией (zoom/pan, "Fit view")
+- Панель свойств для просмотра деталей элементов
 
-## Links
+### Сравнение в MR
 
-Time channal: https://chat.example.com/example/channels/bpmn-diff
+1. Откройте merge request в GitLab, содержащий изменения BPMN/DMN файлов
+2. На странице MR появится кнопка **Show schema diff** (для BPMN) или **Show decision diff** (для DMN)
+3. Нажмите кнопку — откроется страница с визуальным сравнением двух версий диаграммы
+4. Изменённые элементы будут подсвечены:
+   - 🟢 Зелёный — добавленные элементы
+   - 🔴 Красный — удалённые элементы
 
-Author: @kaoalllex
+### Просмотр схемы в репозитории
 
-This extension uses the following libraries:
-- https://github.com/bpmn-io/bpmn-js
-- https://github.com/bpmn-io/bpmn-js-properties-panel
-- https://github.com/camunda/camunda-bpmn-moddle
+1. Откройте файл `.bpmn` или `.dmn` в проекте GitLab
+2. Рядом с названием файла появятся кнопки:
+   - **Show schema** / **Show decision** — открыть диаграмму для просмотра
+   - **Show diff with local** — сравнить с локальной версией файла
+
+## Технологии
+
+Расширение использует следующие библиотеки:
+- [bpmn-js](https://github.com/bpmn-io/bpmn-js) — визуализация BPMN диаграмм
+- [bpmn-js-properties-panel](https://github.com/bpmn-io/bpmn-js-properties-panel) — панель свойств элементов
+- [camunda-bpmn-moddle](https://github.com/camunda/camunda-bpmn-moddle) — модификатор BPMN моделей
+
+## Ссылки
+
+- [Канал в Time](https://chat.example.com/example/channels/bpmn-diff)
