@@ -7,6 +7,8 @@ class App {
         DMN_ID: 'msg_dmn_71e23e639965407fb9c87f100a56c898'
     };
 
+    #isStartHandling = false;
+
     #repoProvider;
     #uiRepoProvider;
     #moddleManager;
@@ -26,17 +28,41 @@ class App {
      */
     init() {
         appendTimeToConsoleLogs();
-        window.onload = () => this.#handleStart();
-        // Catches 'mouseup' rather than 'click' because
-        // the click event sometimes doesn't appear when clicking on a tab
-        document.body.addEventListener('mouseup', (event) => this.#handleStart(event));
+
+        // try to start immediately (in case of direct page load)
+        this.#handleStart(null, 'immediately');
+
+        // listen for mouseup events to switch tabs in GitLab
+        // use bind to avoid losing context, or arrow function
+        document.body.addEventListener(
+            'mouseup',
+            (event) => this.#handleStart(event, 'after mouseup')
+        );
+
+        // listen for popstate events to handle navigation
+        window.addEventListener(
+            'popstate',
+            () => this.#handleStart(null, 'after popstate')
+        );
     }
 
-    /**
-     * Handles start/update event
-     */
-    async #handleStart(event) {
-        console.debug('start...');
+    async #handleStart(event, reason) {
+        if (this.#isStartHandling) {
+            console.debug('skip start, already running:', reason);
+            return;
+        }
+
+        this.#isStartHandling = true;
+        try {
+            console.debug('starting...', reason);
+            await this.#doStart(event);
+        } finally {
+            this.#isStartHandling = false;
+        }
+    }
+
+    async #doStart(event) {
+        console.debug('do start...');
 
         if (!this.#repoProvider.isAvailable()) {
             console.debug('provider is not available for current page');

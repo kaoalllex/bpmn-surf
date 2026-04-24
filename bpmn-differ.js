@@ -683,6 +683,10 @@ const DIFF_TO_PROPERTY_GROUP_MAP = new Map([
     ['bpmn:escalationEventDefinition', 'Escalation'],
     ['bpmn:escalationEventDefinition/camunda:escalationCodeVariable', 'Escalation'],
 
+    // TODO: не подсвечиваем изменение кода ошибки
+    // пример: https://gitlab.example.com/example-project/example-repo/-/merge_requests/795
+    ['bpmn:error', 'Error'],
+
     ['camunda:executionListener', 'Execution listeners'],
     ['camunda:executionListener/delegateExpression', 'Execution listeners'],
 

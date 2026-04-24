@@ -21,7 +21,7 @@ class ProjectInfo {
     }
 
     logDebug() {
-        console.debug(`project params: 
+        console.debug(`Project info: 
             url: ${this.url}; 
             host url: ${this.hostUrl}; 
             group name: ${this.groupName}; 
@@ -40,6 +40,15 @@ class MergeRequestInfo {
         this.infoUrl = null;
         this.lastCommitId = null;
         this.title = null;
+    }
+
+    logDebug() {
+        console.debug(`Merge request info: 
+            iid: ${this.iid}; 
+            infoUrl: ${this.infoUrl}; 
+            lastCommitId: ${this.lastCommitId}; 
+            title: ${this.titlee}`
+        );
     }
 }
 

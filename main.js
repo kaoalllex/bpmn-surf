@@ -1,10 +1,9 @@
-// ============================================================================
-// ТОЧКА ВХОДА
-// ============================================================================
+// entry point for the extension
+(function () {
+    if (window.BPMN_APP_INITIALIZED) {
+        return;
+    }
+    window.BPMN_APP_INITIALIZED = true;
 
-function main() {
-    const app = new App();
-    app.init();
-}
-
-main();
+    new App().init();
+})();

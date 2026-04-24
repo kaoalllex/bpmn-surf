@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.17",
+    "version": "0.17.1",
     "description": "BPMN 2.0 schemas and DMN visual differ for Gitlab",
     "content_scripts": [
         {
@@ -15,6 +15,7 @@
                 "utils.js",
                 "repo-provider.js",
                 "ui-repo-provider.js",
+                "master-commit-manager.js",
                 "gitlab-repo-provider.js",
                 "gitlab-ui-repo-provider.js",
                 "camunda-bpmn-moddle-manager.js",

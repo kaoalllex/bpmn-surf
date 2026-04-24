@@ -5,23 +5,53 @@ function removeElement(elementId) {
     }
 }
 
-async function loadFileContent(fileUrl, throwIf404) {
+const fileCache = new Map();
+
+async function loadFileContent(
+    fileUrl,
+    throwIf404 = true,
+    timeoutMs = 10000,
+    forceReload = false
+) {
+    if (!forceReload && fileCache.has(fileUrl)) {
+        console.debug('cache hit for:', fileUrl);
+        return fileCache.get(fileUrl);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const start = performance.now();
+
     try {
-        const response = await fetch(fileUrl);
+        console.debug('loading file content from:', fileUrl);
+
+        const response = await fetch(fileUrl, { signal: controller.signal });
+        const durationMs = performance.now() - start;
+
+        console.debug(`response status: ${response.status}, load time: ${durationMs.toFixed(1)} ms`);
+
         if (response.status === 404) {
-            if (throwIf404) {
-                throw new Error('File not found: ' + fileUrl);
-            } else {
-                return null;
-            }
-        } else if (!response.ok) {
-            throw new Error('Cannot load file content by url: ' + fileUrl);
+            if (throwIf404) throw new Error('File not found: ' + fileUrl);
+            return null;
         }
+        if (!response.ok) {
+            throw new Error(`Cannot load file content from ${fileUrl} (status ${response.status})`);
+        }
+
         const content = await response.text();
+        fileCache.set(fileUrl, content);
+
         return content;
     } catch (error) {
-        console.error(error);
-        throw error;
+        const durationMs = performance.now() - start;
+
+        if (error.name === 'AbortError') {
+            throw new Error(`Timeout fetching ${fileUrl} after ${durationMs.toFixed(0)} ms`);
+        }
+        throw new Error(`Error fetching ${fileUrl} after ${durationMs.toFixed(0)} ms: ${error.message}`);
+    } finally {
+        clearTimeout(timer);
     }
 }
 

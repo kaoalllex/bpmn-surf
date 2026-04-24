@@ -7,7 +7,7 @@ class GitLabRepoProvider extends RepoProvider {
         super();
         this.projectInfo = new ProjectInfo();
         this.mergeRequestInfo = new MergeRequestInfo();
-        this.#masterCommitEntries = null;
+        this.#masterCommitManager = new MasterCommitManager(this.projectInfo);
         this.#filteredByTitleMasterCommitEntries = null;
     }
 
@@ -15,16 +15,39 @@ class GitLabRepoProvider extends RepoProvider {
         return window.location.href.includes('gitlab');
     }
 
+    // Cache for init result
+    #initCache = null;
+    #initCacheKey = null;
+
     async init() {
+        console.debug('initializing repo provider...');
+
+        // Create cache key based on URL
         const href = window.location.href;
+        const cacheKey = href;
+
+        // Check if we have cached result for the same URL
+        if (this.#initCache && this.#initCacheKey === cacheKey) {
+            console.debug('Using cached init result');
+            // Restore project info from cache
+            Object.assign(this.projectInfo, this.#initCache.projectInfo);
+            return this.#initCache.result;
+        }
+
         this.projectInfo.url = href.substring(0, href.indexOf('/-/'));
         if (!this.projectInfo.url) {
             console.debug('cannot get project url');
+            // Cache the result
+            this.#initCache = { projectInfo: { ...this.projectInfo }, result: false };
+            this.#initCacheKey = cacheKey;
             return false;
         }
         const parts = this.projectInfo.url.split('/');
         if (parts.length < 3) {
             console.error('cannot get project group name and name from url: ' + this.projectInfo.url);
+            // Cache the result
+            this.#initCache = { projectInfo: { ...this.projectInfo }, result: false };
+            this.#initCacheKey = cacheKey;
             return false;
         }
         this.projectInfo.groupName = parts[parts.length - 2];
@@ -36,11 +59,18 @@ class GitLabRepoProvider extends RepoProvider {
 
         this.projectInfo.id = await this.#getProjectId();
         if (!this.projectInfo.id) {
-            console.debug('cannot get project id');
+            console.warn('cannot get project id');
+            // Cache the result
+            this.#initCache = { projectInfo: { ...this.projectInfo }, result: false };
+            this.#initCacheKey = cacheKey;
             return false;
         }
 
         this.projectInfo.logDebug();
+
+        // Cache the result
+        this.#initCache = { projectInfo: { ...this.projectInfo }, result: true };
+        this.#initCacheKey = cacheKey;
         return true;
     }
 
@@ -71,15 +101,32 @@ class GitLabRepoProvider extends RepoProvider {
     }
 
     async findSelectedFilePath() {
+        console.debug('finding selected file path...');
         const dataPathElems = await this.#findDataPathElements();
         if (!dataPathElems) {
             console.info('cannot find data-path element');
             return null;
         }
+        
+        // console.debug(
+        //     'data-path elements (json)',
+        //     JSON.stringify(
+        //         [...dataPathElems].map(el => ({
+        //             tag: el.tagName,
+        //             text: el.textContent?.trim(),
+        //             dataset: { ...el.dataset },
+        //             attributes: Object.fromEntries(
+        //                 [...el.attributes].map(a => [a.name, a.value])
+        //             )
+        //         })),
+        //         null,
+        //         2
+        //     )
+        // );
 
         let filePath;
         for (const elem of dataPathElems) {
-            if (elem.classList.contains('diff-file')) {
+            if (elem.classList.contains('is-active')) {
                 filePath = elem.getAttribute('data-path');
                 if (filePath) {
                     break;
@@ -90,10 +137,28 @@ class GitLabRepoProvider extends RepoProvider {
             console.debug('cannot get file path from data-path element');
             return null;
         }
+        console.debug('selected file path: ' + filePath);
         return filePath;
     }
 
+    // Cache for initMergeRequestInfo result
+    #initMergeRequestInfoCache = null;
+    #initMergeRequestInfoCacheKey = null;
+
     async initMergeRequestInfo() {
+        console.debug('initializing merge request info...')
+
+        // Create cache key based on URL
+        const cacheKey = window.location.href;
+
+        // Check if we have cached result for the same URL
+        if (this.#initMergeRequestInfoCache && this.#initMergeRequestInfoCacheKey === cacheKey) {
+            console.debug('Using cached merge request info');
+            // Restore merge request info from cache
+            Object.assign(this.mergeRequestInfo, this.#initMergeRequestInfoCache);
+            return;
+        }
+
         const beforeIidLen = this.projectInfo.url.length + '/-/merge_requests/'.length;
         this.mergeRequestInfo.iid = window.location.href.substring(beforeIidLen);
 
@@ -118,6 +183,12 @@ class GitLabRepoProvider extends RepoProvider {
             console.warn('cannot load MR title', error);
             this.mergeRequestInfo.title = null;
         }
+
+        this.mergeRequestInfo.logDebug();
+
+        // Cache the result
+        this.#initMergeRequestInfoCache = { ...this.mergeRequestInfo };
+        this.#initMergeRequestInfoCacheKey = cacheKey;
     }
 
     getMergeRequestInfo() {
@@ -165,22 +236,70 @@ class GitLabRepoProvider extends RepoProvider {
         return null;
     }
 
+    async #isMrMerged() {
+        // checking through DOM is faster than API call
+        const mergeStatusElement = document.querySelector('.issuable-status-badge-merged');
+        if (mergeStatusElement) {
+            const mergedText = mergeStatusElement.querySelector('.gl-display-none.gl-sm-display-block');
+            if (mergedText && mergedText.textContent.trim() === 'Merged') {
+                return true;
+            }
+        }
+
+        if (this.mergeRequestInfo.infoUrl) {
+            const content = await loadFileContent(this.mergeRequestInfo.infoUrl, false);
+            if (content) {
+                const mrInfo = JSON.parse(content);
+                return !!(mrInfo.merged_at || mrInfo.state === 'merged');
+            }
+        }
+        return false;
+    }
+
+    // TODO: use separate cache manager
+    // Cache for getTargetCommitId result
+    #targetCommitIdCache = null;
+    #targetCommitIdCacheKey = null;
+
     async getTargetCommitId(mrCommitId, mrTitle, targetBranchName) {
         console.debug('getting target commit id...');
 
-        let targetCommitId = await this.#findTargetBranchPreviousCommitId(mrCommitId);
-        if (!targetCommitId) {
-            const actualMrCommitId = await this.#findTargetBranchCommitIdByTitle(mrTitle);
-            if (actualMrCommitId) {
-                targetCommitId = await this.#findTargetBranchPreviousCommitId(actualMrCommitId);
+        // Create cache key
+        const cacheKey = `${mrCommitId}-${mrTitle}-${targetBranchName}`;
+
+        // Check if we have cached result
+        if (this.#targetCommitIdCache && this.#targetCommitIdCacheKey === cacheKey) {
+            console.debug('Using cached target commit id: ' + this.#targetCommitIdCache);
+            return this.#targetCommitIdCache;
+        }
+
+        // First check if MR is merged to avoid expensive operations when it's not
+        const isMerged = await this.#isMrMerged();
+
+        // Only do expensive operations if MR is likely merged
+        let targetCommitId = null;
+        if (isMerged) {
+            console.debug('MR is likely merged. Trying to find target commit id by MR commit id...');
+            targetCommitId = await this.#findTargetBranchPreviousCommitId(mrCommitId);
+            if (!targetCommitId) {
+                const actualMrCommitId = await this.#findTargetBranchCommitIdByTitle(mrTitle);
+                if (actualMrCommitId) {
+                    targetCommitId = await this.#findTargetBranchPreviousCommitId(actualMrCommitId);
+                }
             }
         }
 
         if (!targetCommitId) {
             console.debug('MR is not merged. Target commit id is target branch name: ' + targetBranchName);
-            return targetBranchName;
+            targetCommitId = targetBranchName;
+        } else {
+            console.debug('MR is already merged. Target commit id is previous before the merged MR commit: ' + targetCommitId);
         }
-        console.debug('MR is already merged. Target commit id is previous before the merged MR commit: ' + targetCommitId);
+
+        // Cache the result
+        this.#targetCommitIdCache = targetCommitId;
+        this.#targetCommitIdCacheKey = cacheKey;
+
         return targetCommitId;
     }
 
@@ -194,11 +313,12 @@ class GitLabRepoProvider extends RepoProvider {
 
     // ==== Private fields and methods ====
 
-    #masterCommitEntries = null;
+    #masterCommitManager = null;
     #filteredByTitleMasterCommitEntries = null;
 
     async #getProjectId() {
-        const url = this.projectInfo.hostUrl + '/api/v4/projects/?simple=true&search=' + this.projectInfo.name;
+        // TODO: load pages lazy
+        const url = this.projectInfo.hostUrl + '/api/v4/projects/?simple=true&per_page=100&search=' + this.projectInfo.name;
         const content = await loadFileContent(url, true);
         const protectInfoArr = JSON.parse(content);
 
@@ -268,34 +388,6 @@ class GitLabRepoProvider extends RepoProvider {
         return this.mergeRequestInfo.lastCommitId;
     }
 
-    async #loadMasterCommitEntries() {
-        console.debug('loading master commit entries...');
-        if (this.#masterCommitEntries) {
-            console.debug('loading master commit entries...done (used cache)');
-            return;
-        }
-
-        const [page1, page2, page3, page4, page5] = await Promise.all([
-            this.#loadMasterCommitEntriesPage(1),
-            this.#loadMasterCommitEntriesPage(2),
-            this.#loadMasterCommitEntriesPage(3),
-            this.#loadMasterCommitEntriesPage(4),
-            this.#loadMasterCommitEntriesPage(5),
-        ]);
-        this.#masterCommitEntries = [...page1, ...page2, ...page3, ...page4, ...page5];
-
-        console.debug('loading master commit entries...done');
-    }
-
-    async #loadMasterCommitEntriesPage(pageNumber) {
-        const offset = (pageNumber - 1) * 100;
-        const url = this.projectInfo.url + '/-/commits/' + MASTER_BRANCH_NAME + '?format=atom&limit=100&offset=' + offset;
-        const content = await loadFileContent(url, true);
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(content, 'text/xml');
-        return Array.from(doc.getElementsByTagName('entry'));
-    }
-
     async #loadFilteredByTitleMasterCommitEntries(commitTitle) {
         console.debug('loading master commit entries filtered by title...');
         if (this.#filteredByTitleMasterCommitEntries) {
@@ -314,27 +406,7 @@ class GitLabRepoProvider extends RepoProvider {
 
     async #findTargetBranchPreviousCommitId(commitId) {
         console.debug('try to find target branch previous commit id for commit id: ' + commitId);
-
-        await this.#loadMasterCommitEntries();
-
-        const index = this.#masterCommitEntries.findIndex(entry => {
-            const idElement = entry.querySelector('id');
-            return idElement && idElement.textContent.includes(commitId);
-        });
-        if (index === -1) {
-            return null;
-        }
-
-        const nextIndex = index + 1;
-        if (nextIndex >= this.#masterCommitEntries.length) {
-            console.warn('next index is out of range! array length: ' + this.#masterCommitEntries.length);
-            return null;
-        }
-
-        const entry = this.#masterCommitEntries[nextIndex];
-        const idElemText = entry.querySelector('id').textContent;
-        const foundCommitId = idElemText.substring(idElemText.lastIndexOf('/') + 1);
-        return foundCommitId;
+        return await this.#masterCommitManager.findPreviousCommitId(commitId);
     }
 
     async #findTargetBranchCommitIdByTitle(commitTitle) {
