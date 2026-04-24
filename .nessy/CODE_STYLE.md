@@ -1,10 +1,10 @@
-# Skill: code-style
+# Code Style
 
 ## Description
-Определяет правила стиля кода и форматирования для проекта BPMN Diff Chrome Extension.
+Правила стиля кода и форматирования для проекта BPMN Diff Chrome Extension.
 
-## When to use
-Этот скил применяется **автоматически** вместе с другими скилами (refactor, feature, fix, analyze) для обеспечения единообразия кода.
+## Application
+Применяется **автоматически** при всех изменениях кода (refactor, feature, fix, analyze).
 
 ## Rules
 
@@ -37,12 +37,6 @@
 - Use `chrome.*` APIs (e.g., `chrome.runtime`, `chrome.storage`)
 - Be mindful of the differences between Background Service Workers, Content Scripts, and Popup scripts
 
-## Constraints
-- No TypeScript
-- No frameworks (React, Vue, Angular, etc.)
-- No build tools or bundlers
-- Plain JavaScript only
-
 ## Examples
 
 ### Good
@@ -50,13 +44,13 @@
 // Class with proper naming
 class GitLabRepoProvider {
   #cache = new Map();
-  
+
   async getFileContent(commitId, filePath) {
     const cacheKey = `${commitId}:${filePath}`;
     if (this.#cache.has(cacheKey)) {
       return this.#cache.get(cacheKey);
     }
-    
+
     const content = await this.#fetchFile(commitId, filePath);
     this.#cache.set(cacheKey, content);
     return content;
@@ -73,7 +67,7 @@ const CACHE_TTL_MS = 3600000;
 // Wrong naming and style
 class gitlab_repo_provider {
   _cache = new Map();
-  
+
   getFileContent(commitId, filePath) {
     return this._fetchFile(commitId, filePath).then(content => {
       this._cache.set(commitId, content);
