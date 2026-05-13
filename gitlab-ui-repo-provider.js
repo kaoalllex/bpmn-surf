@@ -1,6 +1,10 @@
 class GitLabUIRepoProvider extends UIRepoProvider {
+
     #buttonId = 'btn_77844bf3d4e842caa0d88194431197c0';
-    #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
+
+    // #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
+    #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.gl-flex.gl-justify-between.gl-relative.is-merge-request.js-tabs-affix > div';
+
     #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
 
     addButton({ fileType, buttonType, needToSelectLocalFile, onButtonClickFunc }) {

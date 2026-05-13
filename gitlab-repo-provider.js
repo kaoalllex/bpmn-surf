@@ -107,7 +107,7 @@ class GitLabRepoProvider extends RepoProvider {
             console.info('cannot find data-path element');
             return null;
         }
-        
+
         // console.debug(
         //     'data-path elements (json)',
         //     JSON.stringify(
@@ -126,7 +126,7 @@ class GitLabRepoProvider extends RepoProvider {
 
         let filePath;
         for (const elem of dataPathElems) {
-            if (elem.classList.contains('is-active')) {
+            if (elem.classList.contains('is-active') || elem.classList.contains('diff-file-is-active')) {
                 filePath = elem.getAttribute('data-path');
                 if (filePath) {
                     break;
