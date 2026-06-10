@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "BPMN differ for Gitlab",
-    "version": "0.17.1",
+    "version": "0.18.0",
     "description": "BPMN 2.0 schemas and DMN visual differ for Gitlab",
     "content_scripts": [
         {
@@ -34,6 +34,23 @@
             "resources": [
                 "main.js",
                 "utils.js",
+                "diff-type.js",
+                "condition-formatter.js",
+                "canvas-viewport.js",
+                "bpmn-xml-comparator.js",
+                "diff-highlighter.js",
+                "changes-table-view.js",
+                "properties-panel-highlighter.js",
+                "process-file-index.js",
+                "call-activity-navigator.js",
+                "differ-params.js",
+                "diagram-versions.js",
+                "branch-indicator.js",
+                "bpmn-differ-view.js",
+                "dmn-table-viewport.js",
+                "dmn-xml-comparator.js",
+                "dmn-diff-painter.js",
+                "dmn-differ-view.js",
                 "bpmn-differ.js",
                 "dmn-differ.js",
                 "styles.css",

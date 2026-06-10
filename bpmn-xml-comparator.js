@@ -1,0 +1,442 @@
+// Semantic comparison of two BPMN XML documents.
+// Produces a diff result object without touching the page DOM or bpmn-js.
+class BpmnXmlComparator {
+    static #PROCESS_TAG_NAME = 'bpmn:process';
+    static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
+    static #MESSAGE_TAG_NAME = 'bpmn:message';
+
+    static #ROW_TAG_NAMES = [
+        'bpmn:sequenceFlow',
+        'bpmn:messageFlow',
+        'bpmn:associatio'
+    ];
+
+    static #CONNECTOR_TAG_NAMES = [
+        'bpmn:incoming',
+        'bpmn:outgoing'
+    ];
+
+    static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
+
+    /**
+     * key: diff name mask
+     * value: property group name
+     */
+    static #DIFF_TO_PROPERTY_GROUP_MAP = new Map([
+        ['name', 'General'],
+
+        // the textAnnotation's child elem
+        ['bpmn:text', 'General'],
+
+        ['camunda:exclusive', 'Asynchronous continuations'],
+        ['camunda:asyncBefore', 'Asynchronous continuations'],
+        ['camunda:asyncAfter', 'Asynchronous continuations'],
+
+        ['camunda:collection', 'Multi-instance'],
+        ['camunda:elementVariable', 'Multi-instance'],
+        ['bpmn:loopCardinality', 'Multi-instance'],
+        ['bpmn:completionCondition', 'Multi-instance'],
+        //['camunda:failedJobRetryTimeCycle', 'Multi-instance'],
+
+        ['camunda:delegateExpression', 'Implementation'],
+        ['camunda:expression', 'Implementation'],
+        ['camunda:type', 'Implementation'],
+        ['camunda:topic', 'Implementation'],
+
+        ['bpmn:conditionExpression', 'Condition'],
+        ['camunda:variableName', 'Condition'],
+        ['bpmn:condition', 'Condition'],
+        ['bpmn:conditionalEventDefinition', 'Condition'],
+
+        ['camunda:in', 'In mappings'],
+        ['camunda:in/source', 'In mappings'],
+        ['camunda:in/target', 'In mappings'],
+        ['camunda:in/sourceExpression', 'In mappings'],
+
+        ['camunda:out', 'Out mappings'],
+        ['camunda:out/source', 'Out mappings'],
+        ['camunda:out/target', 'Out mappings'],
+        ['camunda:out/sourceExpression', 'Out mappings'],
+
+        ['camunda:inputParameter', 'Inputs'],
+        ['camunda:outputParameter', 'Outputs'],
+
+        ['bpmn:escalationEventDefinition', 'Escalation'],
+        ['bpmn:escalationEventDefinition/camunda:escalationCodeVariable', 'Escalation'],
+
+        ['bpmn:error', 'Error'],
+
+        ['camunda:executionListener', 'Execution listeners'],
+        ['camunda:executionListener/delegateExpression', 'Execution listeners'],
+
+        ['bpmn:timeDuration', 'Timer'],
+
+        ['calledElement', 'Called element'],
+        ['businessKey', 'Called element'],
+        ['bpmn:callActivity/camunda:calledElementBinding', 'Called element'],
+
+        ['camunda:jobPriority', 'Job execution'],
+        ['camunda:failedJobRetryTimeCycle', 'Job execution'],
+
+        ['camunda:properties', 'Extension properties'],
+
+        ['camunda:formField', 'Form fields'],
+        ['camunda:formField/label', 'Form fields'],
+
+        ['messageRef', 'Message'],
+        ['bpmn:messageEventDefinition', 'Message'],
+
+        ['bpmn:documentation', 'Documentation'],
+
+        // Properties to be ignored because there is no property group to highlight
+        ['bpmn:terminateEventDefinition', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+        ['bpmn:multiInstanceLoopCharacteristics/isSequential', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+        ['bpmn:boundaryEvent/attachedToRef', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+        ['bpmn:outputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+        ['bpmn:inputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+
+        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP]
+    ]);
+
+    #changedMessages = [];
+
+    /**
+     * Compare two BPMN XML documents
+     * @returns diff result: {
+     *   processNode,
+     *   missingShapeIds, missingRowIds,
+     *   changedShapeIds, changedRowIds,
+     *   nodeIdToDiffsMap (id -> [property group names]),
+     *   nodeIdToConditions (id -> [my condition, other condition])
+     * }
+     */
+    compare(myXml, otherXml) {
+        const myDoc = parseXml(myXml);
+        const otherDoc = parseXml(otherXml);
+
+        this.#findChangedMessages(myDoc, otherDoc);
+
+        const myProcessNode = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PROCESS_TAG_NAME))
+            .filter(elem => elem.getAttribute('isExecutable') === 'true')[0];
+        const myNodesWithIdAttr = myProcessNode.querySelectorAll('[id]');
+
+        const result = {
+            processNode: myProcessNode,
+            missingShapeIds: [],
+            missingRowIds: [],
+            changedShapeIds: [],
+            changedRowIds: [],
+            nodeIdToDiffsMap: new Map(),
+            nodeIdToConditions: new Map()
+        };
+
+        for (const myNode of myNodesWithIdAttr) {
+            if (this.#isFormFieldProperty(myNode)) {
+                // Will compare form-field-properties as parts of bpmn:userTask nodes
+                continue;
+            }
+
+            const id = myNode.getAttribute('id');
+            const otherNode = otherDoc.getElementById(id);
+            if (!otherNode) {
+                if (this.#isNodeRow(myNode)) {
+                    result.missingRowIds.push(id);
+                } else {
+                    result.missingShapeIds.push(id);
+                }
+            } else {
+                const diffs = this.#compareNodes(null, myNode, otherNode);
+                if (diffs) {
+                    // console.debug(`nodes with id '${id}' have diffs: `, diffs);
+                    for (const diff of diffs) {
+                        const diffPropGroup = this.#findDiffPropertyGroup(diff);
+                        if (diffPropGroup) {
+                            if (diffPropGroup === BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP) {
+                                continue;
+                            }
+                            const diffsInMap = result.nodeIdToDiffsMap.get(id);
+                            if (diffsInMap) {
+                                result.nodeIdToDiffsMap.set(id, diffsInMap.concat(diffPropGroup));
+                            } else {
+                                result.nodeIdToDiffsMap.set(id, [diffPropGroup]);
+                            }
+                        } else {
+                            console.warn(`nodes with id '${id}': property group not found for diff: ${diff}`);
+                        }
+                    }
+
+                    if (this.#isNodeRow(myNode)) {
+                        result.changedRowIds.push(id);
+
+                        if (myNode.tagName === 'bpmn:sequenceFlow' &&
+                            myNode.childNodes.length > 1 &&
+                            otherNode.childNodes.length > 1) {
+                            result.nodeIdToConditions.set(
+                                id,
+                                [myNode.childNodes[1].textContent, otherNode.childNodes[1].textContent]
+                            );
+                        }
+                    } else {
+                        result.changedShapeIds.push(id);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    #findDiffPropertyGroup(diff) {
+        const res = BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diff);
+        if (res) {
+            return res;
+        }
+
+        const diffShort = diff.slice(diff.indexOf('/') + 1);
+        return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
+    }
+
+    #isNodeRow(node) {
+        return BpmnXmlComparator.#ROW_TAG_NAMES.includes(node.tagName);
+    }
+
+    #isNodeConnector(node) {
+        return BpmnXmlComparator.#CONNECTOR_TAG_NAMES.includes(node.tagName);
+    }
+
+    #isSubProcess(node) {
+        return node.tagName === BpmnXmlComparator.#SUBPROCESS_TAG_NAME;
+    }
+
+    #isFormFieldProperty(node) {
+        return node.tagName === 'camunda:property';
+    }
+
+    #findChangedMessages(myDoc, otherDoc) {
+        this.#changedMessages = [];
+        const myMessageNodes = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#MESSAGE_TAG_NAME))
+
+        for (const myNode of myMessageNodes) {
+            const id = myNode.getAttribute('id');
+            const otherNode = otherDoc.getElementById(id);
+            if (!otherNode) {
+                continue;
+            }
+            const diffs = this.#compareNodes(null, myNode, otherNode);
+            if (diffs) {
+                this.#changedMessages.push(id);
+            }
+        }
+        // console.debug('changedMessages', this.#changedMessages);
+    }
+
+    /**
+     * Compare nodes A and B
+     * @returns null if the nodes are equal,
+     * otherwise an array of property names that differ
+     * or empty array if nodes are not equal but different properties are not defined
+     */
+    #compareNodes(parentNode, nodeA, nodeB) {
+        // console.debug('compare nodes...', parentNode, nodeA, nodeB);
+
+        if (nodeA.nodeType === Node.TEXT_NODE) {
+            if (nodeB.nodeType === Node.TEXT_NODE) {
+                if (nodeA.textContent === nodeB.textContent) {
+                    return null;
+                } else {
+                    return [parentNode.tagName];
+                }
+            }
+            return []; // A is text but B is not text
+        } else if (nodeB.nodeType === Node.TEXT_NODE) {
+            return []; // A is not text but B is text
+        }
+
+        if (nodeA.tagName !== nodeB.tagName) {
+            return []; // nodes have different type
+        }
+
+        if (this.#isNodeConnector(nodeA)) {
+            // Do not compare connectors
+            return null;
+        }
+
+        let diffs = this.#compareNodesAttributes(nodeA, nodeB);
+
+        if (this.#isSubProcess(nodeA)) {
+            // Do not compare children of subprocesses (they will be compared separately)
+            // except 'multiInstanceLoopCharacteristics' and 'extensionElements' nodes
+            const milcDiffs = this.#compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:multiInstanceLoopCharacteristics');
+            diffs = this.#concatDiffs(diffs, milcDiffs);
+            const extDiffs = this.#compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:extensionElements');
+            diffs = this.#concatDiffs(diffs, extDiffs);
+            return diffs;
+        }
+
+        if (nodeA.childNodes.length !== nodeB.childNodes.length) {
+            const childrenDiffs = this.#findChildrenDiffs(nodeA, nodeB);
+            diffs = this.#concatDiffs(diffs, childrenDiffs);
+        } else {
+            for (let i = 0; i < nodeA.childNodes.length; i++) {
+                const childA = nodeA.childNodes[i];
+                const childB = nodeB.childNodes[i];
+                const nodeDiffs = this.#compareNodes(nodeA, childA, childB);
+                diffs = this.#concatDiffs(diffs, nodeDiffs);
+            }
+        }
+
+        return diffs;
+    }
+
+    #concatDiffs(diffs, newDiffs) {
+        if (!newDiffs) {
+            return diffs;
+        }
+        if (diffs) {
+            return diffs.concat(newDiffs);
+        }
+        return newDiffs;
+    }
+
+    #compareChildNodesWithTagName(nodeA, nodeB, tagName) {
+        const childA = this.#findChildNodeByTagName(nodeA, tagName);
+        const childB = this.#findChildNodeByTagName(nodeB, tagName);
+        if (childA && childB) {
+            return this.#compareNodes(nodeA, childA, childB);
+        }
+        if (childA) {
+            return this.#nodeToDiffs(childA);
+        }
+        if (childB) {
+            return this.#nodeToDiffs(childB);
+        }
+        return null;
+    }
+
+    #findChildNodeByTagName(node, tagName) {
+        for (const child of node.childNodes) {
+            if (child.tagName === tagName) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    #findChildrenDiffs(nodeA, nodeB) {
+        const diffChildren = this.#findDifferentChilder(nodeA.childNodes, nodeB.childNodes);
+        if (!diffChildren) {
+            return null;
+        }
+
+        let diffs = [];
+        for (let diffChild of diffChildren) {
+            diffs = diffs.concat(this.#nodeToDiffs(diffChild));
+        }
+
+        return diffs;
+    }
+
+    #nodeToDiffs(node) {
+        // console.debug('nodeToDiffs', node);
+        if (node.tagName === 'bpmn:extensionElements' || node.tagName === 'camunda:inputOutput') {
+            const children = this.#getAllNotTextChildren(node);
+            // console.debug('getAllNotTextChildren res', children);
+            let res = [];
+            for (const child of children) {
+                res = res.concat(this.#nodeToDiffs(child));
+            }
+            return res;
+        }
+        return [node.tagName];
+    }
+
+    #getAllNotTextChildren(node) {
+        const res = [];
+        for (const child of node.childNodes) {
+            if (child.nodeType !== Node.TEXT_NODE) {
+                res.push(child);
+            }
+        }
+        if (res.length > 0) {
+            return res;
+        }
+        console.warn('not text child not found');
+        return [];
+    }
+
+    #findDifferentChilder(childrenA, childrenB) {
+        let diffNodes = [];
+        this.#pushOuterDiff(diffNodes, childrenA, childrenB);
+        this.#pushOuterDiff(diffNodes, childrenB, childrenA);
+
+        if (diffNodes.length > 0) {
+            return diffNodes;
+        }
+        return null;
+    }
+
+    #pushOuterDiff(diffNodes, findForNodes, findWhereNodes) {
+        for (const findForNode of findForNodes) {
+            if (findForNode.nodeType === Node.TEXT_NODE || this.#isNodeConnector(findForNode)) {
+                continue;
+            }
+            const findForNodeText = findForNode.outerHTML;
+            let found = false;
+            for (const findWhereNode of findWhereNodes) {
+                const findWhereNodeText = findWhereNode.outerHTML;
+                if (findForNodeText === findWhereNodeText) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && !diffNodes.includes(findForNode)) {
+                diffNodes.push(findForNode);
+            }
+        }
+    }
+
+    #compareNodesAttributes(nodeA, nodeB) {
+        const nodeAAttrs = Array.from(nodeA.attributes);
+        const nodeBAttrs = Array.from(nodeB.attributes);
+        const diffs = [];
+
+        this.#getAttributesDiffs(diffs, nodeA.tagName, nodeAAttrs, nodeBAttrs);
+        this.#getAttributesDiffs(diffs, nodeB.tagName, nodeBAttrs, nodeAAttrs);
+
+        if (diffs.length > 0) {
+            return diffs;
+        } else {
+            return null;
+        }
+    }
+
+    #getAttributesDiffs(diffs, nodeATagName, nodeAAttrs, nodeBAttrs) {
+        // checks that all attributes of nodeA exist in nodeB and have the same value
+        for (const attrA of nodeAAttrs) {
+            const attName = attrA.name;
+            // Skip:
+            // - connectors attributes
+            // - gateway's 'default' att
+            // - 'id' att (it can belong to the messageEventDefinition elem)
+            if (
+                attName === 'targetRef' || attName === 'sourceRef' ||
+                attName === 'default' ||
+                attName === 'id'
+            ) {
+                continue;
+            }
+
+            // node.getAttribute(attName) not working and returns null, so uses method 'find'
+            const attrB = nodeBAttrs.find(a => a.name === attName);
+            if (!attrB || attrA.value !== attrB.value || this.#isChangedMessageRef(attrA)) {
+                if (!diffs.includes(attName)) {
+                    diffs.push(nodeATagName + "/" + attName);
+                }
+            }
+        }
+    }
+
+    #isChangedMessageRef(attr) {
+        return attr.name === 'messageRef' && this.#changedMessages.includes(attr.value);
+    }
+}

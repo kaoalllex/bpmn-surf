@@ -165,8 +165,6 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addStylesheet('libs/dmn-js/assets/dmn-js-shared.css', doc, getResourceUrlByNameFunc);
     await addStylesheet('libs/dmn-js/assets/dmn-font/css/dmn.css', doc, getResourceUrlByNameFunc);
 
-    // TODO: when uses production.min then get error:
-    //  It looks like you're using a minified copy of the development build of Inferno...
     await addScript('libs/dmn-js/dmn-viewer.development.js', doc, getResourceUrlByNameFunc);
 
     // properties panel
@@ -176,6 +174,23 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
 
     await addStylesheet('styles.css', doc, getResourceUrlByNameFunc);
     await addScript('utils.js', doc, getResourceUrlByNameFunc);
+    await addScript('diff-type.js', doc, getResourceUrlByNameFunc);
+    await addScript('condition-formatter.js', doc, getResourceUrlByNameFunc);
+    await addScript('canvas-viewport.js', doc, getResourceUrlByNameFunc);
+    await addScript('bpmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
+    await addScript('diff-highlighter.js', doc, getResourceUrlByNameFunc);
+    await addScript('changes-table-view.js', doc, getResourceUrlByNameFunc);
+    await addScript('properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
+    await addScript('process-file-index.js', doc, getResourceUrlByNameFunc);
+    await addScript('call-activity-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('differ-params.js', doc, getResourceUrlByNameFunc);
+    await addScript('diagram-versions.js', doc, getResourceUrlByNameFunc);
+    await addScript('branch-indicator.js', doc, getResourceUrlByNameFunc);
+    await addScript('bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
+    await addScript('dmn-table-viewport.js', doc, getResourceUrlByNameFunc);
+    await addScript('dmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
+    await addScript('dmn-diff-painter.js', doc, getResourceUrlByNameFunc);
+    await addScript('dmn-differ-view.js', doc, getResourceUrlByNameFunc);
     await addScript('bpmn-differ.js', doc, getResourceUrlByNameFunc);
     await addScript('dmn-differ.js', doc, getResourceUrlByNameFunc);
 }

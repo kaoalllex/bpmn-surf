@@ -1,0 +1,11 @@
+{
+    "name": "bpmn-diff-tests",
+    "private": true,
+    "description": "Dev-only unit test infrastructure for the BPMN Diff extension. Nothing here ships with the extension.",
+    "scripts": {
+        "test": "node --test 'test/**/*.test.js'"
+    },
+    "devDependencies": {
+        "jsdom": "^24.1.3"
+    }
+}

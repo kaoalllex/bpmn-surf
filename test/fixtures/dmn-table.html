@@ -1,0 +1,27 @@
+<!-- Minimal markup mimicking the dmn-js decision table DOM,
+     covering all selectors used by DmnDiffPainter -->
+<div class="decision-table-name">Discount</div>
+<div class="hit-policy"><span class="hit-policy-value">FIRST</span></div>
+<table>
+    <thead>
+        <tr>
+            <th class="input-cell" data-col-id="Input_1">Amount</th>
+            <th class="output-cell"><span class="output-label">Discount</span></th>
+            <th class="annotation-header">Annotations</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="rule-index" data-row-id="Rule_1">1</td>
+            <td class="cell input-cell" data-element-id="UnaryTests_1">&lt; 100</td>
+            <td class="cell output-cell" data-element-id="LiteralExpression_1">0</td>
+            <td class="cell annotation">small order</td>
+        </tr>
+        <tr>
+            <td class="rule-index" data-row-id="Rule_2">2</td>
+            <td class="cell input-cell" data-element-id="UnaryTests_2">&gt;= 100</td>
+            <td class="cell output-cell" data-element-id="LiteralExpression_2">0.1</td>
+            <td class="cell annotation">big order</td>
+        </tr>
+    </tbody>
+</table>

@@ -1,0 +1,19 @@
+{
+    "permissions": {
+        "allow": [
+            "Edit(./**)",
+            "Write(./**)",
+            "Bash(grep *)",
+            "Bash(sed *)",
+            "Bash(node --check *)",
+            "Bash(node -e *)",
+            "Bash(for f in *.js; do node --check \"$f\"; done)"
+        ],
+        "ask": [
+            "Edit(./libs/**)",
+            "Write(./libs/**)",
+            "Edit(./manifest.json)",
+            "Write(./manifest.json)"
+        ]
+    }
+}

@@ -148,6 +148,3 @@ Unless explicitly stated otherwise:
 - Read-only behavior is intended
 - Performance is "good enough" for MR-sized diagrams
 - Simplicity > abstraction
-
-## Current Version
-**0.17.1** (from `manifest.json`)

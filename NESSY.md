@@ -27,6 +27,3 @@
 - Zoom/pan controls, "Fit view", "Switch branch"
 - Download текущей версии файла
 - Toggle highlighting, properties panel
-
-## Current Version
-**0.17.1** (из `manifest.json`)

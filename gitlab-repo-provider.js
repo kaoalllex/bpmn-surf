@@ -256,7 +256,6 @@ class GitLabRepoProvider extends RepoProvider {
         return false;
     }
 
-    // TODO: use separate cache manager
     // Cache for getTargetCommitId result
     #targetCommitIdCache = null;
     #targetCommitIdCacheKey = null;
@@ -317,7 +316,6 @@ class GitLabRepoProvider extends RepoProvider {
     #filteredByTitleMasterCommitEntries = null;
 
     async #getProjectId() {
-        // TODO: load pages lazy
         const url = this.projectInfo.hostUrl + '/api/v4/projects/?simple=true&per_page=100&search=' + this.projectInfo.name;
         const content = await loadFileContent(url, true);
         const protectInfoArr = JSON.parse(content);
