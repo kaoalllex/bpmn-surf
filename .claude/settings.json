@@ -7,7 +7,30 @@
             "Bash(sed *)",
             "Bash(node --check *)",
             "Bash(node -e *)",
-            "Bash(for f in *.js; do node --check \"$f\"; done)"
+            "Bash(for f in *.js; do node --check \"$f\"; done)",
+            "Bash(npm test *)",
+            "Bash(ls *)",
+            "Bash(head *)",
+            "Bash(tail *)",
+            "Bash(which *)",
+            "Bash(jq *)",
+            "Bash(echo *)",
+            "Bash(git status *)",
+            "Bash(git log *)",
+            "Bash(git diff *)",
+            "Bash(git remote *)",
+            "Bash(git show *)",
+            "Bash(git fetch *)",
+            "Bash(git pull *)",
+            "Bash(git checkout *)",
+            "Bash(git branch *)",
+            "Bash(git add *)",
+            "Bash(git commit *)",
+            "Bash(glab auth status)",
+            "Bash(glab mr *)"
+        ],
+        "deny": [
+            "Bash(glab mr merge *)"
         ],
         "ask": [
             "Edit(./libs/**)",
