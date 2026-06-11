@@ -12,15 +12,18 @@
 1. Откройте страницу расширений: `chrome://extensions`
 2. Включите **Режим разработчика** (переключатель в правом верхнем углу)
 3. Нажмите кнопку **Загрузить распакованное** (Load unpacked)
-4. Выберите папку с распакованным расширением
+4. Выберите корневую папку репозитория (расширению не нужна сборка — оно работает прямо из исходников)
 
 ## Возможности
 
 - Сравнение двух версий BPMN/DMN диаграмм в GitLab MR (ветка MR vs. target branch)
 - Сравнение с локальными файлами
 - Подсветка изменений: добавленные, удалённые и изменённые элементы
+- Таблица изменений с переходом к элементу по клику
+- Переключение между версиями (switch branch) и скачивание любой из версий
 - Управление масштабом и навигацией (zoom/pan, "Fit view")
-- Панель свойств для просмотра деталей элементов
+- Панель свойств для просмотра деталей элементов, включая условия sequence flow
+- Переход в диаграмму вызываемого процесса из Call Activity ("Dive in")
 
 ### Сравнение в MR
 
@@ -40,10 +43,63 @@
 
 ## Технологии
 
-Расширение использует следующие библиотеки:
+Vanilla JavaScript (ES6+), без фреймворков и build-шага. Используемые библиотеки (вендорятся в `libs/`):
 - [bpmn-js](https://github.com/bpmn-io/bpmn-js) — визуализация BPMN диаграмм
+- [dmn-js](https://github.com/bpmn-io/dmn-js) — визуализация DMN решений
 - [bpmn-js-properties-panel](https://github.com/bpmn-io/bpmn-js-properties-panel) — панель свойств элементов
-- [camunda-bpmn-moddle](https://github.com/camunda/camunda-bpmn-moddle) — модификатор BPMN моделей
+- [camunda-bpmn-moddle](https://github.com/camunda/camunda-bpmn-moddle) — Camunda-расширения BPMN моделей
+
+## Разработка
+
+Runtime-зависимостей нет — расширение загружается распакованным прямо из корня репозитория (см. «Установка»). Dev-зависимости нужны только для юнит-тестов:
+
+```bash
+npm install   # единственная dev-зависимость — jsdom
+```
+
+### Тесты
+
+```bash
+npm test
+```
+
+Раннер — встроенный `node:test`, прогон занимает ~0.5 сек. Запускать перед каждым push — CI-пайплайна в проекте пока нет. Подробнее об устройстве тестов — `docs/testing.md`.
+
+### GitLab CLI (glab)
+
+Для работы с MR используется [glab](https://gitlab.com/gitlab-org/cli). Установка на macOS:
+
+```bash
+brew install glab
+glab auth login --hostname gitlab.example.com
+```
+
+Для авторизации понадобится access token с правами `api`, `read_repository`, `write_repository`.
+
+### Workflow с git worktree (параллельные сессии Claude Code)
+
+Каждая задача делается в отдельной ветке `feature/<task>` или `fix/<task>` от свежего `origin/master`; master protected, мерж — только через MR после ревью. Полные правила — `docs/git-workflow.md`.
+
+Для параллельной работы нескольких сессий Claude Code используются git worktree — по одному на задачу:
+
+```bash
+# создать worktree под задачу
+git fetch origin
+git worktree add ../<dir> -b feature/<task> origin/master
+
+# запустить Claude Code внутри него
+cd ../<dir> && claude
+
+# посмотреть изменения: открыть директорию в редакторе, либо
+git diff origin/master...feature/<task>   # закоммиченные изменения ветки
+git -C <dir> diff                         # незакоммиченные изменения в worktree
+
+# список worktree
+git worktree list
+
+# удалить worktree после мержа MR
+git worktree remove <dir>
+```
 
 ## Ссылки
 

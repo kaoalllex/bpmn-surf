@@ -11,5 +11,6 @@ allowed-tools: Read, Edit, Bash(git *)
 3. Это единственный разрешённый случай правки `manifest.json` — меняй ТОЛЬКО поле `version`
 4. Покажи `git log --oneline` с момента последнего изменения версии (`git log -p --follow manifest.json | grep -n version` или `git log --oneline -15`) и составь краткий changelog
 5. Покажи изменение и предложи коммит вида `release: vX.Y.Z` — коммить только после подтверждения
+6. Коммит — по правилам `docs/git-workflow.md`: не в master, а в отдельной ветке с последующим MR
 
 Отвечай на русском.
