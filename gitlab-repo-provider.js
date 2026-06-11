@@ -1,4 +1,24 @@
 /**
+ * Single-entry cache: keeps the last computed value together with its key
+ */
+class SingleEntryCache {
+    #key = null;
+    #value = null;
+
+    get(key) {
+        if (this.#value && this.#key === key) {
+            return this.#value;
+        }
+        return null;
+    }
+
+    set(key, value) {
+        this.#key = key;
+        this.#value = value;
+    }
+}
+
+/**
  * GitLab provider implementation
  * Contains all GitLab-specific logic: URL parsing, DOM models, API
  */
@@ -257,19 +277,17 @@ class GitLabRepoProvider extends RepoProvider {
     }
 
     // Cache for getTargetCommitId result
-    #targetCommitIdCache = null;
-    #targetCommitIdCacheKey = null;
+    #targetCommitIdCache = new SingleEntryCache();
 
     async getTargetCommitId(mrCommitId, mrTitle, targetBranchName) {
         console.debug('getting target commit id...');
 
-        // Create cache key
         const cacheKey = `${mrCommitId}-${mrTitle}-${targetBranchName}`;
 
-        // Check if we have cached result
-        if (this.#targetCommitIdCache && this.#targetCommitIdCacheKey === cacheKey) {
-            console.debug('Using cached target commit id: ' + this.#targetCommitIdCache);
-            return this.#targetCommitIdCache;
+        const cachedTargetCommitId = this.#targetCommitIdCache.get(cacheKey);
+        if (cachedTargetCommitId) {
+            console.debug('Using cached target commit id: ' + cachedTargetCommitId);
+            return cachedTargetCommitId;
         }
 
         // First check if MR is merged to avoid expensive operations when it's not
@@ -295,9 +313,7 @@ class GitLabRepoProvider extends RepoProvider {
             console.debug('MR is already merged. Target commit id is previous before the merged MR commit: ' + targetCommitId);
         }
 
-        // Cache the result
-        this.#targetCommitIdCache = targetCommitId;
-        this.#targetCommitIdCacheKey = cacheKey;
+        this.#targetCommitIdCache.set(cacheKey, targetCommitId);
 
         return targetCommitId;
     }

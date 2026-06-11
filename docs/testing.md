@@ -10,7 +10,7 @@
 - `test/support/scope.js` — vm-харнесс: исполняет прод-файлы в одном jsdom vm-контексте в порядке `loadScripts` (имитация общего глобального scope differ-страницы), **не изменяя прод-код**. Чтобы протестировать новый класс: добавь его файл в `SCOPE_FILES` и имя в `EXPORTED_NAMES`. Файлы с side effects при загрузке (`bpmn-differ.js`, `dmn-differ.js` — авто-вызов `main()`) в харнесс добавлять нельзя.
 - `test/fixtures/` — пары BPMN/DMN XML (golden-тесты компараторов: `base.bpmn` + варианты) и `dmn-table.html` (разметка таблицы dmn-js для `DmnDiffPainter`). Новый случай сравнения = новая фикстура-вариант + короткий тест.
 - Объекты из vm-контекста имеют прототипы своего realm'а: перед `assert.deepEqual` оборачивай массивы в `Array.from`, Map — в `mapToObject` из scope.js.
-- Тесты фиксируют **текущее** поведение, включая причуды (например, дублирование property group при изменении атрибута — см. комментарий в `bpmn-xml-comparator.test.js`). Менять ожидания можно только вместе с осознанным изменением поведения.
+- Тесты фиксируют **текущее** поведение, включая причуды. Менять ожидания можно только вместе с осознанным изменением поведения.
 
 Покрыто: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator`, `DmnXmlComparator`, `DmnDiffPainter`, чистые функции `utils.js`.
 

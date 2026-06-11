@@ -8,13 +8,21 @@ class BpmnXmlComparator {
     static #ROW_TAG_NAMES = [
         'bpmn:sequenceFlow',
         'bpmn:messageFlow',
-        'bpmn:associatio'
+        'bpmn:association'
     ];
 
     static #CONNECTOR_TAG_NAMES = [
         'bpmn:incoming',
         'bpmn:outgoing'
     ];
+
+    // Tags whose text is an expression: whitespace outside string literals is insignificant
+    static #EXPRESSION_TAG_NAMES = [
+        'bpmn:conditionExpression'
+    ];
+
+    static #WORD_CHAR = /[\p{L}\p{N}_$]/u;
+    static #WHITESPACE_CHAR = /\s/;
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
 
@@ -241,7 +249,7 @@ class BpmnXmlComparator {
 
         if (nodeA.nodeType === Node.TEXT_NODE) {
             if (nodeB.nodeType === Node.TEXT_NODE) {
-                if (nodeA.textContent === nodeB.textContent) {
+                if (this.#isTextContentEqual(parentNode, nodeA, nodeB)) {
                     return null;
                 } else {
                     return [parentNode.tagName];
@@ -286,6 +294,66 @@ class BpmnXmlComparator {
         }
 
         return diffs;
+    }
+
+    #isTextContentEqual(parentNode, nodeA, nodeB) {
+        if (nodeA.textContent === nodeB.textContent) {
+            return true;
+        }
+        // Script conditions (language="groovy", "python", ...) keep whitespace significant
+        if (parentNode && !parentNode.hasAttribute('language') &&
+            BpmnXmlComparator.#EXPRESSION_TAG_NAMES.includes(parentNode.tagName)) {
+            return this.#normalizeExpression(nodeA.textContent) === this.#normalizeExpression(nodeB.textContent);
+        }
+        return false;
+    }
+
+    /**
+     * Removes insignificant whitespace from an expression:
+     * collapses it outside string literals, keeping a single space
+     * only between word characters (to not merge keyword operators like 'a ne b')
+     */
+    #normalizeExpression(text) {
+        let result = '';
+        let quote = null;
+        let escaped = false;
+        let pendingSpace = false;
+
+        for (const symbol of text) {
+            if (quote) {
+                result += symbol;
+                if (escaped) {
+                    escaped = false;
+                } else if (symbol === '\\') {
+                    escaped = true;
+                } else if (symbol === quote) {
+                    quote = null;
+                }
+                continue;
+            }
+
+            if (BpmnXmlComparator.#WHITESPACE_CHAR.test(symbol)) {
+                pendingSpace = true;
+                continue;
+            }
+
+            if (pendingSpace) {
+                const lastSymbol = result[result.length - 1];
+                if (lastSymbol &&
+                    BpmnXmlComparator.#WORD_CHAR.test(lastSymbol) &&
+                    BpmnXmlComparator.#WORD_CHAR.test(symbol)) {
+                    result += ' ';
+                }
+                pendingSpace = false;
+            }
+
+            if (symbol === '"' || symbol === '\'') {
+                quote = symbol;
+            }
+            result += symbol;
+        }
+
+        return result;
     }
 
     #concatDiffs(diffs, newDiffs) {
@@ -429,8 +497,9 @@ class BpmnXmlComparator {
             // node.getAttribute(attName) not working and returns null, so uses method 'find'
             const attrB = nodeBAttrs.find(a => a.name === attName);
             if (!attrB || attrA.value !== attrB.value || this.#isChangedMessageRef(attrA)) {
-                if (!diffs.includes(attName)) {
-                    diffs.push(nodeATagName + "/" + attName);
+                const diff = nodeATagName + '/' + attName;
+                if (!diffs.includes(diff)) {
+                    diffs.push(diff);
                 }
             }
         }

@@ -47,7 +47,7 @@ class MergeRequestInfo {
             iid: ${this.iid}; 
             infoUrl: ${this.infoUrl}; 
             lastCommitId: ${this.lastCommitId}; 
-            title: ${this.titlee}`
+            title: ${this.title}`
         );
     }
 }

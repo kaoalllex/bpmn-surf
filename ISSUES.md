@@ -113,7 +113,7 @@ MR закрыт, но определяется некорректно, и фай
 ## 🎨 UX и отображение
 
 ### [UX-0001] Medium · Условия на Sequence Flow: игнорировать незначимые пробелы
-Дифф условия показывает «полностью изменилось», хотя убраны лишь незначимые пробелы/переносы. Нужно нормализовать форматирование при сравнении и улучшить читаемость длинных/сложных expression.
+✅ Частично сделано (ветка `fix/backlog-autonomous-fixes`, 2026-06-11): при сравнении `bpmn:conditionExpression` незначимые пробелы/переносы вне строковых литералов игнорируются (`bpmn-xml-comparator.js#normalizeExpression`). Осталось: улучшить читаемость длинных/сложных expression при отображении.
 - Пример MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/4335/diffs
   ```
   было:                                   стало:
@@ -155,7 +155,7 @@ MR закрыт, но определяется некорректно, и фай
 Разделить UI, GitLab API, работу со схемами и диффами; снизить связанность; убрать крупные функции по модулям.
 
 ### [REFAC-0003] Low · Выделить отдельный cache manager
-Кэш результата `getTargetCommitId` сейчас живёт прямо в провайдере (поля `#targetCommitIdCache` / `#targetCommitIdCacheKey`). Вынести в отдельный менеджер кэша. Код: `gitlab-repo-provider.js#getTargetCommitId`.
+✅ Сделано (ветка `fix/backlog-autonomous-fixes`, 2026-06-11): кэш `getTargetCommitId` вынесен в класс `SingleEntryCache` (в том же `gitlab-repo-provider.js` — новый файл потребовал бы правки `manifest.json`). Возможное продолжение: перевести на него кэши `init` и `initMergeRequestInfo`.
 
 ### [REFAC-0004] Low · Абстракция платформы хранения кода → поддержка GitHub
 Ввести интерфейс поверх GitLab (`GitLabRepositoryProvider` / `GitHubRepositoryProvider`), вынести GitLab-специфику, определить точки расширения. Целевая задача после публикации в Open Source.
