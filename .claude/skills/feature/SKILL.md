@@ -15,7 +15,7 @@ description: Реализация новых функций Chrome Extension BPM
 ## Правила
 - Следуй существующей архитектуре: провайдеры (`*-repo-provider.js`), differ'ы, утилиты из `utils.js` — переиспользуй, не дублируй
 - Новый UI — через `GitLabUIRepoProvider` (инъекция кнопок) и `styles.css`
-- Не трогай `libs/`, не добавляй зависимости, не вводи build-шаг
+- Не трогай `libs/` руками (генерируется `npm run sync:libs`), не добавляй зависимости, не вводи build-шаг
 - `manifest.json` менять только если без этого нельзя, с явным указанием в плане и согласованием
 - Помни про общий global scope: новый content script добавляется в правильное место порядка `content_scripts`; новый файл страницы differ'а — в `utils.js#loadScripts` (до `bpmn-differ.js`) И в `web_accessible_resources`
 - Фичи differ-страницы клади в подходящий файл-класс (params, versions, view, comparator, highlighter, viewport, changes-table и т.д.), а не в оркестраторы `bpmn-differ.js`/`dmn-differ.js`; учитывай общие классы bpmn↔dmn (см. `docs/architecture.md`)

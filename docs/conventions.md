@@ -2,12 +2,12 @@
 
 ## Жёсткие ограничения
 
-- ⚠️ `libs/` (bpmn-js, dmn-js, bpmn-js-properties-panel, camunda-bpmn-moddle) — внешние библиотеки, **НЕ изменять**
+- ⚠️ `libs/` (bpmn-js, dmn-js, bpmn-js-properties-panel, camunda-bpmn-moddle) — внешние библиотеки, **НЕ изменять вручную**: содержимое генерируется `npm run sync:libs` (см. «Обновление библиотек» ниже)
 - ⚠️ Порядок `content_scripts` в `manifest.json` — **НЕ менять** (зависимости между скриптами)
 - ⚠️ `manifest.json` и порядок в `utils.js#loadScripts` — менять только по согласованию с пользователем; типовой согласуемый случай — добавление нового файла differ-страницы (`web_accessible_resources` + `loadScripts`)
 - ⚠️ Общие классы differ-страницы (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType`) использует и BPMN-, и DMN-differ — перед переименованием/изменением Grep по всем js-файлам
 - ⚠️ Только vanilla JavaScript (ES6+): без TypeScript, фреймворков, бандлеров и build-шага
-- ⚠️ Не добавлять новые runtime-зависимости; dev-зависимости для тестов (`package.json#devDependencies`) — только по согласованию с пользователем (сейчас разрешён только `jsdom`)
+- ⚠️ Не добавлять новые runtime-зависимости; dev-зависимости (`package.json#devDependencies`) — только по согласованию с пользователем (сейчас: `jsdom` для тестов и пакеты библиотек для `sync:libs`)
 - ⚠️ Chrome Manifest V3
 - ⚠️ Сохранять существующее поведение, UX и обратную совместимость
 - ⚠️ Если пользователь просит **придумать/предложить что-то самому** (имена, коды, схему, структуру, формат) — сперва покажи предложение и дождись подтверждения, и только потом делай зависящую от него работу (чтобы не делать её зря)
@@ -16,6 +16,21 @@
 - ⚠️ После изменений, затрагивающих архитектуру, ключевые файлы, потоки или процессы, — **актуализировать инструкции**: CLAUDE.md, файлы в `docs/` (architecture.md, git-workflow.md, testing.md, conventions.md) и промпты/скилы в `.claude/agents/` и `.claude/skills/`. Проверка: Grep по `.claude/`, `docs/` и CLAUDE.md на упоминания изменённых имён/концепций
 
 Если изменение может затронуть поведение: остановись, объясни риск, запроси подтверждение.
+
+## Обновление библиотек (`libs/`)
+
+`libs/` — vendored dist-файлы внешних библиотек; они закоммичены (расширение грузится unpacked, build-шага нет). Источник истины — версии в `package.json#devDependencies`, копирование — `scripts/sync-libs.js` (список файлов и маппинг путей задан в нём декларативно).
+
+Процедура обновления:
+1. Поменять версию пакета в `package.json#devDependencies`
+2. `npm install && npm run sync:libs`
+3. Просмотреть diff `libs/`, прогнать `npm test`, проверить differ руками в браузере
+4. Закоммитить `package.json`, `package-lock.json` и `libs/` вместе
+
+Нюансы:
+- CSS панели свойств приезжают из отдельных пакетов: `properties-panel.css` — из `@bpmn-io/properties-panel`, `element-templates.css` — из `bpmn-js-element-templates`; их версии должны быть совместимы с `bpmn-js-properties-panel` (это его peer dependencies)
+- Целевые пути в `libs/` менять нельзя без синхронного изменения `manifest.json#web_accessible_resources`, `utils.js#loadScripts` и `camunda-bpmn-moddle-manager.js`
+- Мажорные апгрейды bpmn-js/dmn-js/properties-panel могут ломать API — проверять differ обоих типов (BPMN и DMN)
 
 ## Стиль кода
 

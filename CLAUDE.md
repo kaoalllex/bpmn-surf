@@ -17,7 +17,7 @@ Chrome Extension (Manifest V3) для визуального сравнения 
 
 ## Критичные правила (кратко; полные списки — в docs/)
 
-- ⚠️ `libs/` — внешние библиотеки, **НЕ изменять**
+- ⚠️ `libs/` — внешние библиотеки, **НЕ изменять вручную**; генерируются `npm run sync:libs` из версий в `package.json` (см. `docs/conventions.md`)
 - ⚠️ **master protected** — никогда не коммитить/пушить в master; работа только в своей feature-ветке в своём worktree (см. `docs/git-workflow.md`)
 - ⚠️ Перед каждым push — **`npm test`**; с падающими тестами не пушить
 - ⚠️ Порядок `content_scripts` в `manifest.json` — не менять; `manifest.json` и `utils.js#loadScripts` — только по согласованию с пользователем

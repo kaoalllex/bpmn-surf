@@ -16,7 +16,7 @@ description: Улучшение структуры и читаемости ко�
 - One concern per change; маленькие diff'ы; не смешивать с фичами
 - ⚠️ Глобальные переменные и функции видны между скриптами одного scope'а. Scope'ов два: content scripts GitLab-страницы (порядок в `manifest.json`) и страница differ'а (порядок в `utils.js#loadScripts`: utils → файлы-классы → bpmn-differ → dmn-differ). Перед переименованием/переносом найди ВСЕ использования через Grep по всем js-файлам
 - ⚠️ Общие классы differ-страницы (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType`) используют и `bpmn-differ.js`, и `dmn-differ.js` — меняя их API, правь обоих потребителей. Глобального изменяемого состояния на differ-странице быть не должно — состояние только в полях классов
-- `libs/` и порядок `content_scripts` — не трогать. `manifest.json` (`web_accessible_resources`) и `utils.js#loadScripts` менять можно **по согласованию с пользователем** — это типовой шаг при выносе кода в новый файл
+- `libs/` (генерируется `npm run sync:libs`) и порядок `content_scripts` — не трогать. `manifest.json` (`web_accessible_resources`) и `utils.js#loadScripts` менять можно **по согласованию с пользователем** — это типовой шаг при выносе кода в новый файл
 - Новый файл differ-страницы = запись в `utils.js#loadScripts` (до `bpmn-differ.js`) + в `web_accessible_resources` манифеста. Top-level `let`/`const`/`class` не должны конфликтовать с именами в других скриптах scope'а (redeclaration = SyntaxError); в статических полях классов не ссылаться на глобалы, объявленные в позже загружаемых файлах
 
 ## Workflow
