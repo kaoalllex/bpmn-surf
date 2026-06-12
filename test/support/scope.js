@@ -26,6 +26,7 @@ const SCOPE_FILES = [
     'file-type-detector.js',
     'differ-params.js',
     'bpmn-xml-comparator.js',
+    'properties-panel-highlighter.js',
     'dmn-xml-comparator.js',
     'dmn-diff-painter.js'
 ];
@@ -39,6 +40,7 @@ const EXPORTED_NAMES = [
     'FileTypeDetector',
     'DifferParams',
     'BpmnXmlComparator',
+    'PropertiesPanelHighlighter',
     'DmnXmlComparator',
     'DmnDiffPainter',
     // utils.js functions under test

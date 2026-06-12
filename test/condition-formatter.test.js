@@ -74,4 +74,43 @@ describe('ConditionFormatter.format', () => {
             '}'
         ]);
     });
+
+    it('indents nested grouping parentheses level by level', () => {
+        assert.deepEqual(format('${(a && !b) || (c && (d || e))}'), [
+            '${',
+            '  (',
+            '    a &&',
+            '    !b',
+            '  ) ||',
+            '  (',
+            '    c &&',
+            '    (',
+            '      d ||',
+            '      e',
+            '    )',
+            '  )',
+            '}'
+        ]);
+    });
+
+    it('keeps a function call with string argument inside a grouping parenthesis on one line', () => {
+        assert.deepEqual(format('${(ex.func("AAA") && !AAA) || BBB}'), [
+            '${',
+            '  (',
+            '    ex.func("AAA") &&',
+            '    !AAA',
+            '  ) ||',
+            '  BBB',
+            '}'
+        ]);
+    });
+
+    it('does not split on operators, braces and parentheses inside a literal with an escaped quote', () => {
+        assert.deepEqual(format('${s != "\\"&&||{}()" && t}'), [
+            '${',
+            '  s != "\\"&&||{}()" &&',
+            '  t',
+            '}'
+        ]);
+    });
 });

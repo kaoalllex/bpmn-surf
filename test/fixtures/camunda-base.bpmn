@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_camunda" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_camunda" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_start</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ServiceTask_1" name="Service task one" camunda:asyncBefore="true" camunda:delegateExpression="${serviceOneDelegate}">
+      <bpmn:incoming>Flow_start</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_gateway</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1" name="Approved?" default="Flow_no">
+      <bpmn:incoming>Flow_to_gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_no</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:callActivity id="CallActivity_1" name="Call other process" camunda:asyncBefore="true" calledElement="CalledProcess">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in source="varIn" target="varIn" />
+        <camunda:in sourceExpression="${item.id}" target="itemId" />
+        <camunda:out source="varOut" target="varOut" />
+        <camunda:executionListener delegateExpression="${callListener}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_from_call</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="MultiTask_1" name="Multi instance task" camunda:asyncBefore="true" camunda:delegateExpression="${multiDelegate}">
+      <bpmn:incoming>Flow_no</bpmn:incoming>
+      <bpmn:outgoing>Flow_from_multi</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item" />
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="SubProcess_1" name="Sub process one" camunda:asyncBefore="true">
+      <bpmn:incoming>Flow_from_call</bpmn:incoming>
+      <bpmn:outgoing>Flow_from_sub</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems" camunda:elementVariable="subItem" />
+      <bpmn:startEvent id="SubStartEvent_1">
+        <bpmn:outgoing>Flow_sub_start</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="SubTask_1" name="Inner task" camunda:asyncBefore="true" camunda:delegateExpression="${innerDelegate}">
+        <bpmn:incoming>Flow_sub_start</bpmn:incoming>
+        <bpmn:outgoing>Flow_sub_end</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:endEvent id="SubEndEvent_1">
+        <bpmn:incoming>Flow_sub_end</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_sub_start" sourceRef="SubStartEvent_1" targetRef="SubTask_1" />
+      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />
+    </bpmn:subProcess>
+    <bpmn:sendTask id="SendTask_1" name="Send notification" camunda:asyncBefore="true" camunda:delegateExpression="${sendDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="messageTemplate">TEMPLATE_ONE</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_from_multi</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_timer</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="TimerEvent_1" name="Wait 5 days">
+      <bpmn:incoming>Flow_to_timer</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_conditional</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P5D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="ConditionalEvent_1" name="All done">
+      <bpmn:incoming>Flow_to_conditional</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_throw</bpmn:outgoing>
+      <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_1" camunda:variableName="allDone" camunda:variableEvent="create,update">
+        <bpmn:condition xsi:type="bpmn:tFormalExpression">${allDone}</bpmn:condition>
+      </bpmn:conditionalEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateThrowEvent id="EscalationThrowEvent_1" name="Start checks">
+      <bpmn:incoming>Flow_to_throw</bpmn:incoming>
+      <bpmn:outgoing>Flow_to_end</bpmn:outgoing>
+      <bpmn:escalationEventDefinition id="EscalationEventDefinition_1" escalationRef="Escalation_1" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="EndEvent_1">
+      <bpmn:incoming>Flow_to_end</bpmn:incoming>
+      <bpmn:incoming>Flow_from_sub</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:subProcess id="EventSubProcess_1" name="Escalation handler" triggeredByEvent="true">
+      <bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">
+        <bpmn:outgoing>Flow_event_sub</bpmn:outgoing>
+        <bpmn:escalationEventDefinition id="EscalationEventDefinition_2" escalationRef="Escalation_2" />
+      </bpmn:startEvent>
+      <bpmn:endEvent id="EventSubEndEvent_1">
+        <bpmn:incoming>Flow_event_sub</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_event_sub" sourceRef="EscalationStartEvent_1" targetRef="EventSubEndEvent_1" />
+    </bpmn:subProcess>
+    <bpmn:subProcess id="MessageSubProcess_1" name="Message handler" triggeredByEvent="true">
+      <bpmn:startEvent id="MessageStartEvent_1" name="Status changed" isInterrupting="false">
+        <bpmn:outgoing>Flow_message_sub</bpmn:outgoing>
+        <bpmn:messageEventDefinition id="MessageEventDefinition_1" messageRef="Message_1" />
+      </bpmn:startEvent>
+      <bpmn:endEvent id="MessageSubEndEvent_1">
+        <bpmn:incoming>Flow_message_sub</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_message_sub" sourceRef="MessageStartEvent_1" targetRef="MessageSubEndEvent_1" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_start" sourceRef="StartEvent_1" targetRef="ServiceTask_1" />
+    <bpmn:sequenceFlow id="Flow_to_gateway" sourceRef="ServiceTask_1" targetRef="Gateway_1" />
+    <bpmn:sequenceFlow id="Flow_yes" name="Yes" sourceRef="Gateway_1" targetRef="CallActivity_1">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_no" name="No" sourceRef="Gateway_1" targetRef="MultiTask_1" />
+    <bpmn:sequenceFlow id="Flow_from_call" sourceRef="CallActivity_1" targetRef="SubProcess_1" />
+    <bpmn:sequenceFlow id="Flow_from_multi" sourceRef="MultiTask_1" targetRef="SendTask_1" />
+    <bpmn:sequenceFlow id="Flow_to_timer" sourceRef="SendTask_1" targetRef="TimerEvent_1" />
+    <bpmn:sequenceFlow id="Flow_to_conditional" sourceRef="TimerEvent_1" targetRef="ConditionalEvent_1" />
+    <bpmn:sequenceFlow id="Flow_to_throw" sourceRef="ConditionalEvent_1" targetRef="EscalationThrowEvent_1" />
+    <bpmn:sequenceFlow id="Flow_to_end" sourceRef="EscalationThrowEvent_1" targetRef="EndEvent_1" />
+    <bpmn:sequenceFlow id="Flow_from_sub" sourceRef="SubProcess_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmn:message id="Message_1" name="STATUS_CHANGED" />
+  <bpmn:escalation id="Escalation_1" name="START_CHECKS" escalationCode="START_CHECKS" />
+  <bpmn:escalation id="Escalation_2" name="HANDLE_PROBLEM" escalationCode="HANDLE_PROBLEM" />
+</bpmn:definitions>

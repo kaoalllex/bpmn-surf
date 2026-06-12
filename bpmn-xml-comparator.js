@@ -4,6 +4,7 @@ class BpmnXmlComparator {
     static #PROCESS_TAG_NAME = 'bpmn:process';
     static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
     static #MESSAGE_TAG_NAME = 'bpmn:message';
+    static #ESCALATION_TAG_NAME = 'bpmn:escalation';
 
     static #ROW_TAG_NAMES = [
         'bpmn:sequenceFlow',
@@ -71,6 +72,7 @@ class BpmnXmlComparator {
 
         ['bpmn:escalationEventDefinition', 'Escalation'],
         ['bpmn:escalationEventDefinition/camunda:escalationCodeVariable', 'Escalation'],
+        ['escalationRef', 'Escalation'],
 
         ['bpmn:error', 'Error'],
 
@@ -107,6 +109,7 @@ class BpmnXmlComparator {
     ]);
 
     #changedMessages = [];
+    #changedEscalations = [];
 
     /**
      * Compare two BPMN XML documents
@@ -122,7 +125,10 @@ class BpmnXmlComparator {
         const myDoc = parseXml(myXml);
         const otherDoc = parseXml(otherXml);
 
-        this.#findChangedMessages(myDoc, otherDoc);
+        this.#changedMessages =
+            this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#MESSAGE_TAG_NAME);
+        this.#changedEscalations =
+            this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#ESCALATION_TAG_NAME);
 
         const myProcessNode = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PROCESS_TAG_NAME))
             .filter(elem => elem.getAttribute('isExecutable') === 'true')[0];
@@ -220,11 +226,13 @@ class BpmnXmlComparator {
         return node.tagName === 'camunda:property';
     }
 
-    #findChangedMessages(myDoc, otherDoc) {
-        this.#changedMessages = [];
-        const myMessageNodes = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#MESSAGE_TAG_NAME))
+    // Finds changed elements defined outside the process (messages, escalations)
+    // that diagram elements point to via reference attributes
+    #findChangedReferencedElements(myDoc, otherDoc, tagName) {
+        const changedIds = [];
+        const myNodes = Array.from(myDoc.getElementsByTagName(tagName));
 
-        for (const myNode of myMessageNodes) {
+        for (const myNode of myNodes) {
             const id = myNode.getAttribute('id');
             const otherNode = otherDoc.getElementById(id);
             if (!otherNode) {
@@ -232,10 +240,10 @@ class BpmnXmlComparator {
             }
             const diffs = this.#compareNodes(null, myNode, otherNode);
             if (diffs) {
-                this.#changedMessages.push(id);
+                changedIds.push(id);
             }
         }
-        // console.debug('changedMessages', this.#changedMessages);
+        return changedIds;
     }
 
     /**
@@ -496,7 +504,8 @@ class BpmnXmlComparator {
 
             // node.getAttribute(attName) not working and returns null, so uses method 'find'
             const attrB = nodeBAttrs.find(a => a.name === attName);
-            if (!attrB || attrA.value !== attrB.value || this.#isChangedMessageRef(attrA)) {
+            if (!attrB || attrA.value !== attrB.value ||
+                this.#isChangedMessageRef(attrA) || this.#isChangedEscalationRef(attrA)) {
                 const diff = nodeATagName + '/' + attName;
                 if (!diffs.includes(diff)) {
                     diffs.push(diff);
@@ -507,5 +516,9 @@ class BpmnXmlComparator {
 
     #isChangedMessageRef(attr) {
         return attr.name === 'messageRef' && this.#changedMessages.includes(attr.value);
+    }
+
+    #isChangedEscalationRef(attr) {
+        return attr.name === 'escalationRef' && this.#changedEscalations.includes(attr.value);
     }
 }

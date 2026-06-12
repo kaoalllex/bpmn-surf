@@ -8,11 +8,11 @@
 
 Устройство (`test/`):
 - `test/support/scope.js` — vm-харнесс: исполняет прод-файлы в одном jsdom vm-контексте в порядке `loadScripts` (имитация общего глобального scope differ-страницы), **не изменяя прод-код**. Чтобы протестировать новый класс: добавь его файл в `SCOPE_FILES` и имя в `EXPORTED_NAMES`. Файлы с side effects при загрузке (`bpmn-differ.js`, `dmn-differ.js` — авто-вызов `main()`) в харнесс добавлять нельзя.
-- `test/fixtures/` — пары BPMN/DMN XML (golden-тесты компараторов: `base.bpmn` + варианты) и `dmn-table.html` (разметка таблицы dmn-js для `DmnDiffPainter`). Новый случай сравнения = новая фикстура-вариант + короткий тест.
+- `test/fixtures/` — пары BPMN/DMN XML (golden-тесты компараторов: `base.bpmn` + варианты; `camunda-base.bpmn` — база для точечных вариантов через string replace прямо в тесте), `dmn-table.html` (разметка таблицы dmn-js для `DmnDiffPainter`) и `properties-panel.html` (разметка bio-properties-panel для `PropertiesPanelHighlighter`). Новый случай сравнения = новая фикстура-вариант (или replace-вариант от `camunda-base.bpmn`) + короткий тест.
 - Объекты из vm-контекста имеют прототипы своего realm'а: перед `assert.deepEqual` оборачивай массивы в `Array.from`, Map — в `mapToObject` из scope.js.
 - Тесты фиксируют **текущее** поведение, включая причуды. Менять ожидания можно только вместе с осознанным изменением поведения.
 
-Покрыто: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator`, `DmnXmlComparator`, `DmnDiffPainter`, чистые функции `utils.js`.
+Покрыто: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (включая маппинг диффов на группы панели свойств и задокументированные слепые зоны: retarget стрелок, перевязка incoming/outgoing, атрибут `default`), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, чистые функции `utils.js`.
 
 ## CI
 

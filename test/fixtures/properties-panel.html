@@ -1,0 +1,26 @@
+<!-- Simplified bio-properties-panel markup: group headers + condition expression entry,
+     the selectors PropertiesPanelHighlighter relies on -->
+<div class="bio-properties-panel">
+  <div class="bio-properties-panel-group" data-group-id="group-general">
+    <div class="bio-properties-panel-group-header">
+      <div class="bio-properties-panel-group-header-title" title="General">General</div>
+    </div>
+    <div class="bio-properties-panel-group-entries"></div>
+  </div>
+  <div class="bio-properties-panel-group" data-group-id="group-asyncContinuations">
+    <div class="bio-properties-panel-group-header">
+      <div class="bio-properties-panel-group-header-title" title="Asynchronous continuations">Asynchronous continuations</div>
+    </div>
+    <div class="bio-properties-panel-group-entries"></div>
+  </div>
+  <div class="bio-properties-panel-group" data-group-id="group-condition">
+    <div class="bio-properties-panel-group-header">
+      <div class="bio-properties-panel-group-header-title" title="Condition">Condition</div>
+    </div>
+    <div class="bio-properties-panel-group-entries">
+      <div class="bio-properties-panel-entry">
+        <textarea id="bio-properties-panel-conditionExpression">${approved == true}</textarea>
+      </div>
+    </div>
+  </div>
+</div>
