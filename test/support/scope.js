@@ -16,19 +16,22 @@ const { JSDOM } = require('jsdom');
 
 const ROOT = path.join(__dirname, '..', '..');
 
-// Differ-page leaf files only, in utils.js#loadScripts order.
+// Differ-page leaf files in utils.js#loadScripts relative order,
+// plus content-script files under test (models.js, file-type-detector.js)
+// that are not part of loadScripts.
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
     'utils.js',
     'diff-type.js',
     'condition-formatter.js',
-    'models.js',
-    'file-type-detector.js',
-    'differ-params.js',
     'bpmn-xml-comparator.js',
     'properties-panel-highlighter.js',
+    'differ-params.js',
     'dmn-xml-comparator.js',
-    'dmn-diff-painter.js'
+    'dmn-diff-painter.js',
+    // content-script files (no load-time dependencies on the files above)
+    'models.js',
+    'file-type-detector.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().
