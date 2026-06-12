@@ -1,0 +1,16 @@
+# https://wiki.example.com/pages/viewpage.action?pageId=1276675705
+
+# project:
+#   badges:
+#     - type: Pipeline
+#     - type: Coverage
+#     - type: Custom
+#       name: "Quality Gate"
+#       link_url: "https://devplatform.example.com/tenants/example-project/repositories/view/example-repo"
+#       image_url: "https://devplatform.example.com/api/v2/tenants/example-project/repositories/example-repo/quality-gate-badges/%{commit_sha}"
+
+merge_request:
+  method: 'rebase_merge' # https://docs.gitlab.com/ee/user/project/merge_requests/methods/#merge-commit-with-semi-linear-history
+  squash: 'allow'
+  enable_delete_branch: true
+  auto_rebase: 'scheduled'
