@@ -289,6 +289,14 @@ class BpmnXmlComparator {
             return diffs;
         }
 
+        if (nodeA.tagName === 'bpmn:extensionElements' && this.#hasPositionalTagMismatch(nodeA, nodeB)) {
+            // Extension elements are an unordered list: when an entry is replaced
+            // (child count unchanged), positional comparison pairs unrelated entries
+            // and yields nameless diffs, losing property groups for panel highlighting
+            const childrenDiffs = this.#findChildrenDiffs(nodeA, nodeB);
+            return this.#concatDiffs(diffs, childrenDiffs);
+        }
+
         if (nodeA.childNodes.length !== nodeB.childNodes.length) {
             const childrenDiffs = this.#findChildrenDiffs(nodeA, nodeB);
             diffs = this.#concatDiffs(diffs, childrenDiffs);
@@ -302,6 +310,20 @@ class BpmnXmlComparator {
         }
 
         return diffs;
+    }
+
+    // True when nodes have the same number of children but the tags
+    // at some position differ, so positional comparison would pair unrelated nodes
+    #hasPositionalTagMismatch(nodeA, nodeB) {
+        if (nodeA.childNodes.length !== nodeB.childNodes.length) {
+            return false;
+        }
+        for (let i = 0; i < nodeA.childNodes.length; i++) {
+            if (nodeA.childNodes[i].tagName !== nodeB.childNodes[i].tagName) {
+                return true;
+            }
+        }
+        return false;
     }
 
     #isTextContentEqual(parentNode, nodeA, nodeB) {

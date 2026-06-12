@@ -226,6 +226,36 @@ describe('BpmnXmlComparator property groups: In mappings / Out mappings', () => 
         const result = compare(changed, base);
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['In mappings'] });
     });
+
+    it('detects a camunda:in replaced by camunda:out (child count unchanged)', () => {
+        const changed = variant(
+            '<camunda:in source="varIn" target="varIn" />',
+            '<camunda:out source="varIn" target="varIn" />');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['CallActivity_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['Out mappings', 'In mappings'] });
+    });
+
+    it('detects a camunda:in replaced by an inputOutput block (child count unchanged)', () => {
+        const changed = variant(
+            '<camunda:in sourceExpression="${item.id}" target="itemId" />',
+            '<camunda:inputOutput>\n' +
+            '          <camunda:inputParameter name="Input_1" />\n' +
+            '          <camunda:outputParameter name="Output_1" />\n' +
+            '        </camunda:inputOutput>');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['CallActivity_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['Inputs', 'Outputs', 'In mappings'] });
+    });
+
+    it('ignores reordering of unchanged extension elements with different tags', () => {
+        const changed = variant(
+            '<camunda:in sourceExpression="${item.id}" target="itemId" />\n' +
+            '        <camunda:out source="varOut" target="varOut" />',
+            '<camunda:out source="varOut" target="varOut" />\n' +
+            '        <camunda:in sourceExpression="${item.id}" target="itemId" />');
+        assertNoDiffs(compare(changed, base));
+    });
 });
 
 describe('BpmnXmlComparator property groups: Inputs / Outputs / Extension properties', () => {
