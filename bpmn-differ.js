@@ -21,6 +21,8 @@ class BpmnDiffer {
     #propertiesPanelHighlighter = null;
     #processFileIndex = null;
     #callActivityNavigator = null;
+    #handlerLocator = null;
+    #handlerNavigator = null;
 
     constructor(rawParams) {
         this.#rawParams = rawParams;
@@ -59,6 +61,15 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             (processFilePath, processFileName) => this.#openCallActivityDiffer(processFilePath, processFileName)
         );
+        this.#handlerNavigator = new HandlerNavigator(
+            bpmnJSOverlays,
+            this.#elementRegistry,
+            this.#handlerLocator,
+            this.#params.mrIid,
+            () => this.#selectedElementId,
+            () => this.#getShownRef(),
+            (url) => window.open(url, '_blank')
+        );
 
         bpmnJSEventBus.on('selection.changed', (event) => {
             if (event.newSelection.length !== 1) {
@@ -75,6 +86,8 @@ class BpmnDiffer {
             // Nothing to show; the detailed error has been logged by #loadVersions()
             return;
         }
+
+        await this.#loadChangedHandlers();
 
         if (this.#versions.mrXml) {
             await this.#showMr();
@@ -103,6 +116,11 @@ class BpmnDiffer {
             this.#params.projectHostUrl,
             this.#params.projectId,
             this.#params.branchCommitId
+        );
+        this.#handlerLocator = new ExternalTaskHandlerLocator(
+            this.#params.projectUrl,
+            this.#params.projectHostUrl,
+            this.#params.projectId
         );
         this.#propertiesPanelHighlighter = new PropertiesPanelHighlighter(
             new ConditionFormatter(),
@@ -224,6 +242,10 @@ class BpmnDiffer {
             this.#selectedElementId = currentSelectedElemId;
         }
         this.#selectElementById();
+
+        // Overlays are dropped on import, so re-add the persistent "changed
+        // handler" badges for the freshly imported diagram version.
+        this.#handlerNavigator.refreshChangedBadges();
     }
 
     async #importXml(bpmnXml) {
@@ -291,6 +313,32 @@ class BpmnDiffer {
         this.#propertiesPanelHighlighter.highlightDiffPropGroups(this.#selectedElementId);
         this.#propertiesPanelHighlighter.showConditionExpression(this.#selectedElementId);
         await this.#callActivityNavigator.showDiveInOverlay();
+        this.#handlerNavigator.showOverlayForSelectedElement();
+    }
+
+    // Loads the handlers (topic -> file) changed in this MR.
+    // Only meaningful in MR mode; branch-view leaves the map empty (the delegate
+    // badge then only serves as a link to the handler code).
+    async #loadChangedHandlers() {
+        if (!this.#params.mrCommitId || !this.#params.mrIid) {
+            return;
+        }
+        try {
+            const changedHandlers = await this.#handlerLocator.findChangedHandlers(
+                this.#params.mrIid,
+                this.#params.mrCommitId
+            );
+            this.#handlerNavigator.setChangedHandlers(changedHandlers);
+        } catch (error) {
+            console.warn('cannot determine changed handlers', error);
+        }
+    }
+
+    // Commit/ref of the diagram version currently shown (for opening handler code).
+    #getShownRef() {
+        return this.#branchIndicator.isTargetBranchShown()
+            ? this.#params.branchCommitId
+            : this.#params.mrCommitId;
     }
 
     async #openCallActivityDiffer(processFilePath, processFileName) {
@@ -300,6 +348,7 @@ class BpmnDiffer {
             projectId: this.#params.projectId,
             mrCommitId: this.#params.mrCommitId,
             mrBranchName: this.#params.mrBranchName,
+            mrIid: this.#params.mrIid,
             branchCommitId: this.#params.branchCommitId,
             filePath: processFilePath,
             fileName: processFileName,

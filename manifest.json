@@ -43,6 +43,8 @@
                 "properties-panel-highlighter.js",
                 "process-file-index.js",
                 "call-activity-navigator.js",
+                "handler-locator.js",
+                "handler-navigator.js",
                 "differ-params.js",
                 "diagram-versions.js",
                 "branch-indicator.js",

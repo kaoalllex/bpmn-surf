@@ -27,6 +27,7 @@ const SCOPE_FILES = [
     'bpmn-xml-comparator.js',
     'properties-panel-highlighter.js',
     'differ-params.js',
+    'handler-locator.js',
     'dmn-xml-comparator.js',
     'dmn-diff-painter.js',
     // content-script files, in manifest.json#content_scripts relative order.
@@ -50,6 +51,7 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'DifferParams',
+    'ExternalTaskHandlerLocator',
     'BpmnXmlComparator',
     'PropertiesPanelHighlighter',
     'DmnXmlComparator',

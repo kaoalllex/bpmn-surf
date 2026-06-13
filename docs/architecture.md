@@ -46,6 +46,8 @@ main.js → App (app.js) → Providers → Differs
 | `canvas-viewport.js` | `CanvasViewport` — pan/zoom/fit канвы |
 | `process-file-index.js` | `ProcessFileIndex` — индекс processId→файл, кэш в localStorage |
 | `call-activity-navigator.js` | `CallActivityNavigator` — overlay "Dive in" у Call Activity |
+| `handler-locator.js` | `ExternalTaskHandlerLocator` — связь external-таски с кодом хендлера по топику: `findChangedTopics` (скан изменённых `.kt` из MR changes API) и `resolveLocation` (GitLab blob-search → файл:строка). Точки расширения: языки (`.java`), делегаты (ключ — имя класса), глубокий анализ зависимостей |
+| `handler-navigator.js` | `HandlerNavigator` — overlay-плашка «‹/›» на service task: постоянная (цвет «изменён») для тасок с изменённым/добавленным в MR обработчиком, по клику для остальных. Клик: для изменённого обработчика — открыть его diff в этом MR; для остального — код на текущей показанной версии. «Обработчик» = external task handler (сделано) или delegate (на будущее) |
 | `dmn-differ.js` | `DmnDiffer` — оркестратор DMN-diff'а + bootstrap (message listener) |
 | `dmn-differ-view.js` | `DmnDifferView` — DOM страницы DMN-differ'а (layout, header, кнопки) |
 | `dmn-table-viewport.js` | `DmnTableViewport` — zoom/fit/scroll таблицы решений dmn-js |

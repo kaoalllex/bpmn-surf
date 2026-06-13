@@ -9,6 +9,7 @@ class DifferParams {
             console.error('Only one of these parameters must be defined: mrCommitId or localFileContent');
         }
         this.mrBranchName = params.mrBranchName;
+        this.mrIid = params.mrIid; // MR internal id; undefined in branch-view mode
         this.branchCommitId = requireDefined(params.branchCommitId, 'branchCommitId');
         this.targetBranchName = this.branchCommitId;
         this.filePath = requireDefined(params.filePath, 'filePath');

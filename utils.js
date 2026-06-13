@@ -183,6 +183,8 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
     await addScript('process-file-index.js', doc, getResourceUrlByNameFunc);
     await addScript('call-activity-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('handler-locator.js', doc, getResourceUrlByNameFunc);
+    await addScript('handler-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('differ-params.js', doc, getResourceUrlByNameFunc);
     await addScript('diagram-versions.js', doc, getResourceUrlByNameFunc);
     await addScript('branch-indicator.js', doc, getResourceUrlByNameFunc);

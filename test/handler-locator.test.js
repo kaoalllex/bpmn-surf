@@ -1,0 +1,183 @@
+'use strict';
+
+const { describe, it } = require('node:test');
+const assert = require('node:assert/strict');
+const { createScope } = require('./support/scope.js');
+
+const { ExternalTaskHandlerLocator } = createScope();
+
+describe('ExternalTaskHandlerLocator.extractSubscriptionTopics', () => {
+    it('extracts a single topic from a Kotlin handler', () => {
+        const content = `
+@Component("Order_PrepareItem_ScoreItem")
+@ExternalTaskSubscription("Order_PrepareItem_ScoreItem")
+class ScoreCarTask : BaseExternalTaskHandler<ItemPrepareContext>()
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(content)),
+            ['Order_PrepareItem_ScoreItem']
+        );
+    });
+
+    it('ignores @Component and only returns @ExternalTaskSubscription topics', () => {
+        const content = `
+@Component("some-bean-name")
+@ExternalTaskSubscription("the-topic")
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(content)),
+            ['the-topic']
+        );
+    });
+
+    it('extracts multiple subscriptions from one file', () => {
+        const content = `
+@ExternalTaskSubscription("topic-a")
+class A
+@ExternalTaskSubscription("topic-b")
+class B
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(content)),
+            ['topic-a', 'topic-b']
+        );
+    });
+
+    it('tolerates whitespace and line breaks inside the annotation', () => {
+        const content = '@ExternalTaskSubscription(\n    "spaced-topic"\n)';
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(content)),
+            ['spaced-topic']
+        );
+    });
+
+    it('supports a named argument form', () => {
+        const content = '@ExternalTaskSubscription(topicName = "named-topic")';
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(content)),
+            ['named-topic']
+        );
+    });
+
+    it('matches the annotation without a leading @ (e.g. inside a search snippet)', () => {
+        const content = 'ExternalTaskSubscription("snippet-topic")';
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(content)),
+            ['snippet-topic']
+        );
+    });
+
+    it('returns an empty array when there is no subscription', () => {
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics('class Plain')),
+            []
+        );
+    });
+
+    it('returns an empty array for empty or null content', () => {
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics('')), []);
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractSubscriptionTopics(null)), []);
+    });
+});
+
+describe('ExternalTaskHandlerLocator.isHandlerFile', () => {
+    it('accepts Kotlin files', () => {
+        assert.equal(ExternalTaskHandlerLocator.isHandlerFile('src/main/kotlin/prepare/ScoreCarTask.kt'), true);
+    });
+
+    it('rejects BPMN and other files', () => {
+        assert.equal(ExternalTaskHandlerLocator.isHandlerFile('src/main/resources/bpmn/PrepareItem.bpmn'), false);
+        assert.equal(ExternalTaskHandlerLocator.isHandlerFile('README.md'), false);
+    });
+});
+
+describe('ExternalTaskHandlerLocator.extractChangedPaths', () => {
+    it('includes an added (new) handler file', () => {
+        const response = {
+            changes: [
+                { old_path: 'src/NewTask.kt', new_path: 'src/NewTask.kt', new_file: true }
+            ]
+        };
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
+            ['src/NewTask.kt']
+        );
+    });
+
+    it('includes a modified handler file', () => {
+        const response = {
+            changes: [
+                { old_path: 'src/ScoreCarTask.kt', new_path: 'src/ScoreCarTask.kt' }
+            ]
+        };
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
+            ['src/ScoreCarTask.kt']
+        );
+    });
+
+    it('includes both paths of a renamed file', () => {
+        const response = {
+            changes: [
+                { old_path: 'src/OldName.kt', new_path: 'src/NewName.kt', renamed_file: true }
+            ]
+        };
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
+            ['src/NewName.kt', 'src/OldName.kt']
+        );
+    });
+
+    it('includes a deleted file path', () => {
+        const response = {
+            changes: [
+                { old_path: 'src/Gone.kt', new_path: 'src/Gone.kt', deleted_file: true }
+            ]
+        };
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
+            ['src/Gone.kt']
+        );
+    });
+
+    it('deduplicates and returns empty for missing changes', () => {
+        const response = {
+            changes: [
+                { old_path: 'a.kt', new_path: 'a.kt' },
+                { old_path: 'a.kt', new_path: 'a.kt' }
+            ]
+        };
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)), ['a.kt']);
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractChangedPaths({})), []);
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractChangedPaths(null)), []);
+    });
+});
+
+describe('ExternalTaskHandlerLocator URL builders', () => {
+    const locator = new ExternalTaskHandlerLocator(
+        'https://gitlab.example/group/proj',
+        'https://gitlab.example',
+        42
+    );
+
+    it('builds a blob file URL anchored to a line', () => {
+        assert.equal(
+            locator.blobFileUrl('src/A.kt', 18, 'abc123'),
+            'https://gitlab.example/group/proj/-/blob/abc123/src/A.kt#L18'
+        );
+    });
+
+    it('omits the line anchor when no line is given', () => {
+        assert.equal(
+            locator.blobFileUrl('src/A.kt', null, 'abc123'),
+            'https://gitlab.example/group/proj/-/blob/abc123/src/A.kt'
+        );
+    });
+
+    it('builds a blob search page URL', () => {
+        assert.equal(
+            locator.blobSearchPageUrl('my-topic', 'main'),
+            'https://gitlab.example/group/proj/-/search?search=my-topic&scope=blobs&ref=main'
+        );
+    });
+});

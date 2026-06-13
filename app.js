@@ -220,6 +220,7 @@ class App {
             projectId: projectInfo.id,
             mrCommitId: mrCommitId,
             mrBranchName: mrBranchNames.sourceBranchName,
+            mrIid: this.#repoProvider.getMergeRequestInfo().iid,
             branchCommitId: targetCommitId,
             filePath: filePath,
             fileName: fileName,

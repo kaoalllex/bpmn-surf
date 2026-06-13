@@ -57,6 +57,24 @@
     cursor: wait;
 }
 
+/* service task handler code link */
+.handler-link {
+    padding: 2px 5px 1px;
+    border: 1px solid hsl(0, 0%, 70%);
+    border-radius: 2px;
+    background-color: hsl(0, 0%, 92%);
+    font-family: monospace;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+}
+
+/* handler changed in this MR */
+.handler-link-changed {
+    border-color: hsl(35, 90%, 45%);
+    background-color: hsl(35, 95%, 70%);
+}
+
 /* changes table */
 .changes-table th,
 .changes-table td {
