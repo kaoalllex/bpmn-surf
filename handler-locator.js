@@ -1,10 +1,15 @@
 // Locates the source code of service-task handlers and detects which of them
 // changed in the current merge request.
 //
-// Currently supports Kotlin handlers of external tasks: a handler class is
-// annotated with @ExternalTaskSubscription("<topic>"), and a service task in
-// the BPMN references the same topic via camunda:topic. The "key" linking a
-// task to its code is the topic string.
+// Currently supports Kotlin handlers of external tasks. A service task in the
+// BPMN references its handler by topic via camunda:topic; the "key" linking a
+// task to its code is the topic string. Two declaration styles are recognised:
+//  - @ExternalTaskSubscription("<topic>") — the topic is stated explicitly;
+//  - @WrapToExternalTask — no topic is stated; the framework derives it from
+//    the annotated class name by lower-casing its first letter (e.g. class
+//    CorrectItemABTestDelegate -> topic "correctItemABTestDelegate").
+//    The annotation's arguments (e.g. retriesTimeout) are optional and never
+//    carry the topic.
 //
 // Extension points (intentionally isolated for future work):
 //  - languages: add file extensions to #HANDLER_FILE_EXTENSIONS (e.g. '.java');
@@ -23,6 +28,13 @@ class ExternalTaskHandlerLocator {
     // and an optional named argument (value = "..." / topicName = "...").
     static #SUBSCRIPTION_TOPIC_REGEX =
         /@?ExternalTaskSubscription\s*\(\s*(?:[A-Za-z_]+\s*=\s*)?"([^"]+)"/g;
+
+    // Matches @WrapToExternalTask (with optional arguments) followed by the class
+    // it annotates, capturing the class name. Tolerates other annotations/modifiers
+    // (e.g. @Component, open) between the annotation and the `class` keyword. The
+    // topic is later derived from the captured class name, not from the arguments.
+    static #WRAP_TO_EXTERNAL_TASK_REGEX =
+        /@?WrapToExternalTask\b\s*(?:\([^)]*\))?[\s\S]*?\bclass\s+([A-Za-z_][A-Za-z0-9_]*)/g;
 
     #projectUrl;
     #projectHostUrl;
@@ -53,6 +65,43 @@ class ExternalTaskHandlerLocator {
             topics.push(match[1]);
         }
         return topics;
+    }
+
+    /**
+     * Extracts the topics of all @WrapToExternalTask-annotated classes in the
+     * given source file content. The topic of such a handler is its class name
+     * with a lower-cased first letter.
+     * @returns {string[]} topics (possibly empty)
+     */
+    static extractWrapToExternalTaskTopics(fileContent) {
+        const topics = [];
+        if (!fileContent) {
+            return topics;
+        }
+        const regex = new RegExp(ExternalTaskHandlerLocator.#WRAP_TO_EXTERNAL_TASK_REGEX);
+        let match;
+        while ((match = regex.exec(fileContent)) !== null) {
+            topics.push(ExternalTaskHandlerLocator.#topicFromClassName(match[1]));
+        }
+        return topics;
+    }
+
+    /**
+     * All external-task topics declared in a source file, regardless of style
+     * (@ExternalTaskSubscription or @WrapToExternalTask).
+     * @returns {string[]} topics (possibly empty)
+     */
+    static extractHandlerTopics(fileContent) {
+        return [
+            ...ExternalTaskHandlerLocator.extractSubscriptionTopics(fileContent),
+            ...ExternalTaskHandlerLocator.extractWrapToExternalTaskTopics(fileContent)
+        ];
+    }
+
+    // The topic the framework derives from a @WrapToExternalTask class name:
+    // the class name with a lower-cased first letter.
+    static #topicFromClassName(className) {
+        return className.charAt(0).toLowerCase() + className.slice(1);
     }
 
     /**
@@ -92,7 +141,7 @@ class ExternalTaskHandlerLocator {
                 continue;
             }
             const content = await loadFileContent(`${this.#projectUrl}/-/raw/${scanRef}/${scanPath}`, false);
-            for (const topic of ExternalTaskHandlerLocator.extractSubscriptionTopics(content)) {
+            for (const topic of ExternalTaskHandlerLocator.extractHandlerTopics(content)) {
                 handlers.set(topic, { filePath, diffType });
             }
         }
@@ -211,6 +260,17 @@ class ExternalTaskHandlerLocator {
     }
 
     async #searchHandlerLocation(topic, ref) {
+        // @ExternalTaskSubscription is the primary style; @WrapToExternalTask is
+        // the fallback for projects that derive the topic from the class name.
+        const location = (await this.#searchSubscriptionLocation(topic, ref))
+            || (await this.#searchWrapToExternalTaskLocation(topic, ref));
+        if (!location) {
+            console.info(`handler source not found for topic '${topic}'`);
+        }
+        return location;
+    }
+
+    async #searchSubscriptionLocation(topic, ref) {
         // Literal search for the annotation pinpoints the handler precisely with
         // basic search (git grep). With Advanced Search the punctuation may be
         // tokenized, so we still filter the results below.
@@ -219,7 +279,6 @@ class ExternalTaskHandlerLocator {
 
         const handlerItems = items.filter(i => i.path && ExternalTaskHandlerLocator.isHandlerFile(i.path));
         if (handlerItems.length === 0) {
-            console.info(`handler source not found for topic '${topic}'`);
             return null;
         }
 
@@ -231,6 +290,30 @@ class ExternalTaskHandlerLocator {
         return {
             filePath: item.path,
             line: this.#computeMatchLine(item, topic)
+        };
+    }
+
+    async #searchWrapToExternalTaskLocation(topic, ref) {
+        // The topic is the class name with a lower-cased first letter, so the
+        // class name is the topic with its first letter capitalised. Locate the
+        // file declaring that class.
+        const className = capitalizeFirstLetter(topic);
+        const term = `class ${className}`;
+        const items = await this.#searchBlobs(term, ref);
+
+        const handlerItems = items.filter(i => i.path && ExternalTaskHandlerLocator.isHandlerFile(i.path));
+        if (handlerItems.length === 0) {
+            return null;
+        }
+
+        // Prefer a hit whose snippet shows the @WrapToExternalTask annotation
+        // (avoids matching an unrelated class of the same name).
+        const annotated = handlerItems.find(i => i.data && i.data.includes('WrapToExternalTask'));
+        const item = annotated || handlerItems[0];
+
+        return {
+            filePath: item.path,
+            line: this.#computeMatchLine(item, className)
         };
     }
 
