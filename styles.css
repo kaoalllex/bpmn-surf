@@ -69,10 +69,18 @@
     cursor: pointer;
 }
 
-/* handler changed in this MR */
+/* handler touched in this MR — colours match DiffType (diff-type.js) */
+.handler-link-added {
+    border-color: #44cc44;
+    background-color: #88ff88;
+}
 .handler-link-changed {
-    border-color: hsl(35, 90%, 45%);
-    background-color: hsl(35, 95%, 70%);
+    border-color: #4444cc;
+    background-color: #8888ff;
+}
+.handler-link-removed {
+    border-color: #cc4444;
+    background-color: #ff8888;
 }
 
 /* changes table */

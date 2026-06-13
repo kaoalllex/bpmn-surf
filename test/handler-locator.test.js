@@ -91,65 +91,72 @@ describe('ExternalTaskHandlerLocator.isHandlerFile', () => {
     });
 });
 
-describe('ExternalTaskHandlerLocator.extractChangedPaths', () => {
-    it('includes an added (new) handler file', () => {
+describe('ExternalTaskHandlerLocator.extractHandlerFileChanges', () => {
+    it('classifies an added handler file as "added", scanned at its own path', () => {
         const response = {
             changes: [
                 { old_path: 'src/NewTask.kt', new_path: 'src/NewTask.kt', new_file: true }
             ]
         };
         assert.deepEqual(
-            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
-            ['src/NewTask.kt']
+            JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges(response))),
+            [{ filePath: 'src/NewTask.kt', scanPath: 'src/NewTask.kt', diffType: 'added' }]
         );
     });
 
-    it('includes a modified handler file', () => {
+    it('classifies a modified handler file as "changed"', () => {
         const response = {
             changes: [
                 { old_path: 'src/ScoreCarTask.kt', new_path: 'src/ScoreCarTask.kt' }
             ]
         };
         assert.deepEqual(
-            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
-            ['src/ScoreCarTask.kt']
+            JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges(response))),
+            [{ filePath: 'src/ScoreCarTask.kt', scanPath: 'src/ScoreCarTask.kt', diffType: 'changed' }]
         );
     });
 
-    it('includes both paths of a renamed file', () => {
+    it('classifies a renamed file as "changed" using the new path', () => {
         const response = {
             changes: [
                 { old_path: 'src/OldName.kt', new_path: 'src/NewName.kt', renamed_file: true }
             ]
         };
         assert.deepEqual(
-            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
-            ['src/NewName.kt', 'src/OldName.kt']
+            JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges(response))),
+            [{ filePath: 'src/NewName.kt', scanPath: 'src/NewName.kt', diffType: 'changed' }]
         );
     });
 
-    it('includes a deleted file path', () => {
+    it('classifies a deleted handler file as "removed" using the old path', () => {
         const response = {
             changes: [
                 { old_path: 'src/Gone.kt', new_path: 'src/Gone.kt', deleted_file: true }
             ]
         };
         assert.deepEqual(
-            Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)),
-            ['src/Gone.kt']
+            JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges(response))),
+            [{ filePath: 'src/Gone.kt', scanPath: 'src/Gone.kt', diffType: 'removed' }]
         );
     });
 
-    it('deduplicates and returns empty for missing changes', () => {
+    it('ignores non-handler files', () => {
         const response = {
             changes: [
-                { old_path: 'a.kt', new_path: 'a.kt' },
-                { old_path: 'a.kt', new_path: 'a.kt' }
+                { old_path: 'src/Flow.bpmn', new_path: 'src/Flow.bpmn' },
+                { old_path: 'README.md', new_path: 'README.md', new_file: true },
+                { old_path: 'src/Task.kt', new_path: 'src/Task.kt' }
             ]
         };
-        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractChangedPaths(response)), ['a.kt']);
-        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractChangedPaths({})), []);
-        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractChangedPaths(null)), []);
+        assert.deepEqual(
+            JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges(response))),
+            [{ filePath: 'src/Task.kt', scanPath: 'src/Task.kt', diffType: 'changed' }]
+        );
+    });
+
+    it('returns empty for missing changes', () => {
+        assert.deepEqual(JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges({}))), []);
+        assert.deepEqual(JSON.parse(JSON.stringify(ExternalTaskHandlerLocator.extractHandlerFileChanges(null))), []);
     });
 });
 

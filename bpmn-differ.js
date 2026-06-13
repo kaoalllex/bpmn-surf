@@ -68,7 +68,8 @@ class BpmnDiffer {
             this.#params.mrIid,
             () => this.#selectedElementId,
             () => this.#getShownRef(),
-            (url) => window.open(url, '_blank')
+            (url) => window.open(url, '_blank'),
+            (url) => this.#navigateOpenerTab(url)
         );
 
         bpmnJSEventBus.on('selection.changed', (event) => {
@@ -326,12 +327,43 @@ class BpmnDiffer {
         try {
             const changedHandlers = await this.#handlerLocator.findChangedHandlers(
                 this.#params.mrIid,
-                this.#params.mrCommitId
+                this.#params.mrCommitId,
+                this.#params.branchCommitId
             );
             this.#handlerNavigator.setChangedHandlers(changedHandlers);
         } catch (error) {
             console.warn('cannot determine changed handlers', error);
         }
+    }
+
+    // Navigates the tab that opened this differ (the originating MR tab) to the
+    // given URL and brings it to the foreground, so opening a handler's MR diff
+    // returns to the already-open MR instead of spawning another tab. Returns
+    // false when no such tab is available (then the caller falls back to a new tab).
+    #navigateOpenerTab(url) {
+        const opener = window.opener;
+        if (!opener || opener.closed) {
+            return false;
+        }
+        try {
+            // opener.focus() alone does not reliably switch the active tab in
+            // Chrome. Opening the URL with the opener's window name as the target
+            // reuses that tab, navigates it AND brings it to the front. The name
+            // is set transiently and restored, so GitLab's tab keeps its own
+            // window.name (it survives the navigation as a browsing-context prop).
+            const TARGET = 'gl-bpmn-diff-opener-tab';
+            const prevName = opener.name;
+            opener.name = TARGET;
+            window.open(url, TARGET);
+            opener.name = prevName;
+        } catch (error) {
+            // Cross-origin opener: cannot use the named-target trick; navigate
+            // directly (the tab may not come to the front, but the URL opens).
+            console.warn('cannot focus opener tab via named target; navigating directly', error);
+            opener.location.href = url;
+            opener.focus();
+        }
+        return true;
     }
 
     // Commit/ref of the diagram version currently shown (for opening handler code).

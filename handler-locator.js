@@ -63,26 +63,37 @@ class ExternalTaskHandlerLocator {
     }
 
     /**
-     * Returns a map "topic -> handler file path" for every handler file that was
-     * added or modified in the MR. Both new and modified files are covered (the
-     * MR changes API lists added files too). Only the handler files listed in
-     * the MR diff are downloaded and scanned, so no repository-wide search runs.
-     * @returns {Promise<Map<string, string>>}
+     * Returns a map "topic -> {filePath, diffType}" for every handler file
+     * touched by the MR. diffType is one of 'added' / 'changed' / 'removed'
+     * (matching DiffType.name) and drives the badge colour: a new handler file
+     * is 'added', a modified/renamed one is 'changed', a deleted one is
+     * 'removed'. Only the handler files listed in the MR diff are downloaded and
+     * scanned, so no repository-wide search runs.
+     *
+     * An added/modified file is scanned at the MR head (mrRef); a deleted file
+     * no longer exists there, so it is scanned at the target branch (branchRef),
+     * which is also the version where its service task is still shown. Deleted
+     * handlers are therefore detected only when branchRef is supplied.
+     * @returns {Promise<Map<string, {filePath: string, diffType: string}>>}
      */
-    async findChangedHandlers(mrIid, mrRef) {
+    async findChangedHandlers(mrIid, mrRef, branchRef) {
         const handlers = new Map();
         if (!mrIid || !mrRef) {
             return handlers;
         }
 
-        const changedFiles = await this.#fetchMrChangedFilePaths(mrIid);
-        const handlerFiles = changedFiles.filter(p => ExternalTaskHandlerLocator.isHandlerFile(p));
-        console.debug(`changed handler files (${handlerFiles.length}):`, handlerFiles);
+        const changes = await this.#fetchMrChanges(mrIid);
+        const handlerChanges = ExternalTaskHandlerLocator.extractHandlerFileChanges(changes);
+        console.debug(`changed handler files (${handlerChanges.length}):`, handlerChanges);
 
-        for (const filePath of handlerFiles) {
-            const content = await loadFileContent(`${this.#projectUrl}/-/raw/${mrRef}/${filePath}`, false);
+        for (const { filePath, scanPath, diffType } of handlerChanges) {
+            const scanRef = diffType === 'removed' ? branchRef : mrRef;
+            if (!scanRef) {
+                continue;
+            }
+            const content = await loadFileContent(`${this.#projectUrl}/-/raw/${scanRef}/${scanPath}`, false);
             for (const topic of ExternalTaskHandlerLocator.extractSubscriptionTopics(content)) {
-                handlers.set(topic, filePath);
+                handlers.set(topic, { filePath, diffType });
             }
         }
         console.debug(`changed handler topics (${handlers.size}):`, handlers);
@@ -144,35 +155,46 @@ class ExternalTaskHandlerLocator {
             `&scope=blobs&ref=${encodeURIComponent(ref)}`;
     }
 
-    async #fetchMrChangedFilePaths(mrIid) {
+    async #fetchMrChanges(mrIid) {
         const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/merge_requests/${mrIid}/changes`;
         const content = await loadFileContent(url, false);
         if (!content) {
             console.warn('cannot load MR changes: ' + url);
-            return [];
+            return null;
         }
-        return ExternalTaskHandlerLocator.extractChangedPaths(JSON.parse(content));
+        return JSON.parse(content);
     }
 
     /**
-     * Collects all file paths touched by an MR from its `changes` API response,
-     * covering added, modified, renamed and deleted files.
-     * @returns {string[]} unique paths
+     * Selects the handler files touched by an MR from its `changes` API response
+     * and classifies each as 'added' / 'changed' / 'removed'. For each entry:
+     *  - filePath: the path used for the badge link / MR-diff anchor
+     *  - scanPath: the path whose content carries the subscription topics
+     *  - diffType: 'added' (new_file), 'removed' (deleted_file) or 'changed'
+     * For added/modified files new_path holds the path; for deleted files the
+     * path lives in old_path (new_path equals it); renames are treated as changes.
+     * @returns {{filePath: string, scanPath: string, diffType: string}[]}
      */
-    static extractChangedPaths(changesResponse) {
+    static extractHandlerFileChanges(changesResponse) {
         const changes = (changesResponse && changesResponse.changes) || [];
-        const paths = new Set();
+        const result = [];
         for (const change of changes) {
-            // For added files new_path == old_path; for deleted files the path
-            // lives in old_path; renames carry both.
-            if (change.new_path) {
-                paths.add(change.new_path);
+            let diffType, path;
+            if (change.new_file) {
+                diffType = 'added';
+                path = change.new_path;
+            } else if (change.deleted_file) {
+                diffType = 'removed';
+                path = change.old_path;
+            } else {
+                diffType = 'changed';
+                path = change.new_path || change.old_path;
             }
-            if (change.old_path) {
-                paths.add(change.old_path);
+            if (path && ExternalTaskHandlerLocator.isHandlerFile(path)) {
+                result.push({ filePath: path, scanPath: path, diffType });
             }
         }
-        return Array.from(paths);
+        return result;
     }
 
     async #sha1Hex(text) {
