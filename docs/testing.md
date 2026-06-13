@@ -14,7 +14,9 @@
 - Отладочный приём: `scope.js` можно `require`-ить из одноразового node-скрипта вне тестов, чтобы прогнать компаратор на реальной паре схем и посмотреть полный diff-результат (так сверяется ожидаемое поведение перед фиксацией его в тестах).
 - Тесты фиксируют **текущее** поведение, включая причуды. Менять ожидания можно только вместе с осознанным изменением поведения.
 
-Покрыто: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (включая маппинг диффов на группы панели свойств и задокументированные слепые зоны: retarget стрелок, перевязка incoming/outgoing, атрибут `default`), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, чистые функции `utils.js`.
+Покрыто: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (включая маппинг диффов на группы панели свойств и задокументированные слепые зоны: retarget стрелок, перевязка incoming/outgoing, атрибут `default`), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.findSelectedFilePath` (legacy-разметка `[data-path]` и rapid diffs `<diff-file>`), `GitLabUIRepoProvider.addButton` (контейнеры кнопки для self-managed и gitlab.com), чистые функции `utils.js`.
+
+DOM-разметку GitLab в тестах провайдеров (`gitlab-repo-provider.test.js`, `gitlab-ui-repo-provider.test.js`) строим прямо в тесте маленькими хелперами — она тривиальна и параметризуется; фикстуры-файлы держим только для сложных сторонних DOM (`dmn-table.html`, `properties-panel.html`).
 
 ## CI
 

@@ -29,8 +29,16 @@ const SCOPE_FILES = [
     'differ-params.js',
     'dmn-xml-comparator.js',
     'dmn-diff-painter.js',
-    // content-script files (no load-time dependencies on the files above)
+    // content-script files, in manifest.json#content_scripts relative order.
+    // repo-provider.js / ui-repo-provider.js must precede the gitlab-* providers
+    // that extend them (extends is evaluated at load time).
+    'config.js',
     'models.js',
+    'repo-provider.js',
+    'ui-repo-provider.js',
+    'master-commit-manager.js',
+    'gitlab-repo-provider.js',
+    'gitlab-ui-repo-provider.js',
     'file-type-detector.js'
 ];
 
@@ -46,6 +54,8 @@ const EXPORTED_NAMES = [
     'PropertiesPanelHighlighter',
     'DmnXmlComparator',
     'DmnDiffPainter',
+    'GitLabRepoProvider',
+    'GitLabUIRepoProvider', 'UI_BUTTON_TYPE',
     // utils.js functions under test
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath',

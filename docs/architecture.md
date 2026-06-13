@@ -51,8 +51,8 @@ main.js → App (app.js) → Providers → Differs
 | `dmn-table-viewport.js` | `DmnTableViewport` — zoom/fit/scroll таблицы решений dmn-js |
 | `dmn-xml-comparator.js` | `DmnXmlComparator` — семантическое сравнение двух DMN XML → diff-модель |
 | `dmn-diff-painter.js` | `DmnDiffPainter` — покраска diff-модели на DOM таблицы решений |
-| `gitlab-repo-provider.js` | GitLab API, резолв коммитов/веток |
-| `gitlab-ui-repo-provider.js` | Инъекция кнопок, выбор файлов |
+| `gitlab-repo-provider.js` | GitLab API, резолв коммитов/веток; `findSelectedFilePath` поддерживает обе разметки MR-диффов: legacy (`[data-path]` + `.is-active`/`.diff-file-is-active`, self-managed) и rapid diffs (`<diff-file data-file-data>`, gitlab.com — выбор по hash в URL, иначе единственный bpmn/dmn-файл) |
+| `gitlab-ui-repo-provider.js` | Инъекция кнопок, выбор файлов; контейнер кнопки diff ищется по списку селекторов-кандидатов (self-managed без обёртки и gitlab.com c `.merge-request-sticky-header-wrapper`) |
 | `repo-provider.js` / `ui-repo-provider.js` | Базовые интерфейсы провайдеров |
 | `models.js` | DTO: `FileType`, `ProjectInfo`, `MergeRequestInfo` |
 | `utils.js` | DOM, HTTP, парсинг XML, загрузка скриптов |

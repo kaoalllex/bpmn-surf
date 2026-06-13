@@ -122,6 +122,18 @@ class GitLabRepoProvider extends RepoProvider {
 
     async findSelectedFilePath() {
         console.debug('finding selected file path...');
+
+        // Rapid diffs UI (gitlab.com): diff files are <diff-file> custom elements,
+        // without [data-path] / .is-active markers. Detect it up front to avoid the
+        // ~1.5s doWithAttempts wait the legacy lookup below would otherwise incur.
+        if (document.querySelector('diff-file')) {
+            return this.#findSelectedFilePathInRapidDiffs();
+        }
+
+        return await this.#findSelectedFilePathLegacy();
+    }
+
+    async #findSelectedFilePathLegacy() {
         const dataPathElems = await this.#findDataPathElements();
         if (!dataPathElems) {
             console.info('cannot find data-path element');
@@ -159,6 +171,57 @@ class GitLabRepoProvider extends RepoProvider {
         }
         console.debug('selected file path: ' + filePath);
         return filePath;
+    }
+
+    #findSelectedFilePathInRapidDiffs() {
+        console.debug('finding selected file path in rapid diffs...');
+
+        const files = [];
+        let selectedPath = null;
+        const selectedId = window.location.hash ? window.location.hash.substring(1) : null;
+
+        for (const diffFile of document.querySelectorAll('diff-file')) {
+            const path = this.#extractRapidDiffFilePath(diffFile);
+            if (!path) {
+                continue;
+            }
+            files.push(path);
+            if (selectedId && diffFile.id === selectedId) {
+                selectedPath = path;
+            }
+        }
+
+        // Explicit selection via URL hash wins
+        if (selectedPath) {
+            console.debug('selected file path (rapid diffs, by hash): ' + selectedPath);
+            return selectedPath;
+        }
+
+        // Fallback: exactly one bpmn/dmn file in the diff -> use it without explicit selection
+        const diagramFiles = files.filter(
+            p => p.endsWith(FILE_TYPE_BPMN.extension) || p.endsWith(FILE_TYPE_DMN.extension)
+        );
+        if (diagramFiles.length === 1) {
+            console.debug('selected file path (rapid diffs, single diagram): ' + diagramFiles[0]);
+            return diagramFiles[0];
+        }
+
+        console.debug('cannot determine selected file path in rapid diffs');
+        return null;
+    }
+
+    #extractRapidDiffFilePath(diffFile) {
+        const raw = diffFile.getAttribute('data-file-data');
+        if (!raw) {
+            return null;
+        }
+        try {
+            const data = JSON.parse(raw);
+            return data.new_path || data.old_path || null;
+        } catch (error) {
+            console.debug('cannot parse data-file-data of diff-file', error);
+            return null;
+        }
     }
 
     // Cache for initMergeRequestInfo result

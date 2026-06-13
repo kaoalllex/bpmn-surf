@@ -2,8 +2,17 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
     #buttonId = 'btn_77844bf3d4e842caa0d88194431197c0';
 
-    // #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
-    #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR = '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.gl-flex.gl-justify-between.gl-relative.is-merge-request.js-tabs-affix > div';
+    // Several GitLab versions render the MR header differently, so we try a list
+    // of candidate selectors and use the first one that matches.
+    // #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS legacy: '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
+    #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS = [
+        // GitLab self-managed (gitlab.example.com): sticky header is a direct child of issuable-details
+        '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.gl-flex.gl-justify-between.gl-relative.is-merge-request.js-tabs-affix > div',
+        // GitLab.com: sticky header is nested inside .merge-request-sticky-header-wrapper
+        '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header-wrapper > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.is-merge-request.js-tabs-affix > div',
+        // Tolerant fallback: any MR tabs container, regardless of header wrapper nesting
+        '#content-body div.merge-request-tabs-container.is-merge-request.js-tabs-affix > div'
+    ];
 
     // #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
     #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = '#fileHolder > div.js-file-title.file-title-flex-parent > div.file-actions.gl-flex.gl-flex-wrap.gl-gap-3 > div';
@@ -11,9 +20,9 @@ class GitLabUIRepoProvider extends UIRepoProvider {
     addButton({ fileType, buttonType, needToSelectLocalFile, onButtonClickFunc }) {
         this.reset();
 
-        const parentContainerSelector = buttonType === UI_BUTTON_TYPE.DIFF
-            ? this.#SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTOR
-            : this.#SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR;
+        const parentContainerSelectors = buttonType === UI_BUTTON_TYPE.DIFF
+            ? this.#SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS
+            : [this.#SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR];
 
         const appendAtTheEnd = buttonType === UI_BUTTON_TYPE.DIFF;
 
@@ -45,9 +54,9 @@ class GitLabUIRepoProvider extends UIRepoProvider {
             buttonContainer.appendChild(button2);
         }
 
-        const parentContainer = document.querySelector(parentContainerSelector);
+        const parentContainer = this.#findFirstMatch(parentContainerSelectors);
         if (!parentContainer) {
-            console.error('Cannot find button parent container by selector', parentContainerSelector);
+            console.error('Cannot find button parent container by selectors', parentContainerSelectors);
             return;
         }
         if (appendAtTheEnd) {
@@ -59,6 +68,16 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
     reset() {
         removeElement(this.#buttonId);
+    }
+
+    #findFirstMatch(selectors) {
+        for (const selector of selectors) {
+            const elem = document.querySelector(selector);
+            if (elem) {
+                return elem;
+            }
+        }
+        return null;
     }
 
     isOwnButtonClick(event) {
