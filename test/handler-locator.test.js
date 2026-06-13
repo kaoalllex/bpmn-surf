@@ -80,6 +80,97 @@ class B
     });
 });
 
+describe('ExternalTaskHandlerLocator.extractExternalTaskBeanTopics', () => {
+    it('derives the topic from the class name with a lower-cased first letter', () => {
+        const content = `
+@Component
+@ExternalTaskBean(retriesTimeout = DEFAULT_RETRIES_TIMEOUT)
+class CorrectItemABTestDelegate(
+    private val abTestsAccessor: AbTestsAccessor,
+) : AbstractDelegate() {
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(content)),
+            ['correctItemABTestDelegate']
+        );
+    });
+
+    it('supports the annotation without arguments', () => {
+        const content = `
+@ExternalTaskBean
+class FooBarDelegate : AbstractDelegate()
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(content)),
+            ['fooBarDelegate']
+        );
+    });
+
+    it('tolerates modifiers and other annotations before the class', () => {
+        const content = `
+@ExternalTaskBean
+@Component
+open class FooDelegate
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(content)),
+            ['fooDelegate']
+        );
+    });
+
+    it('matches the annotation without a leading @ (e.g. inside a search snippet)', () => {
+        const content = 'ExternalTaskBean\nclass SnippetDelegate';
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(content)),
+            ['snippetDelegate']
+        );
+    });
+
+    it('extracts multiple wrapped handlers from one file', () => {
+        const content = `
+@ExternalTaskBean
+class AlphaDelegate
+@ExternalTaskBean(retriesTimeout = X)
+class BetaDelegate
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(content)),
+            ['alphaDelegate', 'betaDelegate']
+        );
+    });
+
+    it('returns an empty array when there is no @ExternalTaskBean', () => {
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics('class Plain')),
+            []
+        );
+    });
+
+    it('returns an empty array for empty or null content', () => {
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics('')), []);
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(null)), []);
+    });
+});
+
+describe('ExternalTaskHandlerLocator.extractHandlerTopics', () => {
+    it('combines @ExternalTaskSubscription and @ExternalTaskBean topics', () => {
+        const content = `
+@ExternalTaskSubscription("explicit-topic")
+class ExplicitTask
+@ExternalTaskBean
+class DerivedDelegate
+`;
+        assert.deepEqual(
+            Array.from(ExternalTaskHandlerLocator.extractHandlerTopics(content)),
+            ['explicit-topic', 'derivedDelegate']
+        );
+    });
+
+    it('returns an empty array for empty content', () => {
+        assert.deepEqual(Array.from(ExternalTaskHandlerLocator.extractHandlerTopics('')), []);
+    });
+});
+
 describe('ExternalTaskHandlerLocator.isHandlerFile', () => {
     it('accepts Kotlin files', () => {
         assert.equal(ExternalTaskHandlerLocator.isHandlerFile('src/main/kotlin/prepare/ScoreCarTask.kt'), true);
