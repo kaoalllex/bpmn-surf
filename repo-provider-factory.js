@@ -13,8 +13,9 @@
  */
 function createRepoProvider() {
     return new FallbackRepoProvider([
-        // Primary path once implemented (REFAC-0001); currently disabled, so the
-        // chain falls through to the DOM/heuristic provider below.
+        // Primary path (REFAC-0001): resolves MR params via the GitLab MR API.
+        // On an MR page it owns the page only if the API answers with diff_refs;
+        // otherwise its init() returns false and the chain falls back below.
         new GitLabApiRepoProvider(),
         // Fallback: the existing DOM- and URL-heuristic based provider.
         new GitLabRepoProvider()
