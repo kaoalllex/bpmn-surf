@@ -68,7 +68,7 @@ class BpmnDiffer {
             bpmnJSOverlays,
             this.#elementRegistry,
             this.#handlerLocator,
-            this.#params.mrIid,
+            this.#params.changeRequestId,
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (url) => window.open(url, '_blank'),
@@ -110,29 +110,29 @@ class BpmnDiffer {
 
     #init() {
         this.#params = new DifferParams(this.#rawParams);
-        this.#params.requireProjectInfo();
+        this.#params.requirePlatformInfo();
 
         this.#versions = new DiagramVersions(this.#params);
-        this.#branchIndicator = new BranchIndicator(this.#params.targetBranchName, this.#params.mrBranchName);
+        this.#branchIndicator = new BranchIndicator(this.#params.targetRef, this.#params.sourceBranchName);
         this.#xmlComparator = new BpmnXmlComparator();
         // ProcessFileIndex is kept only as the fallback path of CallActivityLocator
         // (full repository tree walk); the primary path is a targeted blob-search.
         this.#processFileIndex = new ProcessFileIndex(
-            this.#params.projectUrl,
-            this.#params.projectHostUrl,
-            this.#params.projectId,
-            this.#params.branchCommitId
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId,
+            this.#params.targetRef
         );
         this.#callActivityLocator = new CallActivityLocator(
-            this.#params.projectUrl,
-            this.#params.projectHostUrl,
-            this.#params.projectId,
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId,
             this.#processFileIndex
         );
         this.#handlerLocator = new ExternalTaskHandlerLocator(
-            this.#params.projectUrl,
-            this.#params.projectHostUrl,
-            this.#params.projectId
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId
         );
         this.#propertiesPanelHighlighter = new PropertiesPanelHighlighter(
             new ConditionFormatter(),
@@ -169,7 +169,7 @@ class BpmnDiffer {
         console.debug('loading branch bpmn xml...');
         await this.#versions.loadBranchXml();
 
-        if (this.#params.mrCommitId) {
+        if (this.#params.sourceRef) {
             console.debug('loading mr bpmn xml...');
             await this.#versions.loadMrXml();
         } else if (this.#params.localFileContent) {
@@ -182,17 +182,17 @@ class BpmnDiffer {
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
             console.error(
                 'bpmn file is unavailable in both versions;',
-                `target branch url: ${this.#params.rawFileUrl(this.#params.branchCommitId)};`,
-                `mr url: ${this.#params.mrCommitId ? this.#params.rawFileUrl(this.#params.mrCommitId) : '<no mrCommitId>'}`
+                `target branch url: ${this.#params.rawFileUrl(this.#params.targetRef)};`,
+                `mr url: ${this.#params.sourceRef ? this.#params.rawFileUrl(this.#params.sourceRef) : '<no sourceRef>'}`
             );
         }
     }
 
     #downloadShownBranchFile() {
         if (this.#branchIndicator.isTargetBranchShown()) {
-            this.#versions.download(this.#versions.branchXml, this.#params.targetBranchName);
+            this.#versions.download(this.#versions.branchXml, this.#params.targetRef);
         } else {
-            this.#versions.download(this.#versions.mrXml, this.#params.mrBranchName);
+            this.#versions.download(this.#versions.mrXml, this.#params.sourceBranchName);
         }
     }
 
@@ -202,14 +202,14 @@ class BpmnDiffer {
                 this.#showMr();
             } else {
                 // File may have been removed
-                this.#versions.alertFileNotExistInBranch(this.#params.mrBranchName);
+                this.#versions.alertFileNotExistInBranch(this.#params.sourceBranchName);
             }
         } else { // Current MR - try to switch to branch
             if (this.#versions.branchXml) {
                 this.#showBranch();
             } else {
                 // File may be new
-                this.#versions.alertFileNotExistInBranch(this.#params.targetBranchName);
+                this.#versions.alertFileNotExistInBranch(this.#params.targetRef);
             }
         }
     }
@@ -223,7 +223,7 @@ class BpmnDiffer {
         console.debug('showing branch bpmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchBpmnXml');
         await this.#showXml(branchXml);
-        this.#branchIndicator.setBranchName(this.#params.targetBranchName);
+        this.#branchIndicator.setBranchName(this.#params.targetRef);
 
         if (this.#versions.mrXml) {
             this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);
@@ -236,7 +236,7 @@ class BpmnDiffer {
         console.debug('showing mr bpmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrBpmnXml');
         await this.#showXml(mrXml);
-        this.#branchIndicator.setBranchName(this.#params.mrBranchName);
+        this.#branchIndicator.setBranchName(this.#params.sourceBranchName);
 
         if (this.#versions.branchXml) {
             this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
@@ -332,14 +332,14 @@ class BpmnDiffer {
     // Only meaningful in MR mode; branch-view leaves the map empty (the delegate
     // badge then only serves as a link to the handler code).
     async #loadChangedHandlers() {
-        if (!this.#params.mrCommitId || !this.#params.mrIid) {
+        if (!this.#params.sourceRef || !this.#params.changeRequestId) {
             return;
         }
         try {
             const changedHandlers = await this.#handlerLocator.findChangedHandlers(
-                this.#params.mrIid,
-                this.#params.mrCommitId,
-                this.#params.branchCommitId
+                this.#params.changeRequestId,
+                this.#params.sourceRef,
+                this.#params.targetRef
             );
             this.#handlerNavigator.setChangedHandlers(changedHandlers);
         } catch (error) {
@@ -381,23 +381,12 @@ class BpmnDiffer {
     // and for resolving a Call Activity's called process file).
     #getShownRef() {
         return this.#branchIndicator.isTargetBranchShown()
-            ? this.#params.branchCommitId
-            : this.#params.mrCommitId;
+            ? this.#params.targetRef
+            : this.#params.sourceRef;
     }
 
     async #openCallActivityDiffer(processFilePath, processFileName) {
-        const params = {
-            projectUrl: this.#params.projectUrl,
-            projectHostUrl: this.#params.projectHostUrl,
-            projectId: this.#params.projectId,
-            mrCommitId: this.#params.mrCommitId,
-            mrBranchName: this.#params.mrBranchName,
-            mrIid: this.#params.mrIid,
-            branchCommitId: this.#params.branchCommitId,
-            filePath: processFilePath,
-            fileName: processFileName,
-            camundaBpmnModdle: this.#params.camundaBpmnModdle
-        };
+        const params = this.#params.toNestedDifferParams(processFilePath, processFileName);
         await openDiffer(
             params,
             null,

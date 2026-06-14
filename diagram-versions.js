@@ -18,11 +18,11 @@ class DiagramVersions {
     }
 
     async loadBranchXml() {
-        this.#branchXml = await this.#loadXml(this.#params.branchCommitId);
+        this.#branchXml = await this.#loadXml(this.#params.targetRef);
     }
 
     async loadMrXml() {
-        this.#mrXml = await this.#loadXml(this.#params.mrCommitId);
+        this.#mrXml = await this.#loadXml(this.#params.sourceRef);
     }
 
     useLocalFileContentAsMr() {

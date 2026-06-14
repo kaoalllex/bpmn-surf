@@ -2,7 +2,7 @@
 id: REFAC-0001
 title: Получать параметры через GitLab MR API; улучшить поиск хеша коммита
 priority: high
-status: open
+status: in-progress
 ---
 
 ## Постановка
@@ -13,9 +13,39 @@ status: open
 
 Многое сейчас парсится из HTML или подбирается эвристикой — перейти на MR API.
 
-- Переделать: `getMrCommitId`, `getMrSourceAndTargetBranchName`, `getTargetCommitId`.
+- Переделать: `getMrCommitId`, `getMrSourceAndTargetBranchName`, `getTargetCommitId` (в текущем коде — `getSourceCommitId`, `getChangeBranchNames`, `getTargetCommitId` в `gitlab-repo-provider.js`).
+
+### Принятый дизайн (подготовка выполнена, см. Историю)
+
+Переход на API задуман как **отдельная реализация интерфейса `RepoProvider`**, а DOM/эвристический путь остаётся **фолбэком** (до отладки API, затем подлежит удалению целиком):
+
+- **Whole-provider fallback.** `FallbackRepoProvider` (`fallback-repo-provider.js`) держит упорядоченный список реализаций и на `init()` выбирает первую доступную и успешно проинициализировавшуюся, далее делегирует ей все вызовы. Удаление DOM-пути в будущем = убрать `GitLabRepoProvider` из цепочки в `repo-provider-factory.js` и удалить класс.
+- **Шов уже создан.** `GitLabApiRepoProvider` (`gitlab-api-repo-provider.js`) стоит в цепочке **перед** `GitLabRepoProvider`, но `isAvailable()` возвращает `false`, методы кидают «not implemented» → поведение не изменено.
+- **Ядро развязано от GitLab.** `App` работает только через нейтральные интерфейсы; имена методов `RepoProvider` нейтральны (`isChangeViewActive`, `initChangeInfo`, `getChangeInfo`, `getChangeBranchNames`, `getSourceCommitId`, `getTargetCommitId`). Параметры differ-страницы нейтральны (`sourceRef`/`targetRef`/`sourceBranchName`/`changeRequestId`) + `platform`-дескриптор `{kind,projectUrl,hostUrl,projectId}` (`diff-params-builder.js`, `DifferParams`).
+
+### TODO следующей сессии (собственно REFAC-0001)
+
+1. Реализовать `GitLabApiRepoProvider` через `GET /api/v4/projects/{id}/merge_requests/{iid}`:
+   - `getSourceCommitId` ← `diff_refs.head_sha`;
+   - `getTargetCommitId` ← `diff_refs.base_sha`/`start_sha` (надёжнее текущих эвристик с merged/atom-feed);
+   - `getChangeBranchNames` ← `source_branch`/`target_branch`;
+   - `getChangeInfo` (title, iid, state) ← из того же ответа;
+   - `isChangeViewActive` — по URL (как сейчас), либо валидировать через API.
+   - `getProjectInfo`/`init` — переиспользовать резолв project id.
+2. Включить `isAvailable()` и поставить провайдер первым (он уже первый в `createRepoProvider`).
+3. DOM-`GitLabRepoProvider` оставить фолбэком; завести отдельную задачу на его удаление после отладки API.
+4. Связи: `[REFAC-0004]` (полная нейтрализация DTO `MergeRequestInfo`/`MergeRequestBranchNames` и абстракция загрузчика контента differ-страницы — там), `[REFAC-0002]` (декомпозиция — частично продвинута выносом `DiffParamsBuilder`).
 
 ## История работы
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
      Новые записи добавляй сверху (свежие первыми). -->
+
+### 2026-06-14 · claude-opus-4-8 · ветка `refactor/platform-abstraction-seams`
+
+Подготовка к задаче (behavior-preserving, без смены источника данных; все 187 юнит-тестов зелёные). Три шага:
+1. Шов выбора провайдера: `repo-provider-factory.js` (`createRepoProvider`/`createUIRepoProvider`), DI в `App`, `FallbackRepoProvider` (whole-provider fallback), скелет `GitLabApiRepoProvider`.
+2. Нейтральный словарь параметров differ-страницы + `platform`-дескриптор; вынесен `DiffParamsBuilder`; `DifferParams` и потребители переведены на нейтральные имена; вложенный differ Call Activity — через `DifferParams.toNestedDifferParams`.
+3. Нейтральные имена методов `RepoProvider` (change-request словарь).
+
+Новые тесты: `test/fallback-repo-provider.test.js`, `test/diff-params-builder.test.js`; обновлён `test/differ-params.test.js`. Осталось — реализация `GitLabApiRepoProvider` через MR API (см. TODO выше).

@@ -60,7 +60,7 @@ class DmnDiffer {
         this.#params = new DifferParams(this.#rawParams);
 
         this.#versions = new DiagramVersions(this.#params);
-        this.#branchIndicator = new BranchIndicator(this.#params.targetBranchName, this.#params.mrBranchName);
+        this.#branchIndicator = new BranchIndicator(this.#params.targetRef, this.#params.sourceBranchName);
         this.#viewport = new DmnTableViewport();
         this.#xmlComparator = new DmnXmlComparator();
         this.#diffPainter = new DmnDiffPainter();
@@ -74,7 +74,7 @@ class DmnDiffer {
         console.debug('loading branch dmn xml...');
         await this.#versions.loadBranchXml();
 
-        if (this.#params.mrCommitId) {
+        if (this.#params.sourceRef) {
             console.debug('loading mr dmn xml...');
             await this.#versions.loadMrXml();
         } else if (this.#params.localFileContent) {
@@ -87,17 +87,17 @@ class DmnDiffer {
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
             console.error(
                 'dmn file is unavailable in both versions;',
-                `target branch url: ${this.#params.rawFileUrl(this.#params.branchCommitId)};`,
-                `mr url: ${this.#params.mrCommitId ? this.#params.rawFileUrl(this.#params.mrCommitId) : '<no mrCommitId>'}`
+                `target branch url: ${this.#params.rawFileUrl(this.#params.targetRef)};`,
+                `mr url: ${this.#params.sourceRef ? this.#params.rawFileUrl(this.#params.sourceRef) : '<no sourceRef>'}`
             );
         }
     }
 
     #downloadShownBranchFile() {
         if (this.#branchIndicator.isTargetBranchShown()) {
-            this.#versions.download(this.#versions.branchXml, this.#params.targetBranchName);
+            this.#versions.download(this.#versions.branchXml, this.#params.targetRef);
         } else {
-            this.#versions.download(this.#versions.mrXml, this.#params.mrBranchName);
+            this.#versions.download(this.#versions.mrXml, this.#params.sourceBranchName);
         }
     }
 
@@ -107,14 +107,14 @@ class DmnDiffer {
                 this.#showMr();
             } else {
                 // File may have been removed
-                this.#versions.alertFileNotExistInBranch(this.#params.mrBranchName);
+                this.#versions.alertFileNotExistInBranch(this.#params.sourceBranchName);
             }
         } else { // Current MR - try to switch to branch
             if (this.#versions.branchXml) {
                 this.#showBranch();
             } else {
                 // File may be new
-                this.#versions.alertFileNotExistInBranch(this.#params.targetBranchName);
+                this.#versions.alertFileNotExistInBranch(this.#params.targetRef);
             }
         }
     }
@@ -123,7 +123,7 @@ class DmnDiffer {
         console.debug('showing mr dmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrDmnXml');
         await this.#showXml(mrXml);
-        this.#branchIndicator.setBranchName(this.#params.mrBranchName);
+        this.#branchIndicator.setBranchName(this.#params.sourceBranchName);
 
         if (this.#versions.branchXml) {
             this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
@@ -136,7 +136,7 @@ class DmnDiffer {
         console.debug('showing branch dmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchDmnXml');
         await this.#showXml(branchXml);
-        this.#branchIndicator.setBranchName(this.#params.targetBranchName);
+        this.#branchIndicator.setBranchName(this.#params.targetRef);
 
         if (this.#versions.mrXml) {
             this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);

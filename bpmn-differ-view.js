@@ -90,7 +90,7 @@ class BpmnDifferView {
         tableCanvasPropsRow.appendChild(this.#propsCell);
 
         //--- footer
-        if (this.#params.isMrBranchDefined()) {
+        if (this.#params.isSourceVersionDefined()) {
             const footerCell = document.createElement('td');
             footerCell.setAttribute('align', 'right');
             row3.appendChild(footerCell);
@@ -164,7 +164,7 @@ class BpmnDifferView {
         row2.appendChild(cellBranchButton);
 
         const switchButton = document.createElement('button');
-        switchButton.disabled = !this.#params.isMrBranchDefined();
+        switchButton.disabled = !this.#params.isSourceVersionDefined();
         switchButton.style.width = '120px';
         switchButton.textContent = 'Switch branch';
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
@@ -211,7 +211,7 @@ class BpmnDifferView {
         cellView.appendChild(fitButton);
 
         const highlightButton = document.createElement('button');
-        highlightButton.disabled = !this.#params.isMrBranchDefined();
+        highlightButton.disabled = !this.#params.isSourceVersionDefined();
         highlightButton.style.width = '120px';
         highlightButton.textContent = 'Highlight On';
         highlightButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';

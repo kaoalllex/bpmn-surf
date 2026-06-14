@@ -14,13 +14,15 @@ class App {
     #moddleManager;
     #pageReloader;
     #fileTypeDetector;
+    #diffParamsBuilder;
 
-    constructor() {
-        this.#repoProvider = new GitLabRepoProvider();
-        this.#uiRepoProvider = new GitLabUIRepoProvider();
+    constructor(repoProvider = createRepoProvider(), uiRepoProvider = createUIRepoProvider()) {
+        this.#repoProvider = repoProvider;
+        this.#uiRepoProvider = uiRepoProvider;
         this.#moddleManager = new CamundaBpmnModdleManager();
         this.#pageReloader = new PageReloader();
         this.#fileTypeDetector = new FileTypeDetector();
+        this.#diffParamsBuilder = new DiffParamsBuilder();
     }
 
     /**
@@ -82,8 +84,8 @@ class App {
                 return;
             }
 
-            const diffsTabHandled = await this.#handleDiffsTab();
-            if (!diffsTabHandled) {
+            const changeViewHandled = await this.#handleChangeView();
+            if (!changeViewHandled) {
                 await this.#handleBranchView();
             }
         } catch (error) {
@@ -92,18 +94,18 @@ class App {
     }
 
     /**
-     * Handles Merge Request diffs tab
+     * Handles the change (MR/PR) diffs view
      * @returns {Promise<boolean>} true if button was successfully added, false otherwise
      */
-    async #handleDiffsTab() {
-        const diffsTabActive = await this.#repoProvider.isDiffsTabActive();
-        if (!diffsTabActive) {
+    async #handleChangeView() {
+        const changeViewActive = await this.#repoProvider.isChangeViewActive();
+        if (!changeViewActive) {
             console.debug('diffs tab is not active');
             return false;
         }
 
         console.debug('diffs tab is active');
-        await this.#repoProvider.initMergeRequestInfo();
+        await this.#repoProvider.initChangeInfo();
         await this.#addDiffButton();
         return true;
     }
@@ -143,23 +145,23 @@ class App {
         console.debug(`selected file is ${fileType.name}`);
 
         const fileName = getFileNameFromPath(filePath);
-        const mrCommitId = await this.#repoProvider.getMergeRequestCommitId();
-        if (!mrCommitId) {
+        const sourceCommitId = await this.#repoProvider.getSourceCommitId();
+        if (!sourceCommitId) {
             this.#pageReloader.attemptReload();
             return;
         }
 
-        console.debug('mr commit id: ' + mrCommitId);
+        console.debug('mr commit id: ' + sourceCommitId);
         this.#pageReloader.reset();
 
-        const mrInfo = this.#repoProvider.getMergeRequestInfo();
-        const mrBranchNames = this.#repoProvider.getMergeRequestBranchNames();
-        console.debug('mr branch names', mrBranchNames);
+        const changeInfo = this.#repoProvider.getChangeInfo();
+        const changeBranchNames = this.#repoProvider.getChangeBranchNames();
+        console.debug('mr branch names', changeBranchNames);
 
         const targetCommitId = await this.#repoProvider.getTargetCommitId(
-            mrCommitId,
-            mrInfo.title,
-            mrBranchNames.targetBranchName
+            sourceCommitId,
+            changeInfo.title,
+            changeBranchNames.targetBranchName
         );
 
         if (!targetCommitId) {
@@ -170,9 +172,9 @@ class App {
         const params = await this.#buildDiffParams(
             filePath,
             fileName,
-            mrCommitId,
+            sourceCommitId,
             targetCommitId,
-            mrBranchNames
+            changeBranchNames
         );
 
         this.#addButton(fileType, UI_BUTTON_TYPE.DIFF, params, false);
@@ -211,21 +213,19 @@ class App {
      * Creates parameters for diff mode (Merge Request)
      * @private
      */
-    async #buildDiffParams(filePath, fileName, mrCommitId, targetCommitId, mrBranchNames) {
+    async #buildDiffParams(filePath, fileName, sourceCommitId, targetCommitId, changeBranchNames) {
         const projectInfo = this.#repoProvider.getProjectInfo();
         const camundaBpmnModdle = await this.#moddleManager.load();
-        return {
-            projectUrl: projectInfo.url,
-            projectHostUrl: projectInfo.hostUrl,
-            projectId: projectInfo.id,
-            mrCommitId: mrCommitId,
-            mrBranchName: mrBranchNames.sourceBranchName,
-            mrIid: this.#repoProvider.getMergeRequestInfo().iid,
-            branchCommitId: targetCommitId,
+        return this.#diffParamsBuilder.buildDiffParams({
+            projectInfo: projectInfo,
+            sourceRef: sourceCommitId,
+            sourceBranchName: changeBranchNames.sourceBranchName,
+            targetRef: targetCommitId,
+            changeRequestId: this.#repoProvider.getChangeInfo().iid,
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle
-        };
+        });
     }
 
     /**
@@ -235,17 +235,13 @@ class App {
     async #buildBranchParams(branchCommitId, filePath, fileName) {
         const projectInfo = this.#repoProvider.getProjectInfo();
         const camundaBpmnModdle = await this.#moddleManager.load();
-        return {
-            projectUrl: projectInfo.url,
-            projectHostUrl: projectInfo.hostUrl,
-            projectId: projectInfo.id,
-            mrCommitId: null,
-            mrBranchName: null,
-            branchCommitId: branchCommitId,
+        return this.#diffParamsBuilder.buildBranchParams({
+            projectInfo: projectInfo,
+            targetRef: branchCommitId,
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle
-        };
+        });
     }
 
     /**
