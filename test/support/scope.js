@@ -41,7 +41,11 @@ const SCOPE_FILES = [
     'master-commit-manager.js',
     'gitlab-repo-provider.js',
     'gitlab-ui-repo-provider.js',
-    'file-type-detector.js'
+    'gitlab-api-repo-provider.js',
+    'fallback-repo-provider.js',
+    'repo-provider-factory.js',
+    'file-type-detector.js',
+    'diff-params-builder.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().
@@ -52,6 +56,7 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'DifferParams',
+    'DiffParamsBuilder',
     'CallActivityLocator',
     'ExternalTaskHandlerLocator',
     'BpmnXmlComparator',
@@ -60,6 +65,9 @@ const EXPORTED_NAMES = [
     'DmnDiffPainter',
     'GitLabRepoProvider',
     'GitLabUIRepoProvider', 'UI_BUTTON_TYPE',
+    'GitLabApiRepoProvider',
+    'FallbackRepoProvider',
+    'createRepoProvider', 'createUIRepoProvider',
     // utils.js functions under test
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath',

@@ -98,7 +98,7 @@ class GitLabRepoProvider extends RepoProvider {
         return this.projectInfo;
     }
 
-    async isDiffsTabActive() {
+    async isChangeViewActive() {
         await delay(200);
         const href = window.location.href;
         return href.includes('/-/merge_requests/') && href.includes('/diffs');
@@ -228,7 +228,7 @@ class GitLabRepoProvider extends RepoProvider {
     #initMergeRequestInfoCache = null;
     #initMergeRequestInfoCacheKey = null;
 
-    async initMergeRequestInfo() {
+    async initChangeInfo() {
         console.debug('initializing merge request info...')
 
         // Create cache key based on URL
@@ -274,11 +274,11 @@ class GitLabRepoProvider extends RepoProvider {
         this.#initMergeRequestInfoCacheKey = cacheKey;
     }
 
-    getMergeRequestInfo() {
+    getChangeInfo() {
         return this.mergeRequestInfo;
     }
 
-    getMergeRequestBranchNames() {
+    getChangeBranchNames() {
         const pageDescrElem = document.querySelector('div.detail-page-description');
         if (!pageDescrElem) {
             console.warn('Cannot get MR detail page description element');
@@ -305,7 +305,7 @@ class GitLabRepoProvider extends RepoProvider {
         return new MergeRequestBranchNames(srcBranchName, trgBranchName);
     }
 
-    async getMergeRequestCommitId() {
+    async getSourceCommitId() {
         const commitId = await this.#getMrLastCommitId();
         if (commitId) {
             return commitId;
@@ -342,10 +342,10 @@ class GitLabRepoProvider extends RepoProvider {
     // Cache for getTargetCommitId result
     #targetCommitIdCache = new SingleEntryCache();
 
-    async getTargetCommitId(mrCommitId, mrTitle, targetBranchName) {
+    async getTargetCommitId(sourceCommitId, changeTitle, targetBranchName) {
         console.debug('getting target commit id...');
 
-        const cacheKey = `${mrCommitId}-${mrTitle}-${targetBranchName}`;
+        const cacheKey = `${sourceCommitId}-${changeTitle}-${targetBranchName}`;
 
         const cachedTargetCommitId = this.#targetCommitIdCache.get(cacheKey);
         if (cachedTargetCommitId) {
@@ -360,9 +360,9 @@ class GitLabRepoProvider extends RepoProvider {
         let targetCommitId = null;
         if (isMerged) {
             console.debug('MR is likely merged. Trying to find target commit id by MR commit id...');
-            targetCommitId = await this.#findTargetBranchPreviousCommitId(mrCommitId);
+            targetCommitId = await this.#findTargetBranchPreviousCommitId(sourceCommitId);
             if (!targetCommitId) {
-                const actualMrCommitId = await this.#findTargetBranchCommitIdByTitle(mrTitle);
+                const actualMrCommitId = await this.#findTargetBranchCommitIdByTitle(changeTitle);
                 if (actualMrCommitId) {
                     targetCommitId = await this.#findTargetBranchPreviousCommitId(actualMrCommitId);
                 }

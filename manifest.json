@@ -18,9 +18,13 @@
                 "master-commit-manager.js",
                 "gitlab-repo-provider.js",
                 "gitlab-ui-repo-provider.js",
+                "gitlab-api-repo-provider.js",
+                "fallback-repo-provider.js",
+                "repo-provider-factory.js",
                 "camunda-bpmn-moddle-manager.js",
                 "page-reloader.js",
                 "file-type-detector.js",
+                "diff-params-builder.js",
                 "app.js",
                 "main.js"
             ]

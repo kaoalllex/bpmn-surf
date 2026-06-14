@@ -14,11 +14,15 @@ Chrome Extension (Manifest V3) для визуального сравнения 
 ```
 main.js → App (app.js) → Providers → Differs
                           |            ├─ bpmn-differ.js / dmn-differ.js (рендер diff в отдельной странице)
-                          ├─ GitLabRepoProvider (данные через GitLab API)
-                          └─ GitLabUIRepoProvider (инъекция кнопок в UI GitLab)
+                          ├─ RepoProvider     (данные/детект; интерфейс — repo-provider.js)
+                          │     └─ FallbackRepoProvider → [GitLabApiRepoProvider (шов, выкл.), GitLabRepoProvider (DOM/эвристики)]
+                          └─ UIRepoProvider   (инъекция кнопок; интерфейс — ui-repo-provider.js)
+                                └─ GitLabUIRepoProvider
 ```
 
-Поток: `app.js` слушает `mouseup`/`popstate`, детектирует страницу → `gitlab-repo-provider.js` резолвит коммиты/ветки и грузит контент → `gitlab-ui-repo-provider.js` добавляет кнопки "Show schema/decision diff" → по клику через `utils.js#openDiffer` открывается страница diff'а, куда подгружаются библиотеки из `libs/` и скрипты differ'а.
+Ядро `App` не знает о GitLab: оно работает только через нейтральные интерфейсы `RepoProvider`/`UIRepoProvider`; конкретные реализации собирает `repo-provider-factory.js` (`createRepoProvider`/`createUIRepoProvider`) и передаёт в `App` через конструктор (DI). `FallbackRepoProvider` — whole-provider fallback: на `init()` выбирает первую доступную и успешно проинициализировавшуюся реализацию и делегирует ей все вызовы. `GitLabApiRepoProvider` — выключенный шов под REFAC-0001 (переход на GitLab MR API); пока цепочка падает на DOM/эвристический `GitLabRepoProvider`.
+
+Поток: `app.js` слушает `mouseup`/`popstate`, детектирует страницу → провайдер резолвит коммиты/ветки и грузит контент → UI-провайдер добавляет кнопки "Show schema/decision diff" → по клику через `utils.js#openDiffer` открывается страница diff'а, куда подгружаются библиотеки из `libs/` и скрипты differ'а. Параметры differ-страницы собирает `diff-params-builder.js` в нейтральном виде (sourceRef/targetRef/… + `platform`-дескриптор), их парсит и валидирует `DifferParams`.
 
 **Два scope'а скриптов** (не путать):
 1. **Content scripts GitLab-страницы** — порядок задан в `manifest.json#content_scripts` (app, провайдеры, утилиты).
@@ -34,7 +38,7 @@ main.js → App (app.js) → Providers → Differs
 | `app.js` | Главный класс приложения, оркестрация |
 | `bpmn-differ.js` | `BpmnDiffer` — оркестратор BPMN-diff'а + bootstrap (message listener) |
 | `bpmn-differ-view.js` | `BpmnDifferView` — DOM страницы BPMN-differ'а (layout, header, footer, кнопки) |
-| `differ-params.js` | `DifferParams` — параметры differ-страницы из postMessage (общий для BPMN и DMN) |
+| `differ-params.js` | `DifferParams` — парсинг/валидация параметров differ-страницы из postMessage (общий для BPMN и DMN). Нейтральные поля + `platform`-дескриптор; `requirePlatformInfo()` (BPMN), `isSourceVersionDefined()`, `rawFileUrl(ref)`, `toNestedDifferParams()` (вложенный differ Call Activity) |
 | `diagram-versions.js` | `DiagramVersions` — загрузка/хранение/скачивание версий диаграммы (общий) |
 | `branch-indicator.js` | `BranchIndicator` — имя показываемой ветки в header'е, цвета (общий) |
 | `diff-type.js` | `DiffType` — типы diff'а с цветами (общий для BPMN и DMN) |
@@ -56,7 +60,11 @@ main.js → App (app.js) → Providers → Differs
 | `dmn-diff-painter.js` | `DmnDiffPainter` — покраска diff-модели на DOM таблицы решений |
 | `gitlab-repo-provider.js` | GitLab API, резолв коммитов/веток; `findSelectedFilePath` поддерживает обе разметки MR-диффов: legacy (`[data-path]` + `.is-active`/`.diff-file-is-active`, self-managed) и rapid diffs (`<diff-file data-file-data>`, gitlab.com — выбор по hash в URL, иначе единственный bpmn/dmn-файл) |
 | `gitlab-ui-repo-provider.js` | Инъекция кнопок, выбор файлов; контейнер кнопки diff ищется по списку селекторов-кандидатов (self-managed без обёртки и gitlab.com c `.merge-request-sticky-header-wrapper`) |
-| `repo-provider.js` / `ui-repo-provider.js` | Базовые интерфейсы провайдеров |
+| `repo-provider.js` / `ui-repo-provider.js` | Базовые интерфейсы провайдеров. Имена методов `RepoProvider` платформо-нейтральны (`isChangeViewActive`, `initChangeInfo`, `getChangeInfo`, `getChangeBranchNames`, `getSourceCommitId`, `getTargetCommitId`) — ядро не привязано к GitLab/MR |
+| `repo-provider-factory.js` | `createRepoProvider`/`createUIRepoProvider` — единственное место, знающее о конкретных реализациях и их порядке; точка подключения новых платформ/REFAC-0001 |
+| `fallback-repo-provider.js` | `FallbackRepoProvider` — whole-provider fallback: на `init()` выбирает первую доступную и успешно проинициализировавшуюся реализацию из упорядоченного списка, далее делегирует ей все вызовы интерфейса |
+| `gitlab-api-repo-provider.js` | `GitLabApiRepoProvider` — выключенный шов под REFAC-0001 (резолв через GitLab MR API). `isAvailable()` возвращает `false`, методы кидают «not implemented»; в цепочке стоит перед DOM-провайдером |
+| `diff-params-builder.js` | `DiffParamsBuilder` — сборка нейтральных параметров differ-страницы (sourceRef/sourceBranchName/targetRef/changeRequestId) + `platform`-дескриптор `{kind,projectUrl,hostUrl,projectId}`; платформо-специфика сгруппирована под `platform`, дискриминируется по `kind` |
 | `models.js` | DTO: `FileType`, `ProjectInfo`, `MergeRequestInfo` |
 | `utils.js` | DOM, HTTP, парсинг XML, загрузка скриптов |
 | `config.js` | Константы (например, `MASTER_BRANCH_NAME`) |

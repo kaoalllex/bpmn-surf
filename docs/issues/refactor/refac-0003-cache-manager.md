@@ -11,7 +11,7 @@ status: done
 
 ## Контекст
 
-- Возможное продолжение: перевести на `SingleEntryCache` кэши `init` и `initMergeRequestInfo`.
+- Возможное продолжение: перевести на `SingleEntryCache` кэши `init` и `initChangeInfo`.
 
 ## История работы
 

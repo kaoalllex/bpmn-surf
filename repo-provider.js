@@ -27,11 +27,11 @@ class RepoProvider {
     }
 
     /**
-     * Checks if the MR diffs tab is active
+     * Checks if the change (MR/PR) diffs view is active
      * @returns {Promise<boolean>}
      */
-    async isDiffsTabActive() {
-        throw new Error('isDiffsTabActive() must be implemented');
+    async isChangeViewActive() {
+        throw new Error('isChangeViewActive() must be implemented');
     }
 
     /**
@@ -51,45 +51,45 @@ class RepoProvider {
     }
 
     /**
-     * Initializes MR information
+     * Initializes change (MR/PR) information
      * @returns {Promise<void>}
      */
-    async initMergeRequestInfo() {
-        throw new Error('initMergeRequestInfo() must be implemented');
+    async initChangeInfo() {
+        throw new Error('initChangeInfo() must be implemented');
     }
 
     /**
-     * Gets MR information
-     * @returns {MergeRequestInfo|null} object with MR information or null if initMergeRequestInfo hasn't been called yet
+     * Gets change (MR/PR) information
+     * @returns {MergeRequestInfo|null} object with change information or null if initChangeInfo hasn't been called yet
      */
-    getMergeRequestInfo() {
-        throw new Error('getMergeRequestInfo() must be implemented');
+    getChangeInfo() {
+        throw new Error('getChangeInfo() must be implemented');
     }
 
     /**
-     * Gets source and target branch names of MR
+     * Gets source and target branch names of the change
      * @returns {MergeRequestBranchNames|null} object with branch information or null
      */
-    getMergeRequestBranchNames() {
-        throw new Error('getMergeRequestBranchNames() must be implemented');
+    getChangeBranchNames() {
+        throw new Error('getChangeBranchNames() must be implemented');
     }
 
     /**
-     * Gets the last commit ID in MR
+     * Gets the latest commit ID on the change's source side
      * @returns {Promise<string|null>}
      */
-    async getMergeRequestCommitId() {
-        throw new Error('getMergeRequestCommitId() must be implemented');
+    async getSourceCommitId() {
+        throw new Error('getSourceCommitId() must be implemented');
     }
 
     /**
      * Gets target commit ID for comparison
-     * @param {string} mrCommitId - MR commit ID
-     * @param {string} mrTitle - MR title
+     * @param {string} sourceCommitId - source side commit ID
+     * @param {string} changeTitle - change (MR/PR) title
      * @param {string} targetBranchName - target branch name
      * @returns {Promise<string>} commit ID or branch name
      */
-    async getTargetCommitId(mrCommitId, mrTitle, targetBranchName) {
+    async getTargetCommitId(sourceCommitId, changeTitle, targetBranchName) {
         throw new Error('getTargetCommitId() must be implemented');
     }
 

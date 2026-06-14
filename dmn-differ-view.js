@@ -129,7 +129,7 @@ class DmnDifferView {
         row2.appendChild(cellBranchButton);
 
         const switchButton = document.createElement('button');
-        switchButton.disabled = !this.#params.isMrBranchDefined();
+        switchButton.disabled = !this.#params.isSourceVersionDefined();
         switchButton.style.width = '120px';
         switchButton.textContent = 'Switch branch';
         switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
