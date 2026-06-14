@@ -36,6 +36,32 @@ status: in-progress
 3. DOM-`GitLabRepoProvider` оставить фолбэком; завести отдельную задачу на его удаление после отладки API.
 4. Связи: `[REFAC-0004]` (полная нейтрализация DTO `MergeRequestInfo`/`MergeRequestBranchNames` и абстракция загрузчика контента differ-страницы — там), `[REFAC-0002]` (декомпозиция — частично продвинута выносом `DiffParamsBuilder`).
 
+### Промпт для старта реализации (новая сессия)
+
+Реализацию лучше вести в свежей сессии (чистый контекст; это поведенческая фаза — скилл `feature`, не `refactor`). Заготовка промпта:
+
+```
+Реализуй REFAC-0001 — детали и принятый дизайн уже в
+docs/issues/refactor/refac-0001-mr-api-params.md (раздел «TODO следующей сессии»).
+
+Кратко: наполнить GitLabApiRepoProvider (gitlab-api-repo-provider.js) резолвом
+через GET /api/v4/projects/{id}/merge_requests/{iid} и включить его как primary
+в цепочке FallbackRepoProvider; DOM-GitLabRepoProvider оставить фолбэком.
+
+Прежде чем писать код:
+1. Изучи текущий GitLabRepoProvider и формат ответа MR API (diff_refs.head_sha/
+   base_sha/start_sha, source_branch/target_branch, title, state).
+2. Покажи план: какие поля API на какие методы интерфейса ложатся, как
+   обрабатываем не-merged vs merged MR, где фолбэк на DOM срабатывает.
+3. Уточни у меня развилки (например, проверять ли MR API доступность токеном)
+   перед реализацией.
+
+Юнит-тесты — обязательны: на маппинг ответа API → методы провайдера (мокать
+загрузку), и не сломать существующие.
+```
+
+Советы: верифицировать на живых merged/не-merged MR (есть тестовый проект `dev.example/bpmn-diff-test` на gitlab.com); реализация API + включение primary — один MR; удаление DOM-пути после отладки — отдельной задачей; не смешивать с `[REFAC-0002]`/`[REFAC-0004]`.
+
 ## История работы
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
