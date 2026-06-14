@@ -36,25 +36,16 @@
 }
 
 
-/* dive-in */
+/* call activity "dive in" link — same minimalist look as .handler-link */
 .dive-in-call-activity {
-    padding: 3px 6px 2px;
-    border: 1px solid hsl(225, 10%, 75%);
+    padding: 2px 5px 1px;
+    border: 1px solid hsl(0, 0%, 70%);
     border-radius: 2px;
-    background-color: hsl(225, 80%, 80%);
+    background-color: hsl(0, 0%, 92%);
+    font-family: monospace;
     white-space: nowrap;
     user-select: none;
     cursor: pointer;
-}
-
-.dive-in-call-activity-waiting {
-    padding: 3px 6px 2px;
-    border: 1px solid hsl(225, 10%, 75%);
-    border-radius: 2px;
-    background-color: hsl(225, 80%, 80%);
-    white-space: nowrap;
-    user-select: none;
-    cursor: wait;
 }
 
 /* service task handler code link */

@@ -20,6 +20,7 @@ class BpmnDiffer {
     #changesTableView = null;
     #propertiesPanelHighlighter = null;
     #processFileIndex = null;
+    #callActivityLocator = null;
     #callActivityNavigator = null;
     #handlerLocator = null;
     #handlerNavigator = null;
@@ -57,9 +58,11 @@ class BpmnDiffer {
         this.#callActivityNavigator = new CallActivityNavigator(
             bpmnJSOverlays,
             this.#elementRegistry,
-            this.#processFileIndex,
+            this.#callActivityLocator,
             () => this.#selectedElementId,
-            (processFilePath, processFileName) => this.#openCallActivityDiffer(processFilePath, processFileName)
+            () => this.#getShownRef(),
+            (processFilePath, processFileName) => this.#openCallActivityDiffer(processFilePath, processFileName),
+            (url) => window.open(url, '_blank')
         );
         this.#handlerNavigator = new HandlerNavigator(
             bpmnJSOverlays,
@@ -112,11 +115,19 @@ class BpmnDiffer {
         this.#versions = new DiagramVersions(this.#params);
         this.#branchIndicator = new BranchIndicator(this.#params.targetBranchName, this.#params.mrBranchName);
         this.#xmlComparator = new BpmnXmlComparator();
+        // ProcessFileIndex is kept only as the fallback path of CallActivityLocator
+        // (full repository tree walk); the primary path is a targeted blob-search.
         this.#processFileIndex = new ProcessFileIndex(
             this.#params.projectUrl,
             this.#params.projectHostUrl,
             this.#params.projectId,
             this.#params.branchCommitId
+        );
+        this.#callActivityLocator = new CallActivityLocator(
+            this.#params.projectUrl,
+            this.#params.projectHostUrl,
+            this.#params.projectId,
+            this.#processFileIndex
         );
         this.#handlerLocator = new ExternalTaskHandlerLocator(
             this.#params.projectUrl,
@@ -313,7 +324,7 @@ class BpmnDiffer {
         }
         this.#propertiesPanelHighlighter.highlightDiffPropGroups(this.#selectedElementId);
         this.#propertiesPanelHighlighter.showConditionExpression(this.#selectedElementId);
-        await this.#callActivityNavigator.showDiveInOverlay();
+        this.#callActivityNavigator.showDiveInOverlay();
         this.#handlerNavigator.showOverlayForSelectedElement();
     }
 
@@ -366,7 +377,8 @@ class BpmnDiffer {
         return true;
     }
 
-    // Commit/ref of the diagram version currently shown (for opening handler code).
+    // Commit/ref of the diagram version currently shown (for opening handler code
+    // and for resolving a Call Activity's called process file).
     #getShownRef() {
         return this.#branchIndicator.isTargetBranchShown()
             ? this.#params.branchCommitId
