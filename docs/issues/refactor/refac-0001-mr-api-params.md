@@ -2,7 +2,7 @@
 id: REFAC-0001
 title: Получать параметры через GitLab MR API; улучшить поиск хеша коммита
 priority: high
-status: in-progress
+status: done
 ---
 
 ## Постановка
@@ -66,6 +66,20 @@ docs/issues/refactor/refac-0001-mr-api-params.md (раздел «TODO следу
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
      Новые записи добавляй сверху (свежие первыми). -->
+
+### 2026-06-14 · claude-opus-4-8[1m] · ветка `refactor/mr-api-params`
+
+Реализация (поведенческая фаза). Наполнил `GitLabApiRepoProvider` (`gitlab-api-repo-provider.js`) резолвом через `GET /api/v4/projects/{id}/merge_requests/{iid}`:
+- `getSourceCommitId`←`diff_refs.head_sha`, `getTargetCommitId`←`diff_refs.base_sha` — **единообразно для opened и merged** (подтверждено на живом API gitlab.com: для обоих типов `diff_refs` отдаётся одинаково и совпадает с тем, что GitLab рисует во вкладке Changes). Эвристики merged-детекции (DOM-бейдж, `commits.json`, atom-feed, `MasterCommitManager`) для target больше не задействованы.
+- `getChangeBranchNames`←`source_branch`/`target_branch`; `initChangeInfo` заполняет `iid`/`title`; URL строится по числовому `projectInfo.id`. Один запрос с кэшем.
+- `extends GitLabRepoProvider`: DOM/URL-методы детекции (выбор файла, branch-view, резолв project id, `isChangeViewActive`) наследуются.
+- Включён как primary: на MR-странице `init()` пробует API и при отсутствии `diff_refs`/ошибке возвращает `false` → `FallbackRepoProvider` падает на DOM-`GitLabRepoProvider`. **Пометодного фолбэка нет** (по решению: цель — полностью уйти на API).
+
+Решения (развилки с пользователем): target = `diff_refs.base_sha` (точнее для opened MR — merge-base вместо HEAD target-ветки, как в самом GitLab); фолбэк только грубый, на уровне цепочки.
+
+Тесты: новый `test/gitlab-api-repo-provider.test.js` (маппинг полей API→методы, кэш, построение URL, отсутствие `diff_refs`); из `test/fallback-repo-provider.test.js` убран блок «seam»; `test/support/scope.js` — необязательный `url` в `createScope`. Всего 195 тестов зелёные.
+
+Осталось/связи: верификация на `gitlab.example.com` (подтвердить наличие `diff_refs` — стандартное поле); удаление DOM-эвристик резолва коммитов (`#getMrLastCommitId`/`commits.json`, `#isMrMerged`, `#findTargetBranchPreviousCommitId`/atom-feed, `MasterCommitManager`) после обкатки API — `[REFAC-0008]`; нейтрализация DTO — `[REFAC-0004]`.
 
 ### 2026-06-14 · claude-opus-4-8 · ветка `refactor/platform-abstraction-seams`
 

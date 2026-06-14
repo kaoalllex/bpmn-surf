@@ -76,8 +76,11 @@ const EXPORTED_NAMES = [
 
 // Creates a fresh isolated scope per test file (or per test, if needed):
 // returns { window, document, <all EXPORTED_NAMES> }.
-function createScope() {
-    const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { runScripts: 'outside-only' });
+function createScope({ url } = {}) {
+    const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+        runScripts: 'outside-only',
+        ...(url ? { url } : {})
+    });
     const context = dom.getInternalVMContext();
 
     for (const file of SCOPE_FILES) {

@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('./support/scope.js');
 
-const { FallbackRepoProvider, GitLabApiRepoProvider } = createScope();
+const { FallbackRepoProvider } = createScope();
 
 // A minimal RepoProvider stub. `available` / `initResult` drive the selection
 // logic; the other methods echo `name` so we can assert which provider the
@@ -101,17 +101,5 @@ describe('FallbackRepoProvider delegation', () => {
         primary.isAvailable = () => true;
         await p.init();
         assert.equal(p.getProjectInfo(), 'primary');
-    });
-});
-
-describe('GitLabApiRepoProvider (seam)', () => {
-    it('is disabled until REFAC-0001 implements it', () => {
-        const p = new GitLabApiRepoProvider();
-        assert.equal(p.isAvailable(), false);
-    });
-
-    it('init is not implemented yet', async () => {
-        const p = new GitLabApiRepoProvider();
-        await assert.rejects(() => p.init(), /not implemented yet/);
     });
 });
