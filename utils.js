@@ -182,6 +182,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('changes-table-view.js', doc, getResourceUrlByNameFunc);
     await addScript('properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
     await addScript('process-file-index.js', doc, getResourceUrlByNameFunc);
+    await addScript('call-activity-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('call-activity-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('handler-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('handler-navigator.js', doc, getResourceUrlByNameFunc);

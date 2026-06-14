@@ -42,6 +42,7 @@
                 "changes-table-view.js",
                 "properties-panel-highlighter.js",
                 "process-file-index.js",
+                "call-activity-locator.js",
                 "call-activity-navigator.js",
                 "handler-locator.js",
                 "handler-navigator.js",
