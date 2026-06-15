@@ -24,6 +24,8 @@ class BpmnDiffer {
     #callActivityNavigator = null;
     #handlerLocator = null;
     #handlerNavigator = null;
+    #elementSearcher = null;
+    #searchPanel = null;
 
     constructor(rawParams) {
         this.#rawParams = rawParams;
@@ -74,6 +76,15 @@ class BpmnDiffer {
             (url) => window.open(url, '_blank'),
             (url) => this.#navigateOpenerTab(url)
         );
+
+        this.#elementSearcher = new ElementSearcher();
+        this.#searchPanel = new SearchPanel(
+            bpmnJSCanvas,
+            this.#elementRegistry,
+            this.#selection,
+            this.#elementSearcher
+        );
+        this.#searchPanel.attach();
 
         bpmnJSEventBus.on('selection.changed', (event) => {
             if (event.newSelection.length !== 1) {
@@ -246,6 +257,10 @@ class BpmnDiffer {
         const currentSelectedElemId = this.#getCurrentSelectedElementId();
 
         await this.#importXml(bpmnXml);
+
+        // The elementRegistry is recreated on every import, so re-index the
+        // freshly shown version for the search panel.
+        this.#searchPanel.rebuildIndex();
 
         if (currentSelectedElemId) {
             this.#selectedElementId = currentSelectedElemId;

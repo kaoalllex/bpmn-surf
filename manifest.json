@@ -49,6 +49,8 @@
                 "src/differ/bpmn/bpmn-xml-comparator.js",
                 "src/differ/bpmn/diff-highlighter.js",
                 "src/differ/bpmn/changes-table-view.js",
+                "src/differ/bpmn/element-searcher.js",
+                "src/differ/bpmn/search-panel.js",
                 "src/differ/bpmn/properties-panel-highlighter.js",
                 "src/differ/navigation/process-file-index.js",
                 "src/differ/navigation/call-activity-locator.js",
