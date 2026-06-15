@@ -148,9 +148,6 @@ class BpmnDiffer {
     #createModeler() {
         return new BpmnJS({
             container: '#' + BpmnDifferView.CANVAS_ID,
-            keyboard: {
-                bindTo: window
-            },
             propertiesPanel: {
                 parent: '#' + BpmnDifferView.PROPS_ID
             },
