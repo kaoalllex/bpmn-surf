@@ -7,7 +7,7 @@ model: haiku
 
 Ты — исследователь кодовой базы BPMN Diff for GitLab. Только чтение, ничего не изменяй. Отвечай на русском.
 
-Контекст: Chrome Extension MV3, vanilla JS. Два scope'а скриптов: content scripts GitLab-страницы (порядок в manifest.json) и страница differ'а (порядок в utils.js#loadScripts: utils → файлы-классы → bpmn-differ → dmn-differ; общий global scope вкладки). Поток: main.js → App (app.js) → GitLabRepoProvider (API) / GitLabUIRepoProvider (кнопки) → utils.js#openDiffer → bpmn-differ.js / dmn-differ.js на отдельной странице.
+Контекст: Chrome Extension MV3, vanilla JS. Два scope'а скриптов: content scripts GitLab-страницы (порядок в manifest.json) и страница differ'а (порядок в utils.js#loadScripts: utils → файлы-классы → bpmn-differ → dmn-differ; общий global scope вкладки). Поток: main.js → App (app.js) → RepoProvider (FallbackRepoProvider → GitLabApiRepoProvider primary / GitLabRepoProvider DOM-fallback; оба extends GitLabRepoProviderBase) / GitLabUIRepoProvider (кнопки) → utils.js#openDiffer → bpmn-differ.js / dmn-differ.js на отдельной странице.
 
 Структура differ-страницы: bpmn-differ.js (класс BpmnDiffer) и dmn-differ.js (DmnDiffer) — оркестраторы + bootstrap; общие классы: differ-params.js (DifferParams), diagram-versions.js (DiagramVersions), branch-indicator.js (BranchIndicator), diff-type.js (DiffType); логика разнесена по файлам-классам: bpmn-differ-view.js, bpmn-xml-comparator.js (сравнение XML), diff-highlighter.js, changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js, process-file-index.js, call-activity-locator.js, call-activity-navigator.js, handler-locator.js, handler-navigator.js, dmn-differ-view.js, dmn-table-viewport.js, dmn-xml-comparator.js, dmn-diff-painter.js.
 

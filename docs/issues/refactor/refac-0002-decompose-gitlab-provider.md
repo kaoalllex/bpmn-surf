@@ -2,7 +2,7 @@
 id: REFAC-0002
 title: Декомпозировать gitlab-repo-provider.js по ответственностям
 priority: medium
-status: open
+status: done
 ---
 
 ## Постановка
@@ -224,3 +224,23 @@ RepoProvider (repo-provider.js, без изменений)
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
      Новые записи добавляй сверху (свежие первыми). -->
+
+### 2026-06-15 · claude-opus-4-8 · ветка `refactor/refac-0002-decompose-gitlab-provider`
+
+Реализована полная декомпозиция по согласованному дизайну (база
+`GitLabRepoProviderBase` + 4 модуля), строго поведение-сохраняющая. Поэтапно,
+`npm test` зелёный после каждого этапа (итог 253 теста, было 195):
+
+1. `single-entry-cache.js` (`SingleEntryCache`) — init/MR-инфо-кэши переведены на него (`ac46e04`).
+2. `gitlab-url-parser.js` (`GitLabUrlParser`) — чистый парсинг URL; оба провайдера делегируют; объединён дубль `#extractIid` (`0b8ed5c`).
+3. `gitlab-dom-scraper.js` (`GitLabDomScraper`) — все чтения DOM (`5e15f5f`).
+4. `merged-mr-commit-resolver.js` (`MergedMrCommitResolver`) — эвристика target-коммита смерженного MR (`a39e113`).
+5. `gitlab-repo-provider-base.js` (`GitLabRepoProviderBase`) — общая keeper-база; `GitLabRepoProvider` (DOM/эвристика) и `GitLabApiRepoProvider` (API) теперь оба `extends` её; `loadContent` через DI (`d6aa493`).
+
+Сопутствующее: порядок `content_scripts` в `manifest.json` обновлён (с явного
+подтверждения пользователя) и зеркально в `test/support/scope.js`; новые
+`*.test.js` на каждый модуль; обновлены `docs/architecture.md`, `docs/testing.md`,
+`.claude/agents/bpmn-explorer.md`. Ревью `code-reviewer`: блокеров нет, логика
+перенесена дословно. Эвристический DOM-путь (`GitLabRepoProvider` +
+`MergedMrCommitResolver` + часть `GitLabDomScraper`) теперь изолирован и готов к
+будущему удалению (TODO из `[REFAC-0001]`).
