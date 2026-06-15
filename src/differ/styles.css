@@ -30,6 +30,25 @@
     stroke-width: 3px;
 }
 
+/* Highlight button attention phase (UX-0006): instead of a static thick outline,
+   diff elements blink in the same cyan as the steady highlight, mirroring the
+   search-match-current pulse (FEAT-0006). After the pulse, DiffHighlighter swaps
+   the marker for the steady thin .highlight-diff outline. The 0.5s × 3 = 1.5s
+   animation is aligned with the marker-swap timeout in diff-highlighter.js. */
+.djs-element.highlight-diff-pulse .djs-outline {
+    visibility: visible;
+
+    stroke: hsl(180, 100%, 70%);
+    stroke-width: 3px;
+    filter: drop-shadow(0 0 6px hsl(180, 100%, 60%));
+    animation: highlight-diff-pulse 0.5s ease-in-out 3;
+}
+
+@keyframes highlight-diff-pulse {
+    0%, 100% { stroke-width: 3px; }
+    50%      { stroke-width: 12px; }
+}
+
 /* search matches (FEAT-0006) — amber "browser-find" scheme, two-tier:
    every match gets a soft thin outline; the focused one is emphasised by a
    saturated stroke + glow + a short pulse (not just a thicker line), and never
