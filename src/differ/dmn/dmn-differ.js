@@ -30,10 +30,7 @@ class DmnDiffer {
         // console.debug('dmn div created');
 
         this.#dmnJS = new DmnJS({
-            container: '#' + DmnDifferView.CANVAS_ID,
-            keyboard: {
-                bindTo: window
-            }
+            container: '#' + DmnDifferView.CANVAS_ID
         });
         // console.debug('dmn js created');
 

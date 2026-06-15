@@ -36,15 +36,20 @@ class PropertiesPanelHighlighter {
 
             for (const diffPropGroup of this.#highlightedPropGroups) {
                 const elem = await doWithAttempts(function () {
-                    const e = document.querySelector(`.bio-properties-panel-group-header-title[title="${diffPropGroup}"]`);
-                    if (!e) {
-                        return null;
+                    // The group title no longer carries a `title` attribute; match by header text instead
+                    const titles = document.querySelectorAll('.bio-properties-panel-group-header-title');
+                    for (const title of titles) {
+                        if (title.textContent.trim() === diffPropGroup) {
+                            return title.parentElement;
+                        }
                     }
-                    return e.parentElement;
+                    return null;
                 });
                 if (elem) {
                     this.#highlightedPropGroupElems.push(elem);
                     elem.style.backgroundColor = '#8888ff';
+                } else {
+                    console.warn(`property group header not found in panel, cannot highlight: "${diffPropGroup}" (element ${elementId})`);
                 }
             }
         }
