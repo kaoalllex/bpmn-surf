@@ -113,4 +113,52 @@ describe('ConditionFormatter.format', () => {
             '}'
         ]);
     });
+
+    it('treats a parenthesis after ! as a grouping, not a function call', () => {
+        assert.deepEqual(format('${!(a && b) && c}'), [
+            '${',
+            '  !(',
+            '    a &&',
+            '    b',
+            '  ) &&',
+            '  c',
+            '}'
+        ]);
+    });
+
+    it('collapses newlines and the source indentation of a multiline expression', () => {
+        assert.deepEqual(format('${\n    a &&\n       b\n}'), [
+            '${',
+            '  a &&',
+            '  b',
+            '}'
+        ]);
+    });
+
+    it('collapses tabs and runs of whitespace to layout indentation', () => {
+        assert.deepEqual(format('${a\t&&\n\n   b}'), [
+            '${',
+            '  a &&',
+            '  b',
+            '}'
+        ]);
+    });
+
+    it('does not leave trailing whitespace before a line break', () => {
+        assert.deepEqual(format('${ a &&   b }'), [
+            '${',
+            '  a &&',
+            '  b',
+            '}'
+        ]);
+    });
+
+    it('preserves significant whitespace inside string literals', () => {
+        assert.deepEqual(format('${ s == "a  b" && c }'), [
+            '${',
+            '  s == "a  b" &&',
+            '  c',
+            '}'
+        ]);
+    });
 });
