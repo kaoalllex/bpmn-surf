@@ -21,36 +21,36 @@ const ROOT = path.join(__dirname, '..', '..');
 // that are not part of loadScripts.
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
-    'utils.js',
-    'diff-type.js',
-    'condition-formatter.js',
-    'bpmn-xml-comparator.js',
-    'properties-panel-highlighter.js',
-    'differ-params.js',
-    'call-activity-locator.js',
-    'handler-locator.js',
-    'dmn-xml-comparator.js',
-    'dmn-diff-painter.js',
+    'src/core/utils.js',
+    'src/differ/shared/diff-type.js',
+    'src/differ/bpmn/condition-formatter.js',
+    'src/differ/bpmn/bpmn-xml-comparator.js',
+    'src/differ/bpmn/properties-panel-highlighter.js',
+    'src/differ/shared/differ-params.js',
+    'src/differ/navigation/call-activity-locator.js',
+    'src/differ/navigation/handler-locator.js',
+    'src/differ/dmn/dmn-xml-comparator.js',
+    'src/differ/dmn/dmn-diff-painter.js',
     // content-script files, in manifest.json#content_scripts relative order.
     // repo-provider.js / ui-repo-provider.js must precede the gitlab-* providers
     // that extend them (extends is evaluated at load time).
-    'config.js',
-    'models.js',
-    'repo-provider.js',
-    'ui-repo-provider.js',
-    'single-entry-cache.js',
-    'gitlab-url-parser.js',
-    'gitlab-dom-scraper.js',
-    'master-commit-manager.js',
-    'merged-mr-commit-resolver.js',
-    'gitlab-repo-provider-base.js',
-    'gitlab-repo-provider.js',
-    'gitlab-ui-repo-provider.js',
-    'gitlab-api-repo-provider.js',
-    'fallback-repo-provider.js',
-    'repo-provider-factory.js',
-    'file-type-detector.js',
-    'diff-params-builder.js'
+    'src/core/config.js',
+    'src/core/models.js',
+    'src/content/providers/repo-provider.js',
+    'src/content/providers/ui-repo-provider.js',
+    'src/content/providers/gitlab/single-entry-cache.js',
+    'src/content/providers/gitlab/gitlab-url-parser.js',
+    'src/content/providers/gitlab/gitlab-dom-scraper.js',
+    'src/content/providers/gitlab/master-commit-manager.js',
+    'src/content/providers/gitlab/merged-mr-commit-resolver.js',
+    'src/content/providers/gitlab/gitlab-repo-provider-base.js',
+    'src/content/providers/gitlab/gitlab-repo-provider.js',
+    'src/content/providers/gitlab/gitlab-ui-repo-provider.js',
+    'src/content/providers/gitlab/gitlab-api-repo-provider.js',
+    'src/content/providers/fallback-repo-provider.js',
+    'src/content/providers/repo-provider-factory.js',
+    'src/content/file-type-detector.js',
+    'src/content/diff-params-builder.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().

@@ -172,30 +172,30 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addStylesheet('libs/bpmn-js-properties-panel/assets/properties-panel.css', doc, getResourceUrlByNameFunc);
     await addScript('libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js', doc, getResourceUrlByNameFunc);
 
-    await addStylesheet('styles.css', doc, getResourceUrlByNameFunc);
-    await addScript('utils.js', doc, getResourceUrlByNameFunc);
-    await addScript('diff-type.js', doc, getResourceUrlByNameFunc);
-    await addScript('condition-formatter.js', doc, getResourceUrlByNameFunc);
-    await addScript('canvas-viewport.js', doc, getResourceUrlByNameFunc);
-    await addScript('bpmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
-    await addScript('diff-highlighter.js', doc, getResourceUrlByNameFunc);
-    await addScript('changes-table-view.js', doc, getResourceUrlByNameFunc);
-    await addScript('properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
-    await addScript('process-file-index.js', doc, getResourceUrlByNameFunc);
-    await addScript('call-activity-locator.js', doc, getResourceUrlByNameFunc);
-    await addScript('call-activity-navigator.js', doc, getResourceUrlByNameFunc);
-    await addScript('handler-locator.js', doc, getResourceUrlByNameFunc);
-    await addScript('handler-navigator.js', doc, getResourceUrlByNameFunc);
-    await addScript('differ-params.js', doc, getResourceUrlByNameFunc);
-    await addScript('diagram-versions.js', doc, getResourceUrlByNameFunc);
-    await addScript('branch-indicator.js', doc, getResourceUrlByNameFunc);
-    await addScript('bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
-    await addScript('dmn-table-viewport.js', doc, getResourceUrlByNameFunc);
-    await addScript('dmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
-    await addScript('dmn-diff-painter.js', doc, getResourceUrlByNameFunc);
-    await addScript('dmn-differ-view.js', doc, getResourceUrlByNameFunc);
-    await addScript('bpmn-differ.js', doc, getResourceUrlByNameFunc);
-    await addScript('dmn-differ.js', doc, getResourceUrlByNameFunc);
+    await addStylesheet('src/differ/styles.css', doc, getResourceUrlByNameFunc);
+    await addScript('src/core/utils.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/diff-type.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/condition-formatter.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/canvas-viewport.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/bpmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/diff-highlighter.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/changes-table-view.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/process-file-index.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/call-activity-locator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/call-activity-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/handler-locator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/handler-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/differ-params.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/diagram-versions.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/branch-indicator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/dmn/dmn-table-viewport.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/dmn/dmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/dmn/dmn-diff-painter.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/dmn/dmn-differ-view.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/bpmn-differ.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/dmn/dmn-differ.js', doc, getResourceUrlByNameFunc);
 }
 
 async function addStylesheet(resourceName, doc, getResourceUrlByNameFunc) {

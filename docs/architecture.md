@@ -9,6 +9,32 @@ Chrome Extension (Manifest V3) для визуального сравнения 
 - Рендерит их с подсветкой семантических отличий (🟢 добавлено, 🔴 удалено)
 - Поддерживает сравнение с локальным файлом, zoom/pan, "Fit view", панель свойств, скачивание версии
 
+## Структура каталогов
+
+Весь код приложения — под `src/`; в корне остаются только `manifest.json`, `libs/`, `docs/`, `test/`, `scripts/`, `package*.json`. Раскладка отражает два scope'а скриптов: `core/` (общее), `content/` (content-script GitLab-страницы), `differ/` (отдельная вкладка differ'а). Имена файлов уникальны по всему дереву — в таблице ниже путь не дублируется, ищется по имени.
+
+```
+src/
+  core/        config.js, models.js, utils.js          (cross-scope: данные + утилиты)
+  content/     main.js, app.js, diff-params-builder.js, file-type-detector.js,
+               page-reloader.js, camunda-bpmn-moddle-manager.js
+    providers/ repo-provider.js, ui-repo-provider.js,
+               repo-provider-factory.js, fallback-repo-provider.js
+      gitlab/  gitlab-repo-provider-base.js, gitlab-api-repo-provider.js,
+               gitlab-repo-provider.js, gitlab-ui-repo-provider.js,
+               gitlab-url-parser.js, gitlab-dom-scraper.js,
+               merged-mr-commit-resolver.js, master-commit-manager.js, single-entry-cache.js
+  differ/      styles.css
+    shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js
+    bpmn/      bpmn-differ.js, bpmn-differ-view.js, bpmn-xml-comparator.js, diff-highlighter.js,
+               changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js
+    dmn/       dmn-differ.js, dmn-differ-view.js, dmn-table-viewport.js, dmn-xml-comparator.js, dmn-diff-painter.js
+    navigation/ call-activity-locator.js, call-activity-navigator.js,
+               handler-locator.js, handler-navigator.js, process-file-index.js
+```
+
+Пути к этим файлам перечислены в четырёх реестрах, которые надо держать в синхроне при переносе/добавлении файла: `manifest.json#content_scripts` (порядок критичен) и `#web_accessible_resources`, `utils.js#loadScripts` (имена = пути в `web_accessible_resources`, иначе `chrome.runtime.getURL` вернёт пусто), `test/support/scope.js#SCOPE_FILES`.
+
 ## Структура
 
 ```
