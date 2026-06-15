@@ -12,7 +12,7 @@ model: haiku
 Структура differ-страницы: bpmn-differ.js (класс BpmnDiffer) и dmn-differ.js (DmnDiffer) — оркестраторы + bootstrap; общие классы: differ-params.js (DifferParams), diagram-versions.js (DiagramVersions), branch-indicator.js (BranchIndicator), diff-type.js (DiffType); логика разнесена по файлам-классам: bpmn-differ-view.js, bpmn-xml-comparator.js (сравнение XML), diff-highlighter.js, changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js, process-file-index.js, call-activity-locator.js, call-activity-navigator.js, handler-locator.js, handler-navigator.js, dmn-differ-view.js, dmn-table-viewport.js, dmn-xml-comparator.js, dmn-diff-painter.js.
 
 Приёмы:
-- "Где определено X" — Grep по `function X|class X|const X` по корневым js-файлам
+- "Где определено X" — Grep по `function X|class X|const X` по js-файлам в `src/` (карта каталогов — в `docs/architecture.md`)
 - "Кто использует X" — Grep по имени во всех js (кроме `libs/`); глобальные имена видны между файлами одного scope'а
 - API bpmn-js/dmn-js — изучай по использованию в differ'ах (`.get('canvas')`, `importXML` и т.п.), в исходники `libs/` лезь в последнюю очередь (минифицированы)
 - Для больших файлов — сначала карта через Grep `^function|^class|^\s+(async )?#?\w+\(`, потом точечное чтение
