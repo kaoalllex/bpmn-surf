@@ -30,6 +30,78 @@
     stroke-width: 3px;
 }
 
+/* search matches (FEAT-0006) — amber "browser-find" scheme, two-tier:
+   every match gets a soft thin outline; the focused one is emphasised by a
+   saturated stroke + glow + a short pulse (not just a thicker line), and never
+   collides with the diff colours (green/red/blue) or the cyan diff marker. */
+.djs-element.search-match .djs-outline {
+    visibility: visible;
+    stroke: hsl(45, 100%, 50%);
+    stroke-width: 3px;
+}
+
+.djs-element.search-match-current .djs-outline {
+    visibility: visible;
+    stroke: hsl(38, 100%, 48%);
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 6px hsl(45, 100%, 55%));
+    animation: search-match-pulse 0.45s ease-in-out 2;
+}
+
+@keyframes search-match-pulse {
+    0%, 100% { stroke-width: 4px; }
+    50%      { stroke-width: 9px; }
+}
+
+/* floating search panel (FEAT-0006) */
+.search-panel {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10001;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 5px 8px;
+    border: 1px solid hsl(0, 0%, 70%);
+    border-radius: 4px;
+    background-color: hsl(0, 0%, 98%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-family: inherit;
+}
+
+.search-panel-input {
+    width: 280px;
+    padding: 3px 6px;
+    border: 1px solid hsl(0, 0%, 75%);
+    border-radius: 2px;
+    font-size: 14px;
+}
+
+.search-panel-counter {
+    min-width: 42px;
+    text-align: center;
+    font-size: 13px;
+    color: hsl(0, 0%, 40%);
+    white-space: nowrap;
+}
+
+.search-panel-button {
+    padding: 2px 7px;
+    border: 1px solid hsl(0, 0%, 75%);
+    border-radius: 2px;
+    background-color: hsl(0, 0%, 92%);
+    cursor: pointer;
+    user-select: none;
+}
+
+.search-panel-button:hover {
+    background-color: hsl(0, 0%, 85%);
+}
+
 /* dmn styles */
 .dmn-decision-table-container .cell {
     font-size: 14px;

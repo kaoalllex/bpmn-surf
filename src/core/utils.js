@@ -180,6 +180,8 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/bpmn/bpmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/diff-highlighter.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/changes-table-view.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/element-searcher.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/search-panel.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/process-file-index.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/call-activity-locator.js', doc, getResourceUrlByNameFunc);

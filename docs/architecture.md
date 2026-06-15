@@ -27,7 +27,8 @@ src/
   differ/      styles.css
     shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js
     bpmn/      bpmn-differ.js, bpmn-differ-view.js, bpmn-xml-comparator.js, diff-highlighter.js,
-               changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js
+               changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js,
+               element-searcher.js, search-panel.js
     dmn/       dmn-differ.js, dmn-differ-view.js, dmn-table-viewport.js, dmn-xml-comparator.js, dmn-diff-painter.js
     navigation/ call-activity-locator.js, call-activity-navigator.js,
                handler-locator.js, handler-navigator.js, process-file-index.js
@@ -75,6 +76,8 @@ main.js → App (app.js) → Providers → Differs
 | `properties-panel-highlighter.js` | `PropertiesPanelHighlighter` — подсветка групп в панели свойств, условия. Для списочных групп (In/Out mappings, Inputs/Outputs) поверх подсветки заголовка группы дополнительно красит конкретные изменённые записи (по `nodeIdToMappingChanges` из компаратора, матч по тексту заголовка записи): changed→синий, added→зелёный (MR), removed→красный (target); если запись не сопоставлена — остаётся только подсветка группы |
 | `condition-formatter.js` | `ConditionFormatter` — форматирование condition-выражений |
 | `canvas-viewport.js` | `CanvasViewport` — pan/zoom/fit канвы |
+| `element-searcher.js` | `ElementSearcher` — полнотекстовый поиск по элементам BPMN (FEAT-0006): строит индекс из `elementRegistry` и ищет id по имени/id/параметрам. `buildSearchText(bo)` рекурсивно собирает все примитивные значения moddle-объекта (condition expression и его переменные, In/Out mappings, Inputs/Outputs, delegate/class/topic, calledElement, documentation), но НЕ заходит в ссылки на другие элементы (у них есть свой `id`), иначе контейнер вобрал бы текст всей схемы. В отличие от встроенного поиска вьювера (только имя/id) |
+| `search-panel.js` | `SearchPanel` — плавающая панель поиска BPMN-differ (FEAT-0006 + BUG-0007). Открывается по Ctrl/Cmd+F, матч по `event.code === 'KeyF'` (раскладко-независимо → работает на русской раскладке, где ломался встроенный поиск) + `preventDefault` подавляет нативный поиск Chrome. Использует `ElementSearcher`, подсвечивает все совпадения маркером `search-match`, текущее центрирует (`canvas.scrollToElement`), выделяет (`selection.select` → панель свойств показывает его параметры) и помечает `search-match-current`; навигация ◀/▶ (Enter/Shift+Enter), счётчик, Esc — закрыть. Индекс перестраивается после каждого импорта (`rebuildIndex`) |
 | `process-file-index.js` | `ProcessFileIndex` — индекс processId→файл (обход всего дерева репозитория + кэш в localStorage + глубокий парсинг XML). Теперь используется только как **fallback** в `CallActivityLocator`; подлежит удалению, когда blob-search подтвердит надёжность |
 | `call-activity-locator.js` | `CallActivityLocator` — резолв processId→{filePath,fileName} для «проваливания» в Call Activity. Основной путь: точечный GitLab blob-search по `<bpmn:process id="...">` (грузится только нужный файл, кэш в памяти по ref+processId); fallback — `ProcessFileIndex`. `blobSearchPageUrl` — ссылка на поиск GitLab, если файл не найден. Зеркалит `handler-locator.js` |
 | `call-activity-navigator.js` | `CallActivityNavigator` — минималистичный overlay «⤵» у выбранного Call Activity (стиль как у `handler-link`, с title-подсказкой). По клику резолвит файл через `CallActivityLocator` против показанной версии (`#getShownRef`) и открывает его differ; если не найден — открывает поиск GitLab |
