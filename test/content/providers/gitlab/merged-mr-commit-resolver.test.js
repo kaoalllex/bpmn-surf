@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('./support/scope.js');
+const { createScope } = require('#scope');
 
 // All collaborators are injected, so these tests need neither fetch nor
 // localStorage: the merged badge, the master-commit history and the atom feed

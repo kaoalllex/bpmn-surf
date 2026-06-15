@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('./support/scope.js');
+const { createScope } = require('#scope');
 
 const MR_URL = 'https://gitlab.example.com/group/proj/-/merge_requests/5/diffs';
 

@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('./support/scope.js');
+const { createScope } = require('#scope');
 
 // MR API responses, trimmed to the fields the provider maps. Shapes mirror real
 // GET /api/v4/projects/{id}/merge_requests/{iid} responses (verified on
