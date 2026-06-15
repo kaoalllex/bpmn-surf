@@ -292,7 +292,8 @@ class BpmnDiffer {
         const diff = this.#xmlComparator.compare(myXml, otherXml);
         // console.debug('diff result', diff);
 
-        this.#propertiesPanelHighlighter.setDiffData(diff.nodeIdToDiffsMap, diff.nodeIdToConditions);
+        this.#propertiesPanelHighlighter.setDiffData(
+            diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges);
         this.#diffHighlighter.setDiffElementIds([
             ...diff.missingShapeIds, ...diff.missingRowIds,
             ...diff.changedShapeIds, ...diff.changedRowIds

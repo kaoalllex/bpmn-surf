@@ -36,6 +36,17 @@ function groupHeader(document, title) {
     return document.querySelector(`.bio-properties-panel-group-header-title[title="${title}"]`).parentElement;
 }
 
+// The collapsible-entry header of a list item, matched by its label text
+function listItemHeader(document, label) {
+    const titles = document.querySelectorAll('.bio-properties-panel-collapsible-entry-header-title');
+    for (const title of titles) {
+        if (title.textContent.trim() === label) {
+            return title.parentElement;
+        }
+    }
+    return null;
+}
+
 const sequenceFlowRegistry = { get: () => ({ type: 'bpmn:SequenceFlow' }) };
 
 describe('PropertiesPanelHighlighter.highlightDiffPropGroups', () => {
@@ -87,6 +98,117 @@ describe('PropertiesPanelHighlighter.highlightDiffPropGroups', () => {
         for (const el of scope.document.querySelectorAll('*')) {
             assert.equal(el.style.backgroundColor, '');
         }
+    });
+});
+
+describe('PropertiesPanelHighlighter.highlightDiffPropGroups list group entries', () => {
+    function mappingChanges(entries) {
+        return new Map([['Task_1', new Map([['In mappings', entries]])]]);
+    }
+
+    it('highlights a changed list entry with the change color and still highlights the group', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(
+            new Map([['Task_1', ['In mappings']]]),
+            new Map(),
+            mappingChanges([{ label: 'itemId', changed: true }])
+        );
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        assert.equal(
+            groupHeader(scope.document, 'In mappings').style.backgroundColor,
+            colorOf(scope.document, HIGHLIGHT_COLOR)
+        );
+        assert.equal(
+            listItemHeader(scope.document, 'itemId').style.backgroundColor,
+            colorOf(scope.document, HIGHLIGHT_COLOR)
+        );
+        // The untouched entry stays clean
+        assert.equal(listItemHeader(scope.document, 'varIn').style.backgroundColor, '');
+    });
+
+    it('paints an added entry (only in the shown version) with the add color when the MR branch is shown', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope, { isTargetBranchShown: () => false });
+        highlighter.setDiffData(
+            new Map([['Task_1', ['In mappings']]]),
+            new Map(),
+            mappingChanges([{ label: 'varIn', changed: false }])
+        );
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        assert.equal(
+            listItemHeader(scope.document, 'varIn').style.backgroundColor,
+            colorOf(scope.document, MR_ADD_COLOR)
+        );
+    });
+
+    it('paints a removed entry (only in the shown version) with the remove color when the target branch is shown', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope, { isTargetBranchShown: () => true });
+        highlighter.setDiffData(
+            new Map([['Task_1', ['In mappings']]]),
+            new Map(),
+            mappingChanges([{ label: 'varIn', changed: false }])
+        );
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        assert.equal(
+            listItemHeader(scope.document, 'varIn').style.backgroundColor,
+            colorOf(scope.document, BRANCH_REMOVE_COLOR)
+        );
+    });
+
+    it('highlights only the group when there are no entry descriptors (fallback)', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(new Map([['Task_1', ['In mappings']]]), new Map(), new Map());
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        assert.equal(
+            groupHeader(scope.document, 'In mappings').style.backgroundColor,
+            colorOf(scope.document, HIGHLIGHT_COLOR)
+        );
+        assert.equal(listItemHeader(scope.document, 'varIn').style.backgroundColor, '');
+        assert.equal(listItemHeader(scope.document, 'itemId').style.backgroundColor, '');
+    });
+
+    it('highlights the group even when a described entry is absent from the panel', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(
+            new Map([['Task_1', ['In mappings']]]),
+            new Map(),
+            mappingChanges([{ label: 'businessKeyVar', changed: false }])
+        );
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        assert.equal(
+            groupHeader(scope.document, 'In mappings').style.backgroundColor,
+            colorOf(scope.document, HIGHLIGHT_COLOR)
+        );
+    });
+
+    it('resets entry highlights when another element is selected', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(
+            new Map([['Task_1', ['In mappings']]]),
+            new Map(),
+            mappingChanges([{ label: 'itemId', changed: true }])
+        );
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+        await highlighter.highlightDiffPropGroups('ElementWithoutDiffs');
+
+        assert.equal(groupHeader(scope.document, 'In mappings').style.backgroundColor, '');
+        assert.equal(listItemHeader(scope.document, 'itemId').style.backgroundColor, '');
     });
 });
 
