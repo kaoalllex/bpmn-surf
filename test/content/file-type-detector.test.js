@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('./support/scope.js');
+const { createScope } = require('#scope');
 
 const { FileTypeDetector, FILE_TYPE_BPMN, FILE_TYPE_DMN } = createScope();
 

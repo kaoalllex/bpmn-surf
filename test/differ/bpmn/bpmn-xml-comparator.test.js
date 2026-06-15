@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope, fixture, mapToObject } = require('./support/scope.js');
+const { createScope, fixture, mapToObject } = require('#scope');
 
 const { BpmnXmlComparator } = createScope();
 

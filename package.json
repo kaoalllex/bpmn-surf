@@ -2,6 +2,9 @@
     "name": "bpmn-diff-tests",
     "private": true,
     "description": "Dev-only unit test infrastructure for the BPMN Diff extension. Nothing here ships with the extension.",
+    "imports": {
+        "#scope": "./test/support/scope.js"
+    },
     "scripts": {
         "test": "node --test 'test/**/*.test.js'",
         "sync:libs": "node scripts/sync-libs.js"

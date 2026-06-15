@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('./support/scope.js');
+const { createScope } = require('#scope');
 
 // GitLabDomScraper reads the realm's global document/window, so each test gets a
 // fresh scope and sets up the markup on it.

@@ -107,4 +107,4 @@ main.js → App (app.js) → Providers → Differs
 | `manifest.json` | Манифест MV3; порядок content_scripts критичен |
 | `libs/` | Vendored dist-файлы внешних библиотек; генерируются `npm run sync:libs`, вручную не править (см. docs/conventions.md) |
 | `scripts/sync-libs.js` | Копирует файлы библиотек из `node_modules` в `libs/` по версиям из `package.json` |
-| `test/` | Юнит-тесты (`node:test` + jsdom): vm-харнесс `test/support/scope.js`, фикстуры `test/fixtures/` — см. docs/testing.md |
+| `test/` | Юнит-тесты (`node:test` + jsdom), раскладка зеркалит `src/` (`src/<путь>/x.js` → `test/<путь>/x.test.js`): vm-харнесс `test/support/scope.js` (подключается как `require('#scope')`), фикстуры `test/fixtures/` — см. docs/testing.md |

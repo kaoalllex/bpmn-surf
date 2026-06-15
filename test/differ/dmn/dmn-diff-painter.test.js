@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope, fixture } = require('./support/scope.js');
+const { createScope, fixture } = require('#scope');
 
 // DmnDiffPainter works on the realm's global document,
 // so each test gets a fresh scope with the dmn-js table markup.

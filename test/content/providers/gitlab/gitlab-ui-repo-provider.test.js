@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('./support/scope.js');
+const { createScope } = require('#scope');
 
 // GitLabUIRepoProvider.addButton works on the realm's global document, so each
 // test gets a fresh scope with the relevant MR header markup.
