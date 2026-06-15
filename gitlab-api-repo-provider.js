@@ -13,10 +13,10 @@
  * merged-vs-opened branching and the commit-resolution heuristics of the
  * DOM-based provider are not needed here (REFAC-0001).
  *
- * It extends GitLabRepoProvider to reuse the genuinely DOM/URL-bound parts that
- * have no API equivalent (project-id resolution, MR-page/branch-view detection,
- * selected-file lookup, branch-file URL parsing) and overrides only the MR
- * parameter resolution to use the API.
+ * It extends GitLabRepoProviderBase to reuse the genuinely DOM/URL-bound parts
+ * that have no API equivalent (project-id resolution, MR-page/branch-view
+ * detection, selected-file lookup, branch-file URL parsing) and implements only
+ * the MR parameter resolution using the API.
  *
  * Fallback is coarse and lives in the provider chain (FallbackRepoProvider):
  * on an MR page init() probes the API and returns false if it is unavailable or
@@ -24,8 +24,7 @@
  * There is no per-method fallback: once the API answers on init() the cached
  * response feeds every getter.
  */
-class GitLabApiRepoProvider extends GitLabRepoProvider {
-    #loadContent;
+class GitLabApiRepoProvider extends GitLabRepoProviderBase {
     #mr = null;
     #mrCacheKey = null;
 
@@ -33,8 +32,7 @@ class GitLabApiRepoProvider extends GitLabRepoProvider {
      * @param {function} loadContent loader for file/URL content (DI for tests)
      */
     constructor(loadContent = loadFileContent) {
-        super();
-        this.#loadContent = loadContent;
+        super(loadContent);
     }
 
     async init() {
@@ -46,7 +44,7 @@ class GitLabApiRepoProvider extends GitLabRepoProvider {
         // The MR API is only relevant on the MR diffs page. On other pages
         // (branch file view) we behave exactly like the DOM provider via the
         // inherited methods, so initializing successfully is correct.
-        if (!this.#isMrDiffPage()) {
+        if (!this.urlParser.isMrDiffPage(window.location.href)) {
             return true;
         }
 
@@ -68,7 +66,7 @@ class GitLabApiRepoProvider extends GitLabRepoProvider {
     async initChangeInfo() {
         console.debug('initializing merge request info (api)...');
         const mr = await this.#loadMr();
-        this.mergeRequestInfo.iid = this.#extractIid();
+        this.mergeRequestInfo.iid = this.urlParser.extractMrIid(window.location.href);
         this.mergeRequestInfo.title = mr ? mr.title : null;
         console.debug('mr title (api): ' + this.mergeRequestInfo.title);
     }
@@ -95,29 +93,9 @@ class GitLabApiRepoProvider extends GitLabRepoProvider {
 
     // ==== Private fields and methods ====
 
-    #isMrDiffPage() {
-        const href = window.location.href;
-        return href.includes('/-/merge_requests/') && href.includes('/diffs');
-    }
-
-    #extractIid() {
-        const href = window.location.href.split('?')[0].split('#')[0];
-        const marker = '/-/merge_requests/';
-        const markerIndex = href.indexOf(marker);
-        if (markerIndex === -1) {
-            return null;
-        }
-        let rest = href.substring(markerIndex + marker.length);
-        const slashIndex = rest.indexOf('/');
-        if (slashIndex !== -1) {
-            rest = rest.substring(0, slashIndex);
-        }
-        return rest || null;
-    }
-
     async #loadMr() {
         const projectInfo = this.getProjectInfo();
-        const iid = this.#extractIid();
+        const iid = this.urlParser.extractMrIid(window.location.href);
         if (!projectInfo?.id || !iid) {
             return null;
         }
@@ -127,7 +105,7 @@ class GitLabApiRepoProvider extends GitLabRepoProvider {
             return this.#mr;
         }
 
-        const content = await this.#loadContent(url, true);
+        const content = await this.loadContent(url, true);
         const mr = JSON.parse(content);
         this.#mr = mr;
         this.#mrCacheKey = url;
