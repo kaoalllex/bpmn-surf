@@ -50,7 +50,8 @@ const SCOPE_FILES = [
     'src/content/providers/fallback-repo-provider.js',
     'src/content/providers/repo-provider-factory.js',
     'src/content/file-type-detector.js',
-    'src/content/diff-params-builder.js'
+    'src/content/diff-params-builder.js',
+    'src/content/page-reloader.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().
@@ -78,6 +79,7 @@ const EXPORTED_NAMES = [
     'GitLabApiRepoProvider',
     'FallbackRepoProvider',
     'createRepoProvider', 'createUIRepoProvider',
+    'PageReloader',
     // utils.js functions under test
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath',

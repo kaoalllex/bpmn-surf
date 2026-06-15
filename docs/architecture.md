@@ -33,7 +33,7 @@ src/
                handler-locator.js, handler-navigator.js, process-file-index.js
 ```
 
-Пути к этим файлам перечислены в четырёх реестрах, которые надо держать в синхроне при переносе/добавлении файла: `manifest.json#content_scripts` (порядок критичен) и `#web_accessible_resources`, `utils.js#loadScripts` (имена = пути в `web_accessible_resources`, иначе `chrome.runtime.getURL` вернёт пусто), `test/support/scope.js#SCOPE_FILES`.
+Пути к этим файлам перечислены в четырёх реестрах, которые надо держать в синхроне при переносе/добавлении файла: `manifest.json#content_scripts` (порядок критичен) и `#web_accessible_resources`, `utils.js#loadScripts` (имена = пути в `web_accessible_resources`, иначе `chrome.runtime.getURL` вернёт пусто), `test/support/scope.js#SCOPE_FILES`. Синхронность реестров и существование ссылок на диске защищены структурным тестом `test/structure/registries.test.js` (рассинхрон иначе ломается молча в рантайме при зелёных юнит-тестах) — см. `docs/testing.md`.
 
 ## Структура
 
