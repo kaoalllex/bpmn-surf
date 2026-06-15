@@ -1,28 +1,37 @@
 // Locates the source code of service-task handlers and detects which of them
-// changed in the current merge request.
+// changed in the current merge request. Supports Kotlin and Java handlers.
 //
-// Currently supports Kotlin handlers of external tasks. A service task in the
-// BPMN references its handler by topic via camunda:topic; the "key" linking a
-// task to its code is the topic string. Two declaration styles are recognised:
-//  - @ExternalTaskSubscription("<topic>") — the topic is stated explicitly;
-//  - @ExternalTaskBean — no topic is stated; the framework derives it from
-//    the annotated class name by lower-casing its first letter (e.g. class
-//    CorrectItemABTestDelegate -> topic "correctItemABTestDelegate").
-//    The annotation's arguments (e.g. retriesTimeout) are optional and never
-//    carry the topic.
+// A service task is linked to its code by a namespaced "handler key" so the
+// same machinery serves both implementation kinds:
+//  - topic:<topic>     — external task; the BPMN states the topic via
+//                        camunda:topic. Two declaration styles are recognised:
+//     - @ExternalTaskSubscription("<topic>") — the topic is stated explicitly;
+//     - @ExternalTaskBean — no topic is stated; the framework derives it from
+//       the annotated class name by lower-casing its first letter (e.g. class
+//       CorrectItemABTestDelegate -> topic "correctItemABTestDelegate").
+//       The annotation's arguments (e.g. retriesTimeout) are optional and never
+//       carry the topic.
+//  - class:<SimpleName> — classic delegate; the BPMN references it via
+//     camunda:class="com.foo.Bar" (-> class:Bar) or
+//     camunda:delegateExpression="${bar}" (Spring bean `bar` -> class Bar by
+//     the default naming convention -> class:Bar). The matching changed file is
+//     the one declaring `class Bar` (Bar.kt / Bar.java).
 //
-// Extension points (intentionally isolated for future work):
-//  - languages: add file extensions to #HANDLER_FILE_EXTENSIONS (e.g. '.java');
-//    the subscription regex is already language-agnostic.
-//  - implementation kinds: external tasks use the topic as the key; Java
-//    delegates (camunda:class / camunda:delegateExpression) will use the class
-//    name as the key — a sibling locator/strategy can reuse #search/#scan.
-//  - depth: change detection currently flags only the handler file itself;
-//    transitive dependency analysis is left as a future enhancement
-//    (see ISSUES.md FEAT-0003).
-class ExternalTaskHandlerLocator {
-    // File extensions treated as handler sources. Add '.java' to also cover Java.
-    static #HANDLER_FILE_EXTENSIONS = ['.kt'];
+// Matching is by simple class name, not FQN: two classes named Bar in different
+// packages collide on class:Bar and could mis-resolve. Rare in practice; if it
+// becomes a problem, switch the key to the FQN (camunda:class already has it;
+// derive the package of a changed file from its path + declaration).
+//
+// Known limitations of the delegate path (out of scope for this iteration):
+//  - delegateExpression with a non-conventional bean (@Component("custom"),
+//    bean name != decapitalised class name) is not resolved by convention;
+//  - delegateExpression with a complex expression (method calls, dotted
+//    navigation) yields no key;
+//  - transitive dependency analysis (a handler whose code is unchanged but a
+//    helper it calls changed) is left as a future enhancement (see FEAT-0015).
+class HandlerLocator {
+    // File extensions treated as handler sources (Kotlin and Java).
+    static #HANDLER_FILE_EXTENSIONS = ['.kt', '.java'];
 
     // Matches @ExternalTaskSubscription("topic"), tolerating whitespace/newlines
     // and an optional named argument (value = "..." / topicName = "...").
@@ -36,11 +45,24 @@ class ExternalTaskHandlerLocator {
     static #WRAP_TO_EXTERNAL_TASK_REGEX =
         /@?ExternalTaskBean\b\s*(?:\([^)]*\))?[\s\S]*?\bclass\s+([A-Za-z_][A-Za-z0-9_]*)/g;
 
+    // Matches a class declaration, capturing the class name. Language-agnostic
+    // (Kotlin `class Foo`, Java `public final class Foo`); used to derive
+    // class:<Name> keys from a changed handler file. Also matches Kotlin-specific
+    // forms (`data`/`sealed`/`enum`/`annotation class Foo`) and nested classes —
+    // a deliberate over-collection: a stray class:<Name> only yields a badge if a
+    // diagram element actually references that class as its delegate.
+    static #DECLARED_CLASS_REGEX = /\bclass\s+([A-Za-z_][A-Za-z0-9_]*)/g;
+
+    // Matches a delegateExpression that is a single bean reference: ${bar} or
+    // #{bar}. The whole value must be one identifier — a dotted/method
+    // expression (${a.b}, ${svc.run()}) deliberately does not match.
+    static #DELEGATE_BEAN_REGEX = /^\s*[#$]\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\s*$/;
+
     #projectUrl;
     #projectHostUrl;
     #projectId;
 
-    // Cache of resolveLocation() results, keyed by `${ref}\n${topic}`.
+    // Cache of resolveLocation() results, keyed by `${ref}\n${key}`.
     #locationCache = new Map();
 
     constructor(projectUrl, projectHostUrl, projectId) {
@@ -59,7 +81,7 @@ class ExternalTaskHandlerLocator {
         if (!fileContent) {
             return topics;
         }
-        const regex = new RegExp(ExternalTaskHandlerLocator.#SUBSCRIPTION_TOPIC_REGEX);
+        const regex = new RegExp(HandlerLocator.#SUBSCRIPTION_TOPIC_REGEX);
         let match;
         while ((match = regex.exec(fileContent)) !== null) {
             topics.push(match[1]);
@@ -78,10 +100,10 @@ class ExternalTaskHandlerLocator {
         if (!fileContent) {
             return topics;
         }
-        const regex = new RegExp(ExternalTaskHandlerLocator.#WRAP_TO_EXTERNAL_TASK_REGEX);
+        const regex = new RegExp(HandlerLocator.#WRAP_TO_EXTERNAL_TASK_REGEX);
         let match;
         while ((match = regex.exec(fileContent)) !== null) {
-            topics.push(ExternalTaskHandlerLocator.#topicFromClassName(match[1]));
+            topics.push(HandlerLocator.#topicFromClassName(match[1]));
         }
         return topics;
     }
@@ -93,8 +115,8 @@ class ExternalTaskHandlerLocator {
      */
     static extractHandlerTopics(fileContent) {
         return [
-            ...ExternalTaskHandlerLocator.extractSubscriptionTopics(fileContent),
-            ...ExternalTaskHandlerLocator.extractExternalTaskBeanTopics(fileContent)
+            ...HandlerLocator.extractSubscriptionTopics(fileContent),
+            ...HandlerLocator.extractExternalTaskBeanTopics(fileContent)
         ];
     }
 
@@ -105,15 +127,93 @@ class ExternalTaskHandlerLocator {
     }
 
     /**
-     * Whether the given repository path is a handler source file.
+     * Names of all classes declared in the given source file. Used to derive
+     * class:<Name> handler keys: a changed file declaring `class Bar` flags a
+     * delegate task referencing Bar. Over-collection is harmless — a key only
+     * yields a badge if a diagram element actually references that class.
+     * @returns {string[]} class names (possibly empty)
      */
-    static isHandlerFile(filePath) {
-        return ExternalTaskHandlerLocator.#HANDLER_FILE_EXTENSIONS.some(ext => filePath.endsWith(ext));
+    static extractDeclaredClassNames(fileContent) {
+        const names = [];
+        if (!fileContent) {
+            return names;
+        }
+        const regex = new RegExp(HandlerLocator.#DECLARED_CLASS_REGEX);
+        let match;
+        while ((match = regex.exec(fileContent)) !== null) {
+            names.push(match[1]);
+        }
+        return names;
     }
 
     /**
-     * Returns a map "topic -> {filePath, diffType}" for every handler file
-     * touched by the MR. diffType is one of 'added' / 'changed' / 'removed'
+     * All namespaced handler keys a source file provides: topic:<topic> for
+     * every declared external task and class:<Name> for every declared class.
+     * @returns {string[]} keys (possibly empty)
+     */
+    static extractHandlerKeys(fileContent) {
+        const keys = [];
+        for (const topic of HandlerLocator.extractHandlerTopics(fileContent)) {
+            keys.push(`topic:${topic}`);
+        }
+        for (const className of HandlerLocator.extractDeclaredClassNames(fileContent)) {
+            keys.push(`class:${className}`);
+        }
+        return keys;
+    }
+
+    /**
+     * Builds a class:<SimpleName> key from a camunda:class value (FQN or simple
+     * name); the simple name is matched, not the package (see class header).
+     * @returns {string|null}
+     */
+    static classKeyFromClassName(className) {
+        const simple = HandlerLocator.simpleClassName(className);
+        return simple ? `class:${simple}` : null;
+    }
+
+    /**
+     * Builds a class:<Name> key from a camunda:delegateExpression value by the
+     * default Spring convention: ${bar} -> bean `bar` -> class Bar. Returns null
+     * for a non-trivial expression (dotted navigation, method calls).
+     * @returns {string|null}
+     */
+    static classKeyFromDelegateExpression(expression) {
+        if (!expression) {
+            return null;
+        }
+        const match = HandlerLocator.#DELEGATE_BEAN_REGEX.exec(expression);
+        return match ? `class:${capitalizeFirstLetter(match[1])}` : null;
+    }
+
+    // 'com.foo.Bar' -> 'Bar'; an already-simple name is returned unchanged.
+    static simpleClassName(className) {
+        if (!className) {
+            return null;
+        }
+        const trimmed = className.trim();
+        const lastDot = trimmed.lastIndexOf('.');
+        return lastDot >= 0 ? trimmed.slice(lastDot + 1) : trimmed;
+    }
+
+    // The human-readable search term carried by a handler key: the part after
+    // the namespace prefix (the topic for topic:, the class name for class:).
+    static termFromKey(key) {
+        const colon = key ? key.indexOf(':') : -1;
+        return colon >= 0 ? key.slice(colon + 1) : key;
+    }
+
+    /**
+     * Whether the given repository path is a handler source file.
+     */
+    static isHandlerFile(filePath) {
+        return HandlerLocator.#HANDLER_FILE_EXTENSIONS.some(ext => filePath.endsWith(ext));
+    }
+
+    /**
+     * Returns a map "key -> {filePath, diffType}" (key = topic:<topic> or
+     * class:<Name>) for every handler file touched by the MR. diffType is one
+     * of 'added' / 'changed' / 'removed'
      * (matching DiffType.name) and drives the badge colour: a new handler file
      * is 'added', a modified/renamed one is 'changed', a deleted one is
      * 'removed'. Only the handler files listed in the MR diff are downloaded and
@@ -132,7 +232,7 @@ class ExternalTaskHandlerLocator {
         }
 
         const changes = await this.#fetchMrChanges(mrIid);
-        const handlerChanges = ExternalTaskHandlerLocator.extractHandlerFileChanges(changes);
+        const handlerChanges = HandlerLocator.extractHandlerFileChanges(changes);
         console.debug(`changed handler files (${handlerChanges.length}):`, handlerChanges);
 
         for (const { filePath, scanPath, diffType } of handlerChanges) {
@@ -141,33 +241,38 @@ class ExternalTaskHandlerLocator {
                 continue;
             }
             const content = await loadFileContent(`${this.#projectUrl}/-/raw/${scanRef}/${scanPath}`, false);
-            for (const topic of ExternalTaskHandlerLocator.extractHandlerTopics(content)) {
-                handlers.set(topic, { filePath, diffType });
+            for (const key of HandlerLocator.extractHandlerKeys(content)) {
+                handlers.set(key, { filePath, diffType });
             }
         }
-        console.debug(`changed handler topics (${handlers.size}):`, handlers);
+        console.debug(`changed handler keys (${handlers.size}):`, handlers);
         return handlers;
     }
 
     /**
-     * Resolves the handler source location for the given topic at the given ref.
-     * Uses the GitLab project blob-search API; the result is cached per ref+topic.
+     * Resolves the handler source location for the given namespaced key
+     * (topic:<topic> or class:<Name>) at the given ref. Uses the GitLab project
+     * blob-search API; the result is cached per ref+key.
      * @returns {Promise<{filePath: string, line: number}|null>}
      */
-    async resolveLocation(topic, ref) {
-        if (!topic || !ref) {
+    async resolveLocation(key, ref) {
+        if (!key || !ref) {
             return null;
         }
-        const cacheKey = `${ref}\n${topic}`;
+        const cacheKey = `${ref}\n${key}`;
         if (this.#locationCache.has(cacheKey)) {
             return this.#locationCache.get(cacheKey);
         }
 
         let location = null;
         try {
-            location = await this.#searchHandlerLocation(topic, ref);
+            if (key.startsWith('topic:')) {
+                location = await this.#searchHandlerLocation(key.slice('topic:'.length), ref);
+            } else if (key.startsWith('class:')) {
+                location = await this.#searchClassDeclarationLocation(key.slice('class:'.length), ref);
+            }
         } catch (error) {
-            console.warn(`cannot resolve handler location for topic '${topic}'`, error);
+            console.warn(`cannot resolve handler location for key '${key}'`, error);
         }
         this.#locationCache.set(cacheKey, location);
         return location;
@@ -239,7 +344,7 @@ class ExternalTaskHandlerLocator {
                 diffType = 'changed';
                 path = change.new_path || change.old_path;
             }
-            if (path && ExternalTaskHandlerLocator.isHandlerFile(path)) {
+            if (path && HandlerLocator.isHandlerFile(path)) {
                 result.push({ filePath: path, scanPath: path, diffType });
             }
         }
@@ -277,7 +382,7 @@ class ExternalTaskHandlerLocator {
         const term = `ExternalTaskSubscription("${topic}")`;
         const items = await this.#searchBlobs(term, ref);
 
-        const handlerItems = items.filter(i => i.path && ExternalTaskHandlerLocator.isHandlerFile(i.path));
+        const handlerItems = items.filter(i => i.path && HandlerLocator.isHandlerFile(i.path));
         if (handlerItems.length === 0) {
             return null;
         }
@@ -295,21 +400,34 @@ class ExternalTaskHandlerLocator {
 
     async #searchExternalTaskBeanLocation(topic, ref) {
         // The topic is the class name with a lower-cased first letter, so the
-        // class name is the topic with its first letter capitalised. Locate the
-        // file declaring that class.
+        // class name is the topic with its first letter capitalised. Prefer a
+        // hit whose snippet shows the @ExternalTaskBean annotation (avoids
+        // matching an unrelated class of the same name).
         const className = capitalizeFirstLetter(topic);
+        return this.#searchClassLocation(className, ref, 'ExternalTaskBean');
+    }
+
+    // Locates the delegate class for a class:<Name> key — the same class-search
+    // as #searchExternalTaskBeanLocation but without an annotation to prefer.
+    async #searchClassDeclarationLocation(className, ref) {
+        return this.#searchClassLocation(className, ref, null);
+    }
+
+    // Locates the handler file declaring `class <className>`. When
+    // preferAnnotation is given, a hit whose snippet shows that annotation wins
+    // over a same-named class elsewhere; otherwise the first handler-file hit.
+    async #searchClassLocation(className, ref, preferAnnotation) {
         const term = `class ${className}`;
         const items = await this.#searchBlobs(term, ref);
 
-        const handlerItems = items.filter(i => i.path && ExternalTaskHandlerLocator.isHandlerFile(i.path));
+        const handlerItems = items.filter(i => i.path && HandlerLocator.isHandlerFile(i.path));
         if (handlerItems.length === 0) {
             return null;
         }
 
-        // Prefer a hit whose snippet shows the @ExternalTaskBean annotation
-        // (avoids matching an unrelated class of the same name).
-        const annotated = handlerItems.find(i => i.data && i.data.includes('ExternalTaskBean'));
-        const item = annotated || handlerItems[0];
+        const preferred = preferAnnotation
+            && handlerItems.find(i => i.data && i.data.includes(preferAnnotation));
+        const item = preferred || handlerItems[0];
 
         return {
             filePath: item.path,

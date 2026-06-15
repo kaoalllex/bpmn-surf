@@ -1,8 +1,10 @@
 // Overlay badge on a service task that links to its handler source code.
 //
 // "Handler" is the class implementing the service task. It can be an external
-// task handler (@ExternalTaskSubscription("<topic>")) — supported now — or a
-// delegate (camunda:class / delegateExpression) — a future extension.
+// task handler (@ExternalTaskSubscription("<topic>")) or a classic delegate
+// (camunda:class / camunda:delegateExpression). Each task is mapped to a
+// namespaced handler key (topic:<topic> or class:<Name>); see
+// HandlerLocator for how keys are built and resolved.
 //
 // - For every task whose handler was touched in the current MR a badge is shown
 //   permanently, coloured by the kind of change so it is visible at a glance
@@ -35,8 +37,9 @@ class HandlerNavigator {
     #openUrlFunc;
     #navigateOpenerFunc;
 
-    // Map "topic -> {filePath, diffType}" of handlers touched in this MR;
-    // diffType is 'added' | 'changed' | 'removed'.
+    // Map "key -> {filePath, diffType}" of handlers touched in this MR
+    // (key = topic:<topic> or class:<Name>); diffType is
+    // 'added' | 'changed' | 'removed'.
     #changedHandlers = new Map();
     #persistentOverlayIds = [];
     #selectionOverlayId = null;
@@ -66,37 +69,51 @@ class HandlerNavigator {
             return;
         }
         for (const elem of this.#elementRegistry.getAll()) {
-            const topic = this.#getExternalTopic(elem);
-            const change = topic && this.#changedHandlers.get(topic);
+            const key = this.#getHandlerKey(elem);
+            const change = key && this.#changedHandlers.get(key);
             if (change) {
-                this.#persistentOverlayIds.push(this.#addBadge(elem.id, topic, change.diffType));
+                this.#persistentOverlayIds.push(this.#addBadge(elem.id, key, change.diffType));
             }
         }
     }
 
-    // Shows the on-demand "open handler code" badge for the selected external
+    // Shows the on-demand "open handler code" badge for the selected service
     // task (unless it already has a permanent badge).
     showOverlayForSelectedElement() {
         this.#removeSelectionOverlay();
 
         const elementId = this.#getSelectedElementIdFunc();
         const elem = this.#elementRegistry.get(elementId);
-        const topic = this.#getExternalTopic(elem);
-        if (!topic || this.#changedHandlers.has(topic)) {
+        const key = this.#getHandlerKey(elem);
+        if (!key || this.#changedHandlers.has(key)) {
             return;
         }
-        this.#selectionOverlayId = this.#addBadge(elementId, topic, null);
+        this.#selectionOverlayId = this.#addBadge(elementId, key, null);
     }
 
-    #getExternalTopic(elem) {
+    // The namespaced handler key for a service task, or null if it has no
+    // recognised handler reference. Attributes are read via bo.get() because
+    // `class` is a reserved word (bo.class would not work).
+    #getHandlerKey(elem) {
         const bo = elem && elem.businessObject;
-        if (!bo || bo.type !== 'external' || !bo.topic) {
+        if (!bo) {
             return null;
         }
-        return bo.topic;
+        if (bo.type === 'external' && bo.topic) {
+            return `topic:${bo.topic}`;
+        }
+        const delegateExpression = bo.get && bo.get('camunda:delegateExpression');
+        if (delegateExpression) {
+            return HandlerLocator.classKeyFromDelegateExpression(delegateExpression);
+        }
+        const className = bo.get && bo.get('camunda:class');
+        if (className) {
+            return HandlerLocator.classKeyFromClassName(className);
+        }
+        return null;
     }
 
-    #addBadge(elementId, topic, diffType) {
+    #addBadge(elementId, key, diffType) {
         const cssClass = diffType ? `handler-link handler-link-${diffType}` : 'handler-link';
         const title = HandlerNavigator.#BADGE_TITLES[diffType] || 'Открыть код хендлера';
 
@@ -109,19 +126,19 @@ class HandlerNavigator {
             `.djs-overlay.djs-overlay-note[data-overlay-id="${overlayId}"]`
         );
         if (overlayElem) {
-            overlayElem.addEventListener('click', () => this.#onOpenCode(topic));
+            overlayElem.addEventListener('click', () => this.#onOpenCode(key));
         } else {
             console.warn('cannot find handler overlay element by id: ' + overlayId);
         }
         return overlayId;
     }
 
-    #onOpenCode(topic) {
+    #onOpenCode(key) {
         // A handler touched in this MR opens its MR diff: navigate the originating
         // MR tab (window.opener) so we return to the already-open MR instead of
         // spawning another tab. If that tab is gone, fall back to a new one.
-        if (this.#changedHandlers.has(topic)) {
-            this.#resolveTargetUrl(topic).then((url) => {
+        if (this.#changedHandlers.has(key)) {
+            this.#resolveTargetUrl(key).then((url) => {
                 if (url && !this.#navigateOpenerFunc(url)) {
                     this.#openUrlFunc(url);
                 }
@@ -133,7 +150,7 @@ class HandlerNavigator {
         // Open it synchronously on click (to avoid the popup blocker), then
         // navigate it once the target URL is resolved.
         const newTab = this.#openUrlFunc('about:blank');
-        this.#resolveTargetUrl(topic).then((url) => {
+        this.#resolveTargetUrl(key).then((url) => {
             if (!url) {
                 if (newTab) {
                     newTab.close();
@@ -148,9 +165,9 @@ class HandlerNavigator {
         });
     }
 
-    async #resolveTargetUrl(topic) {
+    async #resolveTargetUrl(key) {
         // Touched in this MR: open the MR diff of the handler file.
-        const change = this.#changedHandlers.get(topic);
+        const change = this.#changedHandlers.get(key);
         if (change) {
             return this.#locator.mrFileDiffUrl(change.filePath, this.#mrIid);
         }
@@ -161,10 +178,11 @@ class HandlerNavigator {
             console.warn('cannot open handler code: current ref is undefined');
             return null;
         }
-        const location = await this.#locator.resolveLocation(topic, ref);
+        const location = await this.#locator.resolveLocation(key, ref);
+        const term = HandlerLocator.termFromKey(key);
         return location
             ? this.#locator.blobFileUrl(location.filePath, location.line, ref)
-            : this.#locator.blobSearchPageUrl(topic, ref);
+            : this.#locator.blobSearchPageUrl(term, ref);
     }
 
     #removePersistentOverlays() {

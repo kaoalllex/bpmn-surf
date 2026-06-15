@@ -129,7 +129,7 @@ class BpmnDiffer {
             this.#params.platform.projectId,
             this.#processFileIndex
         );
-        this.#handlerLocator = new ExternalTaskHandlerLocator(
+        this.#handlerLocator = new HandlerLocator(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
             this.#params.platform.projectId

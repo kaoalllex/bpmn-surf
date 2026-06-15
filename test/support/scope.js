@@ -63,7 +63,7 @@ const EXPORTED_NAMES = [
     'DifferParams',
     'DiffParamsBuilder',
     'CallActivityLocator',
-    'ExternalTaskHandlerLocator',
+    'HandlerLocator',
     'BpmnXmlComparator',
     'PropertiesPanelHighlighter',
     'DmnXmlComparator',

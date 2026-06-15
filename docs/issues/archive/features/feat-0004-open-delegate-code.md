@@ -2,7 +2,7 @@
 id: FEAT-0004
 title: Открывать вкладку с кодом делегата
 priority: medium
-status: partial
+status: done
 ---
 
 ## Постановка
@@ -13,11 +13,16 @@ status: partial
 
 - Связано с [FEAT-0003].
 - Делегаты/Java — см. [FEAT-0003].
+- Сделано: открытие кода для классических делегатов (`camunda:class`/`delegateExpression`) и Java-хендлеров — через общий с FEAT-0003 локатор (резолв — `resolveLocation(key, ref)` → `#searchClassDeclarationLocation`). Детали реализации — в [FEAT-0003], раздел «План доработки» и История.
 
 ## История работы
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
      Новые записи добавляй сверху (свежие первыми). -->
+
+### 2026-06-15 · claude-opus-4-8 · (ветка `feature/delegate-change-highlight`)
+
+Открытие кода делегатов реализовано вместе с подсветкой [FEAT-0003] на общем namespaced-ключе. Клик по бейджу делегата (`camunda:class` / `delegateExpression="${bean}"`, Kotlin и Java) открывает: для изменённого в MR хендлера — его diff в MR; для неизменённого — объявление класса на текущей показанной версии (резолв `resolveLocation('class:<Name>', ref)` → `#searchClassDeclarationLocation` — поиск `class <Name>` в хендлер-файле без требования аннотации), при неудаче — fallback на страницу поиска GitLab (термин из ключа через `termFromKey`). External task — без регресса. Детали и ограничения — в Истории [FEAT-0003].
 
 ### 2026-06-14 · — · (ветка `feature/delegate-change-highlight`)
 
