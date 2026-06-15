@@ -2,7 +2,7 @@
 id: UX-0006
 title: Кнопка Highlight — мигание вместо статичной жирной подсветки
 priority: medium
-status: in-progress
+status: done
 ---
 
 ## Постановка
