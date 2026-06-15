@@ -28,6 +28,19 @@ function compare(myXml, otherXml) {
     return new BpmnXmlComparator().compare(myXml, otherXml);
 }
 
+// Rebuilds the nested Map(id -> Map(group -> [{label, changed}])) as a host-side
+// plain object so cross-realm assert.deepEqual works (see scope.js#mapToObject).
+function mappingChangesToObject(map) {
+    const obj = {};
+    for (const [id, groupMap] of map) {
+        obj[id] = {};
+        for (const [group, descriptors] of groupMap) {
+            obj[id][group] = Array.from(descriptors, d => ({ label: d.label, changed: d.changed }));
+        }
+    }
+    return obj;
+}
+
 function assertNoDiffs(result) {
     assert.deepEqual(Array.from(result.missingShapeIds), []);
     assert.deepEqual(Array.from(result.missingRowIds), []);
@@ -255,6 +268,60 @@ describe('BpmnXmlComparator property groups: In mappings / Out mappings', () => 
             '<camunda:out source="varOut" target="varOut" />\n' +
             '        <camunda:in sourceExpression="${item.id}" target="itemId" />');
         assertNoDiffs(compare(changed, base));
+    });
+});
+
+describe('BpmnXmlComparator per-entry list group changes (nodeIdToMappingChanges)', () => {
+    it('marks an in mapping present only in the shown version as not-changed (added/removed)', () => {
+        // Comparing base (has varIn) against a version without it: varIn is only in the shown side
+        const other = variant('        <camunda:in source="varIn" target="varIn" />\n', '');
+        const result = compare(base, other);
+        assert.deepEqual(mappingChangesToObject(result.nodeIdToMappingChanges), {
+            CallActivity_1: { 'In mappings': [{ label: 'varIn', changed: false }] }
+        });
+    });
+
+    it('emits no entry descriptor for a mapping absent from the shown version (only the group highlight)', () => {
+        // The shown (my) version lacks varIn; a removed entry has no list item in the panel
+        const changed = variant('        <camunda:in source="varIn" target="varIn" />\n', '');
+        const result = compare(changed, base);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['In mappings'] });
+        assert.equal(result.nodeIdToMappingChanges.size, 0);
+    });
+
+    it('marks an in mapping with the same target but changed content as changed', () => {
+        const changed = variant('${item.id}', '${item.code}');
+        const result = compare(changed, base);
+        assert.deepEqual(mappingChangesToObject(result.nodeIdToMappingChanges), {
+            CallActivity_1: { 'In mappings': [{ label: 'itemId', changed: true }] }
+        });
+    });
+
+    it('marks an out mapping present only in the shown version', () => {
+        const other = variant('        <camunda:out source="varOut" target="varOut" />\n', '');
+        const result = compare(base, other);
+        assert.deepEqual(mappingChangesToObject(result.nodeIdToMappingChanges), {
+            CallActivity_1: { 'Out mappings': [{ label: 'varOut', changed: false }] }
+        });
+    });
+
+    it('marks a changed input parameter by its name', () => {
+        const changed = variant('TEMPLATE_ONE', 'TEMPLATE_TWO');
+        const result = compare(changed, base);
+        assert.deepEqual(mappingChangesToObject(result.nodeIdToMappingChanges), {
+            SendTask_1: { Inputs: [{ label: 'messageTemplate', changed: true }] }
+        });
+    });
+
+    it('emits no entry descriptor for a propagate-all (variables="all") in mapping, leaving only the group highlight', () => {
+        const changed = variant(
+            '        <camunda:in source="varIn" target="varIn" />\n',
+            '        <camunda:in source="varIn" target="varIn" />\n' +
+            '        <camunda:in variables="all" />\n');
+        const result = compare(changed, base);
+        // The group is still detected (whole-group highlight), but no per-entry descriptor
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['In mappings'] });
+        assert.equal(result.nodeIdToMappingChanges.size, 0);
     });
 });
 

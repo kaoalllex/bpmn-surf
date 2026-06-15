@@ -69,10 +69,10 @@ main.js → App (app.js) → Providers → Differs
 | `diagram-versions.js` | `DiagramVersions` — загрузка/хранение/скачивание версий диаграммы (общий) |
 | `branch-indicator.js` | `BranchIndicator` — имя показываемой ветки в header'е, цвета (общий) |
 | `diff-type.js` | `DiffType` — типы diff'а с цветами (общий для BPMN и DMN) |
-| `bpmn-xml-comparator.js` | `BpmnXmlComparator` — семантическое сравнение двух BPMN XML |
+| `bpmn-xml-comparator.js` | `BpmnXmlComparator` — семантическое сравнение двух BPMN XML. `compare()` помимо diff-групп (`nodeIdToDiffsMap`) и условий (`nodeIdToConditions`) отдаёт `nodeIdToMappingChanges` (id → Map(имя списочной группы → `[{label, changed}]`)) для поэлементной подсветки записей In/Out mappings и Inputs/Outputs |
 | `diff-highlighter.js` | `DiffHighlighter` — покраска diff-элементов и highlight-маркеры |
 | `changes-table-view.js` | `ChangesTableView` — таблица изменений в футере |
-| `properties-panel-highlighter.js` | `PropertiesPanelHighlighter` — подсветка групп в панели свойств, условия |
+| `properties-panel-highlighter.js` | `PropertiesPanelHighlighter` — подсветка групп в панели свойств, условия. Для списочных групп (In/Out mappings, Inputs/Outputs) поверх подсветки заголовка группы дополнительно красит конкретные изменённые записи (по `nodeIdToMappingChanges` из компаратора, матч по тексту заголовка записи): changed→синий, added→зелёный (MR), removed→красный (target); если запись не сопоставлена — остаётся только подсветка группы |
 | `condition-formatter.js` | `ConditionFormatter` — форматирование condition-выражений |
 | `canvas-viewport.js` | `CanvasViewport` — pan/zoom/fit канвы |
 | `process-file-index.js` | `ProcessFileIndex` — индекс processId→файл (обход всего дерева репозитория + кэш в localStorage + глубокий парсинг XML). Теперь используется только как **fallback** в `CallActivityLocator`; подлежит удалению, когда blob-search подтвердит надёжность |

@@ -28,6 +28,33 @@ class BpmnXmlComparator {
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
 
     /**
+     * List-based property groups whose changed entries are highlighted
+     * individually in the panel (not only as a whole group). For each group:
+     * how to extract its entries from a node and which attribute is the entry's
+     * panel label (the value shown in the list item header).
+     *   tag       — entry element tag
+     *   keyAttr   — attribute used as the list item label / match key
+     *   parentTag — wrapping element inside extensionElements (Inputs/Outputs)
+     *   skip      — entries handled by other panel groups (not in this list)
+     */
+    static #LIST_GROUP_CONFIG = new Map([
+        ['In mappings', {
+            tag: 'camunda:in', keyAttr: 'target',
+            skip: (e) => e.hasAttribute('businessKey') || e.getAttribute('variables') === 'all'
+        }],
+        ['Out mappings', {
+            tag: 'camunda:out', keyAttr: 'target',
+            skip: (e) => e.getAttribute('variables') === 'all'
+        }],
+        ['Inputs', {
+            tag: 'camunda:inputParameter', keyAttr: 'name', parentTag: 'camunda:inputOutput'
+        }],
+        ['Outputs', {
+            tag: 'camunda:outputParameter', keyAttr: 'name', parentTag: 'camunda:inputOutput'
+        }]
+    ]);
+
+    /**
      * key: diff name mask
      * value: property group name
      */
@@ -118,7 +145,8 @@ class BpmnXmlComparator {
      *   missingShapeIds, missingRowIds,
      *   changedShapeIds, changedRowIds,
      *   nodeIdToDiffsMap (id -> [property group names]),
-     *   nodeIdToConditions (id -> [my condition, other condition])
+     *   nodeIdToConditions (id -> [my condition, other condition]),
+     *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}]))
      * }
      */
     compare(myXml, otherXml) {
@@ -141,7 +169,8 @@ class BpmnXmlComparator {
             changedShapeIds: [],
             changedRowIds: [],
             nodeIdToDiffsMap: new Map(),
-            nodeIdToConditions: new Map()
+            nodeIdToConditions: new Map(),
+            nodeIdToMappingChanges: new Map()
         };
 
         for (const myNode of myNodesWithIdAttr) {
@@ -179,6 +208,8 @@ class BpmnXmlComparator {
                         }
                     }
 
+                    this.#collectListGroupChanges(id, myNode, otherNode, result);
+
                     if (this.#isNodeRow(myNode)) {
                         result.changedRowIds.push(id);
 
@@ -208,6 +239,84 @@ class BpmnXmlComparator {
 
         const diffShort = diff.slice(diff.indexOf('/') + 1);
         return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
+    }
+
+    // For each changed list-based group on this node (In/Out mappings, Inputs/Outputs),
+    // records which individual entries differ so the panel can highlight them, not just
+    // the whole group. An entry is keyed by its panel label; changed=true when it exists
+    // in both versions but differs, changed=false when it exists only in the shown version
+    // (added/removed, colored by which branch is shown).
+    #collectListGroupChanges(id, myNode, otherNode, result) {
+        const groups = result.nodeIdToDiffsMap.get(id);
+        if (!groups) {
+            return;
+        }
+
+        let changesForNode = null;
+        for (const groupName of new Set(groups)) {
+            const config = BpmnXmlComparator.#LIST_GROUP_CONFIG.get(groupName);
+            if (!config) {
+                continue;
+            }
+            const descriptors = this.#computeListGroupChanges(myNode, otherNode, config);
+            if (descriptors.length === 0) {
+                continue;
+            }
+            if (!changesForNode) {
+                changesForNode = new Map();
+            }
+            changesForNode.set(groupName, descriptors);
+        }
+
+        if (changesForNode) {
+            result.nodeIdToMappingChanges.set(id, changesForNode);
+        }
+    }
+
+    #computeListGroupChanges(myNode, otherNode, config) {
+        const myEntries = this.#extractListEntries(myNode, config);
+        const otherEntries = this.#extractListEntries(otherNode, config);
+        const descriptors = [];
+
+        for (const myEntry of myEntries) {
+            const label = myEntry.getAttribute(config.keyAttr);
+            if (!label) {
+                // No panel label to match the list item by; the whole-group highlight covers it
+                continue;
+            }
+            const sameKey = otherEntries.filter(e => e.getAttribute(config.keyAttr) === label);
+            if (sameKey.length === 0) {
+                descriptors.push({ label, changed: false });
+            } else if (!sameKey.some(e => e.outerHTML === myEntry.outerHTML)) {
+                descriptors.push({ label, changed: true });
+            }
+        }
+
+        return descriptors;
+    }
+
+    #extractListEntries(node, config) {
+        const ext = this.#findChildNodeByTagName(node, 'bpmn:extensionElements');
+        if (!ext) {
+            return [];
+        }
+        const containers = config.parentTag
+            ? Array.from(ext.childNodes).filter(c => c.tagName === config.parentTag)
+            : [ext];
+
+        const entries = [];
+        for (const container of containers) {
+            for (const child of container.childNodes) {
+                if (child.tagName !== config.tag) {
+                    continue;
+                }
+                if (config.skip && config.skip(child)) {
+                    continue;
+                }
+                entries.push(child);
+            }
+        }
+        return entries;
     }
 
     #isNodeRow(node) {

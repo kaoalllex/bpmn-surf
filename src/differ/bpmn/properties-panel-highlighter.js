@@ -3,14 +3,20 @@
 class PropertiesPanelHighlighter {
     static #CONDITION_DIV_ID = 'bpmnPropsCondition_12345bf3d4e842caa0d88194431197c0';
 
+    static #GROUP_COLOR = '#8888ff'; // 'changed' color, also used for the whole-group marker
+    static #CHANGE_COLOR = '#8888ff';
+    static #ADD_COLOR = '#88ff88';
+    static #REMOVE_COLOR = '#ff8888';
+
     #conditionFormatter;
     #isTargetBranchShownFunc;
     #elementRegistry = null;
     #nodeIdToDiffsMap = new Map();
     // Map: element id -> [current branch condition, other branch condition]
     #nodeIdToConditions = new Map();
-    #highlightedPropGroups = null;
-    #highlightedPropGroupElems = null;
+    // Map: element id -> Map(list group name -> [{label, changed}])
+    #nodeIdToMappingChanges = new Map();
+    #highlightedElems = null;
 
     constructor(conditionFormatter, isTargetBranchShownFunc) {
         this.#conditionFormatter = conditionFormatter;
@@ -21,38 +27,85 @@ class PropertiesPanelHighlighter {
         this.#elementRegistry = elementRegistry;
     }
 
-    setDiffData(nodeIdToDiffsMap, nodeIdToConditions) {
+    setDiffData(nodeIdToDiffsMap, nodeIdToConditions, nodeIdToMappingChanges = new Map()) {
         this.#nodeIdToDiffsMap = nodeIdToDiffsMap;
         this.#nodeIdToConditions = nodeIdToConditions;
+        this.#nodeIdToMappingChanges = nodeIdToMappingChanges;
     }
 
     async highlightDiffPropGroups(elementId) {
         this.#resetHighlightedPropGroups();
 
         const diffPropGroups = this.#nodeIdToDiffsMap.get(elementId);
-        if (diffPropGroups) {
-            this.#highlightedPropGroups = diffPropGroups;
-            this.#highlightedPropGroupElems = [];
+        if (!diffPropGroups) {
+            return;
+        }
+        this.#highlightedElems = [];
+        const mappingChanges = this.#nodeIdToMappingChanges.get(elementId);
 
-            for (const diffPropGroup of this.#highlightedPropGroups) {
-                const elem = await doWithAttempts(function () {
-                    // The group title no longer carries a `title` attribute; match by header text instead
-                    const titles = document.querySelectorAll('.bio-properties-panel-group-header-title');
-                    for (const title of titles) {
-                        if (title.textContent.trim() === diffPropGroup) {
-                            return title.parentElement;
-                        }
-                    }
-                    return null;
-                });
-                if (elem) {
-                    this.#highlightedPropGroupElems.push(elem);
-                    elem.style.backgroundColor = '#8888ff';
-                } else {
-                    console.warn(`property group header not found in panel, cannot highlight: "${diffPropGroup}" (element ${elementId})`);
-                }
+        for (const diffPropGroup of diffPropGroups) {
+            const groupHeader = await this.#findGroupHeader(diffPropGroup);
+            if (!groupHeader) {
+                console.warn(`property group header not found in panel, cannot highlight: "${diffPropGroup}" (element ${elementId})`);
+                continue;
+            }
+            // Always highlight the group header (the user's entry point in the group list)
+            this.#paint(groupHeader, PropertiesPanelHighlighter.#GROUP_COLOR);
+
+            // Additionally highlight the individual changed entries inside list groups
+            const descriptors = mappingChanges && mappingChanges.get(diffPropGroup);
+            if (descriptors) {
+                this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
             }
         }
+    }
+
+    // The group header carries the title; its parent is the group container that also holds the list
+    async #findGroupHeader(groupName) {
+        return doWithAttempts(function () {
+            // The group title no longer carries a `title` attribute; match by header text instead
+            const titles = document.querySelectorAll('.bio-properties-panel-group-header-title');
+            for (const title of titles) {
+                if (title.textContent.trim() === groupName) {
+                    return title.parentElement;
+                }
+            }
+            return null;
+        });
+    }
+
+    #highlightListItems(groupContainer, descriptors, elementId, groupName) {
+        for (const descriptor of descriptors) {
+            const itemHeaders = this.#findListItemHeaders(groupContainer, descriptor.label);
+            if (itemHeaders.length === 0) {
+                console.warn(`list item "${descriptor.label}" not found in group "${groupName}" (element ${elementId})`);
+                continue;
+            }
+            const color = descriptor.changed
+                ? PropertiesPanelHighlighter.#CHANGE_COLOR
+                : (this.#isTargetBranchShownFunc()
+                    ? PropertiesPanelHighlighter.#REMOVE_COLOR
+                    : PropertiesPanelHighlighter.#ADD_COLOR);
+            for (const itemHeader of itemHeaders) {
+                this.#paint(itemHeader, color);
+            }
+        }
+    }
+
+    #findListItemHeaders(groupContainer, label) {
+        const headers = [];
+        const titles = groupContainer.querySelectorAll('.bio-properties-panel-collapsible-entry-header-title');
+        for (const title of titles) {
+            if (title.textContent.trim() === label) {
+                headers.push(title.parentElement);
+            }
+        }
+        return headers;
+    }
+
+    #paint(elem, color) {
+        this.#highlightedElems.push(elem);
+        elem.style.backgroundColor = color;
     }
 
     showConditionExpression(elementId) {
@@ -112,12 +165,11 @@ class PropertiesPanelHighlighter {
     }
 
     #resetHighlightedPropGroups() {
-        this.#highlightedPropGroups = null;
-        if (this.#highlightedPropGroupElems) {
-            for (const elem of this.#highlightedPropGroupElems) {
+        if (this.#highlightedElems) {
+            for (const elem of this.#highlightedElems) {
                 elem.style.backgroundColor = null;
             }
-            this.#highlightedPropGroupElems = null;
+            this.#highlightedElems = null;
         }
     }
 }
