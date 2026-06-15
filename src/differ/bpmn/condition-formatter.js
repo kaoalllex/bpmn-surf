@@ -1,5 +1,11 @@
-// Formats a condition expression into indented lines for display
+// Formats a condition expression into indented lines for display.
+// Insignificant whitespace (spaces, tabs, newlines) outside string literals is
+// collapsed: the formatter generates its own indentation, so the source layout
+// of a long/complex expression does not leak into the output.
 class ConditionFormatter {
+    static #WORD_CHAR = /[\p{L}\p{N}_$]/u;
+    static #WHITESPACE_CHAR = /\s/;
+
     format(condition) {
         // console.debug('format condition', condition);
 
@@ -12,14 +18,32 @@ class ConditionFormatter {
         let funcParenthesis = false;
         let insideString = false;
         let escapeFound = false;
+        let pendingSpace = false;
+        let lastChar = '';
 
         for (let i = 0; i < condition.length; i++) {
             const symbol = condition[i];
 
             if (insideString && symbol !== '"' && symbol !== '\\') {
                 symbolArr.push(symbol);
+                lastChar = symbol;
                 continue;
             }
+
+            // Collapse any whitespace run; it is emitted as a single space later,
+            // unless it falls at the start of a line (leading indentation)
+            if (ConditionFormatter.#WHITESPACE_CHAR.test(symbol)) {
+                pendingSpace = true;
+                continue;
+            }
+
+            if (pendingSpace) {
+                if (!starting) {
+                    symbolArr.push(' ');
+                }
+                pendingSpace = false;
+            }
+            starting = false;
 
             switch (symbol) {
                 case '{':
@@ -32,19 +56,20 @@ class ConditionFormatter {
                 case '}':
                     indentSize -= 1;
                     this.#flush(resultArr, symbolArr, indentSize);
-                    starting = true;
                     symbolArr.push(symbol);
-                    starting = false;
                     break;
 
                 case '(':
                     symbolArr.push(symbol);
-                    if (starting) {
+                    // A call paren follows an identifier or a closing paren
+                    // (e.g. 'fn(' or ')('); otherwise it is a grouping paren
+                    // (e.g. '(', '!(', '&& ('), which gets its own indent level
+                    if (ConditionFormatter.#isCallParen(lastChar)) {
+                        funcParenthesis = true;
+                    } else {
                         indentSize += 1;
                         this.#flush(resultArr, symbolArr, indentSize);
                         starting = true;
-                    } else {
-                        funcParenthesis = true;
                     }
                     break;
 
@@ -55,9 +80,7 @@ class ConditionFormatter {
                     } else {
                         indentSize -= 1;
                         this.#flush(resultArr, symbolArr, indentSize);
-                        starting = true;
                         symbolArr.push(symbol);
-                        starting = false;
                     }
                     break;
 
@@ -88,36 +111,23 @@ class ConditionFormatter {
                     if (escapeFound) {
                         escapeFound = false;
                     } else {
-                        if (insideString) {
-                            insideString = false;
-                        } else {
-                            insideString = true;
-                        }
+                        insideString = !insideString;
                     }
                     break;
 
                 case '\\':
                     symbolArr.push(symbol);
-                    if (escapeFound) {
-                        escapeFound = false;
-                    } else {
-                        escapeFound = true;
-                    }
+                    escapeFound = !escapeFound;
                     break;
-
-                case ' ':
-                    if (starting) {
-                        break;
-                    }
-                // Else no break and go to default branch
 
                 default:
                     symbolArr.push(symbol);
                     andOpStarted = false;
                     orOpStarted = false;
-                    starting = false;
                     escapeFound = false;
             }
+
+            lastChar = symbol;
         }
         if (symbolArr.length > 0) {
             this.#flush(resultArr, symbolArr, indentSize);
@@ -126,8 +136,14 @@ class ConditionFormatter {
         return resultArr;
     }
 
+    static #isCallParen(lastChar) {
+        return lastChar === ')' || ConditionFormatter.#WORD_CHAR.test(lastChar);
+    }
+
     #flush(resultArr, symbolArr, indentSize) {
-        resultArr.push(symbolArr.join(''));
+        // trimEnd drops the trailing space a collapsed whitespace run leaves
+        // before a line break
+        resultArr.push(symbolArr.join('').trimEnd());
 
         symbolArr.length = 0;
         for (let i = 0; i < indentSize; i++) {
