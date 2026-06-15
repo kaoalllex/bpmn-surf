@@ -2,6 +2,14 @@
 class DiffHighlighter {
     static HIGHLIGHTING_MARKER = 'highlight-diff';
     static BIG_HIGHLIGHTING_MARKER = 'highlight-diff-big';
+    // Attention phase of the Highlight button: a blinking outline (UX-0006).
+    // Distinct from BIG_HIGHLIGHTING_MARKER, which the changes table still uses
+    // for the steady thick outline of the selected row's element.
+    static PULSE_HIGHLIGHTING_MARKER = 'highlight-diff-pulse';
+
+    // Duration of the blink before settling to the steady thin highlight; must
+    // match the highlight-diff-pulse animation length in styles.css (0.5s × 3).
+    static PULSE_DURATION_MS = 1500;
 
     #canvas;
     #elementRegistry;
@@ -66,20 +74,20 @@ class DiffHighlighter {
                 // If elem is selected, highlighting does not work
                 // so remove 'selected' marker
                 this.removeMarker(elem, 'selected');
-                this.addMarker(elem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
+                this.addMarker(elem, DiffHighlighter.PULSE_HIGHLIGHTING_MARKER);
             });
             this.#timeoutId = setTimeout(() => {
                 elems.forEach(elem => {
-                    this.removeMarker(elem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
+                    this.removeMarker(elem, DiffHighlighter.PULSE_HIGHLIGHTING_MARKER);
                     this.addMarker(elem, DiffHighlighter.HIGHLIGHTING_MARKER);
                 });
-            }, 2000);
+            }, DiffHighlighter.PULSE_DURATION_MS);
         } else {
             if (this.#timeoutId) {
                 clearTimeout(this.#timeoutId);
             }
             elems.forEach(elem => {
-                this.removeMarker(elem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
+                this.removeMarker(elem, DiffHighlighter.PULSE_HIGHLIGHTING_MARKER);
                 this.removeMarker(elem, DiffHighlighter.HIGHLIGHTING_MARKER);
             });
         }
