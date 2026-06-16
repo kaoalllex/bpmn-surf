@@ -169,12 +169,14 @@ class App {
             // Go on: will use latest master commit in differ
         }
 
+        const diffSideLabels = await this.#repoProvider.getDiffSideLabels(sourceCommitId, targetCommitId);
+
         const params = await this.#buildDiffParams(
             filePath,
             fileName,
             sourceCommitId,
             targetCommitId,
-            changeBranchNames
+            diffSideLabels
         );
 
         this.#addButton(fileType, UI_BUTTON_TYPE.DIFF, params, false);
@@ -213,14 +215,15 @@ class App {
      * Creates parameters for diff mode (Merge Request)
      * @private
      */
-    async #buildDiffParams(filePath, fileName, sourceCommitId, targetCommitId, changeBranchNames) {
+    async #buildDiffParams(filePath, fileName, sourceCommitId, targetCommitId, diffSideLabels) {
         const projectInfo = this.#repoProvider.getProjectInfo();
         const camundaBpmnModdle = await this.#moddleManager.load();
         return this.#diffParamsBuilder.buildDiffParams({
             projectInfo: projectInfo,
             sourceRef: sourceCommitId,
-            sourceBranchName: changeBranchNames.sourceBranchName,
+            sourceLabel: diffSideLabels.sourceLabel,
             targetRef: targetCommitId,
+            targetLabel: diffSideLabels.targetLabel,
             changeRequestId: this.#repoProvider.getChangeInfo().iid,
             filePath: filePath,
             fileName: fileName,

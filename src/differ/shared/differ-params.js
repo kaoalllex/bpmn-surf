@@ -14,9 +14,15 @@ class DifferParams {
         if (this.sourceRef && this.localFileContent) {
             console.error('Only one of these parameters must be defined: sourceRef or localFileContent');
         }
-        this.sourceBranchName = params.sourceBranchName;
+        this.sourceLabel = params.sourceLabel; // human-readable label of the MR/source side
         this.changeRequestId = params.changeRequestId; // MR/PR number; undefined in branch-view mode
         this.targetRef = requireDefined(params.targetRef, 'targetRef');
+        // Human-readable label of the target side for display. It is platform-
+        // neutral: the producing provider decides whether it is a branch name
+        // (whole-change diff) or a short commit id (single selected commit), since
+        // for a merged MR targetRef holds a commit id. Falls back to targetRef when
+        // not provided (branch mode, nested differ).
+        this.targetLabel = params.targetLabel || params.targetRef;
         this.filePath = requireDefined(params.filePath, 'filePath');
         this.fileName = requireDefined(params.fileName, 'fileName');
 
@@ -46,9 +52,10 @@ class DifferParams {
         return {
             platform: this.platform,
             sourceRef: this.sourceRef,
-            sourceBranchName: this.sourceBranchName,
+            sourceLabel: this.sourceLabel,
             changeRequestId: this.changeRequestId,
             targetRef: this.targetRef,
+            targetLabel: this.targetLabel,
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: this.camundaBpmnModdle

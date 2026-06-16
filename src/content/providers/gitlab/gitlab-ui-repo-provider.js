@@ -113,7 +113,7 @@ class GitLabUIRepoProvider extends UIRepoProvider {
             console.debug('Selected local file has been read');
             const extParams = {
                 localFileContent: content,
-                sourceBranchName: 'local file',
+                sourceLabel: 'local file',
             };
             onButtonClickFunc(extParams);
         };

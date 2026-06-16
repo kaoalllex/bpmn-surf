@@ -17,8 +17,9 @@ describe('DiffParamsBuilder.buildDiffParams', () => {
     const params = builder.buildDiffParams({
         projectInfo: projectInfo,
         sourceRef: 'mr-sha',
-        sourceBranchName: 'feature/x',
-        targetRef: 'master',
+        sourceLabel: 'feature/x',
+        targetRef: 'deadbeef',
+        targetLabel: 'master',
         changeRequestId: '123',
         filePath: 'src/process.bpmn',
         fileName: 'process.bpmn',
@@ -36,8 +37,9 @@ describe('DiffParamsBuilder.buildDiffParams', () => {
 
     it('exposes neutral refs and change-request id flatly', () => {
         assert.equal(params.sourceRef, 'mr-sha');
-        assert.equal(params.sourceBranchName, 'feature/x');
-        assert.equal(params.targetRef, 'master');
+        assert.equal(params.sourceLabel, 'feature/x');
+        assert.equal(params.targetRef, 'deadbeef');
+        assert.equal(params.targetLabel, 'master');
         assert.equal(params.changeRequestId, '123');
     });
 
@@ -66,7 +68,7 @@ describe('DiffParamsBuilder.buildBranchParams', () => {
 
     it('has no source side', () => {
         assert.equal(params.sourceRef, null);
-        assert.equal(params.sourceBranchName, null);
+        assert.equal(params.sourceLabel, null);
         assert.equal(params.changeRequestId, undefined);
     });
 
@@ -74,5 +76,9 @@ describe('DiffParamsBuilder.buildBranchParams', () => {
         assert.equal(params.platform.kind, 'gitlab');
         assert.equal(params.platform.projectId, 42);
         assert.equal(params.targetRef, 'feature/y');
+    });
+
+    it('falls back the displayed label to the ref (no MR target branch here)', () => {
+        assert.equal(params.targetLabel, 'feature/y');
     });
 });

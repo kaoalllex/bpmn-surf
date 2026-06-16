@@ -102,6 +102,16 @@ class GitLabRepoProviderBase extends RepoProvider {
             window.location.href, this.projectInfo.name, branchCommitId);
     }
 
+    // A whole-change diff is labelled by the MR branch names. Subclasses that
+    // support narrower diffs (e.g. a single selected commit) override this.
+    getDiffSideLabels(/* sourceRef, targetRef */) {
+        const names = this.getChangeBranchNames();
+        return {
+            sourceLabel: names ? names.sourceBranchName : null,
+            targetLabel: names ? names.targetBranchName : null
+        };
+    }
+
     // ==== Private fields and methods ====
 
     async #getProjectId() {

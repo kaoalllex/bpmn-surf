@@ -124,7 +124,7 @@ class BpmnDiffer {
         this.#params.requirePlatformInfo();
 
         this.#versions = new DiagramVersions(this.#params);
-        this.#branchIndicator = new BranchIndicator(this.#params.targetRef, this.#params.sourceBranchName);
+        this.#branchIndicator = new BranchIndicator(this.#params.targetLabel, this.#params.sourceLabel);
         this.#xmlComparator = new BpmnXmlComparator();
         // ProcessFileIndex is kept only as the fallback path of CallActivityLocator
         // (full repository tree walk); the primary path is a targeted blob-search.
@@ -198,9 +198,9 @@ class BpmnDiffer {
 
     #downloadShownBranchFile() {
         if (this.#branchIndicator.isTargetBranchShown()) {
-            this.#versions.download(this.#versions.branchXml, this.#params.targetRef);
+            this.#versions.download(this.#versions.branchXml, this.#params.targetLabel);
         } else {
-            this.#versions.download(this.#versions.mrXml, this.#params.sourceBranchName);
+            this.#versions.download(this.#versions.mrXml, this.#params.sourceLabel);
         }
     }
 
@@ -210,14 +210,14 @@ class BpmnDiffer {
                 this.#showMr();
             } else {
                 // File may have been removed
-                this.#versions.alertFileNotExistInBranch(this.#params.sourceBranchName);
+                this.#versions.alertFileNotExistInBranch(this.#params.sourceLabel);
             }
         } else { // Current MR - try to switch to branch
             if (this.#versions.branchXml) {
                 this.#showBranch();
             } else {
                 // File may be new
-                this.#versions.alertFileNotExistInBranch(this.#params.targetRef);
+                this.#versions.alertFileNotExistInBranch(this.#params.targetLabel);
             }
         }
     }
@@ -231,7 +231,7 @@ class BpmnDiffer {
         console.debug('showing branch bpmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchBpmnXml');
         await this.#showXml(branchXml);
-        this.#branchIndicator.setBranchName(this.#params.targetRef);
+        this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
         if (this.#versions.mrXml) {
             this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);
@@ -244,7 +244,7 @@ class BpmnDiffer {
         console.debug('showing mr bpmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrBpmnXml');
         await this.#showXml(mrXml);
-        this.#branchIndicator.setBranchName(this.#params.sourceBranchName);
+        this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
         if (this.#versions.branchXml) {
             this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
