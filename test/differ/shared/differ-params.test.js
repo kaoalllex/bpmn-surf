@@ -9,7 +9,7 @@ const { DifferParams } = createScope();
 const validParams = {
     platform: { kind: 'gitlab', projectUrl: 'https://gitlab.example.com/group/project' },
     sourceRef: 'abc123',
-    sourceBranchName: 'feature/x',
+    sourceLabel: 'feature/x',
     targetRef: 'master',
     filePath: 'src/process.bpmn',
     fileName: 'process.bpmn'
@@ -22,6 +22,18 @@ describe('DifferParams', () => {
         assert.equal(p.sourceRef, 'abc123');
         assert.equal(p.targetRef, 'master');
         assert.equal(p.filePath, 'src/process.bpmn');
+    });
+
+    it('keeps an explicit targetLabel separate from targetRef', () => {
+        const merged = { ...validParams, targetRef: 'deadbeef', targetLabel: 'master' };
+        const p = new DifferParams(merged);
+        assert.equal(p.targetRef, 'deadbeef');
+        assert.equal(p.targetLabel, 'master');
+    });
+
+    it('falls back targetLabel to targetRef when not provided', () => {
+        const p = new DifferParams(validParams);
+        assert.equal(p.targetLabel, 'master');
     });
 
     it('throws when a required param is missing', () => {
@@ -67,13 +79,14 @@ describe('DifferParams', () => {
     });
 
     it('toNestedDifferParams carries platform and refs but swaps the file', () => {
-        const p = new DifferParams(validParams);
+        const p = new DifferParams({ ...validParams, targetRef: 'deadbeef', targetLabel: 'master' });
         const nested = p.toNestedDifferParams('src/sub.bpmn', 'sub.bpmn');
 
         assert.equal(nested.platform, p.platform);
         assert.equal(nested.sourceRef, 'abc123');
-        assert.equal(nested.targetRef, 'master');
-        assert.equal(nested.sourceBranchName, 'feature/x');
+        assert.equal(nested.targetRef, 'deadbeef');
+        assert.equal(nested.targetLabel, 'master');
+        assert.equal(nested.sourceLabel, 'feature/x');
         assert.equal(nested.filePath, 'src/sub.bpmn');
         assert.equal(nested.fileName, 'sub.bpmn');
     });

@@ -147,6 +147,29 @@ function createCommitProvider(commit, { mr = OPENED_MR, iid = 2 } = {}) {
     return { scope, provider, calls };
 }
 
+// Like createCommitProvider, but the loader dispatches the repository commits
+// endpoint by sha so the selected commit and its parent return distinct titles.
+function createCommitMessageProvider({ iid = 2 } = {}) {
+    const scope = createScope({
+        url: `${HOST_URL}/group/proj/-/merge_requests/${iid}/diffs?commit_id=${SELECTED_SHA}`
+    });
+    const load = async (url) => {
+        if (url.includes(`/repository/commits/${SELECTED_SHA}`)) {
+            return JSON.stringify({ id: SELECTED_SHA, title: 'selected commit message', parent_ids: [PARENT_SHA] });
+        }
+        if (url.includes(`/repository/commits/${PARENT_SHA}`)) {
+            return JSON.stringify({ id: PARENT_SHA, title: 'parent commit message', parent_ids: [] });
+        }
+        return JSON.stringify(OPENED_MR);
+    };
+    const provider = new scope.GitLabApiRepoProvider(load);
+    const projectInfo = provider.getProjectInfo();
+    projectInfo.id = PROJECT_ID;
+    projectInfo.hostUrl = HOST_URL;
+    projectInfo.url = `${HOST_URL}/group/proj`;
+    return { scope, provider };
+}
+
 describe('GitLabApiRepoProvider — selected commit (FEAT-0001)', () => {
     it('uses the selected commit as the source', async () => {
         const { provider } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
@@ -187,6 +210,30 @@ describe('GitLabApiRepoProvider — selected commit (FEAT-0001)', () => {
     it('falls back to base_sha when the commit request fails', async () => {
         const { provider } = createCommitProvider(null);
         assert.equal(await provider.getTargetCommitId(), OPENED_MR.diff_refs.base_sha);
+    });
+});
+
+describe('GitLabApiRepoProvider — diff side labels', () => {
+    it('labels a whole-MR diff by source/target branch names', async () => {
+        const { provider } = createProvider(OPENED_MR);
+        await provider.initChangeInfo();
+        const labels = await provider.getDiffSideLabels(OPENED_MR.diff_refs.head_sha, OPENED_MR.diff_refs.base_sha);
+        assert.equal(labels.sourceLabel, OPENED_MR.source_branch);
+        assert.equal(labels.targetLabel, OPENED_MR.target_branch);
+    });
+
+    it('labels a selected-commit diff by commit message + short id, not branch names', async () => {
+        const { provider } = createCommitMessageProvider();
+        const labels = await provider.getDiffSideLabels(SELECTED_SHA, PARENT_SHA);
+        assert.equal(labels.sourceLabel, `selected commit message (${SELECTED_SHA.substring(0, 8)})`);
+        assert.equal(labels.targetLabel, `parent commit message (${PARENT_SHA.substring(0, 8)})`);
+    });
+
+    it('falls back to a short commit id when the commit title is unavailable', async () => {
+        const { provider } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
+        const labels = await provider.getDiffSideLabels(SELECTED_SHA, PARENT_SHA);
+        assert.equal(labels.sourceLabel, SELECTED_SHA.substring(0, 8));
+        assert.equal(labels.targetLabel, PARENT_SHA.substring(0, 8));
     });
 });
 

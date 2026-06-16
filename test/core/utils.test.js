@@ -7,6 +7,7 @@ const { createScope } = require('#scope');
 const {
     getFileNameFromPath,
     getFileNameWithoutExtensionFromPath,
+    shortenCommitId,
     capitalizeFirstLetter,
     getTitle,
     requireDefined,
@@ -30,6 +31,21 @@ describe('getFileNameWithoutExtensionFromPath', () => {
 
     it('keeps only the part before the last dot', () => {
         assert.equal(getFileNameWithoutExtensionFromPath('a/b/my.process.bpmn'), 'my.process');
+    });
+});
+
+describe('shortenCommitId', () => {
+    it('shortens a full sha to the first 8 chars', () => {
+        assert.equal(shortenCommitId('ffffeeee0000111122223333444455556666aaaa'), 'ffffeeee');
+    });
+
+    it('leaves a shorter string untouched', () => {
+        assert.equal(shortenCommitId('abc'), 'abc');
+    });
+
+    it('returns non-string input unchanged', () => {
+        assert.equal(shortenCommitId(null), null);
+        assert.equal(shortenCommitId(undefined), undefined);
     });
 });
 

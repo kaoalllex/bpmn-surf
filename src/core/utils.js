@@ -79,6 +79,12 @@ function getFileNameWithoutExtensionFromPath(path) {
     return filename.substring(0, filename.lastIndexOf('.'));
 }
 
+// Short form of a commit id for display (first 8 chars, the common git short-SHA
+// length). Returns the input unchanged when it is not a string (null / undefined).
+function shortenCommitId(commitId) {
+    return typeof commitId === 'string' ? commitId.substring(0, 8) : commitId;
+}
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

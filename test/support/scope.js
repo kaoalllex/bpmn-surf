@@ -28,6 +28,7 @@ const SCOPE_FILES = [
     'src/differ/bpmn/element-searcher.js',
     'src/differ/bpmn/properties-panel-highlighter.js',
     'src/differ/shared/differ-params.js',
+    'src/differ/shared/branch-indicator.js',
     'src/differ/navigation/call-activity-locator.js',
     'src/differ/navigation/handler-locator.js',
     'src/differ/dmn/dmn-xml-comparator.js',
@@ -64,6 +65,7 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'DifferParams',
+    'BranchIndicator',
     'DiffParamsBuilder',
     'CallActivityLocator',
     'HandlerLocator',
@@ -86,7 +88,7 @@ const EXPORTED_NAMES = [
     'PageReloader',
     // utils.js functions under test
     'parseXml',
-    'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath',
+    'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts'
 ];
 

@@ -13,30 +13,33 @@ class DiffParamsBuilder {
     /**
      * Params for diff mode (Merge Request: source ref vs target ref).
      */
-    buildDiffParams({ projectInfo, sourceRef, sourceBranchName, targetRef, changeRequestId, filePath, fileName, camundaBpmnModdle }) {
+    buildDiffParams({ projectInfo, sourceRef, sourceLabel, targetRef, targetLabel, changeRequestId, filePath, fileName, camundaBpmnModdle }) {
         return {
-            ...this.#commonParams(projectInfo, targetRef, filePath, fileName, camundaBpmnModdle),
+            ...this.#commonParams(projectInfo, targetRef, targetLabel, filePath, fileName, camundaBpmnModdle),
             sourceRef: sourceRef,
-            sourceBranchName: sourceBranchName,
+            sourceLabel: sourceLabel,
             changeRequestId: changeRequestId
         };
     }
 
     /**
      * Params for branch mode (single file version, no source/MR side).
+     * There is no MR target branch here, so the displayed label falls back to the
+     * ref taken from the page URL (usually a readable branch name already).
      */
     buildBranchParams({ projectInfo, targetRef, filePath, fileName, camundaBpmnModdle }) {
         return {
-            ...this.#commonParams(projectInfo, targetRef, filePath, fileName, camundaBpmnModdle),
+            ...this.#commonParams(projectInfo, targetRef, targetRef, filePath, fileName, camundaBpmnModdle),
             sourceRef: null,
-            sourceBranchName: null
+            sourceLabel: null
         };
     }
 
-    #commonParams(projectInfo, targetRef, filePath, fileName, camundaBpmnModdle) {
+    #commonParams(projectInfo, targetRef, targetLabel, filePath, fileName, camundaBpmnModdle) {
         return {
             platform: this.#platform(projectInfo),
             targetRef: targetRef,
+            targetLabel: targetLabel,
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle

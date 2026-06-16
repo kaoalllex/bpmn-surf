@@ -115,36 +115,66 @@ class GitLabApiRepoProvider extends GitLabRepoProviderBase {
         return mr?.diff_refs?.base_sha ?? null;
     }
 
+    async getDiffSideLabels(sourceRef, targetRef) {
+        // A selected single commit is diffed against its parent commit, not the
+        // target branch (FEAT-0001), so labelling either side by branch name would
+        // be misleading — show the commit message + short id instead. The whole-MR
+        // case keeps the branch-name labels from the base implementation.
+        if (this.urlParser.extractCommitId(window.location.href)) {
+            return {
+                sourceLabel: await this.#commitLabel(sourceRef),
+                targetLabel: await this.#commitLabel(targetRef)
+            };
+        }
+        return super.getDiffSideLabels(sourceRef, targetRef);
+    }
+
     // ==== Private fields and methods ====
 
-    #commitParent = null;
-    #commitParentCacheKey = null;
+    // Commits fetched from the repository commits API, cached per sha for the page
+    // lifetime — the selected commit and its parent are reused across files and
+    // across getTargetCommitId/getDiffSideLabels.
+    #commits = new Map();
 
     /**
-     * Resolves the first parent of the given commit via the repository commits
-     * API, cached per commit sha. Returns null when the commit has no parent
-     * (root commit) or the request fails.
+     * Display label for a commit: "<message title> (<short id>)", or just the
+     * short id when the commit (or its title) cannot be loaded.
+     */
+    async #commitLabel(commitId) {
+        const shortId = shortenCommitId(commitId);
+        const commit = await this.#loadCommit(commitId);
+        return commit && commit.title ? `${commit.title} (${shortId})` : shortId;
+    }
+
+    /**
+     * Resolves the first parent of the given commit. Returns null when the commit
+     * has no parent (root commit) or the request fails.
      */
     async #loadCommitParentId(commitId) {
+        const commit = await this.#loadCommit(commitId);
+        return commit?.parent_ids?.[0] ?? null;
+    }
+
+    /**
+     * Loads a commit via the repository commits API, cached per sha. Returns null
+     * when there is no project id / commit id or the request fails.
+     */
+    async #loadCommit(commitId) {
         const projectInfo = this.getProjectInfo();
-        if (!projectInfo?.id) {
+        if (!projectInfo?.id || !commitId) {
             return null;
+        }
+        if (this.#commits.has(commitId)) {
+            return this.#commits.get(commitId);
         }
 
         const url = `${projectInfo.hostUrl}/api/v4/projects/${projectInfo.id}/repository/commits/${commitId}`;
-        if (this.#commitParentCacheKey === url) {
-            return this.#commitParent;
-        }
-
         try {
-            const content = await this.loadContent(url, true);
-            const commit = JSON.parse(content);
-            const parentId = commit?.parent_ids?.[0] ?? null;
-            this.#commitParent = parentId;
-            this.#commitParentCacheKey = url;
-            return parentId;
+            const commit = JSON.parse(await this.loadContent(url, true));
+            this.#commits.set(commitId, commit);
+            return commit;
         } catch (error) {
-            console.warn('cannot resolve parent of commit ' + commitId, error);
+            console.warn('cannot load commit ' + commitId, error);
             return null;
         }
     }

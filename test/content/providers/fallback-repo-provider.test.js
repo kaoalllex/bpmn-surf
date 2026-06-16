@@ -91,6 +91,14 @@ describe('FallbackRepoProvider delegation', () => {
         assert.throws(() => p.getProjectInfo(), /no active provider/);
     });
 
+    it('delegates getDiffSideLabels to the active provider with its arguments', async () => {
+        const primary = stub('primary');
+        primary.getDiffSideLabels = (sourceRef, targetRef) => ({ sourceLabel: sourceRef, targetLabel: targetRef });
+        const p = new FallbackRepoProvider([primary]);
+        await p.init();
+        assert.deepEqual(p.getDiffSideLabels('src', 'tgt'), { sourceLabel: 'src', targetLabel: 'tgt' });
+    });
+
     it('re-selects on each init call', async () => {
         const primary = stub('primary', { available: false });
         const p = new FallbackRepoProvider([primary, stub('fallback')]);

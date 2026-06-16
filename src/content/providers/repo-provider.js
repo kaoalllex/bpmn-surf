@@ -94,6 +94,21 @@ class RepoProvider {
     }
 
     /**
+     * Human-readable labels for the two compared sides, shown in the differ.
+     * The provider owns the semantics (e.g. a whole-change diff is labelled by
+     * branch names, while a single selected commit is diffed against its parent
+     * and labelled by commit message + short id), so the platform-agnostic differ
+     * core only ever receives plain label strings. May be async if the provider
+     * needs to fetch commit metadata.
+     * @param {string} sourceRef resolved source-side ref (commit id)
+     * @param {string} targetRef resolved target-side ref (commit id)
+     * @returns {{ sourceLabel: string, targetLabel: string } | Promise<{ sourceLabel: string, targetLabel: string }>}
+     */
+    getDiffSideLabels(sourceRef, targetRef) {
+        throw new Error('getDiffSideLabels() must be implemented');
+    }
+
+    /**
      * Extracts commit and file path information from branch view URL
      * @returns {Object|null} object with fields: branchCommitId, filePath or null
      */
