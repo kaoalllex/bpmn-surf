@@ -24,6 +24,7 @@ class BpmnDifferView {
     #isPropsCellHidden = false;
     #viewport = null;
     #changesTableView = null;
+    #loadingOverlay = new DifferLoadingOverlay();
 
     // callbacks: { onDownload, onSwitchBranch, onToggleHighlight }
     constructor(params, branchIndicator, callbacks) {
@@ -54,6 +55,9 @@ class BpmnDifferView {
     }
 
     build() {
+        // Show the render spinner until the diagram is ready (showCanvas).
+        this.#loadingOverlay.show('Loading the diagram…');
+
         const bpmnDiv = document.createElement('div');
         bpmnDiv.id = BpmnDifferView.DIV_ID;
         bpmnDiv.style.position = 'fixed';
@@ -130,6 +134,7 @@ class BpmnDifferView {
 
     showCanvas() {
         this.#canvasCell.style.visibility = 'visible';
+        this.#loadingOverlay.hide();
     }
 
     // Restores the last drag-saved panel width (clamped to the current window).

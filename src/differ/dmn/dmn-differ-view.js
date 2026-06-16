@@ -14,6 +14,7 @@ class DmnDifferView {
     #callbacks;
 
     #canvasCell = null;
+    #loadingOverlay = new DifferLoadingOverlay();
 
     // callbacks: { onDownload, onSwitchBranch }
     constructor(params, branchIndicator, viewport, callbacks) {
@@ -24,6 +25,9 @@ class DmnDifferView {
     }
 
     build() {
+        // Show the render spinner until the diagram is ready (showCanvas).
+        this.#loadingOverlay.show('Loading the diagram…');
+
         const dmnDiv = document.createElement('div');
         dmnDiv.id = DmnDifferView.DIV_ID;
         dmnDiv.style.position = 'fixed';
@@ -65,6 +69,7 @@ class DmnDifferView {
 
     showCanvas() {
         this.#canvasCell.style.visibility = 'visible';
+        this.#loadingOverlay.hide();
     }
 
     #group() {
