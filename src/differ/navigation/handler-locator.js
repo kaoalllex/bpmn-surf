@@ -235,16 +235,22 @@ class HandlerLocator {
         const handlerChanges = HandlerLocator.extractHandlerFileChanges(changes);
         console.debug(`changed handler files (${handlerChanges.length}):`, handlerChanges);
 
-        for (const { filePath, scanPath, diffType } of handlerChanges) {
+        // Fetch all touched handler files in parallel (the sequential version was
+        // the main blocker on large MRs). The keys are then collected in the
+        // original order so a same-key collision resolves deterministically.
+        const contents = await Promise.all(handlerChanges.map(({ scanPath, diffType }) => {
             const scanRef = diffType === 'removed' ? branchRef : mrRef;
             if (!scanRef) {
-                continue;
+                return null;
             }
-            const content = await loadFileContent(`${this.#projectUrl}/-/raw/${scanRef}/${scanPath}`, false);
-            for (const key of HandlerLocator.extractHandlerKeys(content)) {
+            return loadFileContent(`${this.#projectUrl}/-/raw/${scanRef}/${scanPath}`, false);
+        }));
+
+        handlerChanges.forEach(({ filePath, diffType }, i) => {
+            for (const key of HandlerLocator.extractHandlerKeys(contents[i])) {
                 handlers.set(key, { filePath, diffType });
             }
-        }
+        });
         console.debug(`changed handler keys (${handlers.size}):`, handlers);
         return handlers;
     }
