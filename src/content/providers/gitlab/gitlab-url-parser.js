@@ -65,6 +65,26 @@ class GitLabUrlParser {
     }
 
     /**
+     * Extracts the selected commit id from an MR diffs URL.
+     *
+     * GitLab puts ?commit_id=<sha> on the diffs page when a single commit is
+     * picked from the MR commit list, and then shows that commit's diff against
+     * its parent. Returns null when no specific commit is selected (the whole-MR
+     * view).
+     * @param {string} href full page URL
+     * @returns {string|null}
+     */
+    extractCommitId(href) {
+        const queryIndex = href.indexOf('?');
+        if (queryIndex === -1) {
+            return null;
+        }
+        const query = href.substring(queryIndex + 1).split('#')[0];
+        const match = query.match(/(?:^|&)commit_id=([a-fA-F0-9]+)/);
+        return match ? match[1] : null;
+    }
+
+    /**
      * @param {string} href full page URL
      * @returns {boolean} true if the URL is an MR diffs page
      */
