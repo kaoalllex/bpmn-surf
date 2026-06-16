@@ -263,6 +263,26 @@
     color: hsl(0, 0%, 30%);
 }
 
+/* placeholder filling the canvas area when the shown version has no diagram
+   (blank cover) or the file is absent in both versions (with a message).
+   Sits inside the canvas cell so the toolbar stays usable (UX-0003 / BUG-0001) */
+.differ-empty-state {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    font-family: inherit;
+}
+
+.differ-empty-state-message {
+    font-size: 16px;
+    font-style: italic;
+    color: hsl(0, 0%, 45%);
+}
+
 /* call activity "dive in" link — same minimalist look as .handler-link */
 .dive-in-call-activity {
     padding: 2px 5px 1px;

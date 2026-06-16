@@ -2,7 +2,7 @@
 id: UX-0003
 title: Доработать отображение для удалённых и новых схем
 priority: medium
-status: open
+status: done
 ---
 
 ## Постановка
@@ -100,6 +100,42 @@ status: open
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
      Новые записи добавляй сверху (свежие первыми). -->
+
+### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0003-absent-schemas` (доработка по фидбэку)
+
+По просьбе пользователя уточнены тексты absent-лейбла (вместо общего «not in this version»):
+side-specific, т.к. противоположная сторона при switch всегда существует —
+- пустой source (Changed) → `file deleted` (`BranchIndicator.ABSENT_NOTE_DELETED`);
+- пустой target (Original) → `file does not exist` (`ABSENT_NOTE_NEW`).
+Сообщение «обе пусты» приведено к `File does not exist in either version`.
+Добавлен дизейбл кнопки **Download** на стороне без файла (и при обеих пустых):
+`BpmnDifferView`/`DmnDifferView.setDownloadButtonEnabled`, вызовы из `#showAbsentSide`,
+ветки «обе пусты» и `#showXml` (включение обратно). Тесты обновлены, `npm test` зелёный (690).
+
+### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0003-absent-schemas`
+
+Реализован принятый подход (совместно с [BUG-0001]). Изменения:
+- Новый общий класс `DifferEmptyState` (`src/differ/shared/differ-empty-state.js`) — заглушка
+  внутри canvas-ячейки (тулбар остаётся доступным, в отличие от полноэкранного
+  `DifferLoadingOverlay`). Зарегистрирован в `utils.js#loadScripts`, `manifest.json`
+  (`web_accessible_resources`) и `scope.js#SCOPE_FILES`; стили `.differ-empty-state` в `styles.css`.
+- `BranchIndicator.setAbsentLabel(targetSide)` — приглушённый italic-лейбл
+  «role · label · not in this version», `isTargetBranchShown()` остаётся корректным;
+  `setShownLabel` сбрасывает italic обратно.
+- BPMN (`bpmn-differ.js`): `#switchBranch` вместо alert вызывает `#showAbsentSide()` —
+  `bpmnJS.clear()` + absent-лейбл + сброс diff-подсветки (`setDiffElementIds([])`),
+  `ChangesTableView.clear()` (новый метод), сброс выделения, дизейбл кнопки Highlight
+  (`BpmnDifferView.setHighlightButtonEnabled`); кнопка снова включается в `#showXml`.
+- DMN (`dmn-differ.js`): `#switchBranch` → `#showAbsentSide()` — absent-лейбл + пустой
+  перекрыватель canvas (`showEmptyState('')`), т.к. у `dmn-js` нет `clear()`; в `#showXml`
+  перекрыватель скрывается.
+- Обе стороны пусты (BUG-0001): вместо немого пустого экрана — `view.showEmptyState('File not
+  found in either version')` в обоих диферах.
+- `DiagramVersions.alertFileNotExistInBranch` удалён; alert инлайнен в `download()` (отдельное
+  действие, фидбэк сохранён).
+
+Тесты: `npm test` зелёный (689). Добавлены юнит-тесты `DifferEmptyState` и `BranchIndicator.setAbsentLabel`.
+DOM/`importXML`-часть (рендер пустого canvas, перекрыватель DMN) — по ручному чеклисту (`docs/testing.md`).
 
 ### 2026-06-16 · claude-opus-4-8 · master (планирование, без коммита)
 

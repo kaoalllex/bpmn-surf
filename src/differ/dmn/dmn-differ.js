@@ -37,7 +37,10 @@ class DmnDiffer {
         await this.#loadVersions();
 
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
-            // Nothing to show; the detailed error has been logged by #loadVersions()
+            // File absent in both versions (BUG-0001): show a placeholder instead
+            // of a blank page. The detailed error is logged by #loadVersions().
+            this.#view.showEmptyState('File does not exist in either version');
+            this.#view.setDownloadButtonEnabled(false);
             return;
         }
 
@@ -103,17 +106,26 @@ class DmnDiffer {
             if (this.#versions.mrXml) {
                 this.#showMr();
             } else {
-                // File may have been removed
-                this.#versions.alertFileNotExistInBranch(this.#params.sourceLabel);
+                // File is absent in the MR/source version (deleted in this MR)
+                this.#showAbsentSide(false);
             }
         } else { // Current MR - try to switch to branch
             if (this.#versions.branchXml) {
                 this.#showBranch();
             } else {
-                // File may be new
-                this.#versions.alertFileNotExistInBranch(this.#params.targetLabel);
+                // File is absent in the target version (new file in this MR)
+                this.#showAbsentSide(true);
             }
         }
+    }
+
+    // Switches to a side where the file does not exist: marks the absence in the
+    // branch label and covers the canvas with a blank placeholder (dmn-js has no
+    // clear()), keeping the toolbar usable to switch back (UX-0003).
+    #showAbsentSide(targetSide) {
+        this.#branchIndicator.setAbsentLabel(targetSide);
+        this.#view.showEmptyState('');
+        this.#view.setDownloadButtonEnabled(false);
     }
 
     async #showMr() {
@@ -143,6 +155,11 @@ class DmnDiffer {
     }
 
     async #showXml(dmnXml) {
+        // This side has a diagram/file — hide the absent-side placeholder and
+        // re-enable Download (disabled while an absent side is shown).
+        this.#view.hideEmptyState();
+        this.#view.setDownloadButtonEnabled(true);
+
         const scrollTop = this.#viewport.scrollTop;
         // console.debug('scroll top: ' + scrollTop);
 

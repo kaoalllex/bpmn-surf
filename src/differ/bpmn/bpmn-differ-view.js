@@ -24,6 +24,9 @@ class BpmnDifferView {
     #isPropsCellHidden = false;
     #viewport = null;
     #changesTableView = null;
+    #downloadButton = null;
+    #highlightButton = null;
+    #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
 
     // callbacks: { onDownload, onSwitchBranch, onToggleHighlight }
@@ -106,6 +109,7 @@ class BpmnDifferView {
         tableCanvasPropsRow.appendChild(canvasCell);
         this.#canvasCell = canvasCell;
         this.#viewport = new CanvasViewport(canvasCell);
+        this.#emptyState = new DifferEmptyState(canvasCell);
 
         //--- splitter (drag to resize the properties panel)
         this.#splitterCell = document.createElement('td');
@@ -135,6 +139,30 @@ class BpmnDifferView {
     showCanvas() {
         this.#canvasCell.style.visibility = 'visible';
         this.#loadingOverlay.hide();
+    }
+
+    // Shows a placeholder in the canvas area when the file is absent in both
+    // versions (BUG-0001). The toolbar stays usable (Close/Download).
+    showEmptyState(message) {
+        this.#canvasCell.style.visibility = 'visible';
+        this.#emptyState.show(message);
+        this.#loadingOverlay.hide();
+    }
+
+    // Enables/disables the diff Highlight button — disabled on a side that has
+    // no diagram to compare (UX-0003). Switch branch stays enabled.
+    setHighlightButtonEnabled(enabled) {
+        if (this.#highlightButton) {
+            this.#highlightButton.disabled = !enabled;
+        }
+    }
+
+    // Enables/disables the Download button — disabled on a side with no file to
+    // download (new/deleted schema, or absent in both versions) (UX-0003).
+    setDownloadButtonEnabled(enabled) {
+        if (this.#downloadButton) {
+            this.#downloadButton.disabled = !enabled;
+        }
     }
 
     // Restores the last drag-saved panel width (clamped to the current window).
@@ -222,10 +250,11 @@ class BpmnDifferView {
         fileNameSpan.textContent = this.#params.fileName;
         fileGroup.appendChild(fileNameSpan);
 
-        fileGroup.appendChild(this.#button({
+        this.#downloadButton = this.#button({
             icon: '↓', title: 'Download the file as shown for the current branch',
             onClick: () => this.#callbacks.onDownload()
-        }));
+        });
+        fileGroup.appendChild(this.#downloadButton);
         toolbar.appendChild(fileGroup);
 
         //--- branch indicator group (left side)
@@ -274,6 +303,7 @@ class BpmnDifferView {
                 highlightButton.title = enabled ? 'Turn diff highlight off' : 'Turn diff highlight on';
             }
         });
+        this.#highlightButton = highlightButton;
         viewGroup.appendChild(highlightButton);
         viewGroup.appendChild(this.#createHidePropsButton());
         toolbar.appendChild(viewGroup);
