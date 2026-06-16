@@ -118,6 +118,78 @@ describe('GitLabApiRepoProvider — request building and caching', () => {
     });
 });
 
+// A specific commit is selected in the MR (?commit_id=<sha>). The content loader
+// dispatches by URL: the repository commits endpoint returns `commit`, every
+// other URL returns the MR JSON.
+const SELECTED_SHA = 'ffffeeee0000111122223333444455556666aaaa';
+const PARENT_SHA = '1111222233334444555566667777888899990000';
+
+function createCommitProvider(commit, { mr = OPENED_MR, iid = 2 } = {}) {
+    const scope = createScope({
+        url: `${HOST_URL}/group/proj/-/merge_requests/${iid}/diffs?commit_id=${SELECTED_SHA}`
+    });
+    const calls = [];
+    const load = async (url) => {
+        calls.push(url);
+        if (url.includes('/repository/commits/')) {
+            if (!commit) {
+                throw new Error('commit not found');
+            }
+            return JSON.stringify(commit);
+        }
+        return JSON.stringify(mr);
+    };
+    const provider = new scope.GitLabApiRepoProvider(load);
+    const projectInfo = provider.getProjectInfo();
+    projectInfo.id = PROJECT_ID;
+    projectInfo.hostUrl = HOST_URL;
+    projectInfo.url = `${HOST_URL}/group/proj`;
+    return { scope, provider, calls };
+}
+
+describe('GitLabApiRepoProvider — selected commit (FEAT-0001)', () => {
+    it('uses the selected commit as the source', async () => {
+        const { provider } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
+        assert.equal(await provider.getSourceCommitId(), SELECTED_SHA);
+    });
+
+    it('uses the selected commit parent as the target', async () => {
+        const { provider } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
+        assert.equal(await provider.getTargetCommitId(), PARENT_SHA);
+    });
+
+    it('requests the parent from the repository commits endpoint', async () => {
+        const { provider, calls } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
+        await provider.getTargetCommitId();
+        assert.ok(calls.some(u =>
+            u === `${HOST_URL}/api/v4/projects/${PROJECT_ID}/repository/commits/${SELECTED_SHA}`));
+    });
+
+    it('does not request the MR to resolve the source of a selected commit', async () => {
+        const { provider, calls } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
+        await provider.getSourceCommitId();
+        assert.equal(calls.length, 0);
+    });
+
+    it('resolves the parent once across calls', async () => {
+        const { provider, calls } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [PARENT_SHA] });
+        await provider.getTargetCommitId();
+        await provider.getTargetCommitId();
+        const commitCalls = calls.filter(u => u.includes('/repository/commits/'));
+        assert.equal(commitCalls.length, 1);
+    });
+
+    it('falls back to base_sha when the commit has no parent (root commit)', async () => {
+        const { provider } = createCommitProvider({ id: SELECTED_SHA, parent_ids: [] });
+        assert.equal(await provider.getTargetCommitId(), OPENED_MR.diff_refs.base_sha);
+    });
+
+    it('falls back to base_sha when the commit request fails', async () => {
+        const { provider } = createCommitProvider(null);
+        assert.equal(await provider.getTargetCommitId(), OPENED_MR.diff_refs.base_sha);
+    });
+});
+
 describe('GitLabApiRepoProvider — missing diff_refs', () => {
     it('returns null commit ids when diff_refs is absent', async () => {
         const mrWithoutRefs = { iid: 2, title: 't', source_branch: 's', target_branch: 'main' };

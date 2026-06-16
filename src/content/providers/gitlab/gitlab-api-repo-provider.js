@@ -13,6 +13,12 @@
  * merged-vs-opened branching and the commit-resolution heuristics of the
  * DOM-based provider are not needed here (REFAC-0001).
  *
+ * When a single commit is selected in the MR (?commit_id=<sha>), the source is
+ * that commit and the target is its first parent — reproducing GitLab's
+ * single-commit diff (FEAT-0001). The first MR commit's parent is the branch
+ * point on the target branch, so "no upstream commit -> target branch" needs no
+ * special case.
+ *
  * It extends GitLabRepoProviderBase to reuse the genuinely DOM/URL-bound parts
  * that have no API equivalent (project-id resolution, MR-page/branch-view
  * detection, selected-file lookup, branch-file URL parsing) and implements only
@@ -82,16 +88,66 @@ class GitLabApiRepoProvider extends GitLabRepoProviderBase {
     }
 
     async getSourceCommitId() {
+        // When a single commit is selected in the MR (?commit_id=<sha>), diff
+        // that exact commit (FEAT-0001); otherwise the whole-MR head.
+        const commitId = this.urlParser.extractCommitId(window.location.href);
+        if (commitId) {
+            return commitId;
+        }
         const mr = await this.#loadMr();
         return mr?.diff_refs?.head_sha ?? null;
     }
 
     async getTargetCommitId(/* sourceCommitId, changeTitle, targetBranchName */) {
+        // For a selected commit, compare against its parent — exactly what GitLab
+        // shows for that single commit. The first MR commit's parent is the
+        // branch point on the target branch, so the "no upstream commit -> target
+        // branch" case falls out for free. Fall back to base_sha if the parent
+        // can't be resolved (root commit or request error).
+        const commitId = this.urlParser.extractCommitId(window.location.href);
+        if (commitId) {
+            const parentId = await this.#loadCommitParentId(commitId);
+            if (parentId) {
+                return parentId;
+            }
+        }
         const mr = await this.#loadMr();
         return mr?.diff_refs?.base_sha ?? null;
     }
 
     // ==== Private fields and methods ====
+
+    #commitParent = null;
+    #commitParentCacheKey = null;
+
+    /**
+     * Resolves the first parent of the given commit via the repository commits
+     * API, cached per commit sha. Returns null when the commit has no parent
+     * (root commit) or the request fails.
+     */
+    async #loadCommitParentId(commitId) {
+        const projectInfo = this.getProjectInfo();
+        if (!projectInfo?.id) {
+            return null;
+        }
+
+        const url = `${projectInfo.hostUrl}/api/v4/projects/${projectInfo.id}/repository/commits/${commitId}`;
+        if (this.#commitParentCacheKey === url) {
+            return this.#commitParent;
+        }
+
+        try {
+            const content = await this.loadContent(url, true);
+            const commit = JSON.parse(content);
+            const parentId = commit?.parent_ids?.[0] ?? null;
+            this.#commitParent = parentId;
+            this.#commitParentCacheKey = url;
+            return parentId;
+        } catch (error) {
+            console.warn('cannot resolve parent of commit ' + commitId, error);
+            return null;
+        }
+    }
 
     async #loadMr() {
         const projectInfo = this.getProjectInfo();

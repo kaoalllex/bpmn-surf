@@ -93,6 +93,48 @@ describe('GitLabUrlParser.isMrDiffPage', () => {
     });
 });
 
+describe('GitLabUrlParser.extractCommitId', () => {
+    const SHA = '90a2e87c4163d33e56c6a5741eb467161efb54f7';
+
+    it('extracts commit_id from an MR diffs url', () => {
+        const { parser } = createParser();
+        assert.equal(
+            parser.extractCommitId(`https://gitlab.example.com/g/p/-/merge_requests/5/diffs?commit_id=${SHA}`),
+            SHA);
+    });
+
+    it('extracts commit_id when it is not the first query param', () => {
+        const { parser } = createParser();
+        assert.equal(
+            parser.extractCommitId(`https://gitlab.example.com/g/p/-/merge_requests/5/diffs?view=inline&commit_id=${SHA}`),
+            SHA);
+    });
+
+    it('extracts commit_id ignoring a trailing hash', () => {
+        const { parser } = createParser();
+        assert.equal(
+            parser.extractCommitId(`https://gitlab.example.com/g/p/-/merge_requests/5/diffs?commit_id=${SHA}#note_1`),
+            SHA);
+    });
+
+    it('returns null for the whole-MR view (no commit_id)', () => {
+        const { parser } = createParser();
+        assert.equal(parser.extractCommitId('https://gitlab.example.com/g/p/-/merge_requests/5/diffs'), null);
+    });
+
+    it('returns null when there is no query string', () => {
+        const { parser } = createParser();
+        assert.equal(parser.extractCommitId('https://gitlab.example.com/g/p/-/merge_requests/5/diffs#note_1'), null);
+    });
+
+    it('does not match a different param ending in commit_id', () => {
+        const { parser } = createParser();
+        assert.equal(
+            parser.extractCommitId(`https://gitlab.example.com/g/p/-/merge_requests/5/diffs?start_commit_id=${SHA}`),
+            null);
+    });
+});
+
 describe('GitLabUrlParser.getBranchFileType', () => {
     it('detects a bpmn blob', () => {
         const { scope, parser } = createParser();
