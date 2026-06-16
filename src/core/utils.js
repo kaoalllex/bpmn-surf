@@ -6,6 +6,19 @@ function removeElement(elementId) {
 }
 
 const fileCache = new Map();
+// Cap the in-memory cache so a long-lived page (many fetched files/API pages)
+// can't grow it without bound. Entries are keyed by full URL (ref/commit
+// included), so eviction only costs a re-fetch, never staleness. FIFO: Map
+// keeps insertion order, so the first key is the oldest.
+const FILE_CACHE_MAX_ENTRIES = 200;
+
+function cacheFileContent(fileUrl, content) {
+    if (fileCache.size >= FILE_CACHE_MAX_ENTRIES) {
+        const oldestKey = fileCache.keys().next().value;
+        fileCache.delete(oldestKey);
+    }
+    fileCache.set(fileUrl, content);
+}
 
 async function loadFileContent(
     fileUrl,
@@ -40,7 +53,7 @@ async function loadFileContent(
         }
 
         const content = await response.text();
-        fileCache.set(fileUrl, content);
+        cacheFileContent(fileUrl, content);
 
         return content;
     } catch (error) {
