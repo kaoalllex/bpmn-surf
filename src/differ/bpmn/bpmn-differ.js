@@ -102,7 +102,11 @@ class BpmnDiffer {
             return;
         }
 
-        await this.#loadChangedHandlers();
+        // Kick off the changed-handler scan in the background instead of awaiting
+        // it: on large MRs it fetches dozens of handler files and used to delay
+        // the first render by seconds. The diagram renders immediately; the scan
+        // refreshes the badges once it completes (see #loadChangedHandlers).
+        this.#loadChangedHandlers();
 
         if (this.#versions.mrXml) {
             await this.#showMr();
@@ -355,6 +359,10 @@ class BpmnDiffer {
                 this.#params.targetRef
             );
             this.#handlerNavigator.setChangedHandlers(changedHandlers);
+            // This scan runs in the background, so the diagram may already be
+            // rendered with no badges; refresh them now that the handlers are
+            // known. (A still-pending import will re-add them itself via #showXml.)
+            this.#handlerNavigator.refreshChangedBadges();
         } catch (error) {
             console.warn('cannot determine changed handlers', error);
         }
