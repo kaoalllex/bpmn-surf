@@ -6,7 +6,18 @@
 // On click the process file is resolved on demand (a single targeted search);
 // if it cannot be located, GitLab blob-search for the process id is opened as a
 // fallback so the user can find it manually.
+//
+// Resolving can take seconds to tens of seconds (the fallback walks the whole
+// repository tree), so the badge gives feedback (UX-0008): while a resolve is
+// in flight the dive-in arrow turns into a spinner, and the badge of any other
+// Call Activity selected meanwhile shows the spinner too — making clear the
+// same load is still running — until it finishes and the arrow returns.
 class CallActivityNavigator {
+    static ARROW_HTML = '&#x2935;';
+    static ARROW_TITLE = 'Открыть вызываемую схему';
+    static SPINNER_HTML = '<span class="differ-spinner-inline"></span>';
+    static SPINNER_TITLE = 'Загрузка вызываемой схемы…';
+
     #overlays;
     #elementRegistry;
     #locator;
@@ -15,6 +26,7 @@ class CallActivityNavigator {
     #openDifferFunc;
     #openUrlFunc;
     #currentOverlayId = null;
+    #currentOverlayElem = null;
     #isHandling = false;
 
     constructor(overlays, elementRegistry, locator, getSelectedElementIdFunc, getCurrentRefFunc, openDifferFunc, openUrlFunc) {
@@ -48,16 +60,39 @@ class CallActivityNavigator {
                 bottom: 0,
                 right: 0
             },
-            html: '<div class="dive-in-call-activity" title="Открыть вызываемую схему">&#x2935;</div>'
+            html: '<div class="dive-in-call-activity"></div>'
         });
 
         const overlayElem = document.querySelector(
             `.djs-overlay.djs-overlay-note[data-overlay-id="${this.#currentOverlayId}"]`
         );
+        this.#currentOverlayElem = overlayElem;
         if (overlayElem) {
+            // Reflect the current state: a spinner if a resolve is still running
+            // (this Call Activity was selected mid-load), otherwise the arrow.
+            this.#refreshBadge();
             overlayElem.addEventListener('click', () => this.#onDiveIn(processId));
         } else {
             console.warn('cannot find overlay element by id: ' + this.#currentOverlayId);
+        }
+    }
+
+    // Renders the current badge as a spinner while a resolve is in flight, or as
+    // the dive-in arrow otherwise.
+    #refreshBadge() {
+        const badge = this.#currentOverlayElem
+            && this.#currentOverlayElem.querySelector('.dive-in-call-activity');
+        if (!badge) {
+            return;
+        }
+        if (this.#isHandling) {
+            badge.classList.add('dive-in-loading');
+            badge.title = CallActivityNavigator.SPINNER_TITLE;
+            badge.innerHTML = CallActivityNavigator.SPINNER_HTML;
+        } else {
+            badge.classList.remove('dive-in-loading');
+            badge.title = CallActivityNavigator.ARROW_TITLE;
+            badge.innerHTML = CallActivityNavigator.ARROW_HTML;
         }
     }
 
@@ -76,6 +111,7 @@ class CallActivityNavigator {
         }
 
         this.#isHandling = true;
+        this.#refreshBadge();
         try {
             const ref = this.#getCurrentRefFunc();
             const processParams = await this.#locator.resolveProcessFile(processId, ref);
@@ -87,6 +123,7 @@ class CallActivityNavigator {
             }
         } finally {
             this.#isHandling = false;
+            this.#refreshBadge();
         }
     }
 }

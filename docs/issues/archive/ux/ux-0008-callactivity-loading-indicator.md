@@ -2,7 +2,7 @@
 id: UX-0008
 title: Индикатор загрузки при провале в call-activity (и на время рендера)
 priority: medium
-status: open
+status: done
 ---
 
 ## Постановка
@@ -31,3 +31,13 @@ status: open
 
 <!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
      Новые записи добавляй сверху (свежие первыми). -->
+
+### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0008-loading-indicator`
+
+Реализован индикатор загрузки на двух фазах провала в Call Activity.
+
+**Плашка провала (основной долгий резолв processId→файл).** В `call-activity-navigator.js` на время резолва (`#isHandling`) плашка-стрелка ⤵ превращается в спиннер `.differ-spinner-inline` и возвращается в стрелку по завершении (метод `#refreshBadge`, вызывается в начале и в `finally` у `#onDiveIn`). Если во время незавершённого резолва выбрать другой Call Activity, его плашка тоже рисуется спиннером — видно, что та же загрузка ещё идёт.
+
+**Рендер differ-страницы (страховка, общий для BPMN и DMN).** Новый класс `DifferLoadingOverlay` (`src/differ/shared/differ-loading-overlay.js`) — полноэкранный спиннер; `BpmnDifferView`/`DmnDifferView` показывают его в `build()` и скрывают в `showCanvas()`. Прикрывает пустую вкладку свежеоткрытого (в т.ч. вложенного) дифера до `ready!`.
+
+Спиннеры используют общий keyframe `differ-spin` в `styles.css`. Новый файл зарегистрирован в `manifest.json#web_accessible_resources`, `utils.js#loadScripts`, `test/support/scope.js`. Юнит-тесты — `test/differ/shared/differ-loading-overlay.test.js` (8 тестов). `npm test` зелёный (670).

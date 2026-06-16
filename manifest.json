@@ -60,6 +60,7 @@
                 "src/differ/shared/differ-params.js",
                 "src/differ/shared/diagram-versions.js",
                 "src/differ/shared/branch-indicator.js",
+                "src/differ/shared/differ-loading-overlay.js",
                 "src/differ/bpmn/bpmn-differ-view.js",
                 "src/differ/dmn/dmn-table-viewport.js",
                 "src/differ/dmn/dmn-xml-comparator.js",
