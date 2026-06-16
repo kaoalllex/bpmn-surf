@@ -32,6 +32,7 @@ const SCOPE_FILES = [
     'src/differ/navigation/handler-locator.js',
     'src/differ/dmn/dmn-xml-comparator.js',
     'src/differ/dmn/dmn-diff-painter.js',
+    'src/differ/bpmn/bpmn-differ-view.js',
     // content-script files, in manifest.json#content_scripts relative order.
     // repo-provider.js / ui-repo-provider.js must precede the gitlab-* providers
     // that extend them (extends is evaluated at load time).
@@ -71,6 +72,7 @@ const EXPORTED_NAMES = [
     'PropertiesPanelHighlighter',
     'DmnXmlComparator',
     'DmnDiffPainter',
+    'BpmnDifferView',
     'SingleEntryCache',
     'GitLabUrlParser',
     'GitLabDomScraper',

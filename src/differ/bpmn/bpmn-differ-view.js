@@ -5,12 +5,22 @@ class BpmnDifferView {
     static CANVAS_ID = 'bpmnCanvas_12345bf3d4e842caa0d88194431197c0';
     static PROPS_ID = 'bpmnProps_12345bf3d4e842caa0d88194431197c0';
 
+    // GitLab's native button classes — kept so buttons match the host UI;
+    // sizing/margins are layered on top via the .differ-btn* classes.
+    static BTN_CLASS = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+
+    // resizable properties panel (UX-0007)
+    static PROPS_WIDTH_KEY = 'bpmnDiffer.propsWidth';
+    static PROPS_MIN_WIDTH = 250;
+    static PROPS_DEFAULT_WIDTH = 340;
+
     #params;
     #branchIndicator;
     #callbacks;
 
     #canvasCell = null;
     #propsCell = null;
+    #splitterCell = null;
     #isPropsCellHidden = false;
     #viewport = null;
     #changesTableView = null;
@@ -30,10 +40,22 @@ class BpmnDifferView {
         return this.#changesTableView;
     }
 
+    // Upper bound for the properties panel width, relative to the window.
+    static maxPanelWidth() {
+        return Math.round(window.innerWidth * 0.8);
+    }
+
+    // Clamps a desired panel width into [min, max]. Pure (no DOM) — unit-tested.
+    static clampPanelWidth(desired, min, max) {
+        const ceil = Math.max(min, max);
+        if (desired < min) return min;
+        if (desired > ceil) return ceil;
+        return desired;
+    }
+
     build() {
         const bpmnDiv = document.createElement('div');
         bpmnDiv.id = BpmnDifferView.DIV_ID;
-        // bpmnDiv.style.border = '5px solid black';
         bpmnDiv.style.position = 'fixed';
         bpmnDiv.style.top = '0';
         bpmnDiv.style.left = '0';
@@ -47,7 +69,6 @@ class BpmnDifferView {
 
         const table = document.createElement('table');
         table.style.height = '100%';
-        // table.border = 5;
 
         const row1 = document.createElement('tr');
         const row2 = document.createElement('tr');
@@ -60,7 +81,6 @@ class BpmnDifferView {
 
         //--- header
         const headerCell = document.createElement('td');
-        headerCell.setAttribute('align', 'right');
         row1.appendChild(headerCell);
         this.#createHeader(headerCell);
 
@@ -75,19 +95,29 @@ class BpmnDifferView {
         const canvasCell = document.createElement('td');
         canvasCell.id = BpmnDifferView.CANVAS_ID;
         canvasCell.style.height = '100%';
-        canvasCell.style.width = '100%';
+        // No explicit width: the canvas is the flexible cell and absorbs the
+        // slack, so the properties cell's explicit width is honored (otherwise
+        // a width:100% canvas would dilute it and the splitter wouldn't resize).
         canvasCell.style.visibility = 'hidden'; // Initially the canvas is hidden
         tableCanvasPropsRow.appendChild(canvasCell);
         this.#canvasCell = canvasCell;
         this.#viewport = new CanvasViewport(canvasCell);
 
+        //--- splitter (drag to resize the properties panel)
+        this.#splitterCell = document.createElement('td');
+        this.#splitterCell.className = 'differ-splitter';
+        this.#splitterCell.title = 'Drag to resize the properties panel';
+        tableCanvasPropsRow.appendChild(this.#splitterCell);
+        this.#wireSplitter();
+
         //--- properties
         this.#propsCell = document.createElement('td');
         this.#propsCell.id = BpmnDifferView.PROPS_ID;
         this.#propsCell.style.height = '100%';
-        this.#propsCell.style.minWidth = '300px';
-        this.#propsCell.style.maxWidth = '600px';
+        this.#propsCell.style.minWidth = BpmnDifferView.PROPS_MIN_WIDTH + 'px';
+        this.#propsCell.style.width = BpmnDifferView.PROPS_DEFAULT_WIDTH + 'px';
         tableCanvasPropsRow.appendChild(this.#propsCell);
+        this.#restorePropsWidth();
 
         //--- footer
         if (this.#params.isSourceVersionDefined()) {
@@ -102,172 +132,182 @@ class BpmnDifferView {
         this.#canvasCell.style.visibility = 'visible';
     }
 
+    // Restores the last drag-saved panel width (clamped to the current window).
+    #restorePropsWidth() {
+        const saved = parseInt(localStorage.getItem(BpmnDifferView.PROPS_WIDTH_KEY), 10);
+        if (Number.isFinite(saved)) {
+            const width = BpmnDifferView.clampPanelWidth(
+                saved, BpmnDifferView.PROPS_MIN_WIDTH, BpmnDifferView.maxPanelWidth());
+            this.#propsCell.style.width = width + 'px';
+        }
+    }
+
+    // mousedown on the splitter → track mousemove on document → resize the
+    // panel; mouseup ends the drag, persists the width and refits the canvas.
+    #wireSplitter() {
+        const onMove = (event) => {
+            const desired = window.innerWidth - event.clientX;
+            const width = BpmnDifferView.clampPanelWidth(
+                desired, BpmnDifferView.PROPS_MIN_WIDTH, BpmnDifferView.maxPanelWidth());
+            this.#propsCell.style.width = width + 'px';
+        };
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.body.style.userSelect = '';
+            const width = parseInt(this.#propsCell.style.width, 10);
+            if (Number.isFinite(width)) {
+                localStorage.setItem(BpmnDifferView.PROPS_WIDTH_KEY, width);
+            }
+            this.#viewport.fit(true);
+        };
+        this.#splitterCell.addEventListener('mousedown', (event) => {
+            event.preventDefault();
+            // Drop any stale pair in case a previous mousedown never saw its
+            // mouseup (e.g. another mouse button pressed mid-drag).
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.body.style.userSelect = 'none';
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+    }
+
+    #group() {
+        const group = document.createElement('div');
+        group.className = 'differ-btn-group';
+        return group;
+    }
+
+    // opts: { text, icon, title, danger, strong, minWidth, disabled, onClick }
+    #button(opts) {
+        const button = document.createElement('button');
+        button.className = BpmnDifferView.BTN_CLASS + ' differ-btn'
+            + (opts.icon ? ' differ-icon-btn' : '')
+            + (opts.strong ? ' differ-btn-strong' : '')
+            + (opts.danger ? ' differ-btn-danger' : '');
+        button.textContent = opts.icon || opts.text;
+        if (opts.title) {
+            button.title = opts.title;
+        }
+        if (opts.minWidth) {
+            button.style.minWidth = opts.minWidth + 'px';
+        }
+        if (opts.disabled) {
+            button.disabled = true;
+        }
+        button.addEventListener('click', opts.onClick);
+        return button;
+    }
+
     #createHeader(parentElem) {
-        const table = document.createElement('table');
-        // table.border = 3;
-        parentElem.appendChild(table);
+        const toolbar = document.createElement('div');
+        toolbar.className = 'differ-toolbar';
+        parentElem.appendChild(toolbar);
 
-        const row1 = document.createElement('tr');
-        table.appendChild(row1);
-        const row2 = document.createElement('tr');
-        table.appendChild(row2);
-
-        // file label
-        const cellFileLabel = document.createElement('td');
-        cellFileLabel.style.minWidth = '60px';
-        cellFileLabel.style.height = '32px';
-        cellFileLabel.appendChild(document.createTextNode('File:'));
-        row1.appendChild(cellFileLabel);
-
-        // file name
-        const cellFileName = document.createElement('td');
-        row1.appendChild(cellFileName);
+        //--- file group
+        const fileGroup = this.#group();
+        const fileLabel = document.createElement('span');
+        fileLabel.className = 'differ-label';
+        fileLabel.textContent = 'File:';
+        fileGroup.appendChild(fileLabel);
 
         const fileNameSpan = document.createElement('span');
-        fileNameSpan.appendChild(document.createTextNode(this.#params.fileName));
-        fileNameSpan.style.fontSize = '20px';
-        fileNameSpan.style.fontWeight = 'bold';
-        fileNameSpan.style.whiteSpace = 'nowrap';
-        cellFileName.appendChild(fileNameSpan);
+        fileNameSpan.className = 'differ-file-name';
+        fileNameSpan.textContent = this.#params.fileName;
+        fileGroup.appendChild(fileNameSpan);
 
-        const cellDownloadButton = document.createElement('td');
-        cellDownloadButton.style.width = '100%';
-        row1.appendChild(cellDownloadButton);
+        fileGroup.appendChild(this.#button({
+            icon: '↓', title: 'Download the file as shown for the current branch',
+            onClick: () => this.#callbacks.onDownload()
+        }));
+        toolbar.appendChild(fileGroup);
 
-        const downloadButton = document.createElement('button');
-        downloadButton.style.width = '90px';
-        downloadButton.textContent = 'Download';
-        downloadButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        downloadButton.style.margin = '3px';
-        downloadButton.addEventListener('click', () => {
-            this.#callbacks.onDownload();
-        });
-        cellDownloadButton.appendChild(downloadButton);
+        //--- branch indicator group (left side)
+        const branchGroup = this.#group();
+        const branchLabel = document.createElement('span');
+        branchLabel.className = 'differ-label';
+        branchLabel.textContent = 'Branch:';
+        branchGroup.appendChild(branchLabel);
+        branchGroup.appendChild(this.#branchIndicator.createElement());
+        toolbar.appendChild(branchGroup);
 
-        // branch label
-        const cellBranchLabel = document.createElement('td');
-        cellBranchLabel.style.height = '32px';
-        cellBranchLabel.appendChild(document.createTextNode('Branch:'));
-        row2.appendChild(cellBranchLabel);
+        //--- switch branch — own group, pinned to the right edge so it stays
+        //    put regardless of the branch name length (the primary action)
+        const switchGroup = this.#group();
+        switchGroup.classList.add('differ-toolbar-spacer');
+        switchGroup.appendChild(this.#button({
+            text: 'Switch branch',
+            strong: true,
+            disabled: !this.#params.isSourceVersionDefined(),
+            onClick: () => this.#callbacks.onSwitchBranch()
+        }));
+        toolbar.appendChild(switchGroup);
 
-        // branch name
-        const cellBranchName = document.createElement('td');
-        cellBranchName.style.width = '100%';
-        cellBranchName.setAttribute("colspan", "2");
-        row2.appendChild(cellBranchName);
-        cellBranchName.appendChild(this.#branchIndicator.createElement());
+        //--- view group
+        const viewGroup = this.#group();
+        viewGroup.appendChild(this.#button({
+            icon: '+', title: 'Zoom in',
+            onClick: () => this.#viewport.zoomIn()
+        }));
+        viewGroup.appendChild(this.#button({
+            icon: '−', title: 'Zoom out',
+            onClick: () => this.#viewport.zoomOut()
+        }));
+        viewGroup.appendChild(this.#button({
+            icon: '⤢', title: 'Fit view',
+            onClick: () => this.#viewport.fit(true)
+        }));
 
-        // switch branch button
-        const cellBranchButton = document.createElement('td');
-        cellBranchButton.style.minWidth = '70px';
-        cellBranchButton.style.textAlign = 'right';
-        row2.appendChild(cellBranchButton);
-
-        const switchButton = document.createElement('button');
-        switchButton.disabled = !this.#params.isSourceVersionDefined();
-        switchButton.style.width = '120px';
-        switchButton.textContent = 'Switch branch';
-        switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        switchButton.style.margin = '3px';
-        switchButton.addEventListener('click', () => {
-            this.#callbacks.onSwitchBranch();
-        });
-        cellBranchButton.appendChild(switchButton);
-
-        // View
-        const cellView = document.createElement('td');
-        cellView.style.whiteSpace = 'nowrap';
-        cellView.style.textAlign = "right";
-        row1.appendChild(cellView);
-
-        const zoomInButton = document.createElement('button');
-        zoomInButton.style.width = '90px';
-        zoomInButton.textContent = 'Zoom In';
-        zoomInButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        zoomInButton.style.margin = '3px';
-        zoomInButton.addEventListener('click', () => {
-            this.#viewport.zoomIn();
-        });
-        cellView.appendChild(zoomInButton);
-
-        const zoomOutButton = document.createElement('button');
-        zoomOutButton.style.width = '90px';
-        zoomOutButton.textContent = 'Zoom Out';
-        zoomOutButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        zoomOutButton.style.margin = '3px';
-        zoomOutButton.addEventListener('click', () => {
-            this.#viewport.zoomOut();
-        });
-        cellView.appendChild(zoomOutButton);
-
-        const fitButton = document.createElement('button');
-        fitButton.style.width = '90px';
-        fitButton.textContent = 'Fit view';
-        fitButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        fitButton.style.margin = '3px';
-        fitButton.addEventListener('click', () => {
-            this.#viewport.fit(true);
-        });
-        cellView.appendChild(fitButton);
-
-        const highlightButton = document.createElement('button');
-        highlightButton.disabled = !this.#params.isSourceVersionDefined();
-        highlightButton.style.width = '120px';
-        highlightButton.textContent = 'Highlight On';
-        highlightButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        highlightButton.style.margin = '3px';
-        highlightButton.addEventListener('click', () => {
-            const enabled = this.#callbacks.onToggleHighlight();
-            highlightButton.textContent = enabled ? 'Highlight Off' : 'Highlight On';
-        });
-        cellView.appendChild(highlightButton);
-
-        // close button
-        const cellCloseButton = document.createElement('td');
-        cellCloseButton.style.textAlign = 'right';
-        row1.appendChild(cellCloseButton);
-
-        const closeButton = document.createElement('button');
-        closeButton.style.width = '90px';
-        closeButton.textContent = 'Close';
-        closeButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        closeButton.style.margin = '3px';
-        closeButton.addEventListener('click', () => {
-            window.close();
-        });
-        cellCloseButton.appendChild(closeButton);
-
-        // hide/show props button
-        const cellHideShowPropsButton = document.createElement('td');
-        cellHideShowPropsButton.style.minWidth = '300px';
-        cellHideShowPropsButton.style.textAlign = 'right';
-        row2.appendChild(cellHideShowPropsButton);
-
-        const hideShowPropsButton = document.createElement('button');
-        hideShowPropsButton.textContent = 'Hide properties';
-        hideShowPropsButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        hideShowPropsButton.style.width = '130px';
-        hideShowPropsButton.style.margin = '3px';
-        hideShowPropsButton.addEventListener('click', () => {
-            if (this.#isPropsCellHidden) {
-                hideShowPropsButton.textContent = 'Hide properties';
-                this.#propsCell.style.display = 'block';
-                this.#isPropsCellHidden = false;
-            } else {
-                hideShowPropsButton.textContent = 'Show properties';
-                this.#propsCell.style.display = 'none';
-                this.#isPropsCellHidden = true;
+        const highlightButton = this.#button({
+            icon: '☼',
+            title: 'Turn diff highlight on',
+            disabled: !this.#params.isSourceVersionDefined(),
+            onClick: () => {
+                const enabled = this.#callbacks.onToggleHighlight();
+                highlightButton.textContent = enabled ? '☀' : '☼';
+                highlightButton.title = enabled ? 'Turn diff highlight off' : 'Turn diff highlight on';
             }
-            // Doesn't always work the first time, so call fit twice
-            this.#viewport.fit(true);
-            this.#viewport.fit(true);
         });
-        cellHideShowPropsButton.appendChild(hideShowPropsButton);
+        viewGroup.appendChild(highlightButton);
+        viewGroup.appendChild(this.#createHidePropsButton());
+        toolbar.appendChild(viewGroup);
+
+        //--- close group (destructive, separated)
+        const closeGroup = this.#group();
+        closeGroup.appendChild(this.#button({
+            icon: '✕', title: 'Close', danger: true,
+            onClick: () => window.close()
+        }));
+        toolbar.appendChild(closeGroup);
+    }
+
+    #createHidePropsButton() {
+        const button = this.#button({
+            text: 'Hide properties',
+            minWidth: 140,
+            onClick: () => {
+                if (this.#isPropsCellHidden) {
+                    button.textContent = 'Hide properties';
+                    this.#propsCell.style.display = '';
+                    this.#splitterCell.style.display = '';
+                    this.#isPropsCellHidden = false;
+                } else {
+                    button.textContent = 'Show properties';
+                    this.#propsCell.style.display = 'none';
+                    this.#splitterCell.style.display = 'none';
+                    this.#isPropsCellHidden = true;
+                }
+                // Doesn't always work the first time, so call fit twice
+                this.#viewport.fit(true);
+                this.#viewport.fit(true);
+            }
+        });
+        return button;
     }
 
     #createFooter(parentElem) {
         const table = document.createElement('table');
-        // table.border = 3;
         parentElem.appendChild(table);
 
         const row1 = document.createElement('tr');
@@ -331,25 +371,23 @@ class BpmnDifferView {
         cellShowChangesButton.style.textAlign = 'right';
         row1.appendChild(cellShowChangesButton);
 
-        const showChangesButton = document.createElement('button');
-        showChangesButton.textContent = 'Show changes';
         changesTableDiv.style.display = 'none';
-
-        showChangesButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        showChangesButton.style.width = '130px';
-        showChangesButton.style.margin = '3px';
-        showChangesButton.addEventListener('click', () => {
-            if (changesTableDiv.style.display === 'block') {
-                showChangesButton.textContent = 'Show changes';
-                changesTableDiv.style.display = 'none';
-                this.#changesTableView.resetSelection();
-            } else {
-                showChangesButton.textContent = 'Hide changes';
-                changesTableDiv.style.display = 'block';
+        const showChangesButton = this.#button({
+            text: 'Show changes',
+            minWidth: 124,
+            onClick: () => {
+                if (changesTableDiv.style.display === 'block') {
+                    showChangesButton.textContent = 'Show changes';
+                    changesTableDiv.style.display = 'none';
+                    this.#changesTableView.resetSelection();
+                } else {
+                    showChangesButton.textContent = 'Hide changes';
+                    changesTableDiv.style.display = 'block';
+                }
+                // Doesn't always work the first time, so call fit twice
+                this.#viewport.fit(true);
+                this.#viewport.fit(true);
             }
-            // Doesn't always work the first time, so call fit twice
-            this.#viewport.fit(true);
-            this.#viewport.fit(true);
         });
         cellShowChangesButton.appendChild(showChangesButton);
     }
