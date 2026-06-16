@@ -88,7 +88,7 @@ class CallActivityLocator {
         if (!result && this.#fallbackIndex) {
             console.debug(`blob-search missed process '${processId}', falling back to the project index`);
             try {
-                result = await this.#fallbackIndex.findProcessFileParams(processId);
+                result = await this.#fallbackIndex.findProcessFileParams(processId, ref);
             } catch (error) {
                 console.warn(`fallback process index failed for '${processId}'`, error);
             }
