@@ -53,6 +53,18 @@ class ChangesTableView {
         }
     }
 
+    // Empties the table and counters — used when the shown side has no diagram
+    // to compare (switched to an absent version, UX-0003).
+    clear() {
+        this.resetSelection();
+        this.#selectedRow = null;
+        this.#selectedElem = null;
+        this.#changedTextElement.textContent = '';
+        this.#addedRemovedLabelElement.textContent = '';
+        this.#addedRemovedTextElement.textContent = '';
+        this.#table.innerHTML = '';
+    }
+
     resetSelection() {
         if (this.#selectedRow) {
             this.#selectedRow.style.backgroundColor = '#ffffff';

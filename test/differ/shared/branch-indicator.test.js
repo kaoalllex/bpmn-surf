@@ -50,6 +50,49 @@ describe('BranchIndicator — two-sided diff', () => {
     });
 });
 
+describe('BranchIndicator — absent side (file new or deleted)', () => {
+    function build() {
+        const indicator = new BranchIndicator('master', 'feature/x');
+        const element = indicator.createElement();
+        return { indicator, element };
+    }
+
+    it('marks an absent target side as a not-yet-existing (new) file', () => {
+        const { indicator, element } = build();
+        indicator.setAbsentLabel(true);
+        assert.equal(element.textContent, `Original · master · ${BranchIndicator.ABSENT_NOTE_NEW}`);
+        assert.equal(indicator.isTargetBranchShown(), true);
+    });
+
+    it('marks an absent source side as a deleted file', () => {
+        const { indicator, element } = build();
+        indicator.setAbsentLabel(false);
+        assert.equal(element.textContent, `Changed · feature/x · ${BranchIndicator.ABSENT_NOTE_DELETED}`);
+        assert.equal(indicator.isTargetBranchShown(), false);
+    });
+
+    it('uses distinct wording for the new-file and deleted-file cases', () => {
+        assert.notEqual(BranchIndicator.ABSENT_NOTE_NEW, BranchIndicator.ABSENT_NOTE_DELETED);
+    });
+
+    it('renders the absent label in a muted italic style', () => {
+        const { indicator, element } = build();
+        indicator.setAbsentLabel(false);
+        assert.equal(element.style.color, BranchIndicator.ABSENT_COLOR);
+        assert.equal(element.style.fontStyle, 'italic');
+    });
+
+    it('restores the normal (non-italic) style when switching back to a shown side', () => {
+        const { indicator, element } = build();
+        indicator.setAbsentLabel(true);
+        indicator.setShownLabel('feature/x');
+        assert.equal(element.textContent, 'Changed · feature/x');
+        assert.equal(element.style.fontStyle, 'normal');
+        assert.equal(element.style.color, BranchIndicator.MR_BRANCH_COLOR);
+        assert.equal(indicator.isTargetBranchShown(), false);
+    });
+});
+
 describe('BranchIndicator — single-version view (no source side)', () => {
     it('omits the role prefix when there is no source side', () => {
         const indicator = new BranchIndicator('master', null);

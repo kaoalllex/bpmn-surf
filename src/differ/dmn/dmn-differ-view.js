@@ -14,6 +14,8 @@ class DmnDifferView {
     #callbacks;
 
     #canvasCell = null;
+    #downloadButton = null;
+    #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
 
     // callbacks: { onDownload, onSwitchBranch }
@@ -65,11 +67,33 @@ class DmnDifferView {
         canvasCell.style.visibility = 'hidden'; // Initially the canvas is hidden
         tableCanvasPropsRow.appendChild(canvasCell);
         this.#canvasCell = canvasCell;
+        this.#emptyState = new DifferEmptyState(canvasCell);
     }
 
     showCanvas() {
         this.#canvasCell.style.visibility = 'visible';
         this.#loadingOverlay.hide();
+    }
+
+    // Shows a placeholder over the canvas: a blank cover when switching to an
+    // absent side (dmn-js has no clear(); the absence is shown in the label),
+    // or a message when the file is absent in both versions (UX-0003 / BUG-0001).
+    showEmptyState(message) {
+        this.#canvasCell.style.visibility = 'visible';
+        this.#emptyState.show(message);
+        this.#loadingOverlay.hide();
+    }
+
+    hideEmptyState() {
+        this.#emptyState.hide();
+    }
+
+    // Enables/disables the Download button — disabled on a side with no file to
+    // download (new/deleted schema, or absent in both versions) (UX-0003).
+    setDownloadButtonEnabled(enabled) {
+        if (this.#downloadButton) {
+            this.#downloadButton.disabled = !enabled;
+        }
     }
 
     #group() {
@@ -116,10 +140,11 @@ class DmnDifferView {
         fileNameSpan.textContent = this.#params.fileName;
         fileGroup.appendChild(fileNameSpan);
 
-        fileGroup.appendChild(this.#button({
+        this.#downloadButton = this.#button({
             icon: '↓', title: 'Download the file as shown for the current branch',
             onClick: () => this.#callbacks.onDownload()
-        }));
+        });
+        fileGroup.appendChild(this.#downloadButton);
         toolbar.appendChild(fileGroup);
 
         //--- branch indicator group (left side)

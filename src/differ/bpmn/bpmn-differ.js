@@ -98,7 +98,10 @@ class BpmnDiffer {
         await this.#loadVersions();
 
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
-            // Nothing to show; the detailed error has been logged by #loadVersions()
+            // File absent in both versions (BUG-0001): show a placeholder instead
+            // of a blank page. The detailed error is logged by #loadVersions().
+            this.#view.showEmptyState('File does not exist in either version');
+            this.#view.setDownloadButtonEnabled(false);
             return;
         }
 
@@ -213,17 +216,33 @@ class BpmnDiffer {
             if (this.#versions.mrXml) {
                 this.#showMr();
             } else {
-                // File may have been removed
-                this.#versions.alertFileNotExistInBranch(this.#params.sourceLabel);
+                // File is absent in the MR/source version (deleted in this MR)
+                this.#showAbsentSide(false);
             }
         } else { // Current MR - try to switch to branch
             if (this.#versions.branchXml) {
                 this.#showBranch();
             } else {
-                // File may be new
-                this.#versions.alertFileNotExistInBranch(this.#params.targetLabel);
+                // File is absent in the target version (new file in this MR)
+                this.#showAbsentSide(true);
             }
         }
+    }
+
+    // Switches to a side where the file does not exist: empties the canvas,
+    // marks the absence in the branch label and drops the now-meaningless diff
+    // highlight, table and selection (UX-0003). The highlight state itself is
+    // kept so it re-applies when switching back to the side that has a diagram.
+    #showAbsentSide(targetSide) {
+        this.#bpmnJS.clear();
+        this.#selectedElementId = null;
+        this.#branchIndicator.setAbsentLabel(targetSide);
+        this.#diffHighlighter.setDiffElementIds([]);
+        if (this.#changesTableView) {
+            this.#changesTableView.clear();
+        }
+        this.#view.setHighlightButtonEnabled(false);
+        this.#view.setDownloadButtonEnabled(false);
     }
 
     #toggleHighlight() {
@@ -258,6 +277,11 @@ class BpmnDiffer {
     }
 
     async #showXml(bpmnXml) {
+        // This side has a diagram/file — re-enable the Highlight and Download
+        // buttons (disabled while an absent side is shown, see #showAbsentSide).
+        this.#view.setHighlightButtonEnabled(true);
+        this.#view.setDownloadButtonEnabled(true);
+
         const currentSelectedElemId = this.#getCurrentSelectedElementId();
 
         await this.#importXml(bpmnXml);

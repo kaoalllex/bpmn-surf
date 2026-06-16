@@ -10,6 +10,14 @@ class BranchIndicator {
     static MR_BRANCH_COLOR = 'darkblue';
     static TARGET_ROLE = 'Original';
     static SOURCE_ROLE = 'Changed';
+    // Muted style + note for a side where the file does not exist (UX-0003):
+    // the absence is signalled here, in the label, rather than by a banner.
+    // The wording is side-specific: the opposite side always exists (otherwise
+    // the both-absent case would apply), so an absent source means the file was
+    // deleted in the MR, and an absent target means it is a new file.
+    static ABSENT_COLOR = 'gray';
+    static ABSENT_NOTE_DELETED = 'file deleted';     // source/Changed side absent
+    static ABSENT_NOTE_NEW = 'file does not exist';  // target/Original side absent
 
     #targetLabel;
     #sourceLabel;
@@ -35,6 +43,7 @@ class BranchIndicator {
 
     setShownLabel(label) {
         this.#targetShown = label === this.#targetLabel;
+        this.#spanElement.style.fontStyle = 'normal';
         if (this.#targetShown) {
             this.#textNode.textContent = this.#withRole(BranchIndicator.TARGET_ROLE, this.#targetLabel);
             this.#spanElement.style.color = BranchIndicator.TARGET_BRANCH_COLOR;
@@ -42,6 +51,19 @@ class BranchIndicator {
             this.#textNode.textContent = this.#withRole(BranchIndicator.SOURCE_ROLE, this.#sourceLabel);
             this.#spanElement.style.color = BranchIndicator.MR_BRANCH_COLOR;
         }
+    }
+
+    // Marks the currently shown side as having no diagram in this version
+    // (the file is new or was deleted). Keeps isTargetBranchShown() correct so
+    // Download and a subsequent Switch still target the right side.
+    setAbsentLabel(targetSide) {
+        this.#targetShown = targetSide;
+        const role = targetSide ? BranchIndicator.TARGET_ROLE : BranchIndicator.SOURCE_ROLE;
+        const label = targetSide ? this.#targetLabel : this.#sourceLabel;
+        const note = targetSide ? BranchIndicator.ABSENT_NOTE_NEW : BranchIndicator.ABSENT_NOTE_DELETED;
+        this.#textNode.textContent = `${this.#withRole(role, label)} · ${note}`;
+        this.#spanElement.style.color = BranchIndicator.ABSENT_COLOR;
+        this.#spanElement.style.fontStyle = 'italic';
     }
 
     isTargetBranchShown() {

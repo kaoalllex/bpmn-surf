@@ -35,7 +35,8 @@ class DiagramVersions {
 
     download(fileContent, branchName) {
         if (!fileContent) {
-            this.alertFileNotExistInBranch(branchName);
+            // The shown side has no file to download (new/deleted schema).
+            alert(`File does not exist in the ${branchName} branch`);
             return;
         }
         const blob = new Blob([fileContent], { type: 'application/octet-stream' });
@@ -49,9 +50,5 @@ class DiagramVersions {
 
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
-    }
-
-    alertFileNotExistInBranch(branchName) {
-        alert(`File does not exist in the ${branchName} branch`);
     }
 }

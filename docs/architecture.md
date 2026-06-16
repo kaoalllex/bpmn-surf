@@ -25,7 +25,8 @@ src/
                gitlab-url-parser.js, gitlab-dom-scraper.js,
                merged-mr-commit-resolver.js, master-commit-manager.js, single-entry-cache.js
   differ/      styles.css
-    shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js
+    shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js,
+               differ-loading-overlay.js, differ-empty-state.js
     bpmn/      bpmn-differ.js, bpmn-differ-view.js, bpmn-xml-comparator.js, diff-highlighter.js,
                changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js,
                element-searcher.js, search-panel.js
@@ -68,9 +69,10 @@ main.js → App (app.js) → Providers → Differs
 | `bpmn-differ-view.js` | `BpmnDifferView` — DOM страницы BPMN-differ'а (layout, header, footer, кнопки). Header — flex-тулбар (`.differ-toolbar`) с группами `.differ-btn-group` (файл+download · индикатор ветки · Switch branch · вид · Close); download/зум/highlight/close — иконки `↓`/`+`/`−`/`⤢`/`☀☼`(toggle)/`✕` (UX-0007). Правый блок прижат к краю (`.differ-toolbar-spacer`), `Switch branch` — отдельная группа в его начале (фиксированная позиция, не смещается длиной имени ветки). Панель свойств — resizable: между канвой и `propsCell` `<td>`-сплиттер `.differ-splitter` (drag → ширина `propsCell`), ширина клэмпится `BpmnDifferView.clampPanelWidth` (юнит-тест) и запоминается в `localStorage[bpmnDiffer.propsWidth]`; «Hide properties» прячет и панель, и сплиттер |
 | `differ-params.js` | `DifferParams` — парсинг/валидация параметров differ-страницы из postMessage (общий для BPMN и DMN). Нейтральные поля + `platform`-дескриптор; `requirePlatformInfo()` (BPMN), `isSourceVersionDefined()`, `rawFileUrl(ref)`, `toNestedDifferParams()` (вложенный differ Call Activity) |
 | `diagram-versions.js` | `DiagramVersions` — загрузка/хранение/скачивание версий диаграммы (общий) |
-| `branch-indicator.js` | `BranchIndicator` — лейбл показываемой версии в header'е (имя ветки или сообщение коммита + короткий id) + слово роли стороны, чтобы она читалась без цвета: target → `Original`, source → `Changed` (в branch-view без второй стороны префикс не показывается); цвета (общий); `setShownLabel`/`isTargetBranchShown` |
+| `branch-indicator.js` | `BranchIndicator` — лейбл показываемой версии в header'е (имя ветки или сообщение коммита + короткий id) + слово роли стороны, чтобы она читалась без цвета: target → `Original`, source → `Changed` (в branch-view без второй стороны префикс не показывается); цвета (общий); `setShownLabel`/`isTargetBranchShown`. `setAbsentLabel(targetSide)` — приглушённый italic-лейбл для стороны, где файла нет (UX-0003), с сохранением корректного `isTargetBranchShown()`. Текст side-specific: пустой source → `file deleted` (удалён в MR), пустой target → `file does not exist` (новый файл) |
 | `diff-type.js` | `DiffType` — типы diff'а с цветами (общий для BPMN и DMN) |
 | `differ-loading-overlay.js` | `DifferLoadingOverlay` — полноэкранный спиннер на время рендера differ-страницы (UX-0008). Общий для BPMN и DMN: показывается в `build()` вью, скрывается в `showCanvas()`; прикрывает пустую вкладку свежеоткрытого (в т.ч. вложенного Call Activity) дифера. Долгий резолв processId→файл идёт на исходной странице и прикрыт там спиннером плашки в `CallActivityNavigator` |
+| `differ-empty-state.js` | `DifferEmptyState` — заглушка внутри canvas-ячейки (общий, UX-0003 / BUG-0001). В отличие от полноэкранного `DifferLoadingOverlay` живёт в canvas-cell, поэтому тулбар остаётся доступным. Пустое сообщение = чистый перекрыватель (переключение на отсутствующую сторону; у `dmn-js` нет `clear()`), непустое = центрированный текст (файл отсутствует в обеих версиях). Вью предоставляют `showEmptyState`/`hideEmptyState` |
 | `bpmn-xml-comparator.js` | `BpmnXmlComparator` — семантическое сравнение двух BPMN XML. `compare()` помимо diff-групп (`nodeIdToDiffsMap`) и условий (`nodeIdToConditions`) отдаёт `nodeIdToMappingChanges` (id → Map(имя списочной группы → `[{label, changed}]`)) для поэлементной подсветки записей In/Out mappings и Inputs/Outputs |
 | `diff-highlighter.js` | `DiffHighlighter` — покраска diff-элементов и highlight-маркеры |
 | `changes-table-view.js` | `ChangesTableView` — таблица изменений в футере |
