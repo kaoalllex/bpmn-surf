@@ -4,6 +4,10 @@ class DmnDifferView {
     static DIV_ID = 'dmnDiv_12345bf3d4e842caa0d88194431197c0';
     static CANVAS_ID = 'dmnCanvas_12345bf3d4e842caa0d88194431197c0';
 
+    // GitLab's native button classes — kept so buttons match the host UI;
+    // sizing/margins are layered on top via the .differ-btn* classes.
+    static BTN_CLASS = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+
     #params;
     #branchIndicator;
     #viewport;
@@ -22,7 +26,6 @@ class DmnDifferView {
     build() {
         const dmnDiv = document.createElement('div');
         dmnDiv.id = DmnDifferView.DIV_ID;
-        // dmnDiv.style.border = '5px solid black';
         dmnDiv.style.position = 'fixed';
         dmnDiv.style.top = '0';
         dmnDiv.style.left = '0';
@@ -37,7 +40,6 @@ class DmnDifferView {
         const table = document.createElement('table');
         table.style.width = '100%';
         table.style.height = '100%';
-        // table.border = 5;
 
         const headerRow = document.createElement('tr');
         const tableCanvasPropsRow = document.createElement('tr');
@@ -48,7 +50,6 @@ class DmnDifferView {
 
         //--- header
         const headerCell = document.createElement('td');
-        headerCell.setAttribute('align', 'right');
         headerRow.appendChild(headerCell);
         this.#createHeader(headerCell);
 
@@ -66,139 +67,103 @@ class DmnDifferView {
         this.#canvasCell.style.visibility = 'visible';
     }
 
+    #group() {
+        const group = document.createElement('div');
+        group.className = 'differ-btn-group';
+        return group;
+    }
+
+    // opts: { text, icon, title, danger, strong, minWidth, disabled, onClick }
+    #button(opts) {
+        const button = document.createElement('button');
+        button.className = DmnDifferView.BTN_CLASS + ' differ-btn'
+            + (opts.icon ? ' differ-icon-btn' : '')
+            + (opts.strong ? ' differ-btn-strong' : '')
+            + (opts.danger ? ' differ-btn-danger' : '');
+        button.textContent = opts.icon || opts.text;
+        if (opts.title) {
+            button.title = opts.title;
+        }
+        if (opts.minWidth) {
+            button.style.minWidth = opts.minWidth + 'px';
+        }
+        if (opts.disabled) {
+            button.disabled = true;
+        }
+        button.addEventListener('click', opts.onClick);
+        return button;
+    }
+
     #createHeader(parentElem) {
-        const table = document.createElement('table');
-        // table.border = 3;
-        table.style.width = '100%';
-        parentElem.appendChild(table);
+        const toolbar = document.createElement('div');
+        toolbar.className = 'differ-toolbar';
+        parentElem.appendChild(toolbar);
 
-        const row1 = document.createElement('tr');
-        table.appendChild(row1);
-        const row2 = document.createElement('tr');
-        table.appendChild(row2);
-
-        // file label
-        const cellFileLabel = document.createElement('td');
-        cellFileLabel.style.minWidth = '60px';
-        cellFileLabel.style.height = '32px';
-        cellFileLabel.appendChild(document.createTextNode('File:'));
-        row1.appendChild(cellFileLabel);
-
-        // file name
-        const cellFileName = document.createElement('td');
-        row1.appendChild(cellFileName);
+        //--- file group
+        const fileGroup = this.#group();
+        const fileLabel = document.createElement('span');
+        fileLabel.className = 'differ-label';
+        fileLabel.textContent = 'File:';
+        fileGroup.appendChild(fileLabel);
 
         const fileNameSpan = document.createElement('span');
-        fileNameSpan.style.fontSize = '18px';
-        fileNameSpan.style.fontWeight = 'bold';
-        fileNameSpan.appendChild(document.createTextNode(this.#params.fileName));
-        cellFileName.appendChild(fileNameSpan);
+        fileNameSpan.className = 'differ-file-name';
+        fileNameSpan.textContent = this.#params.fileName;
+        fileGroup.appendChild(fileNameSpan);
 
-        // download file button
-        const cellDownloadButton = document.createElement('td');
-        cellDownloadButton.style.width = '100%';
-        row1.appendChild(cellDownloadButton);
+        fileGroup.appendChild(this.#button({
+            icon: '↓', title: 'Download the file as shown for the current branch',
+            onClick: () => this.#callbacks.onDownload()
+        }));
+        toolbar.appendChild(fileGroup);
 
-        const downloadButton = document.createElement('button');
-        downloadButton.style.width = '90px';
-        downloadButton.textContent = 'Download';
-        downloadButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        downloadButton.style.margin = '3px';
-        downloadButton.addEventListener('click', () => {
-            this.#callbacks.onDownload();
-        });
-        cellDownloadButton.appendChild(downloadButton);
+        //--- branch indicator group (left side)
+        const branchGroup = this.#group();
+        const branchLabel = document.createElement('span');
+        branchLabel.className = 'differ-label';
+        branchLabel.textContent = 'Branch:';
+        branchGroup.appendChild(branchLabel);
+        branchGroup.appendChild(this.#branchIndicator.createElement());
+        toolbar.appendChild(branchGroup);
 
-        // branch label
-        const cellBranchLabel = document.createElement('td');
-        cellBranchLabel.style.height = '32px';
-        cellBranchLabel.appendChild(document.createTextNode('Branch:'));
-        row2.appendChild(cellBranchLabel);
+        //--- switch branch — own group, pinned to the right edge so it stays
+        //    put regardless of the branch name length (the primary action)
+        const switchGroup = this.#group();
+        switchGroup.classList.add('differ-toolbar-spacer');
+        switchGroup.appendChild(this.#button({
+            text: 'Switch branch',
+            strong: true,
+            disabled: !this.#params.isSourceVersionDefined(),
+            onClick: () => this.#callbacks.onSwitchBranch()
+        }));
+        toolbar.appendChild(switchGroup);
 
-        // branch name
-        const cellBranchName = document.createElement('td');
-        cellBranchName.style.width = '100%';
-        cellBranchName.setAttribute("colspan", "2");
-        row2.appendChild(cellBranchName);
-        cellBranchName.appendChild(this.#branchIndicator.createElement());
+        //--- view group
+        const viewGroup = this.#group();
+        viewGroup.appendChild(this.#button({
+            icon: '+', title: 'Zoom in',
+            onClick: () => this.#viewport.zoomIn()
+        }));
+        viewGroup.appendChild(this.#button({
+            icon: '−', title: 'Zoom out',
+            onClick: () => this.#viewport.zoomOut()
+        }));
+        viewGroup.appendChild(this.#button({
+            icon: '⤢', title: 'Fit view',
+            onClick: () => this.#viewport.setZoom(100)
+        }));
+        viewGroup.appendChild(this.#button({
+            text: 'Show full',
+            onClick: () => this.#viewport.showFull()
+        }));
+        toolbar.appendChild(viewGroup);
 
-        // switch branch button
-        const cellBranchButton = document.createElement('td');
-        cellBranchButton.style.minWidth = '70px';
-        cellBranchButton.style.textAlign = 'right';
-        row2.appendChild(cellBranchButton);
-
-        const switchButton = document.createElement('button');
-        switchButton.disabled = !this.#params.isSourceVersionDefined();
-        switchButton.style.width = '120px';
-        switchButton.textContent = 'Switch branch';
-        switchButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        switchButton.style.margin = '3px';
-        switchButton.addEventListener('click', () => {
-            this.#callbacks.onSwitchBranch();
-        });
-        cellBranchButton.appendChild(switchButton);
-
-        // View
-        const cellView = document.createElement('td');
-        cellView.style.whiteSpace = 'nowrap';
-        cellView.style.textAlign = "right";
-        row1.appendChild(cellView);
-
-        const zoomInButton = document.createElement('button');
-        zoomInButton.style.width = '90px';
-        zoomInButton.textContent = 'Zoom In';
-        zoomInButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        zoomInButton.style.margin = '3px';
-        zoomInButton.addEventListener('click', () => {
-            this.#viewport.zoomIn();
-        });
-        cellView.appendChild(zoomInButton);
-
-        const zoomOutButton = document.createElement('button');
-        zoomOutButton.style.width = '90px';
-        zoomOutButton.textContent = 'Zoom Out';
-        zoomOutButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        zoomOutButton.style.margin = '3px';
-        zoomOutButton.addEventListener('click', () => {
-            this.#viewport.zoomOut();
-        });
-        cellView.appendChild(zoomOutButton);
-
-        const fitButton = document.createElement('button');
-        fitButton.style.width = '90px';
-        fitButton.textContent = 'Fit view';
-        fitButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        fitButton.style.margin = '3px';
-        fitButton.addEventListener('click', () => {
-            this.#viewport.setZoom(100);
-        });
-        cellView.appendChild(fitButton);
-
-        const showFullButton = document.createElement('button');
-        showFullButton.style.width = '120px';
-        showFullButton.textContent = 'Show full';
-        showFullButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        showFullButton.style.margin = '3px';
-        showFullButton.addEventListener('click', () => {
-            this.#viewport.showFull();
-        });
-        cellView.appendChild(showFullButton);
-
-        // close button
-        const cellCloseButton = document.createElement('td');
-        cellCloseButton.style.minWidth = '300px';
-        cellCloseButton.style.textAlign = 'right';
-        row1.appendChild(cellCloseButton);
-
-        const closeButton = document.createElement('button');
-        closeButton.style.width = '90px';
-        closeButton.textContent = 'Close';
-        closeButton.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-        closeButton.style.margin = '3px';
-        closeButton.addEventListener('click', () => {
-            window.close();
-        });
-        cellCloseButton.appendChild(closeButton);
+        //--- close group (destructive, separated)
+        const closeGroup = this.#group();
+        closeGroup.appendChild(this.#button({
+            icon: '✕', title: 'Close', danger: true,
+            onClick: () => window.close()
+        }));
+        toolbar.appendChild(closeGroup);
     }
 }

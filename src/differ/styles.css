@@ -121,6 +121,93 @@
     background-color: hsl(0, 0%, 85%);
 }
 
+/* differ toolbar & layout (UX-0007) — light header bar, grouped buttons,
+   icon zoom, draggable properties splitter. Everything here is scoped to new
+   classes; the global table/th/td and .changes-table rules are left untouched. */
+.differ-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    padding: 6px 10px;
+    background-color: hsl(0, 0%, 97%);
+    border-bottom: 1px solid hsl(0, 0%, 85%);
+    font-size: 14px;
+}
+
+.differ-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+/* light separator between adjacent groups */
+.differ-btn-group + .differ-btn-group {
+    padding-left: 8px;
+    border-left: 1px solid hsl(0, 0%, 85%);
+}
+
+/* pushes the group (and everything after it) to the right edge of the bar */
+.differ-toolbar-spacer {
+    margin-left: auto;
+}
+
+.differ-label {
+    color: hsl(0, 0%, 40%);
+    white-space: nowrap;
+}
+
+.differ-file-name {
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* keep GitLab's native button look; bump the font and let buttons hug their
+   text (no uniform min-width). Toggling buttons get a per-button min-width in
+   JS, sized to their longer label, so the box stays put when the text flips. */
+.differ-btn {
+    margin: 0;
+    min-height: 34px;
+    padding: 5px 10px;
+    font-size: 15px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.differ-icon-btn {
+    width: 38px;
+    min-width: 38px;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 19px;
+    line-height: 1;
+    text-align: center;
+}
+
+/* primary action — accented by a bolder label */
+.differ-btn-strong {
+    font-weight: 700;
+}
+
+.differ-btn-danger {
+    color: hsl(0, 70%, 45%);
+}
+
+/* draggable splitter between the canvas and the properties panel */
+.differ-splitter {
+    width: 6px;
+    min-width: 6px;
+    padding: 0;
+    cursor: col-resize;
+    background-color: hsl(0, 0%, 85%);
+}
+
+.differ-splitter:hover {
+    background-color: hsl(210, 80%, 60%);
+}
+
 /* dmn styles */
 .dmn-decision-table-container .cell {
     font-size: 14px;
