@@ -89,13 +89,21 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Polls `action` until it returns a truthy value, then returns that value.
+// `action` must be synchronous; a falsy result means "not ready yet, retry".
+// Returns null if it never becomes truthy within `attempts` checks. Used to wait
+// for asynchronously rendered DOM (bpmn-js/preact properties panel, GitLab DOM)
+// without relying on a fixed delay.
 async function doWithAttempts(action, attempts = 10, delayMs = 150) {
     for (let index = 0; index < attempts; index++) {
-        var res = action();
+        const res = action();
         if (res) {
             return res;
         }
-        await delay(delayMs);
+        // No point sleeping after the final check — return promptly on failure.
+        if (index < attempts - 1) {
+            await delay(delayMs);
+        }
     }
     return null;
 }

@@ -195,6 +195,33 @@ describe('PropertiesPanelHighlighter.highlightDiffPropGroups list group entries'
         );
     });
 
+    it('waits for list entries that render after selection (async panel render)', async () => {
+        // BUG-0011 regression: the panel re-renders its list entries a tick after
+        // the group header. Highlighting must wait for them instead of querying once.
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(
+            new Map([['Task_1', ['In mappings']]]),
+            new Map(),
+            mappingChanges([{ label: 'itemId', changed: true }])
+        );
+
+        // Detach the list entries, then re-attach them shortly after highlighting
+        // starts, mimicking the deferred preact render.
+        const group = groupHeader(scope.document, 'In mappings').parentElement;
+        const list = group.querySelector('.bio-properties-panel-list');
+        const detached = list.innerHTML;
+        list.innerHTML = '';
+        scope.window.setTimeout(() => { list.innerHTML = detached; }, 60);
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        assert.equal(
+            listItemHeader(scope.document, 'itemId').style.backgroundColor,
+            colorOf(scope.document, HIGHLIGHT_COLOR)
+        );
+    });
+
     it('resets entry highlights when another element is selected', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope);
@@ -213,13 +240,13 @@ describe('PropertiesPanelHighlighter.highlightDiffPropGroups list group entries'
 });
 
 describe('PropertiesPanelHighlighter.showConditionExpression', () => {
-    it('hides the native expression container and renders formatted condition parts', () => {
+    it('hides the native expression container and renders formatted condition parts', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope);
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
 
-        highlighter.showConditionExpression('Flow_1');
+        await highlighter.showConditionExpression('Flow_1');
 
         const native = scope.document.querySelector('#bio-properties-panel-conditionExpression');
         assert.equal(native.style.display, 'none');
@@ -229,13 +256,13 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
         assert.deepEqual(parts, ['${', '  a &&', '  b', '}']);
     });
 
-    it('marks parts missing in the other branch with the add color when the MR branch is shown', () => {
+    it('marks parts missing in the other branch with the add color when the MR branch is shown', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope, { isTargetBranchShown: () => false });
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
 
-        highlighter.showConditionExpression('Flow_1');
+        await highlighter.showConditionExpression('Flow_1');
 
         const colors = Array.from(scope.document.querySelector('.properties-condition').children)
             .map(el => el.style.backgroundColor);
@@ -244,13 +271,13 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
         assert.deepEqual(colors, ['', added, added, '']);
     });
 
-    it('marks parts missing in the other branch with the remove color when the target branch is shown', () => {
+    it('marks parts missing in the other branch with the remove color when the target branch is shown', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope, { isTargetBranchShown: () => true });
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
 
-        highlighter.showConditionExpression('Flow_1');
+        await highlighter.showConditionExpression('Flow_1');
 
         const colors = Array.from(scope.document.querySelector('.properties-condition').children)
             .map(el => el.style.backgroundColor);
@@ -258,13 +285,13 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
         assert.deepEqual(colors, ['', removed, removed, '']);
     });
 
-    it('renders the native textarea value without colors when the flow has no condition diff', () => {
+    it('renders the native textarea value without colors when the flow has no condition diff', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope);
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map());
 
-        highlighter.showConditionExpression('Flow_1');
+        await highlighter.showConditionExpression('Flow_1');
 
         const container = scope.document.querySelector('.properties-condition');
         const parts = Array.from(container.children).map(el => el.textContent);
@@ -274,28 +301,80 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
         }
     });
 
-    it('replaces the previous condition container on a repeated call', () => {
+    it('replaces the previous condition container on a repeated call', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope);
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
 
-        highlighter.showConditionExpression('Flow_1');
-        highlighter.showConditionExpression('Flow_1');
+        await highlighter.showConditionExpression('Flow_1');
+        await highlighter.showConditionExpression('Flow_1');
 
         assert.equal(scope.document.querySelectorAll('.properties-condition').length, 1);
     });
 
-    it('does nothing for a non sequence flow element', () => {
+    it('does nothing for a non sequence flow element', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope);
         highlighter.init({ get: () => ({ type: 'bpmn:ServiceTask' }) });
         highlighter.setDiffData(new Map(), new Map());
 
-        highlighter.showConditionExpression('Task_1');
+        await highlighter.showConditionExpression('Task_1');
 
         const native = scope.document.querySelector('#bio-properties-panel-conditionExpression');
         assert.equal(native.style.display, '');
         assert.equal(scope.document.querySelector('.properties-condition'), null);
+    });
+
+    it('waits for the condition input to render after selection (async panel render)', async () => {
+        // BUG-0011 regression: the condition input renders a tick after selection,
+        // so formatting must wait for it instead of querying once.
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.init(sequenceFlowRegistry);
+        highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
+
+        // Detach the native condition input, then re-attach it shortly after the
+        // call starts, mimicking the deferred preact render.
+        const native = scope.document.querySelector('#bio-properties-panel-conditionExpression');
+        const parent = native.parentElement;
+        parent.removeChild(native);
+        scope.window.setTimeout(() => { parent.appendChild(native); }, 60);
+
+        await highlighter.showConditionExpression('Flow_1');
+
+        const container = scope.document.querySelector('.properties-condition');
+        const parts = Array.from(container.children).map(el => el.textContent);
+        assert.deepEqual(parts, ['${', '  a &&', '  b', '}']);
+    });
+
+    it('re-injects the formatted condition if the panel strips it during re-render', async () => {
+        // BUG-0011 regression: selecting another sequence flow re-renders the panel
+        // (preact), which strips the foreign condition block we inject. The method
+        // must re-inject until the block survives.
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.init(sequenceFlowRegistry);
+        highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
+
+        // Strip the injected block once, right after it first appears, simulating
+        // the panel's reconciliation removing it.
+        let stripped = false;
+        const watcher = scope.window.setInterval(() => {
+            const div = scope.document.querySelector('.properties-condition');
+            if (div && !stripped) {
+                div.remove();
+                stripped = true;
+            }
+        }, 10);
+
+        await highlighter.showConditionExpression('Flow_1');
+        scope.window.clearInterval(watcher);
+
+        assert.ok(stripped, 'the simulated strip should have occurred');
+        const container = scope.document.querySelector('.properties-condition');
+        assert.ok(container, 'condition block should be re-injected after being stripped');
+        const parts = Array.from(container.children).map(el => el.textContent);
+        assert.deepEqual(parts, ['${', '  a &&', '  b', '}']);
     });
 });
