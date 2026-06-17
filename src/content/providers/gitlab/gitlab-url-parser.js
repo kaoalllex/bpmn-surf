@@ -125,7 +125,9 @@ class GitLabUrlParser {
         let match = href.match(regex);
         if (!match || match.length < 3) {
             if (!branchCommitId) {
-                branchCommitId = 'master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-zA-Z-_./]+';
+                // hex-SHA alternative goes before the greedy catch-all so a commit
+                // ref is matched exactly and does not swallow the deep file path
+                branchCommitId = 'master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-fA-F]{7,40}|[0-9a-zA-Z-_./]+';
             }
             regex = `\/-\/blob\/(` + branchCommitId + `)\/(.*)`;
             match = href.match(regex);
