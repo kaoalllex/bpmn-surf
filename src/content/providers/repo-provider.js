@@ -109,6 +109,18 @@ class RepoProvider {
     }
 
     /**
+     * Resolves the path the target (base) side of the change must be loaded from.
+     * Differs from filePath only when the file was renamed in the change (the
+     * target commit still holds it under its old path — BUG-0002). The default is
+     * the identity: platforms without rename info keep the previous behaviour.
+     * @param {string} filePath path as shown on the change's diffs page
+     * @returns {Promise<string>|string} the target-side path (defaults to filePath)
+     */
+    getTargetFilePath(filePath) {
+        return filePath;
+    }
+
+    /**
      * Extracts commit and file path information from branch view URL
      * @returns {Object|null} object with fields: branchCommitId, filePath or null
      */

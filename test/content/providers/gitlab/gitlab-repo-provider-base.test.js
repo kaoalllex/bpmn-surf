@@ -68,6 +68,113 @@ describe('GitLabRepoProviderBase.init — project id resolution', () => {
     });
 });
 
+describe('GitLabRepoProviderBase.extractRenameMap', () => {
+    const { GitLabRepoProviderBase } = createScope();
+
+    it('maps new_path -> old_path for a renamed file', () => {
+        const map = GitLabRepoProviderBase.extractRenameMap({
+            changes: [{ old_path: 'a/old.bpmn', new_path: 'a/new.bpmn', renamed_file: true }]
+        });
+        assert.equal(map.get('a/new.bpmn'), 'a/old.bpmn');
+        assert.equal(map.size, 1);
+    });
+
+    it('treats a path change without the renamed_file flag as a rename', () => {
+        const map = GitLabRepoProviderBase.extractRenameMap({
+            changes: [{ old_path: 'a/old.bpmn', new_path: 'a/new.bpmn' }]
+        });
+        assert.equal(map.get('a/new.bpmn'), 'a/old.bpmn');
+    });
+
+    it('ignores new, deleted and unchanged-path files', () => {
+        const map = GitLabRepoProviderBase.extractRenameMap({
+            changes: [
+                { old_path: 'a/added.bpmn', new_path: 'a/added.bpmn', new_file: true },
+                { old_path: 'a/gone.bpmn', new_path: 'a/gone.bpmn', deleted_file: true },
+                { old_path: 'a/same.bpmn', new_path: 'a/same.bpmn' }
+            ]
+        });
+        assert.equal(map.size, 0);
+    });
+
+    it('returns an empty map for a missing/empty changes response', () => {
+        assert.equal(GitLabRepoProviderBase.extractRenameMap(null).size, 0);
+        assert.equal(GitLabRepoProviderBase.extractRenameMap({}).size, 0);
+        assert.equal(GitLabRepoProviderBase.extractRenameMap({ changes: [] }).size, 0);
+    });
+});
+
+describe('GitLabRepoProviderBase.getTargetFilePath', () => {
+    // Builds an initialized base provider whose loader returns the projects-search
+    // payload for the project lookup and the given changes payload for the MR
+    // `/changes` endpoint, recording every requested URL.
+    async function createInitialized(changesPayload, { url = MR_URL } = {}) {
+        const scope = createScope({ url });
+        const calls = [];
+        const load = async (requestedUrl) => {
+            calls.push(requestedUrl);
+            if (requestedUrl.includes('/changes')) {
+                return JSON.stringify(changesPayload);
+            }
+            return JSON.stringify([{ id: 42, path_with_namespace: 'group/proj' }]);
+        };
+        const provider = new scope.GitLabRepoProviderBase(load);
+        await provider.init();
+        return { provider, calls };
+    }
+
+    it('returns the old path for a renamed file', async () => {
+        const { provider } = await createInitialized({
+            changes: [{ old_path: 'a/old.bpmn', new_path: 'a/new.bpmn', renamed_file: true }]
+        });
+        assert.equal(await provider.getTargetFilePath('a/new.bpmn'), 'a/old.bpmn');
+    });
+
+    it('returns filePath unchanged when the file was not renamed', async () => {
+        const { provider } = await createInitialized({
+            changes: [{ old_path: 'a/new.bpmn', new_path: 'a/new.bpmn' }]
+        });
+        assert.equal(await provider.getTargetFilePath('a/new.bpmn'), 'a/new.bpmn');
+    });
+
+    it('returns filePath without any request when there is no MR iid (branch view)', async () => {
+        const { provider, calls } = await createInitialized(
+            { changes: [] },
+            { url: 'https://gitlab.example.com/group/proj/-/blob/master/proj/process.bpmn' }
+        );
+        const callsAfterInit = calls.length;
+        assert.equal(await provider.getTargetFilePath('proj/process.bpmn'), 'proj/process.bpmn');
+        assert.equal(calls.length, callsAfterInit); // no /changes request issued
+    });
+
+    it('falls back to filePath on a request/parse error', async () => {
+        const scope = createScope({ url: MR_URL });
+        const load = async (requestedUrl) => {
+            if (requestedUrl.includes('/changes')) {
+                throw new Error('boom');
+            }
+            return JSON.stringify([{ id: 42, path_with_namespace: 'group/proj' }]);
+        };
+        const provider = new scope.GitLabRepoProviderBase(load);
+        await provider.init();
+        assert.equal(await provider.getTargetFilePath('a/new.bpmn'), 'a/new.bpmn');
+    });
+
+    it('fetches the changes endpoint only once (cached per url)', async () => {
+        const { provider, calls } = await createInitialized({
+            changes: [{ old_path: 'a/old.bpmn', new_path: 'a/new.bpmn', renamed_file: true }]
+        });
+        await provider.getTargetFilePath('a/new.bpmn');
+        await provider.getTargetFilePath('a/new.bpmn');
+        const changesCalls = calls.filter(u => u.includes('/changes'));
+        assert.equal(changesCalls.length, 1);
+        assert.equal(
+            changesCalls[0],
+            'https://gitlab.example.com/api/v4/projects/42/merge_requests/5/changes'
+        );
+    });
+});
+
 describe('GitLabRepoProviderBase.getChangeInfo', () => {
     it('returns the (initially empty) merge request info object', () => {
         const { provider } = createBase([]);

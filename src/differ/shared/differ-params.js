@@ -24,7 +24,15 @@ class DifferParams {
         // not provided (branch mode, nested differ).
         this.targetLabel = params.targetLabel || params.targetRef;
         this.filePath = requireDefined(params.filePath, 'filePath');
+        // Path the target (base) side loads from. Differs from filePath only when
+        // the file was renamed in the MR (BUG-0002); defaults to filePath, so the
+        // no-rename and nested-differ paths are unchanged.
+        this.targetFilePath = params.targetFilePath || this.filePath;
         this.fileName = requireDefined(params.fileName, 'fileName');
+        // Display/download name of the target side. Equals fileName unless the
+        // file was renamed in the MR, where the target side keeps its old name
+        // (BUG-0002). Derived from targetFilePath, so it needs no extra wire field.
+        this.targetFileName = getFileNameFromPath(this.targetFilePath);
 
         this.camundaBpmnModdle = params.camundaBpmnModdle;
     }
@@ -40,8 +48,8 @@ class DifferParams {
         return this.sourceRef || this.localFileContent;
     }
 
-    rawFileUrl(ref) {
-        return `${this.platform.projectUrl}/-/raw/${ref}/${this.filePath}`;
+    rawFileUrl(ref, filePath = this.filePath) {
+        return `${this.platform.projectUrl}/-/raw/${ref}/${filePath}`;
     }
 
     // Wire params for a nested differ (e.g. diving into a Call Activity's called

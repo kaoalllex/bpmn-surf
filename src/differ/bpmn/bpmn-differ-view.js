@@ -26,6 +26,7 @@ class BpmnDifferView {
     #changesTableView = null;
     #downloadButton = null;
     #highlightButton = null;
+    #fileNameSpan = null;
     #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
 
@@ -157,6 +158,14 @@ class BpmnDifferView {
         }
     }
 
+    // Updates the file name shown in the header. The two sides can differ when
+    // the file was renamed in the MR: target keeps the old name (BUG-0002).
+    setFileName(fileName) {
+        if (this.#fileNameSpan) {
+            this.#fileNameSpan.textContent = fileName;
+        }
+    }
+
     // Enables/disables the Download button — disabled on a side with no file to
     // download (new/deleted schema, or absent in both versions) (UX-0003).
     setDownloadButtonEnabled(enabled) {
@@ -245,10 +254,10 @@ class BpmnDifferView {
         fileLabel.textContent = 'File:';
         fileGroup.appendChild(fileLabel);
 
-        const fileNameSpan = document.createElement('span');
-        fileNameSpan.className = 'differ-file-name';
-        fileNameSpan.textContent = this.#params.fileName;
-        fileGroup.appendChild(fileNameSpan);
+        this.#fileNameSpan = document.createElement('span');
+        this.#fileNameSpan.className = 'differ-file-name';
+        this.#fileNameSpan.textContent = this.#params.fileName;
+        fileGroup.appendChild(this.#fileNameSpan);
 
         this.#downloadButton = this.#button({
             icon: '↓', title: 'Download the file as shown for the current branch',

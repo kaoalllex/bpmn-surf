@@ -257,7 +257,7 @@ class App {
             fileType: fileType,
             buttonType: buttonType,
             needToSelectLocalFile: needToSelectLocalFile,
-            onButtonClickFunc: (extParams) => this.#openDiffer(params, extParams, msgId)
+            onButtonClickFunc: (extParams) => this.#openDiffer(buttonType, params, extParams, msgId)
         });
     }
 
@@ -265,8 +265,20 @@ class App {
      * Opens differ window
      * @private
      */
-    #openDiffer(params, extParams, msgId) {
-        const finalParams = extParams ? { ...params, ...extParams } : params;
+    async #openDiffer(buttonType, params, extParams, msgId) {
+        let finalParams = extParams ? { ...params, ...extParams } : params;
+
+        // Renamed schema: the target (base) commit still holds the file under its
+        // old path, so resolve the target-side path lazily here (off the mouseup
+        // hot-path) and pass it to the differ. Only relevant in MR diff mode;
+        // when unchanged the params stay byte-for-byte the same (BUG-0002).
+        if (buttonType === UI_BUTTON_TYPE.DIFF) {
+            const targetFilePath = await this.#repoProvider.getTargetFilePath(params.filePath);
+            if (targetFilePath !== params.filePath) {
+                finalParams = { ...finalParams, targetFilePath: targetFilePath };
+            }
+        }
+
         return openDiffer(
             finalParams,
             null,

@@ -95,9 +95,9 @@ class DmnDiffer {
 
     #downloadShownBranchFile() {
         if (this.#branchIndicator.isTargetBranchShown()) {
-            this.#versions.download(this.#versions.branchXml, this.#params.targetLabel);
+            this.#versions.download(this.#versions.branchXml, this.#params.targetLabel, this.#params.targetFileName);
         } else {
-            this.#versions.download(this.#versions.mrXml, this.#params.sourceLabel);
+            this.#versions.download(this.#versions.mrXml, this.#params.sourceLabel, this.#params.fileName);
         }
     }
 
@@ -123,6 +123,7 @@ class DmnDiffer {
     // branch label and covers the canvas with a blank placeholder (dmn-js has no
     // clear()), keeping the toolbar usable to switch back (UX-0003).
     #showAbsentSide(targetSide) {
+        this.#view.setFileName(targetSide ? this.#params.targetFileName : this.#params.fileName);
         this.#branchIndicator.setAbsentLabel(targetSide);
         this.#view.showEmptyState('');
         this.#view.setDownloadButtonEnabled(false);
@@ -132,6 +133,7 @@ class DmnDiffer {
         console.debug('showing mr dmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrDmnXml');
         await this.#showXml(mrXml);
+        this.#view.setFileName(this.#params.fileName);
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
         if (this.#versions.branchXml) {
@@ -145,6 +147,7 @@ class DmnDiffer {
         console.debug('showing branch dmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchDmnXml');
         await this.#showXml(branchXml);
+        this.#view.setFileName(this.#params.targetFileName);
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
         if (this.#versions.mrXml) {
