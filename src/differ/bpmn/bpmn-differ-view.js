@@ -29,12 +29,19 @@ class BpmnDifferView {
     #fileNameSpan = null;
     #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
+    #updateInfo = null;
 
     // callbacks: { onDownload, onSwitchBranch, onToggleHighlight }
     constructor(params, branchIndicator, callbacks) {
         this.#params = params;
         this.#branchIndicator = branchIndicator;
         this.#callbacks = callbacks;
+    }
+
+    // Update notification info { updateAvailable, latestVersion, popupUrl } for
+    // the toolbar indicator (FEAT-0012). Set before build(); null = no indicator.
+    setUpdateInfo(updateInfo) {
+        this.#updateInfo = updateInfo;
     }
 
     get viewport() {
@@ -317,6 +324,9 @@ class BpmnDifferView {
         viewGroup.appendChild(this.#createHidePropsButton());
         toolbar.appendChild(viewGroup);
 
+        //--- update indicator (FEAT-0012), only when an update is available
+        this.#appendUpdateIndicator(toolbar);
+
         //--- close group (destructive, separated)
         const closeGroup = this.#group();
         closeGroup.appendChild(this.#button({
@@ -324,6 +334,23 @@ class BpmnDifferView {
             onClick: () => window.close()
         }));
         toolbar.appendChild(closeGroup);
+    }
+
+    // The differ page is a plain web context (no chrome.*): the indicator just
+    // opens the popup page (passed as a chrome-extension:// URL by the content
+    // script) in a new tab, where the rich update UI runs (FEAT-0012).
+    #appendUpdateIndicator(toolbar) {
+        const indicator = new UpdateIndicator(this.#updateInfo);
+        const element = indicator.createElement(() => {
+            if (this.#updateInfo && this.#updateInfo.popupUrl) {
+                window.open(this.#updateInfo.popupUrl, '_blank');
+            }
+        });
+        if (element) {
+            const group = this.#group();
+            group.appendChild(element);
+            toolbar.appendChild(group);
+        }
     }
 
     #createHidePropsButton() {

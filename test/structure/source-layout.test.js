@@ -30,6 +30,10 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/content/providers/ui-repo-provider.js',
     'src/content/providers/repo-provider-factory.js',
     'src/differ/shared/diff-type.js',
+    // chrome.* glue (FEAT-0012): network/storage/alarms/DOM, no chrome.* under
+    // node; the pure logic lives in tested version-info.js / update-checker.js.
+    'src/background/update-service-worker.js',
+    'src/popup/popup.js',
     // orchestrators / DOM+lib glue
     'src/content/app.js',
     'src/differ/bpmn/diff-highlighter.js',

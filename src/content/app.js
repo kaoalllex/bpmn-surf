@@ -279,12 +279,43 @@ class App {
             }
         }
 
+        // Update notification (FEAT-0012): the differ page is a plain web context
+        // without chrome.*, so the content script reads the update state here and
+        // passes it (plus the popup URL) into the differ via params.
+        const updateInfo = await this.#getUpdateInfo();
+        if (updateInfo) {
+            finalParams = { ...finalParams, updateInfo: updateInfo };
+        }
+
         return openDiffer(
             finalParams,
             null,
             msgId,
             (resourceName) => chrome.runtime.getURL(resourceName)
         );
+    }
+
+    /**
+     * Asks the update service worker for the current state and builds the
+     * differ-toolbar indicator payload. Best-effort: never blocks or breaks
+     * opening the differ if the SW is unavailable or the feature is inert.
+     * @private
+     */
+    async #getUpdateInfo() {
+        try {
+            const state = await chrome.runtime.sendMessage({ type: 'update:getState' });
+            const result = state && state.lastResult;
+            if (!state || !state.enabled || !result || !result.updateAvailable) {
+                return null;
+            }
+            return {
+                updateAvailable: true,
+                latestVersion: result.latestVersion,
+                popupUrl: chrome.runtime.getURL('src/popup/popup.html')
+            };
+        } catch (e) {
+            return null;
+        }
     }
 
     /**

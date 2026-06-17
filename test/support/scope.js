@@ -22,6 +22,8 @@ const ROOT = path.join(__dirname, '..', '..');
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
     'src/core/utils.js',
+    'src/update/version-info.js',
+    'src/update/update-checker.js',
     'src/differ/shared/diff-type.js',
     'src/differ/bpmn/condition-formatter.js',
     'src/differ/bpmn/bpmn-xml-comparator.js',
@@ -31,6 +33,7 @@ const SCOPE_FILES = [
     'src/differ/shared/branch-indicator.js',
     'src/differ/shared/differ-loading-overlay.js',
     'src/differ/shared/differ-empty-state.js',
+    'src/differ/shared/update-indicator.js',
     'src/differ/navigation/call-activity-locator.js',
     'src/differ/navigation/handler-locator.js',
     'src/differ/dmn/dmn-xml-comparator.js',
@@ -62,12 +65,15 @@ const SCOPE_FILES = [
 // Global names extracted from the loaded scope and returned by createScope().
 // Add a name here (and its file above, if new) to make it available in tests.
 const EXPORTED_NAMES = [
+    'VersionInfo',
+    'UpdateChecker',
     'DiffType',
     'ConditionFormatter',
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'DifferParams',
     'BranchIndicator',
+    'UpdateIndicator',
     'DiffParamsBuilder',
     'CallActivityLocator',
     'HandlerLocator',

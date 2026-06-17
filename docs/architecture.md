@@ -11,7 +11,7 @@ Chrome Extension (Manifest V3) для визуального сравнения 
 
 ## Структура каталогов
 
-Весь код приложения — под `src/`; в корне остаются только `manifest.json`, `libs/`, `docs/`, `test/`, `scripts/`, `package*.json`. Раскладка отражает два scope'а скриптов: `core/` (общее), `content/` (content-script GitLab-страницы), `differ/` (отдельная вкладка differ'а). Имена файлов уникальны по всему дереву — в таблице ниже путь не дублируется, ищется по имени.
+Весь код приложения — под `src/`; в корне остаются только `manifest.json`, `version.json`, `CHANGELOG.md`, `libs/`, `docs/`, `test/`, `scripts/`, `package*.json`. Раскладка отражает три scope'а скриптов: `core/` (общее), `content/` (content-script GitLab-страницы), `differ/` (отдельная вкладка differ'а), плюс extension-context для механизма обновления — `background/` (service worker) и `popup/` (окно по иконке). Имена файлов уникальны по всему дереву — в таблице ниже путь не дублируется, ищется по имени.
 
 ```
 src/
@@ -24,9 +24,12 @@ src/
                gitlab-repo-provider.js, gitlab-ui-repo-provider.js,
                gitlab-url-parser.js, gitlab-dom-scraper.js,
                merged-mr-commit-resolver.js, master-commit-manager.js, single-entry-cache.js
+  update/      version-info.js, update-checker.js       (чистая логика обновления, FEAT-0012)
+  background/  update-service-worker.js                 (SW: проверка версии + бейдж)
+  popup/       popup.html, popup.js, popup.css           (окно обновления по иконке)
   differ/      styles.css
     shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js,
-               differ-loading-overlay.js, differ-empty-state.js
+               differ-loading-overlay.js, differ-empty-state.js, update-indicator.js
     bpmn/      bpmn-differ.js, bpmn-differ-view.js, bpmn-xml-comparator.js, diff-highlighter.js,
                changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js,
                element-searcher.js, search-panel.js
@@ -53,9 +56,10 @@ main.js → App (app.js) → Providers → Differs
 
 Поток: `app.js` слушает `mouseup`/`popstate`, детектирует страницу → провайдер резолвит коммиты/ветки и грузит контент → UI-провайдер добавляет кнопки "Show schema/decision diff" → по клику через `utils.js#openDiffer` открывается страница diff'а, куда подгружаются библиотеки из `libs/` и скрипты differ'а. Параметры differ-страницы собирает `diff-params-builder.js` в нейтральном виде (sourceRef/targetRef/… + `platform`-дескриптор), их парсит и валидирует `DifferParams`.
 
-**Два scope'а скриптов** (не путать):
+**Три scope'а скриптов** (не путать):
 1. **Content scripts GitLab-страницы** — порядок задан в `manifest.json#content_scripts` (app, провайдеры, утилиты).
-2. **Страница differ'а** (отдельная вкладка) — скрипты грузятся через `utils.js#loadScripts` в порядке: `utils.js` → файлы-классы → `bpmn-differ.js` → `dmn-differ.js`. Все они делят один глобальный scope этой вкладки. Новый JS-файл для differ-страницы нужно добавить и в `loadScripts`, и в `web_accessible_resources` манифеста.
+2. **Страница differ'а** (отдельная вкладка) — скрипты грузятся через `utils.js#loadScripts` в порядке: `utils.js` → файлы-классы → `bpmn-differ.js` → `dmn-differ.js`. Все они делят один глобальный scope этой вкладки. Новый JS-файл для differ-страницы нужно добавить и в `loadScripts`, и в `web_accessible_resources` манифеста. ⚠️ Differ-страница — это `window.open('about:blank')` (см. `utils.js#openDiffer`): обычный web-контекст без доступа к `chrome.*`. Данные «снаружи» приходят только через postMessage-параметры от content-script'а, обратная связь — через `window.opener` или открытие web-accessible extension-страницы.
+3. **Extension-context обновления (FEAT-0012)** — service worker (`background/update-service-worker.js`) и popup (`popup/`). Имеют полный доступ к `chrome.*`. SW подключает `core/config.js` + `update/*` через `importScripts`; popup — через `<script>`. Эти файлы НЕ входят в четыре реестра differ/content (они в `manifest#action`/`#background`, а `popup.html` ещё и в `web_accessible_resources` — чтобы differ-страница могла открыть его по `window.open`). Поток обновления: SW по `chrome.alarms` тянет `version.json` → сравнивает с `manifest.version` → пишет состояние в `chrome.storage.local` + ставит бейдж; popup и индикатор в тулбаре дифера отображают это и ведут пользователя по обновлению (`git pull` + `chrome.runtime.reload`). Расширение не заменяет свои файлы само (ограничение load-unpacked) — только уведомляет.
 
 **Общие классы differ-страницы**: `bpmn-differ.js` (`BpmnDiffer`) и `dmn-differ.js` (`DmnDiffer`) — оркестраторы, оба используют общие классы `DifferParams` (differ-params.js), `DiagramVersions` (diagram-versions.js), `BranchIndicator` (branch-indicator.js), а также `DiffType` (diff-type.js). Глобального изменяемого состояния на differ-странице нет — всё состояние в полях классов, зависимости передаются через конструкторы. Меняя общие классы, проверяй и BPMN-, и DMN-diff.
 
@@ -103,6 +107,11 @@ main.js → App (app.js) → Providers → Differs
 | `fallback-repo-provider.js` | `FallbackRepoProvider` — whole-provider fallback: на `init()` выбирает первую доступную и успешно проинициализировавшуюся реализацию из упорядоченного списка, далее делегирует ей все вызовы интерфейса |
 | `gitlab-api-repo-provider.js` | `GitLabApiRepoProvider` — резолв параметров MR через GitLab MR API (`GET /api/v4/projects/{id}/merge_requests/{iid}`, один запрос с кэшем). `extends GitLabRepoProviderBase`: реализует резолв коммитов/веток/title (`getSourceCommitId`←`diff_refs.head_sha`, `getTargetCommitId`←`diff_refs.base_sha` — единообразно для opened/merged; `getChangeBranchNames`←`source_branch`/`target_branch`), а DOM/URL-методы детекции (выбор файла, branch-view, project id) наследует от базы. При выбранном одиночном коммите (`?commit_id=`) `getTargetCommitId` отдаёт родителя коммита (FEAT-0001), а `getDiffSideLabels` подписывает обе стороны сообщением коммита + коротким id (из commits API, кэш по sha) вместо имён веток — иначе target подписался бы целевой веткой, что неверно. Первый в цепочке (primary); на MR-странице `init()` пробует API и при отсутствии `diff_refs`/ошибке возвращает `false` → `FallbackRepoProvider` уходит на DOM-`GitLabRepoProvider`. Пометодного фолбэка нет |
 | `diff-params-builder.js` | `DiffParamsBuilder` — сборка нейтральных параметров differ-страницы (sourceRef/sourceLabel/targetRef/targetLabel/changeRequestId) + `platform`-дескриптор `{kind,projectUrl,hostUrl,projectId}`; `sourceLabel`/`targetLabel` — готовые подписи сторон от `getDiffSideLabels` (имя ветки или сообщение коммита + короткий id); платформо-специфика сгруппирована под `platform`, дискриминируется по `kind` |
+| `version-info.js` | `VersionInfo` — чистая логика версий (FEAT-0012): численное `compare`/`isNewer` (не лексическое — иначе `0.9` > `0.18`), парсинг `CHANGELOG.md` и выбор записей новее установленной (`changesSince`). Без DOM/сети/`chrome.*`, юнит-тесты |
+| `update-checker.js` | `UpdateChecker` — сетевая часть проверки (FEAT-0012): тянет `version.json` и (если есть новее) `CHANGELOG.md`, считает результат через `VersionInfo`. Фетчеры инъектируются (DI) → юнит-тесты без сети. Только GET, `credentials:'omit'` (никаких cookies/отправки данных) |
+| `update-service-worker.js` | Service worker механизма обновления (FEAT-0012): `chrome.alarms`-проверка по расписанию + при старте, бейдж на иконке, состояние в `chrome.storage.local`, обработка сообщений popup/контента (`update:getState`/`checkNow`/`setEnabled`/`reload`/`openPopup`/`openUrl`). Уважает выключенную автопроверку (тогда сеть не трогает). Источник версии конфигурируем (`config.js#UPDATE_*`), при пустом URL — no-op |
+| `popup/` | Окно обновления по иконке (`popup.html`/`popup.js`/`popup.css`, FEAT-0012): текущая/последняя версия, время проверки, явный URL источника + «данные не отправляются», «Что нового» (из CHANGELOG), «Проверить сейчас», «Обновить» (copy `git pull` + «Перезагрузить расширение» через `runtime.reload`) и тумблер автопроверки. Сетью/состоянием владеет SW; popup только отображает и шлёт команды. Работает и как action-popup, и как вкладка (открывается из индикатора дифера) |
+| `update-indicator.js` | `UpdateIndicator` — общий (BPMN+DMN) индикатор «🔔 vX» в тулбаре differ-страницы (FEAT-0012), по образцу `BranchIndicator`. Differ-страница без `chrome.*`, поэтому `updateInfo` приходит в params от content-script'а, а клик открывает popup как вкладку (`window.open` по `popupUrl` = `chrome.runtime.getURL('src/popup/popup.html')`). Вью зовут `setUpdateInfo()` перед `build()` |
 | `models.js` | DTO: `FileType`, `ProjectInfo`, `MergeRequestInfo` |
 | `utils.js` | DOM, HTTP, парсинг XML, загрузка скриптов |
 | `config.js` | Константы (например, `MASTER_BRANCH_NAME`) |
