@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="popup.css">
+    <title>BPMN differ — обновление</title>
+</head>
+<body>
+    <header class="pu-header">
+        <span class="pu-title">BPMN differ</span>
+        <span class="pu-version" id="currentVersion">—</span>
+    </header>
+
+    <section class="pu-status" id="statusBlock">
+        <div class="pu-status-line" id="statusLine">Проверяю обновления…</div>
+        <div class="pu-meta" id="checkedAt"></div>
+    </section>
+
+    <section class="pu-update hidden" id="updateBlock">
+        <div class="pu-update-head">
+            Доступна версия <strong id="latestVersion"></strong>
+        </div>
+        <div class="pu-changes" id="changes"></div>
+
+        <details class="pu-guide" id="guide">
+            <summary>Как обновить</summary>
+            <ol class="pu-steps">
+                <li>
+                    Обновите файлы расширения:
+                    <div class="pu-cmd">
+                        <code id="gitPull">git pull</code>
+                        <button type="button" id="copyCmd" class="pu-mini">копировать</button>
+                    </div>
+                    <div class="pu-hint hidden" id="downloadHint">
+                        Не через git? <a href="#" id="downloadLink">Открыть страницу загрузки</a>
+                        и заменить файлы в папке расширения.
+                    </div>
+                </li>
+                <li>Нажмите «Перезагрузить расширение» — оно перечитает файлы с диска.</li>
+            </ol>
+            <button type="button" id="reloadBtn" class="pu-primary">Перезагрузить расширение</button>
+            <p class="pu-note">
+                Расширение не меняет свои файлы само — байты на диск приносите вы
+                (это ограничение «load unpacked»). Перезагрузка применяет уже
+                обновлённые файлы.
+            </p>
+        </details>
+    </section>
+
+    <section class="pu-actions">
+        <button type="button" id="checkNowBtn" class="pu-secondary">Проверить сейчас</button>
+        <label class="pu-toggle">
+            <input type="checkbox" id="autoCheck">
+            <span>Проверять обновления автоматически</span>
+        </label>
+    </section>
+
+    <footer class="pu-footer">
+        <div class="pu-transparency" id="transparency"></div>
+    </footer>
+
+    <script src="popup.js"></script>
+</body>
+</html>

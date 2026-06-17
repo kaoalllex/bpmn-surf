@@ -1,0 +1,119 @@
+/* Popup механизма обновления (FEAT-0012). Работает и как action-popup,
+   и как отдельная вкладка. Нейтральный светлый стиль, близкий к GitLab. */
+
+:root {
+    --pu-fg: #303030;
+    --pu-muted: #6e6e6e;
+    --pu-border: #dcdcde;
+    --pu-accent: #1f75cb;
+    --pu-bg-soft: #f5f6fa;
+    --pu-added: #1f7e34;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    width: 340px;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--pu-fg);
+    background: #fff;
+}
+
+.hidden { display: none !important; }
+
+.pu-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--pu-border);
+}
+
+.pu-title { font-weight: 600; font-size: 14px; }
+.pu-version { color: var(--pu-muted); font-variant-numeric: tabular-nums; }
+
+.pu-status { padding: 12px 14px; }
+.pu-status-line { font-weight: 500; }
+.pu-status.up-to-date .pu-status-line { color: var(--pu-added); }
+.pu-meta { color: var(--pu-muted); font-size: 12px; margin-top: 2px; }
+
+.pu-update {
+    margin: 0 14px 12px;
+    padding: 12px;
+    background: var(--pu-bg-soft);
+    border: 1px solid var(--pu-border);
+    border-radius: 6px;
+}
+.pu-update-head { margin-bottom: 8px; }
+
+.pu-changes {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+.pu-change-version { font-weight: 600; margin: 8px 0 2px; }
+.pu-change-version:first-child { margin-top: 0; }
+.pu-change-body { white-space: pre-wrap; color: #3a3a3a; }
+
+.pu-guide summary { cursor: pointer; font-weight: 500; }
+.pu-steps { margin: 8px 0; padding-left: 18px; }
+.pu-steps li { margin-bottom: 6px; }
+
+.pu-cmd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+}
+.pu-cmd code {
+    flex: 1;
+    padding: 4px 6px;
+    background: #fff;
+    border: 1px solid var(--pu-border);
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+}
+.pu-hint { color: var(--pu-muted); font-size: 12px; margin-top: 4px; }
+.pu-note { color: var(--pu-muted); font-size: 11.5px; margin: 8px 0 0; }
+
+.pu-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--pu-border);
+}
+.pu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--pu-muted);
+    cursor: pointer;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid var(--pu-border);
+    background: #fff;
+    padding: 5px 10px;
+}
+button:hover { background: var(--pu-bg-soft); }
+.pu-primary {
+    background: var(--pu-accent);
+    border-color: var(--pu-accent);
+    color: #fff;
+    margin-top: 4px;
+}
+.pu-primary:hover { background: #1a64ad; }
+.pu-mini { padding: 3px 7px; font-size: 11.5px; }
+
+.pu-footer { padding: 10px 14px; border-top: 1px solid var(--pu-border); }
+.pu-transparency { color: var(--pu-muted); font-size: 11px; word-break: break-all; }

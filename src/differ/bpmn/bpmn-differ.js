@@ -178,6 +178,9 @@ class BpmnDiffer {
             onSwitchBranch: () => this.#switchBranch(),
             onToggleHighlight: () => this.#toggleHighlight()
         });
+        // Update notification (FEAT-0012): info comes raw in params from the
+        // content script (which read it from the service worker's state).
+        this.#view.setUpdateInfo(this.#rawParams.updateInfo);
     }
 
     #createModeler() {

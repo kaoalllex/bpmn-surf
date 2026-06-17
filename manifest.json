@@ -35,12 +35,25 @@
             ]
         }
     ],
+    "action": {
+        "default_popup": "src/popup/popup.html",
+        "default_title": "BPMN differ — обновление"
+    },
+    "background": {
+        "service_worker": "src/background/update-service-worker.js"
+    },
     "permissions": [
-        "activeTab"
+        "activeTab",
+        "storage",
+        "alarms"
+    ],
+    "host_permissions": [
+        "https://raw.githubusercontent.com/*"
     ],
     "web_accessible_resources": [
         {
             "resources": [
+                "src/popup/popup.html",
                 "src/content/main.js",
                 "src/core/utils.js",
                 "src/differ/shared/diff-type.js",
@@ -62,6 +75,7 @@
                 "src/differ/shared/branch-indicator.js",
                 "src/differ/shared/differ-loading-overlay.js",
                 "src/differ/shared/differ-empty-state.js",
+                "src/differ/shared/update-indicator.js",
                 "src/differ/bpmn/bpmn-differ-view.js",
                 "src/differ/dmn/dmn-table-viewport.js",
                 "src/differ/dmn/dmn-xml-comparator.js",

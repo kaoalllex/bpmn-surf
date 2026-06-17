@@ -195,6 +195,17 @@
     color: hsl(0, 70%, 45%);
 }
 
+/* update-available indicator (FEAT-0012) — accented, draws the eye without
+   shouting; only shown when a newer version is published */
+.differ-update-indicator {
+    border-color: hsl(212, 73%, 46%);
+    color: hsl(212, 73%, 46%);
+    font-weight: 600;
+}
+.differ-update-indicator:hover {
+    background-color: hsl(212, 73%, 96%);
+}
+
 /* draggable splitter between the canvas and the properties panel */
 .differ-splitter {
     width: 6px;

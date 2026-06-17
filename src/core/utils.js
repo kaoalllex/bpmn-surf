@@ -220,6 +220,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/shared/branch-indicator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-loading-overlay.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-empty-state.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/update-indicator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/dmn/dmn-table-viewport.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/dmn/dmn-xml-comparator.js', doc, getResourceUrlByNameFunc);
