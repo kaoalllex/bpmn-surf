@@ -205,9 +205,9 @@ class BpmnDiffer {
 
     #downloadShownBranchFile() {
         if (this.#branchIndicator.isTargetBranchShown()) {
-            this.#versions.download(this.#versions.branchXml, this.#params.targetLabel);
+            this.#versions.download(this.#versions.branchXml, this.#params.targetLabel, this.#params.targetFileName);
         } else {
-            this.#versions.download(this.#versions.mrXml, this.#params.sourceLabel);
+            this.#versions.download(this.#versions.mrXml, this.#params.sourceLabel, this.#params.fileName);
         }
     }
 
@@ -236,6 +236,7 @@ class BpmnDiffer {
     #showAbsentSide(targetSide) {
         this.#bpmnJS.clear();
         this.#selectedElementId = null;
+        this.#view.setFileName(targetSide ? this.#params.targetFileName : this.#params.fileName);
         this.#branchIndicator.setAbsentLabel(targetSide);
         this.#diffHighlighter.setDiffElementIds([]);
         if (this.#changesTableView) {
@@ -254,6 +255,7 @@ class BpmnDiffer {
         console.debug('showing branch bpmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchBpmnXml');
         await this.#showXml(branchXml);
+        this.#view.setFileName(this.#params.targetFileName);
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
         if (this.#versions.mrXml) {
@@ -267,6 +269,7 @@ class BpmnDiffer {
         console.debug('showing mr bpmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrBpmnXml');
         await this.#showXml(mrXml);
+        this.#view.setFileName(this.#params.fileName);
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
         if (this.#versions.branchXml) {

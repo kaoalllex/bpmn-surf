@@ -57,6 +57,36 @@ describe('DifferParams', () => {
         );
     });
 
+    it('rawFileUrl uses an explicit path argument when given', () => {
+        const p = new DifferParams(validParams);
+        assert.equal(
+            p.rawFileUrl('base000', 'src/old-name.bpmn'),
+            'https://gitlab.example.com/group/project/-/raw/base000/src/old-name.bpmn'
+        );
+    });
+
+    it('targetFilePath defaults to filePath when not provided', () => {
+        const p = new DifferParams(validParams);
+        assert.equal(p.targetFilePath, 'src/process.bpmn');
+    });
+
+    it('keeps an explicit targetFilePath (renamed file)', () => {
+        const p = new DifferParams({ ...validParams, targetFilePath: 'src/old-name.bpmn' });
+        assert.equal(p.targetFilePath, 'src/old-name.bpmn');
+        assert.equal(p.filePath, 'src/process.bpmn');
+    });
+
+    it('targetFileName defaults to fileName when there is no rename', () => {
+        const p = new DifferParams(validParams);
+        assert.equal(p.targetFileName, 'process.bpmn');
+    });
+
+    it('targetFileName is the basename of targetFilePath when renamed', () => {
+        const p = new DifferParams({ ...validParams, targetFilePath: 'a/b/old-name.bpmn' });
+        assert.equal(p.targetFileName, 'old-name.bpmn');
+        assert.equal(p.fileName, 'process.bpmn');
+    });
+
     it('isSourceVersionDefined is truthy with sourceRef or localFileContent and falsy without both', () => {
         assert.ok(new DifferParams(validParams).isSourceVersionDefined());
 

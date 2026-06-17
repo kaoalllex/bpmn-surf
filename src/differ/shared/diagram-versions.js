@@ -18,7 +18,9 @@ class DiagramVersions {
     }
 
     async loadBranchXml() {
-        this.#branchXml = await this.#loadXml(this.#params.targetRef);
+        // The target (base) side may load from a different path than the MR side
+        // when the file was renamed in the MR (BUG-0002).
+        this.#branchXml = await this.#loadXml(this.#params.targetRef, this.#params.targetFilePath);
     }
 
     async loadMrXml() {
@@ -29,11 +31,11 @@ class DiagramVersions {
         this.#mrXml = this.#params.localFileContent;
     }
 
-    async #loadXml(commitId) {
-        return await loadFileContent(this.#params.rawFileUrl(commitId), false);
+    async #loadXml(commitId, filePath) {
+        return await loadFileContent(this.#params.rawFileUrl(commitId, filePath), false);
     }
 
-    download(fileContent, branchName) {
+    download(fileContent, branchName, fileName = this.#params.fileName) {
         if (!fileContent) {
             // The shown side has no file to download (new/deleted schema).
             alert(`File does not exist in the ${branchName} branch`);
@@ -43,7 +45,7 @@ class DiagramVersions {
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `${branchName}-${this.#params.fileName}`;
+        link.download = `${branchName}-${fileName}`;
         document.body.appendChild(link);
 
         link.click();

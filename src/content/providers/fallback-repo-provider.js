@@ -86,6 +86,10 @@ class FallbackRepoProvider extends RepoProvider {
         return this.#requireActive().getDiffSideLabels(sourceRef, targetRef);
     }
 
+    getTargetFilePath(filePath) {
+        return this.#requireActive().getTargetFilePath(filePath);
+    }
+
     extractBranchCommitIdAndFilePath() {
         return this.#requireActive().extractBranchCommitIdAndFilePath();
     }

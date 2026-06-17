@@ -96,6 +96,54 @@ class GitLabRepoProviderBase extends RepoProvider {
         return await this.domScraper.findSelectedFilePath();
     }
 
+    /**
+     * Resolves the path the target (base) side of the MR must be loaded from.
+     * The path shown on the diffs page is the file's new_path; when the file was
+     * renamed in the MR the target commit still holds it under its old_path, so
+     * loading the new_path from the base ref 404s and no diff is built (BUG-0002).
+     * Looks the rename up in the MR `changes` API and returns the old_path for a
+     * rename. With no MR iid (branch view), no rename, or any error, returns
+     * filePath unchanged — keeping the previous behaviour byte-for-byte.
+     * @param {string} filePath path as shown on the MR diffs page (new_path)
+     * @returns {Promise<string>}
+     */
+    async getTargetFilePath(filePath) {
+        const iid = this.urlParser.extractMrIid(window.location.href);
+        if (!iid) {
+            return filePath;
+        }
+        try {
+            const renameMap = await this.#loadRenameMap(iid);
+            return renameMap.get(filePath) || filePath;
+        } catch (error) {
+            console.warn('cannot resolve target file path; using filePath as target', error);
+            return filePath;
+        }
+    }
+
+    /**
+     * Builds a Map(new_path -> old_path) of renamed files from an MR `changes`
+     * API response. Only rename entries are kept: `renamed_file`, or any change
+     * with differing old/new paths that is not a new/deleted file. Mirror of
+     * HandlerLocator.extractHandlerFileChanges.
+     * @returns {Map<string, string>}
+     */
+    static extractRenameMap(changesResponse) {
+        const changes = (changesResponse && changesResponse.changes) || [];
+        const renameMap = new Map();
+        for (const change of changes) {
+            if (change.new_file || change.deleted_file) {
+                continue;
+            }
+            const renamed = change.renamed_file
+                || (change.new_path && change.old_path && change.new_path !== change.old_path);
+            if (renamed) {
+                renameMap.set(change.new_path, change.old_path);
+            }
+        }
+        return renameMap;
+    }
+
     extractBranchCommitIdAndFilePath() {
         const branchCommitId = this.domScraper.findBranchCommitIdText();
         return this.urlParser.extractBranchCommitIdAndFilePath(
@@ -113,6 +161,21 @@ class GitLabRepoProviderBase extends RepoProvider {
     }
 
     // ==== Private fields and methods ====
+
+    // Rename maps from the MR `changes` API, cached per URL for the page
+    // lifetime so repeated clicks on the same file don't re-fetch.
+    #renameMaps = new Map();
+
+    async #loadRenameMap(iid) {
+        const url = `${this.projectInfo.hostUrl}/api/v4/projects/${this.projectInfo.id}/merge_requests/${iid}/changes`;
+        if (this.#renameMaps.has(url)) {
+            return this.#renameMaps.get(url);
+        }
+        const content = await this.loadContent(url, true);
+        const renameMap = GitLabRepoProviderBase.extractRenameMap(JSON.parse(content));
+        this.#renameMaps.set(url, renameMap);
+        return renameMap;
+    }
 
     async #getProjectId() {
         const url = this.projectInfo.hostUrl + '/api/v4/projects/?simple=true&per_page=100&search=' + this.projectInfo.name;
