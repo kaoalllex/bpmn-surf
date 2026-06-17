@@ -382,11 +382,14 @@ class HandlerLocator {
     }
 
     async #searchSubscriptionLocation(topic, ref) {
-        // Literal search for the annotation pinpoints the handler precisely with
-        // basic search (git grep). With Advanced Search the punctuation may be
-        // tokenized, so we still filter the results below.
-        const term = `ExternalTaskSubscription("${topic}")`;
-        const items = await this.#searchBlobs(term, ref);
+        // Search the bare topic string, not `ExternalTaskSubscription("<topic>")`:
+        // GitLab Advanced Search (Elasticsearch) treats " ( ) as query operators,
+        // so the punctuated form silently returns [] on such instances (BUG-0013),
+        // even though the handler declares the subscription literally. Basic search
+        // (git grep) finds both forms. The topic is a unique identifier, so a bare
+        // search is precise enough; the results are still narrowed to handler files
+        // declaring the subscription below.
+        const items = await this.#searchBlobs(topic, ref);
 
         const handlerItems = items.filter(i => i.path && HandlerLocator.isHandlerFile(i.path));
         if (handlerItems.length === 0) {
