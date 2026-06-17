@@ -103,6 +103,20 @@ class BpmnDiffer {
         // the action so no command is created.
         bpmnJSEventBus.on(BpmnDiffer.EDIT_EVENTS, 2000, () => false);
 
+        // BUG-0014: keep the panel's text fields (input/textarea) selectable and
+        // copyable while still blocking edits. BUG-0011 disabled them via CSS
+        // `pointer-events: none`, which also killed click/select/copy. Instead veto
+        // value mutations with a delegated capture-phase `beforeinput` listener:
+        // it cancels typing, delete, paste and drop, while Ctrl/Cmd+C and selection
+        // never fire `beforeinput`, so copying keeps working. Delegating on the
+        // stable panel container (preact re-renders `.bio-properties-panel` inside
+        // it) survives re-renders without re-binding. Non-text controls (toggles,
+        // buttons, select, contenteditable/FEEL) stay disabled via CSS — see styles.css.
+        const propsContainer = document.getElementById(BpmnDifferView.PROPS_ID);
+        if (propsContainer) {
+            propsContainer.addEventListener('beforeinput', (event) => event.preventDefault(), true);
+        }
+
         bpmnJSEventBus.on('selection.changed', (event) => {
             if (event.newSelection.length !== 1) {
                 return;

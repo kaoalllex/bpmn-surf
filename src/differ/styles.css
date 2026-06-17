@@ -382,9 +382,10 @@ th, td {
    collapsible headers (collapse/expand) and scrolling are intentionally left
    alone so the panel stays browsable. Toggles render as a visually-hidden
    <input> behind a clickable slider, and lists add/remove rows via <button>s,
-   so blocking <input> alone is not enough — target the clickable wrappers too. */
-.bio-properties-panel input,
-.bio-properties-panel textarea,
+   so blocking <input> alone is not enough — target the clickable wrappers too.
+   NB (BUG-0014): plain text <input>/<textarea> are NOT listed here — pointer-events:
+   none on them also killed click/select/copy. Their edits are blocked instead by a
+   `beforeinput` veto in JS (BpmnDiffer), which leaves selection and copy working. */
 .bio-properties-panel select,
 .bio-properties-panel [contenteditable],
 .bio-properties-panel .bio-properties-panel-feel-editor,
