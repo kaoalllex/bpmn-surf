@@ -3,6 +3,18 @@
 class BpmnDiffer {
     static MSG_ID = 'msg_bpmn_71e23e639965407fb9c87f100a56c898';
 
+    // BUG-0011: the differ renders BPMN through the full BpmnJS Modeler (needed by
+    // diff highlighting via `modeling.setColor` and the properties panel), so it
+    // stays editable unless we veto the edit interactions. These are the cancelable
+    // bpmn-js events; a high-priority listener returning false aborts the action
+    // before the default editing handlers run. Viewing (click/selection, hover,
+    // overlays, zoom/pan) is untouched.
+    static EDIT_EVENTS = [
+        'shape.move.start', 'bendpoint.move.start', 'connectionSegment.move.start',
+        'resize.start', 'connect.start', 'global-connect.start',
+        'element.dblclick', 'directEditing.activate'
+    ];
+
     #rawParams;
     #params = null;
     #versions = null;
@@ -85,6 +97,11 @@ class BpmnDiffer {
             this.#elementSearcher
         );
         this.#searchPanel.attach();
+
+        // BUG-0011: veto edit interactions on the canvas. High priority so the
+        // veto fires before the default editing handlers; returning false aborts
+        // the action so no command is created.
+        bpmnJSEventBus.on(BpmnDiffer.EDIT_EVENTS, 2000, () => false);
 
         bpmnJSEventBus.on('selection.changed', (event) => {
             if (event.newSelection.length !== 1) {
@@ -254,12 +271,21 @@ class BpmnDiffer {
     async #showBranch() {
         console.debug('showing branch bpmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchBpmnXml');
+        // Publish the diff to the properties-panel highlighter BEFORE importing.
+        // #showXml re-selects the element, firing selection.changed → panel
+        // highlight; it must read the current direction's diff data, not the
+        // previously shown one (BUG-0011 — switching branches dropped list-entry
+        // colors because the highlight ran against the stale, opposite direction).
+        const diff = this.#versions.mrXml
+            ? this.#prepareDiffData(branchXml, this.#versions.mrXml)
+            : null;
+
         await this.#showXml(branchXml);
         this.#view.setFileName(this.#params.targetFileName);
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
-        if (this.#versions.mrXml) {
-            this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);
+        if (diff) {
+            this.#paintDiffs(diff, DiffType.REMOVE);
         } else {
             console.debug('file not exists in MR branch');
         }
@@ -268,12 +294,18 @@ class BpmnDiffer {
     async #showMr() {
         console.debug('showing mr bpmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrBpmnXml');
+        // See #showBranch: set the diff data before the import-time re-selection
+        // so the panel highlight uses the current direction (BUG-0011).
+        const diff = this.#versions.branchXml
+            ? this.#prepareDiffData(mrXml, this.#versions.branchXml)
+            : null;
+
         await this.#showXml(mrXml);
         this.#view.setFileName(this.#params.fileName);
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
-        if (this.#versions.branchXml) {
-            this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
+        if (diff) {
+            this.#paintDiffs(diff, DiffType.ADD);
         } else {
             console.debug('file not exists in target branch');
         }
@@ -334,12 +366,21 @@ class BpmnDiffer {
         }
     }
 
-    #highlightDiffs(myXml, otherXml, diffTypeForMissing) {
+    // Computes the diff and publishes the properties-panel diff data. Split from
+    // the canvas/table painting (#paintDiffs) so it can run before the import: the
+    // import re-selects the element and the resulting panel highlight must see the
+    // current direction's data (BUG-0011).
+    #prepareDiffData(myXml, otherXml) {
         const diff = this.#xmlComparator.compare(myXml, otherXml);
         // console.debug('diff result', diff);
 
         this.#propertiesPanelHighlighter.setDiffData(
             diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges);
+        return diff;
+    }
+
+    // Paints the diff onto the (already imported) canvas and fills the changes table.
+    #paintDiffs(diff, diffTypeForMissing) {
         this.#diffHighlighter.setDiffElementIds([
             ...diff.missingShapeIds, ...diff.missingRowIds,
             ...diff.changedShapeIds, ...diff.changedRowIds
@@ -362,7 +403,6 @@ class BpmnDiffer {
 
     async #onSelectedElementChanged(elemId) {
         this.#selectedElementId = elemId.replace(/_label$/, "");
-        await this.#hideSchemaEditorControls();
         if (!this.#selectedElementId) {
             return;
         }
@@ -460,14 +500,6 @@ class BpmnDiffer {
         return null;
     }
 
-    async #hideSchemaEditorControls() {
-        document.querySelector('.djs-context-pad').style.display = 'none';
-        // Sometimes controls appear with delay
-        // so hide controls again after some delay
-        await delay(100);
-        document.querySelector('.djs-context-pad').style.display = 'none';
-    }
-
     #hideModelerPalleteAndPoweredByLabel() {
         try {
             document.getElementsByClassName('djs-palette')[0].style.display = 'none';
@@ -479,6 +511,9 @@ class BpmnDiffer {
         } catch (error) {
             console.warn('powered by label not found', error);
         }
+        // BUG-0011: the context-pad (edit-only actions, vetoed via EDIT_EVENTS) is
+        // created lazily on first selection, so it is hidden via CSS (.djs-context-pad)
+        // rather than here — see styles.css.
     }
 
     async #setPropertiesPanelContainerMaxHeight() {

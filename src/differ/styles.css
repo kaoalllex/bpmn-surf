@@ -356,6 +356,44 @@ th, td {
     padding: 2px 2px; 
 }
 
-th { 
-    background: #eee; 
+/* BUG-0011: the BPMN side renders through the full BpmnJS Modeler (needed by
+   diff highlighting and the properties panel), so editing is disabled additively.
+   Edit interactions on the canvas are vetoed in JS (BpmnDiffer.EDIT_EVENTS); the
+   bits below cover the DOM controls that JS cannot conveniently reach. */
+
+/* Hide the edit-only context-pad. It is created lazily on first selection, so a
+   one-time JS hide at init is unreliable — keep it hidden via CSS. */
+.djs-context-pad {
+    display: none !important;
+}
+
+/* Properties panel is view-only: neutralize every edit control. Group/list/
+   collapsible headers (collapse/expand) and scrolling are intentionally left
+   alone so the panel stays browsable. Toggles render as a visually-hidden
+   <input> behind a clickable slider, and lists add/remove rows via <button>s,
+   so blocking <input> alone is not enough — target the clickable wrappers too. */
+.bio-properties-panel input,
+.bio-properties-panel textarea,
+.bio-properties-panel select,
+.bio-properties-panel [contenteditable],
+.bio-properties-panel .bio-properties-panel-feel-editor,
+/* toggle switches: the slider/switcher overlays the hidden checkbox */
+.bio-properties-panel .bio-properties-panel-toggle-switch__switcher,
+.bio-properties-panel .bio-properties-panel-feel-toggle-switch,
+/* checkboxes: clicking the label also toggles the input */
+.bio-properties-panel .bio-properties-panel-checkbox,
+.bio-properties-panel .bio-properties-panel-feel-checkbox,
+/* add / remove list entries and group-header add buttons */
+.bio-properties-panel .bio-properties-panel-add-entry,
+.bio-properties-panel .bio-properties-panel-remove-entry,
+.bio-properties-panel .bio-properties-panel-remove-list-entry,
+.bio-properties-panel .bio-properties-panel-group-header-button,
+.bio-properties-panel .bio-properties-panel-dropdown-button,
+/* FEEL mode popup toggle (switches the value's expression mode) */
+.bio-properties-panel .bio-properties-panel-open-feel-popup {
+    pointer-events: none;
+}
+
+th {
+    background: #eee;
 }

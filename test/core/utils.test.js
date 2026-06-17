@@ -88,8 +88,11 @@ describe('doWithAttempts', () => {
         assert.equal(calls, 2);
     });
 
-    it('returns null when all attempts fail', async () => {
-        const res = await doWithAttempts(() => null, 2, 1);
+    it('returns null after exactly `attempts` checks when all fail', async () => {
+        let calls = 0;
+        const res = await doWithAttempts(() => { calls++; return null; }, 3, 1);
         assert.equal(res, null);
+        // Exactly `attempts` checks, no more (and no extra trailing wait).
+        assert.equal(calls, 3);
     });
 });

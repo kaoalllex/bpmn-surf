@@ -32,7 +32,6 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/differ/shared/diff-type.js',
     // orchestrators / DOM+lib glue
     'src/content/app.js',
-    'src/differ/bpmn/bpmn-differ.js',
     'src/differ/bpmn/diff-highlighter.js',
     'src/differ/bpmn/canvas-viewport.js',
     'src/differ/bpmn/changes-table-view.js',

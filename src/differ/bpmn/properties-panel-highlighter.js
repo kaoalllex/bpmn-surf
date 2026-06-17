@@ -55,7 +55,7 @@ class PropertiesPanelHighlighter {
             // Additionally highlight the individual changed entries inside list groups
             const descriptors = mappingChanges && mappingChanges.get(diffPropGroup);
             if (descriptors) {
-                this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
+                await this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
             }
         }
     }
@@ -74,7 +74,15 @@ class PropertiesPanelHighlighter {
         });
     }
 
-    #highlightListItems(groupContainer, descriptors, elementId, groupName) {
+    async #highlightListItems(groupContainer, descriptors, elementId, groupName) {
+        // The list entries render asynchronously (preact) a tick after the group
+        // header, so an immediate lookup can miss them. Wait until the list has
+        // populated before matching descriptors. The list renders all its current
+        // items in one pass, so once any entry is present a descriptor still
+        // missing is genuinely absent (graceful warn, no further wait).
+        await doWithAttempts(() =>
+            groupContainer.querySelector('.bio-properties-panel-collapsible-entry-header-title'));
+
         for (const descriptor of descriptors) {
             const itemHeaders = this.#findListItemHeaders(groupContainer, descriptor.label);
             if (itemHeaders.length === 0) {
@@ -108,26 +116,41 @@ class PropertiesPanelHighlighter {
         elem.style.backgroundColor = color;
     }
 
-    showConditionExpression(elementId) {
+    async showConditionExpression(elementId) {
         const elem = this.#elementRegistry.get(elementId);
         if (elem.type !== 'bpmn:SequenceFlow') {
             return;
         }
-        const conditionExpressionElem = document.querySelector('#bio-properties-panel-conditionExpression');
-        if (!conditionExpressionElem) {
-            return;
-        }
-        // Hide native expression container
-        conditionExpressionElem.style.display = 'none';
+        // Unlike the group/list-item highlighting (which recolors panel nodes that
+        // preact owns, so the color survives a re-render), here we INJECT a sibling
+        // node next to the native condition input. The panel re-renders
+        // asynchronously on selection (preact) and strips any foreign node during
+        // reconciliation — so injecting once, too early, loses it (BUG-0011: the
+        // removed delay(100) used to hide this; switching between sequence flows
+        // re-exposed it). Inject and confirm the block survived a poll interval,
+        // re-injecting until the panel settles. Re-query the input each attempt —
+        // preact may swap the node when the selection changes.
+        await doWithAttempts(() => {
+            const existing = document.getElementById(PropertiesPanelHighlighter.#CONDITION_DIV_ID);
+            if (existing && existing.dataset.conditionFor === elementId) {
+                return existing; // survived the re-render → done
+            }
+            const conditionExpressionElem = document.querySelector('#bio-properties-panel-conditionExpression');
+            if (!conditionExpressionElem) {
+                return null; // not rendered yet
+            }
+            // Hide the native expression container and (re)draw the formatted one.
+            conditionExpressionElem.style.display = 'none';
+            removeElement(PropertiesPanelHighlighter.#CONDITION_DIV_ID);
 
-        // Add new expression container, previously remove a possible duplicate
-        removeElement(PropertiesPanelHighlighter.#CONDITION_DIV_ID);
-
-        const div = document.createElement('div');
-        div.id = PropertiesPanelHighlighter.#CONDITION_DIV_ID;
-        div.className = 'properties-condition';
-        conditionExpressionElem.parentElement.appendChild(div);
-        this.#drawFormattedCondition(div, conditionExpressionElem, elementId);
+            const div = document.createElement('div');
+            div.id = PropertiesPanelHighlighter.#CONDITION_DIV_ID;
+            div.dataset.conditionFor = elementId;
+            div.className = 'properties-condition';
+            conditionExpressionElem.parentElement.appendChild(div);
+            this.#drawFormattedCondition(div, conditionExpressionElem, elementId);
+            return null; // wait one interval to confirm the block survived
+        }, 30, 50);
     }
 
     #drawFormattedCondition(parentElem, conditionExpressionElem, elementId) {
