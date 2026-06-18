@@ -5,27 +5,27 @@ const UI_BUTTON_TYPE = {
 
 class UIRepoProvider {
     /**
-     * Добавляет кнопку на страницу.
-     * @param {Object} options параметры кнопки
-     * @param {FileType} options.fileType тип файла (bpmn или dmn)
-     * @param {string} options.buttonType тип кнопки: UI_BUTTON_TYPE.DIFF или UI_BUTTON_TYPE.BRANCH
-     * @param {boolean} options.needToSelectLocalFile нужно ли отображать выбор локального файла
-     * @param {Function} options.onButtonClickFunc обработчик клика
+     * Adds a button to the page.
+     * @param {Object} options button parameters
+     * @param {FileType} options.fileType file type (bpmn or dmn)
+     * @param {string} options.buttonType button type: UI_BUTTON_TYPE.DIFF or UI_BUTTON_TYPE.BRANCH
+     * @param {boolean} options.needToSelectLocalFile whether to show the local file selector
+     * @param {Function} options.onButtonClickFunc click handler
      */
     addButton({ fileType, buttonType, needToSelectLocalFile, onButtonClickFunc }) {
         throw new Error('addButton() must be implemented');
     }
 
     /**
-     * Удаляет ранее вставленные кнопки/контейнеры.
+     * Removes previously inserted buttons/containers.
      */
     reset() {
         throw new Error('reset() must be implemented');
     }
 
     /**
-     * Проверяет, относится ли клик к кнопкам плагина.
-     * @param {Event} event событие клика
+     * Checks whether the click belongs to the plugin's buttons.
+     * @param {Event} event click event
      * @returns {boolean}
      */
     isOwnButtonClick(event) {

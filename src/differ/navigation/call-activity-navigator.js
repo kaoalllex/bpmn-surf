@@ -14,9 +14,9 @@
 // same load is still running — until it finishes and the arrow returns.
 class CallActivityNavigator {
     static ARROW_HTML = '&#x2935;';
-    static ARROW_TITLE = 'Открыть вызываемую схему';
+    static ARROW_TITLE = 'Open the called diagram';
     static SPINNER_HTML = '<span class="differ-spinner-inline"></span>';
-    static SPINNER_TITLE = 'Загрузка вызываемой схемы…';
+    static SPINNER_TITLE = 'Loading the called diagram…';
 
     #overlays;
     #elementRegistry;

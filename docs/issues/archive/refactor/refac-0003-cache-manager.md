@@ -1,23 +1,23 @@
 ---
 id: REFAC-0003
-title: Выделить отдельный cache manager
+title: Extract a separate cache manager
 priority: low
 status: done
 ---
 
-## Постановка
+## Statement
 
-Выделить отдельный cache manager.
+Extract a separate cache manager.
 
-## Контекст
+## Context
 
-- Возможное продолжение: перевести на `SingleEntryCache` кэши `init` и `initChangeInfo`.
+- Possible follow-up: move the `init` and `initChangeInfo` caches onto `SingleEntryCache`.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-11 · — · (ветка `fix/backlog-autonomous-fixes`)
+### 2026-06-11 · — · (branch `fix/backlog-autonomous-fixes`)
 
-Кэш `getTargetCommitId` вынесен в класс `SingleEntryCache` (в том же `gitlab-repo-provider.js` — новый файл потребовал бы правки `manifest.json`).
+The `getTargetCommitId` cache was extracted into the `SingleEntryCache` class (in the same `gitlab-repo-provider.js` — a new file would have required editing `manifest.json`).

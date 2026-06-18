@@ -1,10 +1,10 @@
 # Changelog
 
-Формат: одна секция на версию, заголовок `## <версия>`. Свежие — сверху.
-Этот файл — источник блока «Что нового» в окне обновления (FEAT-0012) и
-человекочитаемая история изменений. Обновляется при релизе (скилл `release`).
+Format: one section per version, header `## <version>`. The latest are at the top.
+This file is the source of the "What's new" block in the update window (FEAT-0012) and
+a human-readable change history. Updated on release (the `release` skill).
 
 ## 0.18.0
 
-- Встроенное обновление: уведомление о новой версии, «Что нового», запуск
-  обновления и тумблер автопроверки (FEAT-0012).
+- Built-in updating: notification about a new version, "What's new", launching
+  the update, and an auto-check toggle (FEAT-0012).

@@ -1,20 +1,20 @@
 ---
 id: INFRA-0006
-title: Пользовательская документация
+title: User documentation
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Подготовить пользовательскую документацию по плагину: установка, возможности, как пользоваться (дифф, навигация, поиск и т.д.).
+Prepare user documentation for the plugin: installation, capabilities, how to use it (diff, navigation, search, etc.).
 
-## Контекст
+## Context
 
-- Отличается от [FEAT-0010] (кнопка перехода к документации *процесса* BPMN) — здесь документация по самому плагину для его пользователей.
-- Установка из дистрибутива описывается в [INFRA-0005] — переиспользовать.
+- Differs from [FEAT-0010] (button to navigate to the *process* BPMN documentation) — here it is documentation about the plugin itself for its users.
+- Installation from the distribution is described in [INFRA-0005] — reuse it.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

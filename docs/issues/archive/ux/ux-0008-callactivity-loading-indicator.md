@@ -1,43 +1,43 @@
 ---
 id: UX-0008
-title: Индикатор загрузки при провале в call-activity (и на время рендера)
+title: Loading indicator when diving into a call activity (and during rendering)
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-При клике по плашке «провалиться» в call-activity визуально ничего не происходит: резолв вложенного процесса может занимать от секунды до десятков секунд, а пользователь видит неизменный экран и думает, что клик не сработал. Нужен видимый индикатор загрузки (спиннер/оверлей) от клика до открытия диаграммы вложенного процесса. Спиннера в проекте сейчас нет вообще — его же стоит переиспользовать как страховку на время рендера differ-страницы.
+When clicking the "dive in" badge on a call activity, visually nothing happens: resolving the nested process can take from a second to tens of seconds, while the user sees an unchanged screen and thinks the click did not work. A visible loading indicator (spinner/overlay) is needed from the click until the nested process diagram opens. There is currently no spinner in the project at all — it is worth reusing the same one as a safety net during the differ-page rendering.
 
-## Контекст
+## Context
 
-Поток провала (см. лог):
+The dive-in flow (see the log):
 
-- клик по плашке — `#onDiveIn(processId)` в `src/differ/navigation/call-activity-navigator.js`;
-- резолв — `call-activity-locator.js#resolveProcessFile()`: сначала blob-search по API, при промахе (`blob-search missed process ...`) — fallback;
-- fallback — `process-file-index.js`: `loading project files...` грузит **всё** дерево репозитория постранично (в логе ~80 страниц `repository/tree?...page=N`), затем по очереди парсит каждый `.bpmn`, ищет process id. Это и есть основной источник задержки (десятки секунд);
-- успех → `openDiffer()` (`src/core/utils.js`) открывает новую вкладку; промах → открывается поиск GitLab (`opening GitLab search for: ...`).
+- a click on the badge — `#onDiveIn(processId)` in `src/differ/navigation/call-activity-navigator.js`;
+- resolution — `call-activity-locator.js#resolveProcessFile()`: first a blob-search via the API, on a miss (`blob-search missed process ...`) — a fallback;
+- the fallback — `process-file-index.js`: `loading project files...` loads the **entire** repository tree page by page (in the log ~80 pages of `repository/tree?...page=N`), then parses each `.bpmn` in turn, looking for the process id. This is the main source of delay (tens of seconds);
+- success → `openDiffer()` (`src/core/utils.js`) opens a new tab; a miss → the GitLab search opens (`opening GitLab search for: ...`).
 
-Сейчас на всём этом пути нет ни спиннера, ни оверлея. На differ-странице (классы общие для BPMN и DMN) индикатора загрузки тоже нет: `showCanvas()` просто переключает `visibility: hidden → visible` у canvas.
+Currently there is neither a spinner nor an overlay along this whole path. On the differ page (the classes are shared by BPMN and DMN) there is no loading indicator either: `showCanvas()` simply switches the canvas's `visibility: hidden → visible`.
 
-Направление решения:
-- показывать индикатор сразу по клику на плашку (на исходной differ-странице) и/или на свежеоткрытой вкладке differ'а — до `ready!`;
-- общий механизм спиннера/оверлея для differ-страницы (переиспользуется BPMN и DMN), скрывать в `showCanvas()`;
-- индикатор нужен независимо от ускорения рендера ([PERF-0003]) — даже после оптимизации резолв вложенного процесса через fallback остаётся долгим.
+Direction of the solution:
+- show the indicator right after the click on the badge (on the source differ page) and/or on the freshly opened differ tab — until `ready!`;
+- a shared spinner/overlay mechanism for the differ page (reused by BPMN and DMN), hidden in `showCanvas()`;
+- the indicator is needed regardless of speeding up the rendering ([PERF-0003]) — even after optimization, resolving the nested process via the fallback stays slow.
 
-Связи: [PERF-0003] (асинхронный рендер схемы — тот же спиннер прикрывает задержку), [PERF-0001] (ускорить/сократить сам fallback-обход дерева), [BUG-0005] (блокировка вкладки при первом провале), [BUG-0006] (резолв файла call-activity по process id).
+Links: [PERF-0003] (asynchronous schema rendering — the same spinner covers the delay), [PERF-0001] (speed up/shorten the fallback tree traversal itself), [BUG-0005] (the tab freezing on the first dive-in), [BUG-0006] (resolving the call-activity file by process id).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0008-loading-indicator`
+### 2026-06-16 · claude-opus-4-8 · branch `feature/ux-0008-loading-indicator`
 
-Реализован индикатор загрузки на двух фазах провала в Call Activity.
+Implemented a loading indicator at two phases of diving into a Call Activity.
 
-**Плашка провала (основной долгий резолв processId→файл).** В `call-activity-navigator.js` на время резолва (`#isHandling`) плашка-стрелка ⤵ превращается в спиннер `.differ-spinner-inline` и возвращается в стрелку по завершении (метод `#refreshBadge`, вызывается в начале и в `finally` у `#onDiveIn`). Если во время незавершённого резолва выбрать другой Call Activity, его плашка тоже рисуется спиннером — видно, что та же загрузка ещё идёт.
+**The dive-in badge (the main long resolution processId→file).** In `call-activity-navigator.js`, during the resolution (`#isHandling`) the arrow badge ⤵ turns into a `.differ-spinner-inline` spinner and returns to the arrow on completion (the `#refreshBadge` method, called at the start and in `finally` of `#onDiveIn`). If during an unfinished resolution another Call Activity is selected, its badge is also drawn as a spinner — making it visible that the same loading is still in progress.
 
-**Рендер differ-страницы (страховка, общий для BPMN и DMN).** Новый класс `DifferLoadingOverlay` (`src/differ/shared/differ-loading-overlay.js`) — полноэкранный спиннер; `BpmnDifferView`/`DmnDifferView` показывают его в `build()` и скрывают в `showCanvas()`. Прикрывает пустую вкладку свежеоткрытого (в т.ч. вложенного) дифера до `ready!`.
+**Differ-page rendering (a safety net, shared by BPMN and DMN).** A new class `DifferLoadingOverlay` (`src/differ/shared/differ-loading-overlay.js`) — a full-screen spinner; `BpmnDifferView`/`DmnDifferView` show it in `build()` and hide it in `showCanvas()`. It covers the blank tab of a freshly opened (including nested) differ until `ready!`.
 
-Спиннеры используют общий keyframe `differ-spin` в `styles.css`. Новый файл зарегистрирован в `manifest.json#web_accessible_resources`, `utils.js#loadScripts`, `test/support/scope.js`. Юнит-тесты — `test/differ/shared/differ-loading-overlay.test.js` (8 тестов). `npm test` зелёный (670).
+The spinners use a shared `differ-spin` keyframe in `styles.css`. The new file is registered in `manifest.json#web_accessible_resources`, `utils.js#loadScripts`, `test/support/scope.js`. Unit tests — `test/differ/shared/differ-loading-overlay.test.js` (8 tests). `npm test` green (670).

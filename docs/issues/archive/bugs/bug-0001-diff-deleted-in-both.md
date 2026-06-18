@@ -1,18 +1,18 @@
 ---
 id: BUG-0001
-title: Ошибка диффа для файла, удалённого и в MR, и в master
+title: Diff error for a file deleted in both the MR and master
 priority: high
 status: done
 ---
 
-## Постановка
+## Statement
 
-MR закрыт, но определяется некорректно, и файл удалён в обеих ветках → попытка загрузить из master падает с 404, дифф не строится.
+The MR is closed but is detected incorrectly, and the file is deleted in both branches → the attempt to load from master fails with a 404, and the diff is not built.
 
-## Контекст
+## Context
 
-- MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/3082/diffs#b0f241e6a57a97ab996588742c2f9197941f9250 (файл `assignMeetingTasks.bpmn`)
-- Симптомы: лог `MR is not merged. Target commit id is target branch name: master`; затем:
+- MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/3082/diffs#b0f241e6a57a97ab996588742c2f9197941f9250 (file `assignMeetingTasks.bpmn`)
+- Symptoms: log `MR is not merged. Target commit id is target branch name: master`; then:
   ```
   404 (Not Found) — loading mr bpmn xml
   404 (Not Found) — showing branch bpmn xml file
@@ -21,21 +21,21 @@ MR закрыт, но определяется некорректно, и фай
       at showBpmnBranch (bpmn-differ.js:582:5)
       at showBpmnDiff (bpmn-differ.js:2007:15)
   ```
-- Связано с задачей про удалённые/новые схемы → [UX-0003]; **реализовывать совместно** —
-  в [UX-0003] лежит подробный план (включая случай «обе стороны отсутствуют») и результаты
-  исследования кодовой базы по точкам с файлами/строками.
+- Related to the task about deleted/new schemas → [UX-0003]; **implement together** —
+  [UX-0003] holds a detailed plan (including the "both sides absent" case) and the results
+  of the codebase investigation on points with files/lines.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0003-absent-schemas`
+### 2026-06-16 · claude-opus-4-8 · branch `feature/ux-0003-absent-schemas`
 
-Решено совместно с [UX-0003] (общий код пути «одна/обе стороны отсутствуют»). При обеих пустых
-сторонах оркестраторы (`bpmn-differ.js`, `dmn-differ.js`) вместо раннего `return` с пустым белым
-экраном вызывают `view.showEmptyState('File not found in either version')` — заглушка `DifferEmptyState`
-внутри canvas-ячейки (тулбар с Close/Download остаётся доступным). Краша на `requireDefined` нет
-(ранний выход срабатывает раньше). Подробности реализации и список файлов — в истории [UX-0003].
+Resolved jointly with [UX-0003] (shared code for the "one/both sides absent" path). When both sides
+are empty, the orchestrators (`bpmn-differ.js`, `dmn-differ.js`), instead of an early `return` with an empty white
+screen, call `view.showEmptyState('File not found in either version')` — a `DifferEmptyState` placeholder
+inside the canvas cell (the toolbar with Close/Download stays available). There is no crash on `requireDefined`
+(the early exit fires earlier). Implementation details and the file list — in the [UX-0003] log.
 
-Тесты `npm test` зелёные. DOM-проверка обеих пустых сторон — по ручному чеклисту.
+`npm test` is green. The DOM check for both empty sides — via the manual checklist.

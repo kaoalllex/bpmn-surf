@@ -1,119 +1,119 @@
 ---
 id: BUG-0015
-title: Не выделяется и не копируется текст подписей на канве и текст комментариев (регрессия BUG-0011)
+title: Label text on the canvas and comment text can't be selected or copied (BUG-0011 regression)
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-В BPMN-диффере на канве нельзя выделить мышью и скопировать (`Ctrl/Cmd+C`) текст
-подписей элементов — имена задач/шагов, гейтвеев, событий — а также текст
-комментариев (`bpmn:TextAnnotation`). Двойной клик по элементу больше ничего не
-открывает, выделить SVG-текст напрямую тоже не получается.
+In the BPMN differ, on the canvas, you can't select with the mouse and copy (`Ctrl/Cmd+C`) the
+text of element labels — task/step names, gateways, events — nor the text
+of comments (`bpmn:TextAnnotation`). Double-clicking an element no longer opens
+anything, and selecting the SVG text directly doesn't work either.
 
-Нужно вернуть возможность **выделять и копировать** текст подписей и комментариев
-прямо на схеме, **сохранив запрет на редактирование** (не вернув [BUG-0011]).
+We need to restore the ability to **select and copy** label and comment text
+right on the schema, **while keeping the editing ban** (without bringing back [BUG-0011]).
 
-## Контекст
+## Context
 
-### Корневая причина
+### Root cause
 
-Регрессия фикса [BUG-0011]. До него единственным путём получить текст подписи в
-выделяемом/копируемом виде был **двойной клик → direct editing**: bpmn-js открывал
-поверх элемента contenteditable-оверлей `.djs-direct-editing-content` с текстом
-подписи, откуда текст можно было выделить и скопировать.
+A regression of the [BUG-0011] fix. Before it, the only way to get the label text in a
+selectable/copyable form was a **double-click → direct editing**: bpmn-js opened a
+contenteditable overlay `.djs-direct-editing-content` over the element with the label
+text, from which the text could be selected and copied.
 
-[BUG-0011] заглушил именно этот путь. В `BpmnDiffer.EDIT_EVENTS`
-(`src/differ/bpmn/bpmn-differ.js:12`) среди вето-событий есть `element.dblclick` и
-`directEditing.activate`, а высокоприоритетный слушатель `() => false`
-(`bpmn-differ.js:104`) отменяет активацию редактирования до того, как откроется
-текстовый оверлей. Двойной клик перестал открывать поле → копировать неоткуда.
+[BUG-0011] muted exactly this path. In `BpmnDiffer.EDIT_EVENTS`
+(`src/differ/bpmn/bpmn-differ.js:12`) among the veto events are `element.dblclick` and
+`directEditing.activate`, and the high-priority listener `() => false`
+(`bpmn-differ.js:104`) cancels editing activation before the text
+overlay opens. The double-click stopped opening the field → nowhere to copy from.
 
-Сами SVG-подписи (`<text class="djs-label">`) нативно не выделяются: поверх элемента
-лежит прозрачный hit-слой (`.djs-hit-all`), перехватывающий указатель ради
-`element.click` (выделение). bpmn-js не рассчитан на выделение текста на канве.
+The SVG labels themselves (`<text class="djs-label">`) are not natively selectable: over the element
+lies a transparent hit layer (`.djs-hit-all`), intercepting the pointer for the sake of
+`element.click` (selection). bpmn-js is not designed for selecting text on the canvas.
 
-Это та же по сути проблема «нельзя редактировать, но надо копировать», что и
-[BUG-0014] (поля панели свойств) — только на канве, а не в панели.
+This is essentially the same "can't edit but need to copy" problem as
+[BUG-0014] (properties-panel fields) — only on the canvas, not in the panel.
 
-### Решение (согласовано с пользователем) — вернуть direct editing + veto `beforeinput`
+### Solution (agreed with the user) — restore direct editing + `beforeinput` veto
 
-Тот же «аддитивный veto», что в [BUG-0014] (поля панели) и [BUG-0011] (EventBus на
-канве), применённый к direct editing:
+The same "additive veto" as in [BUG-0014] (panel fields) and [BUG-0011] (EventBus on the
+canvas), applied to direct editing:
 
-- Убрать `element.dblclick` и `directEditing.activate` из `BpmnDiffer.EDIT_EVENTS`
-  (`bpmn-differ.js:12`) — двойной клик снова открывает contenteditable-оверлей с
-  текстом подписи, текст выделяется и копируется. Остальные edit-события
+- Remove `element.dblclick` and `directEditing.activate` from `BpmnDiffer.EDIT_EVENTS`
+  (`bpmn-differ.js:12`) — the double-click again opens the contenteditable overlay with the
+  label text, the text is selected and copied. The other edit events
   (`shape.move.start`, `bendpoint.move.start`, `connectionSegment.move.start`,
-  `resize.start`, `connect.start`, `global-connect.start`) остаются вето.
-- Правки этого оверлея блокировать **делегированным capture-фазным слушателем
-  `beforeinput`** на стабильном контейнере канвы
-  (`#${BpmnDifferView.CANVAS_ID}` — `bpmn-differ-view.js:5`), внутри которого bpmn-js
-  лениво создаёт `.djs-direct-editing-content`. Слушатель вызывает `preventDefault()`:
-  гасит набор символов, backspace/delete, вставку (`insertFromPaste`) и drop
-  (`insertFromDrop`); при этом `Ctrl/Cmd+C` и выделение `beforeinput` не порождают →
-  копирование сохраняется. Делегирование на контейнере переживает пересоздание
-  оверлея без полла/MutationObserver. Делать рядом с `beforeinput`-veto панели
-  свойств в `show()` (`bpmn-differ.js:115-118`).
+  `resize.start`, `connect.start`, `global-connect.start`) stay vetoed.
+- Block edits to this overlay with **a delegated capture-phase `beforeinput` listener**
+  on the stable canvas container
+  (`#${BpmnDifferView.CANVAS_ID}` — `bpmn-differ-view.js:5`), inside which bpmn-js
+  lazily creates `.djs-direct-editing-content`. The listener calls `preventDefault()`:
+  it mutes typing, backspace/delete, paste (`insertFromPaste`) and drop
+  (`insertFromDrop`); meanwhile `Ctrl/Cmd+C` and selection don't produce `beforeinput` →
+  copying is preserved. Delegation on the container survives the overlay's
+  recreation without a poll/MutationObserver. Do it next to the properties-panel
+  `beforeinput` veto in `show()` (`bpmn-differ.js:115-118`).
 
-Завершение редактирования (`directEditing.complete` на blur/Enter/Escape) при
-неизменённом тексте — фактически no-op: `labelEditingProvider` вызвал бы
-`modeling.updateLabel` с тем же значением, но текст не менялся (`beforeinput`
-заблокирован), а диффер ничего не коммитит. Если на проверке выяснится, что пустая
-команда мешает (например, засоряет undo-стек или мигает подсветкой) — дополнительно
-заглушить через вето `commandStack.element.updateLabel.canExecute` или
-`directEditing.complete`; в базовом варианте не требуется.
+Completing editing (`directEditing.complete` on blur/Enter/Escape) with
+unchanged text is effectively a no-op: `labelEditingProvider` would call
+`modeling.updateLabel` with the same value, but the text wasn't changed (`beforeinput`
+is blocked), and the differ commits nothing. If verification reveals that an empty
+command is a problem (e.g., it litters the undo stack or flickers highlighting) — additionally
+mute it via a veto on `commandStack.element.updateLabel.canExecute` or
+`directEditing.complete`; in the basic variant this is not required.
 
-### Чего НЕ делать (вне scope)
+### What NOT to do (out of scope)
 
-- **Вариант B — нативное выделение SVG-текста через CSS `user-select`** отклонён:
-  hit-слой перехватывает указатель, кросс-браузерно хрупко, неудобное выделение
-  между элементами, плохо покрывает комментарии.
-- Не возвращать в `EDIT_EVENTS` остальные edit-события — двигать/ресайзить/соединять
-  по-прежнему нельзя.
-- DMN-сторона не затронута (dmn-viewer уже read-only, своего direct editing нет).
+- **Variant B — native selection of the SVG text via CSS `user-select`** was rejected:
+  the hit layer intercepts the pointer, it's cross-browser fragile, selection
+  between elements is awkward, and it poorly covers comments.
+- Don't return the other edit events to `EDIT_EVENTS` — moving/resizing/connecting
+  is still impossible.
+- The DMN side is unaffected (dmn-viewer is already read-only, has no direct editing of its own).
 
-### Регрессионный чек-лист (после фикса)
+### Regression checklist (after the fix)
 
-1. Двойной клик по задаче/гейтвею/событию открывает текст подписи; его можно
-   **выделить и скопировать** (`Ctrl/Cmd+C`).
-2. То же для текста комментария (`bpmn:TextAnnotation`).
-3. Редактирование запрещено: набор символов, backspace/delete, вставка, drop в
-   открытый оверлей **не меняют подпись/текст** (значение на схеме не меняется).
-4. Перетаскивание элементов, движение waypoints/изломов, ресайз, соединение —
-   по-прежнему запрещены ([BUG-0011] не сломан).
-5. Выделение кликом, панель свойств, подсветка диффа, поиск, плашки навигации —
-   без изменений.
-6. Копирование из полей панели свойств ([BUG-0014]) — без изменений.
+1. Double-clicking a task/gateway/event opens the label text; it can be
+   **selected and copied** (`Ctrl/Cmd+C`).
+2. The same for comment text (`bpmn:TextAnnotation`).
+3. Editing is forbidden: typing characters, backspace/delete, paste, drop into
+   the open overlay **don't change the label/text** (the value on the schema doesn't change).
+4. Dragging elements, moving waypoints/bends, resizing, connecting —
+   still forbidden ([BUG-0011] is not broken).
+5. Selection by click, the properties panel, diff highlighting, search, navigation badges —
+   unchanged.
+6. Copying from the properties-panel fields ([BUG-0014]) — unchanged.
 
-### Затронутые файлы
+### Affected files
 
-- `src/differ/bpmn/bpmn-differ.js` — убрать `element.dblclick`/`directEditing.activate`
-  из `EDIT_EVENTS`; навесить делегированный `beforeinput`-veto на контейнер канвы
-  (`BpmnDifferView.CANVAS_ID`) рядом с veto панели свойств в `show()`. Поправить тест
-  состава `EDIT_EVENTS` (`test/differ/bpmn/bpmn-differ.test.js`).
+- `src/differ/bpmn/bpmn-differ.js` — remove `element.dblclick`/`directEditing.activate`
+  from `EDIT_EVENTS`; attach a delegated `beforeinput` veto on the canvas container
+  (`BpmnDifferView.CANVAS_ID`) next to the properties-panel veto in `show()`. Fix the test
+  of the `EDIT_EVENTS` composition (`test/differ/bpmn/bpmn-differ.test.js`).
 
-### Связи
+### Relations
 
-- Регрессия [BUG-0011] (отключение редактирования BPMN, сохранив просмотр).
-- Прямой аналог [BUG-0014] (то же копирование-без-редактирования, но в панели свойств) —
-  переиспользует приём `beforeinput`-veto.
-- Близко по теме: [BUG-0009] (Ctrl+C блокируется обработчиком) — другой источник, не путать.
+- A regression of [BUG-0011] (disabling BPMN editing while keeping viewing).
+- A direct analog of [BUG-0014] (the same copy-without-editing, but in the properties panel) —
+  reuses the `beforeinput` veto technique.
+- Close in topic: [BUG-0009] (Ctrl+C blocked by a handler) — a different source, don't confuse them.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-18 · claude-opus-4-8 · ветка `fix/bug-0015-canvas-text-copy`
+### 2026-06-18 · claude-opus-4-8 · branch `fix/bug-0015-canvas-text-copy`
 
-Реализован согласованный вариант. Убраны `element.dblclick` и
-`directEditing.activate` из `BpmnDiffer.EDIT_EVENTS` (`bpmn-differ.js`) — двойной
-клик снова открывает contenteditable-оверлей подписи, текст выделяется и
-копируется. Правки оверлея заблокированы делегированным capture-фазным
-`beforeinput`-veto на контейнере канвы (`BpmnDifferView.CANVAS_ID`) рядом с
-аналогичным veto панели свойств в `show()`: гасит набор/delete/paste/drop, а
-`Ctrl/Cmd+C` и выделение `beforeinput` не порождают → копирование сохраняется.
-Пустая `updateLabel`-команда на blur/Enter не понадобилась (текст не менялся).
-Тест состава `EDIT_EVENTS` обновлён. 765 tests passed.
+The agreed variant was implemented. Removed `element.dblclick` and
+`directEditing.activate` from `BpmnDiffer.EDIT_EVENTS` (`bpmn-differ.js`) — the double-
+click again opens the contenteditable label overlay, the text is selected and
+copied. Edits to the overlay are blocked by a delegated capture-phase
+`beforeinput` veto on the canvas container (`BpmnDifferView.CANVAS_ID`) next to the
+analogous properties-panel veto in `show()`: it mutes typing/delete/paste/drop, while
+`Ctrl/Cmd+C` and selection don't produce `beforeinput` → copying is preserved.
+An empty `updateLabel` command on blur/Enter was not needed (the text wasn't changed).
+The `EDIT_EVENTS` composition test was updated. 765 tests passed.

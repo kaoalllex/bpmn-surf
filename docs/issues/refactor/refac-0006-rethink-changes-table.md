@@ -1,19 +1,19 @@
 ---
 id: REFAC-0006
-title: Переосмыслить нижнюю таблицу изменений
+title: Rethink the bottom changes table
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Переосмыслить нижнюю таблицу изменений в футере (`changes-table-view.js`) — возможно, она вообще не нужна в текущем виде. Решить, что с ней делать: упростить / заменить / убрать.
+Rethink the bottom changes table in the footer (`changes-table-view.js`) — it may not be needed at all in its current form. Decide what to do with it: simplify / replace / remove.
 
-## Контекст
+## Context
 
-Решить судьбу таблицы прежде, чем наращивать туда новую информацию (например, список изменённых делегатов из [FEAT-0003]).
+Decide the fate of the table before piling new information into it (for example, the list of changed delegates from [FEAT-0003]).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

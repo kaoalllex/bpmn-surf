@@ -1,86 +1,86 @@
-# Задачи BPMN Diff — формат и правила
+# BPMN Diff tasks — format and rules
 
-Бэклог хранится **по одному файлу на задачу**. Это даёт точечное чтение (агент открывает только нужную задачу, а не весь список), независимую историю у каждой задачи и чистые git-диффы.
+The backlog is stored **one file per task**. This gives pinpoint reading (the agent opens only the needed task, not the whole list), an independent history for each task, and clean git diffs.
 
-## Где что лежит
+## Where things live
 
 ```
 docs/issues/
-  README.md          # этот файл — формат и правила (читать перед работой с задачами)
-  bugs/              # коды BUG-NNNN     — активные (open / in-progress / partial)
-  features/          # коды FEAT-NNNN
-  ux/                # коды UX-NNNN
-  refactor/          # коды REFAC-NNNN
-  infra/             # коды INFRA-NNNN
-  perf/              # коды PERF-NNNN
-  ideas/             # коды IDEA-NNNN
-  archive/           # полностью закрытые (status: done), та же разбивка по типам внутри
+  README.md          # this file — format and rules (read before working with tasks)
+  bugs/              # codes BUG-NNNN     — active (open / in-progress / partial)
+  features/          # codes FEAT-NNNN
+  ux/                # codes UX-NNNN
+  refactor/          # codes REFAC-NNNN
+  infra/             # codes INFRA-NNNN
+  perf/              # codes PERF-NNNN
+  ideas/             # codes IDEA-NNNN
+  archive/           # fully closed (status: done), the same breakdown by type inside
     bugs/  features/  ux/  refactor/  infra/  perf/  ideas/
 ```
 
-**Активный бэклог** = всё, что лежит **вне** `archive/` (статусы `open` / `in-progress` / `partial`). **Архив** (`archive/<тип>/`) — только полностью завершённые задачи (`status: done`). Частично сделанные (`partial`) остаются в активной зоне — работа не закончена.
+**Active backlog** = everything that lies **outside** `archive/` (statuses `open` / `in-progress` / `partial`). **Archive** (`archive/<type>/`) — only fully completed tasks (`status: done`). Partially done ones (`partial`) stay in the active zone — the work is not finished.
 
-Тип задачи определяется папкой (с поправкой на `archive/`) и префиксом кода — отдельного поля `type` во frontmatter нет. Перемещение файла связи не ломает: ссылки между задачами идут по коду (`[BUG-0001]`), а не по пути.
+The task type is determined by the folder (with an adjustment for `archive/`) and the code prefix — there is no separate `type` field in the frontmatter. Moving a file does not break links: links between tasks go by code (`[BUG-0001]`), not by path.
 
-Имя файла: `<код в нижнем регистре>-<короткий-английский-слаг>.md`, напр. `bug-0001-diff-deleted-in-both.md`. Канонический код (`BUG-0001`) хранится во frontmatter, имя файла — производное, kebab-case, ASCII.
+File name: `<code in lowercase>-<short-english-slug>.md`, e.g. `bug-0001-diff-deleted-in-both.md`. The canonical code (`BUG-0001`) is stored in the frontmatter, the file name is derived, kebab-case, ASCII.
 
-## Формат файла задачи
+## Task file format
 
 ```markdown
 ---
 id: BUG-0001
-title: Краткий заголовок задачи
+title: Short task title
 priority: high     # high | medium | low
 status: open       # open | in-progress | partial | done
 ---
 
-## Постановка
+## Statement
 
-Что не так / что нужно сделать. Суть задачи без истории.
+What is wrong / what needs to be done. The essence of the task without history.
 
-## Контекст
+## Context
 
-Ссылки на MR, логи, симптомы, затронутые файлы, связи с другими задачами
-(`[BUG-0001]`, `[FEAT-0003]` — через код, ссылкой на файл при необходимости).
+Links to MRs, logs, symptoms, affected files, links with other tasks
+(`[BUG-0001]`, `[FEAT-0003]` — by code, with a link to the file if needed).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task — a separate entry by the template below.
+     Add new entries on top (freshest first). -->
 ```
 
-### Запись в «Истории работы»
+### Work log entry
 
-Заголовок записи несёт **артефакты работы ИИ** (минимальный набор): модель · дата · коммит/ветка.
+The entry header carries the **artifacts of the AI's work** (the minimal set): model · date · commit/branch.
 
 ```markdown
-### 2026-06-14 · claude-opus-4-8 · `abcdef1` (ветка `feature/foo`)
+### 2026-06-14 · claude-opus-4-8 · `abcdef1` (branch `feature/foo`)
 
-Что было сделано в этой сессии: суть изменения, ключевые файлы, что осталось.
+What was done in this session: the essence of the change, key files, what remains.
 ```
 
-- **дата** — в формате `YYYY-MM-DD`;
-- **модель** — точный id (`claude-opus-4-8`, `claude-sonnet-4-6`, …); для записей, перенесённых из старого `ISSUES.md` до введения учёта, ставить `—`;
-- **коммит** — короткий SHA со ссылкой при наличии; если коммита ещё нет (работа в ветке) — указать ветку.
-- Токены и время сессии **не** фиксируем: агент не получает их достоверно. При необходимости добавляются вручную.
+- **date** — in the format `YYYY-MM-DD`;
+- **model** — the exact id (`claude-opus-4-8`, `claude-sonnet-4-6`, …); for entries carried over from the old `ISSUES.md` before tracking was introduced, put `—`;
+- **commit** — short SHA with a link if available; if there is no commit yet (work in a branch) — specify the branch.
+- Tokens and session time are **not** recorded: the agent does not get them reliably. If needed, they are added manually.
 
-## Правила работы с задачами
+## Rules for working with tasks
 
-1. **Заведение.** Новая задача → новый файл в папке своего типа со следующим свободным номером в этой группе. Номер ищется по **обеим зонам** (активной и `archive/<тип>/`), чтобы коды не переиспользовались. Заполнить `Постановку` и `Контекст`; `status: open`; `Историю` оставить пустой.
-2. **Во время работы.** Берясь за задачу — `status: in-progress`. По завершении — `done`; если сделана часть, а остальное осознанно отложено — `partial` (в `Контексте`/`Истории` явно перечислить, что осталось).
-3. **Перенос в архив.** Как только выставлен `status: done` — перенести файл в `archive/<тип>/` тем же `git mv` (имя файла и код не меняются). `partial` в архив **не** переносить. Если задачу переоткрыли — вернуть файл из `archive/<тип>/` в активную папку и сменить `status`.
-4. **По завершении сессии ИИ над задачей** — добавить запись в `Историю работы` по шаблону выше, обновить `status` и (при `done`) перенести в архив. Это требование закреплено в скиллах `feature`/`fix`/`refactor`.
-5. **Связи** между задачами — по коду (`[FEAT-0003]`), не дублируя текст.
-6. **Индекс не ведётся вручную.** Активный бэклог обозревается листингом папок вне `archive/`; тонкая фильтрация — поиском по frontmatter:
+1. **Creating.** A new task → a new file in the folder of its type with the next free number in that group. The number is searched across **both zones** (the active one and `archive/<type>/`), so that codes are not reused. Fill in the `Statement` and `Context`; `status: open`; leave the `Work log` empty.
+2. **During work.** When taking on a task — `status: in-progress`. On completion — `done`; if part is done and the rest is deliberately postponed — `partial` (in the `Context`/`Work log` explicitly list what remains).
+3. **Moving to the archive.** As soon as `status: done` is set — move the file to `archive/<type>/` with the same `git mv` (the file name and code do not change). `partial` is **not** moved to the archive. If a task was reopened — return the file from `archive/<type>/` to the active folder and change the `status`.
+4. **On completion of an AI session on a task** — add an entry to the `Work log` by the template above, update the `status` and (on `done`) move it to the archive. This requirement is enshrined in the `feature`/`fix`/`refactor` skills.
+5. **Links** between tasks — by code (`[FEAT-0003]`), without duplicating the text.
+6. **The index is not maintained by hand.** The active backlog is surveyed by listing the folders outside `archive/`; fine filtering — by searching the frontmatter:
    ```
    grep -rn "^title:\|^status:\|^priority:" docs/issues --exclude-dir=archive
    ```
-   Убрать `--exclude-dir=archive`, чтобы захватить и закрытые.
+   Remove `--exclude-dir=archive` to also capture the closed ones.
 
-## Связанные материалы
+## Related materials
 
-- **Анализ аналогов** (другие BPMN-плагины): https://chat.example.com/example/pl/mubj8tqxsprcxft8r1dny4k4ph
-- **Отдельная система просмотра BPMN**: https://metrics.example.com
-- **BPMN Diff для CI/CD** (gradle-plugin): https://gitlab.example.com/example-tools/bpmn-diff-gradle-plugin
-  - Обсуждение: https://chat.example.com/example/pl/dk3pocadipbs7nzpwo3h617yne
-- **Плагин просмотра BPMN в GitLab**: https://gitlab.example.com/example-infra/gitlab-bpmn-viewer
+- **Analysis of analogues** (other BPMN plugins): https://chat.example.com/example/pl/mubj8tqxsprcxft8r1dny4k4ph
+- **A separate BPMN viewing system**: https://metrics.example.com
+- **BPMN Diff for CI/CD** (gradle-plugin): https://gitlab.example.com/example-tools/bpmn-diff-gradle-plugin
+  - Discussion: https://chat.example.com/example/pl/dk3pocadipbs7nzpwo3h617yne
+- **BPMN viewer plugin in GitLab**: https://gitlab.example.com/example-infra/gitlab-bpmn-viewer

@@ -1,36 +1,36 @@
 ---
 name: analyze
-description: Анализ и объяснение архитектуры, логики и структуры кода BPMN Diff — без внесения изменений. Использовать, когда нужно понять или объяснить существующий код: "как работает", "почему", "что делает", "разбери", "изучи", "объясни", "архитектура", "поток данных". Также как первый шаг перед правками в незнакомом коде. НЕ использовать, если просят изменить, добавить или починить, — тогда нужный скилл (feature/fix/refactor) сам при необходимости проанализирует код.
+description: Analyze and explain the architecture, logic, and structure of the BPMN Diff code — without making changes. Use when you need to understand or explain existing code: "how does it work", "why", "what does it do", "break it down", "study", "explain", "architecture", "data flow". Also as a first step before editing unfamiliar code. Do NOT use when asked to change, add, or fix — then the relevant skill (feature/fix/refactor) will analyze the code itself if needed.
 ---
 
-# Анализ кода
+# Code analysis
 
-## Когда использовать
-- Вопросы "как работает X", "объясни логику Y", "анализ архитектуры"
-- Изучение кода перед изменениями
-- Понимание взаимосвязей между файлами
+## When to use
+- "How does X work", "explain the logic of Y", "architecture analysis" questions
+- Studying code before changes
+- Understanding the relationships between files
 
-## Как анализировать
-1. Начни с `docs/architecture.md` — там описана архитектура, поток данных, два scope'а скриптов, общие классы differ-страницы (bpmn↔dmn) и таблица ключевых файлов
-2. Читай окружающий контекст: какие глобальные функции/классы используются. Scope'ов два: content scripts GitLab-страницы (порядок в manifest.json) и страница differ'а (порядок в utils.js#loadScripts)
-3. Прослеживай поток данных: App → RepoProvider → openDiffer → differ (bpmn-differ.js/dmn-differ.js — классы-оркестраторы; логика в файлах-классах: params, versions, view, comparator, highlighter, viewport и т.д.)
-4. Для больших файлов сначала Grep по именам функций/методов, затем читай нужные секции
-5. `libs/` — внешние библиотеки; изучай их API по использованию в коде проекта, не по исходникам
+## How to analyze
+1. Start with `docs/architecture.md` — it describes the architecture, the data flow, the two script scopes, the shared differ-page classes (bpmn↔dmn), and the table of key files
+2. Read the surrounding context: which global functions/classes are used. There are two scopes: content scripts of the GitLab page (order in manifest.json) and the differ page (order in utils.js#loadScripts)
+3. Trace the data flow: App → RepoProvider → openDiffer → differ (bpmn-differ.js/dmn-differ.js — orchestrator classes; the logic lives in class files: params, versions, view, comparator, highlighter, viewport, etc.)
+4. For large files, first Grep by function/method names, then read the needed sections
+5. `libs/` — external libraries; study their API by how it is used in the project code, not by their sources
 
-## Формат ответа
+## Response format
 
 ```
-## Резюме
-Что делает компонент (2–3 предложения)
+## Summary
+What the component does (2–3 sentences)
 
-## Как работает
-Основные шаги/алгоритм
+## How it works
+Main steps/algorithm
 
-## Зависимости
-От чего зависит, что использует
+## Dependencies
+What it depends on, what it uses
 
-## Примечания
-Edge cases, потенциальные проблемы (если есть)
+## Notes
+Edge cases, potential problems (if any)
 ```
 
-Объясняй что делает код и почему так сделано; на проблемы указывай, улучшения предлагай только если просят.
+Explain what the code does and why it is done this way; point out problems, and propose improvements only if asked.

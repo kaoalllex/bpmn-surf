@@ -1,7 +1,7 @@
 // Floating search panel for the BPMN differ page (FEAT-0006 + BUG-0007).
 //
 // Opens on Ctrl/Cmd+F — matched by KeyboardEvent.code ('KeyF'), which is
-// layout-independent, so it works on a Russian keyboard layout too where the
+// layout-independent, so it works on a non-Latin keyboard layout too where the
 // built-in bpmn-js search broke (BUG-0007). preventDefault on that keydown also
 // suppresses Chrome's own find bar, so the differ tab always uses this search.
 //

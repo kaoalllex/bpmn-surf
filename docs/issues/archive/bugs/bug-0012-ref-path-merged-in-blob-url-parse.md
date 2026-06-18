@@ -1,28 +1,28 @@
 ---
 id: BUG-0012
-title: В режиме просмотра ref склеивается с путём → поиск хендлера не находит источник
+title: In view mode the ref is merged with the path → the handler search doesn't find the source
 priority: high
 status: done
 ---
 
-## Постановка
+## Statement
 
-В режиме **просмотра** BPMN-схемы (страница `/-/blob/<SHA>/<path>`, не diff MR) при
-переходе к хендлеру service-таски поиск исходника падает:
+In BPMN schema **view** mode (the `/-/blob/<SHA>/<path>` page, not an MR diff), when
+navigating to a service task's handler, the source search fails:
 
 ```
 handler source not found for topic 'ModuleA_Agreement_PreApprove_GenerateAdditionalAgreementToCreditAgreement'
 ```
 
-Сама диаграмма при этом открывается нормально — баг проявляется только на навигации к хендлеру.
+The diagram itself opens normally — the bug shows up only on navigation to the handler.
 
-## Контекст
+## Context
 
-Воспроизведение:
-- Схема: `https://gitlab.example.com/example-project/example-repo/-/blob/a4084af3387695c4182c04522b6fa644bb033d78/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
-- Таска: `GenerateAdditionalAgreementToCreditAgreement`.
+Reproduction:
+- Schema: `https://gitlab.example.com/example-project/example-repo/-/blob/a4084af3387695c4182c04522b6fa644bb033d78/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
+- Task: `GenerateAdditionalAgreementToCreditAgreement`.
 
-В лог уходит Search API запрос, где `ref` = **SHA + путь к каталогу схемы**, а не чистый SHA:
+A Search API request goes to the log where `ref` = **SHA + the path to the schema directory**, not a clean SHA:
 
 ```
 GET /api/v4/projects/118208/search?scope=blobs
@@ -30,81 +30,81 @@ GET /api/v4/projects/118208/search?scope=blobs
     &search=class%20ModuleA_Agreement_PreApprove_GenerateAdditionalAgreementToCreditAgreement
 ```
 
-Ответ — `200` и тело `[]`: GitLab берёт `ref` буквально как имя ветки/коммита, такого ref нет → ничего не найдено.
+The response — `200` and the body `[]`: GitLab takes `ref` literally as a branch/commit name, no such ref exists → nothing found.
 
 ### Root cause
 
-Неверный разбор blob-URL в `GitLabUrlParser.extractBranchCommitIdAndFilePath`
-(`src/content/providers/gitlab/gitlab-url-parser.js:121-144`). Совпали три условия:
+Incorrect blob-URL parsing in `GitLabUrlParser.extractBranchCommitIdAndFilePath`
+(`src/content/providers/gitlab/gitlab-url-parser.js:121-144`). Three conditions coincided:
 
-1. **DOM-подсказка пуста.** `branchCommitIdHint` берётся из
-   `domScraper.findBranchCommitIdText()` (`gitlab-repo-provider-base.js:148`). На
-   странице файла, открытого по голому коммиту, селектор ref не сматчился → `null`.
-2. **Первичный regex не сработал.** Он анкорится на имя проекта:
+1. **The DOM hint is empty.** `branchCommitIdHint` is taken from
+   `domScraper.findBranchCommitIdText()` (`gitlab-repo-provider-base.js:148`). On the
+   page of a file opened by a bare commit, the ref selector didn't match → `null`.
+2. **The primary regex didn't fire.** It is anchored on the project name:
    `` `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)` `` (`projectName = "example-repo"`).
-   Repo-relative путь файла (`business/module-a/src/…`) не содержит `example-repo/`,
-   поэтому regex не матчится. Эта эвристика в принципе работает, только если верхний
-   каталог совпадает с именем проекта — у этого модуля он другой.
-3. **Fallback жадно съел путь.** Без подсказки `branchCommitId` собирается из
-   альтернатив, последняя из которых — catch-all `[0-9a-zA-Z-_./]+` (включает `/`),
-   жадная: `` `\/-\/blob\/(master|develop|feature\/…|bugfix\/…|[0-9a-zA-Z-_./]+)\/(.*)` ``.
-   Группа захватила всё до последнего `/`:
+   The repo-relative file path (`business/module-a/src/…`) does not contain `example-repo/`,
+   so the regex doesn't match. This heuristic only works in principle if the top
+   directory matches the project name — for this module it is different.
+3. **The fallback greedily ate the path.** Without a hint, `branchCommitId` is assembled from
+   alternatives, the last of which is the catch-all `[0-9a-zA-Z-_./]+` (includes `/`),
+   greedy: `` `\/-\/blob\/(master|develop|feature\/…|bugfix\/…|[0-9a-zA-Z-_./]+)\/(.*)` ``.
+   The group captured everything up to the last `/`:
    `branchCommitId = a4084…/business/…/agreement`, `filePath = AgreementPreApprove.bpmn`.
 
-**Почему просмотр всё-таки работает, а поиск нет.** Испорченный `targetRef`
-используется двумя несовместимыми способами:
-- Загрузка диаграммы: `rawFileUrl` = `${projectUrl}/-/raw/${ref}/${filePath}`
-  (`differ-params.js:52`). Конкатенация **восстанавливает полный путь**, а endpoint
-  `/-/raw/` сам разделяет ref и path (распознаёт 40-символьный SHA) → схема грузится.
-- Поиск хендлера: `#searchBlobs` шлёт `ref` отдельным query-параметром
-  (`handler-locator.js:444-446`). Он берётся буквально, путь внутри ref не
-  отрезается → `[]`.
+**Why viewing still works, but the search doesn't.** The corrupted `targetRef`
+is used in two incompatible ways:
+- Loading the diagram: `rawFileUrl` = `${projectUrl}/-/raw/${ref}/${filePath}`
+  (`differ-params.js:52`). The concatenation **restores the full path**, and the `/-/raw/`
+  endpoint itself separates ref and path (it recognizes a 40-character SHA) → the schema loads.
+- Handler search: `#searchBlobs` sends `ref` as a separate query parameter
+  (`handler-locator.js:444-446`). It is taken literally, the path inside the ref is not
+  trimmed → `[]`.
 
-### Как чинить
+### How to fix
 
-Минимальный фикс, не зависящий от хрупкого DOM, — добавить в fallback-альтернацию
-**явный шаблон коммит-SHA перед catch-all**, чтобы hex-SHA захватывался точно и не
-«вытягивал» путь (`gitlab-url-parser.js:128`):
+The minimal fix, independent of the fragile DOM, is to add to the fallback alternation
+**an explicit commit-SHA pattern before the catch-all**, so the hex-SHA is captured exactly and doesn't
+"pull in" the path (`gitlab-url-parser.js:128`):
 
 ```js
 branchCommitId = 'master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-fA-F]{7,40}|[0-9a-zA-Z-_./]+';
 ```
 
-Альтернация в JS пробуется слева направо: для URL с коммитом сматчится
-`[0-9a-fA-F]{7,40}` на сам SHA, а `filePath` получит полный путь. Случай веток с `/`
-в имени по-прежнему опирается на DOM-подсказку (отдельная неоднозначность, из одного
-URL не разрешается).
+Alternation in JS is tried left to right: for a URL with a commit, `[0-9a-fA-F]{7,40}` matches
+the SHA itself, and `filePath` gets the full path. The case of branches with `/`
+in the name still relies on the DOM hint (a separate ambiguity that can't be resolved from a single
+URL).
 
-Проверка: класс покрыт юнит-тестами — сначала падающий тест на URL с SHA и глубоким
-путём (без `projectName` в нём), затем правка regex, затем `npm test`.
+Verification: the class is covered by unit tests — first a failing test on a URL with a SHA and a deep
+path (without `projectName` in it), then the regex fix, then `npm test`.
 
-Затронутый файл: `src/content/providers/gitlab/gitlab-url-parser.js`.
+Affected file: `src/content/providers/gitlab/gitlab-url-parser.js`.
 
-Связано: эвристика `projectName` в первичном regex (п.2) — отдельное латентное хрупкое
-место; общий аудит таких мест вынесен в [REFAC-0012].
+Related: the `projectName` heuristic in the primary regex (item 2) — a separate latent fragile
+spot; a general audit of such spots is moved to [REFAC-0012].
 
-### Дальнейшее (followup)
+### Followup
 
-SHA-фикс выше — **точечный**: он закрывает только blob-URL по голому коммиту. Сама
-схема разбора остаётся угадыванием — альтернация захардкожена на `master|develop|
-feature/…|bugfix/…` и не знает про `main`, `release/*`, `hotfix/*` и любые кастомные
-имена веток (для них снова сработает жадный catch-all и путь «утянется» в ref). Это не
-формат коммитов, а заплатка под слэш-в-имени-ветки, и она хрупкая.
+The SHA fix above is **pinpoint**: it closes only the blob-URL by a bare commit. The parsing
+scheme itself remains guessing — the alternation is hardcoded on `master|develop|
+feature/…|bugfix/…` and doesn't know about `main`, `release/*`, `hotfix/*` and any custom
+branch names (for them the greedy catch-all will again fire and the path will be "pulled" into the ref). This is not
+about the commit format, it's a patch for slash-in-branch-name, and it's fragile.
 
-Надёжный путь (вынесен в [REFAC-0012], не делается в рамках BUG-0012):
-- брать `ref` из **детерминированного источника** (GitLab API / явный DOM-атрибут
-  страницы), а не угадывать из URL;
-- если без эвристики никак — **валидировать инвариант** результата (ref обязан быть
-  hex-SHA или существующей веткой/тегом, `filePath` непустой) и **явно логировать**
-  (`console.warn` с входным URL) при нарушении, чтобы причина была видна сразу, а не
-  выводилась из сетевого лога.
+The reliable path (moved to [REFAC-0012], not done as part of BUG-0012):
+- take `ref` from a **deterministic source** (the GitLab API / an explicit DOM attribute
+  of the page), rather than guessing from the URL;
+- if there's no way without a heuristic — **validate the invariant** of the result (ref must be
+  a hex-SHA or an existing branch/tag, `filePath` non-empty) and **log explicitly**
+  (`console.warn` with the input URL) on violation, so the cause is visible immediately, rather than
+  inferred from the network log.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись. Новые записи сверху. -->
+<!-- Each AI session on the task is a separate entry. New entries on top. -->
 
-- **Opus 4.8 · 2026-06-17 · fix/bug-0012-ref-path-merged-in-blob-url-parse** — В fallback-альтернацию
-  `extractBranchCommitIdAndFilePath` добавлен явный шаблон hex-SHA (`[0-9a-fA-F]{7,40}`) перед жадным
-  catch-all (`gitlab-url-parser.js:128-130`). Теперь для blob-URL по коммиту с глубоким путём (без
-  `projectName` в нём и без DOM-подсказки) ref матчится точно на SHA, а `filePath` получает полный путь —
-  Search API получает чистый ref. Добавлен падающий→зелёный юнит-тест. `npm test` — 765 pass. status=done.
+- **Opus 4.8 · 2026-06-17 · fix/bug-0012-ref-path-merged-in-blob-url-parse** — Into the fallback alternation of
+  `extractBranchCommitIdAndFilePath` an explicit hex-SHA pattern (`[0-9a-fA-F]{7,40}`) was added before the greedy
+  catch-all (`gitlab-url-parser.js:128-130`). Now for a blob-URL by a commit with a deep path (without
+  `projectName` in it and without a DOM hint) the ref matches the SHA exactly, and `filePath` gets the full path —
+  the Search API receives a clean ref. A failing→green unit test was added. `npm test` — 765 pass. status=done.

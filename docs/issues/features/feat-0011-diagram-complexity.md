@@ -1,19 +1,19 @@
 ---
 id: FEAT-0011
-title: Оценка сложности диаграммы
+title: Diagram complexity assessment
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Оценка сложности диаграммы.
+Diagram complexity assessment.
 
-## Контекст
+## Context
 
 - https://wiki.example.com/pages/viewpage.action?pageId=4314635945
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

@@ -1,20 +1,20 @@
 ---
 id: INFRA-0005
-title: Формирование дистрибутива версии (zip)
+title: Building a version distribution (zip)
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Собирать дистрибутив версии — zip-архив, содержащий только файлы, необходимые для работы плагина (без dev-файлов, тестов, исходников документации и т.п.). Установка для пользователя: распаковать архив и подключить как **Load unpacked**.
+Build a version distribution — a zip archive containing only the files needed for the plugin to work (without dev files, tests, documentation sources, etc.). Installation for the user: unpack the archive and load it as **Load unpacked**.
 
-## Контекст
+## Context
 
-- Определяет, *что именно* представляет собой дистрибутив (формат и состав), — то, что [INFRA-0002] предполагает «собирать», а [INFRA-0001] готовит на уровне ассетов (минификация либ, удаление лишних файлов библиотек).
-- Связано с [INFRA-0001] (production-сборка ассетов) и [INFRA-0002] (запуск сборки в CI при мердже в master).
+- Defines *what exactly* the distribution is (format and contents) — what [INFRA-0002] is expected to "build", and what [INFRA-0001] prepares at the asset level (minifying libraries, removing unnecessary library files).
+- Related to [INFRA-0001] (production build of assets) and [INFRA-0002] (running the build in CI on merge into master).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

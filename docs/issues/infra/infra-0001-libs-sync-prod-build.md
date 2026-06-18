@@ -1,21 +1,21 @@
 ---
 id: INFRA-0001
-title: Механизм подтягивания либ и production-сборка
+title: Mechanism for pulling in libraries and production build
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-- Подтягивать либы через package.json/node.
-- Удалить лишние файлы библиотек, используемые заменить на минифицированные (минифицировать либу панели свойств и скрипты плагина).
-- Сейчас dmn-js подключается dev-сборкой (`dmn-viewer.development.js`): на production.min падает ошибка `It looks like you're using a minified copy of the development build of Inferno...` — разобраться при переходе на минифицированные либы.
+- Pull libraries via package.json/node.
+- Remove unnecessary library files, replace the used ones with minified versions (minify the properties panel library and the plugin scripts).
+- Currently dmn-js is included as a dev build (`dmn-viewer.development.js`): on production.min the error `It looks like you're using a minified copy of the development build of Inferno...` occurs — figure this out when switching to minified libraries.
 
-## Контекст
+## Context
 
-- Код: `utils.js` (подключение `dmn-viewer.development.js`).
+- Code: `utils.js` (inclusion of `dmn-viewer.development.js`).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

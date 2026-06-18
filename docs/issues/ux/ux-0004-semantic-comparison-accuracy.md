@@ -1,27 +1,27 @@
 ---
 id: UX-0004
-title: Точность семантического сравнения и подсветки свойств
+title: Accuracy of semantic comparison and property highlighting
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Устранить накопленные edge cases компараторов:
+Eliminate accumulated comparator edge cases:
 
-- Подсвечивать изменение кода ошибки (`bpmn:error`): сейчас изменение не подсвечивается.
-- `failedJobRetryTimeCycle` относится к двум группам, поддержана одна (маппинг `camunda:failedJobRetryTimeCycle` на `Multi-instance` закомментирован).
-- Подобрать корректный заголовок группы панели свойств для `bpmn:startEvent/isInterrupting`.
-- Сравнивать DMN outputs по id, а не по label — сейчас по label, т.к. в html нет атрибута id у outputs.
+- Highlight a change of the error code (`bpmn:error`): currently the change is not highlighted.
+- `failedJobRetryTimeCycle` belongs to two groups, one is supported (the mapping of `camunda:failedJobRetryTimeCycle` to `Multi-instance` is commented out).
+- Pick the correct property panel group title for `bpmn:startEvent/isInterrupting`.
+- Compare DMN outputs by id, not by label — currently by label, because there is no id attribute on outputs in the html.
 
-## Контекст
+## Context
 
-- Изменение кода ошибки (`bpmn:error`). Пример MR: https://gitlab.example.com/example-project/example-repo/-/merge_requests/795. Код: `bpmn-xml-comparator.js` (маппинг свойств → группа `Error`).
-- `failedJobRetryTimeCycle`: код `bpmn-xml-comparator.js`.
-- Заголовок группы для `bpmn:startEvent/isInterrupting`: код `bpmn-xml-comparator.js`.
-- DMN outputs по id вместо label: код `dmn-xml-comparator.js#compareOutputs`.
+- Change of the error code (`bpmn:error`). Example MR: https://gitlab.example.com/example-project/example-repo/-/merge_requests/795. Code: `bpmn-xml-comparator.js` (property mapping → group `Error`).
+- `failedJobRetryTimeCycle`: code `bpmn-xml-comparator.js`.
+- Group title for `bpmn:startEvent/isInterrupting`: code `bpmn-xml-comparator.js`.
+- DMN outputs by id instead of label: code `dmn-xml-comparator.js#compareOutputs`.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

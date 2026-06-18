@@ -1,28 +1,28 @@
 ---
 id: REFAC-0007
-title: Удалить старый механизм резолва CallActivity-схемы
+title: Remove the old CallActivity schema resolution mechanism
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-После того как blob-search-резолв (`CallActivityLocator`, ветка `refactor/call-activity-lazy-load`, 2026-06-14) подтвердит надёжность на практике — удалить fallback на старый механизм резолва CallActivity-схемы.
+Once the blob-search resolution (`CallActivityLocator`, branch `refactor/call-activity-lazy-load`, 2026-06-14) has proven reliable in practice — remove the fallback to the old CallActivity schema resolution mechanism.
 
-## Контекст
+## Context
 
-Удалить:
+Remove:
 
-- файл `process-file-index.js` (`ProcessFileIndex`), его конструирование и поле в `bpmn-differ.js`;
-- fallback-ветку в `CallActivityLocator`;
-- localStorage-кэш;
-- эвристики суффикса `Process` / капитализации имени и глубокий парсинг всех `.bpmn`.
+- the `process-file-index.js` file (`ProcessFileIndex`), its construction, and the field in `bpmn-differ.js`;
+- the fallback branch in `CallActivityLocator`;
+- the localStorage cache;
+- the `Process` suffix / name capitalization heuristics and deep parsing of all `.bpmn` files.
 
-Тогда же убрать `process-file-index.js` из `manifest.json` и `utils.js#loadScripts`.
+At the same time, remove `process-file-index.js` from `manifest.json` and `utils.js#loadScripts`.
 
-Связано с [BUG-0006].
+Related to [BUG-0006].
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

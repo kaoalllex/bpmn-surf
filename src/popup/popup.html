@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="popup.css">
-    <title>BPMN differ — обновление</title>
+    <title>BPMN differ — update</title>
 </head>
 <body>
     <header class="pu-header">
@@ -12,46 +12,46 @@
     </header>
 
     <section class="pu-status" id="statusBlock">
-        <div class="pu-status-line" id="statusLine">Проверяю обновления…</div>
+        <div class="pu-status-line" id="statusLine">Checking for updates…</div>
         <div class="pu-meta" id="checkedAt"></div>
     </section>
 
     <section class="pu-update hidden" id="updateBlock">
         <div class="pu-update-head">
-            Доступна версия <strong id="latestVersion"></strong>
+            Version <strong id="latestVersion"></strong> is available
         </div>
         <div class="pu-changes" id="changes"></div>
 
         <details class="pu-guide" id="guide">
-            <summary>Как обновить</summary>
+            <summary>How to update</summary>
             <ol class="pu-steps">
                 <li>
-                    Обновите файлы расширения:
+                    Update the extension files:
                     <div class="pu-cmd">
                         <code id="gitPull">git pull</code>
-                        <button type="button" id="copyCmd" class="pu-mini">копировать</button>
+                        <button type="button" id="copyCmd" class="pu-mini">copy</button>
                     </div>
                     <div class="pu-hint hidden" id="downloadHint">
-                        Не через git? <a href="#" id="downloadLink">Открыть страницу загрузки</a>
-                        и заменить файлы в папке расширения.
+                        Not using git? <a href="#" id="downloadLink">Open the download page</a>
+                        and replace the files in the extension folder.
                     </div>
                 </li>
-                <li>Нажмите «Перезагрузить расширение» — оно перечитает файлы с диска.</li>
+                <li>Click "Reload extension" — it will re-read the files from disk.</li>
             </ol>
-            <button type="button" id="reloadBtn" class="pu-primary">Перезагрузить расширение</button>
+            <button type="button" id="reloadBtn" class="pu-primary">Reload extension</button>
             <p class="pu-note">
-                Расширение не меняет свои файлы само — байты на диск приносите вы
-                (это ограничение «load unpacked»). Перезагрузка применяет уже
-                обновлённые файлы.
+                The extension does not change its own files — you bring the bytes
+                to disk yourself (a limitation of "load unpacked"). Reloading applies
+                the already updated files.
             </p>
         </details>
     </section>
 
     <section class="pu-actions">
-        <button type="button" id="checkNowBtn" class="pu-secondary">Проверить сейчас</button>
+        <button type="button" id="checkNowBtn" class="pu-secondary">Check now</button>
         <label class="pu-toggle">
             <input type="checkbox" id="autoCheck">
-            <span>Проверять обновления автоматически</span>
+            <span>Check for updates automatically</span>
         </label>
     </section>
 

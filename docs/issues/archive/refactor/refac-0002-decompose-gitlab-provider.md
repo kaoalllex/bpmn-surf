@@ -1,246 +1,245 @@
 ---
 id: REFAC-0002
-title: Декомпозировать gitlab-repo-provider.js по ответственностям
+title: Decompose gitlab-repo-provider.js by responsibilities
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-Разбить `gitlab-repo-provider.js` (564 строки — самый большой модуль проекта) по
-ответственностям, снизив связанность и подготовив будущее удаление
-DOM-эвристического пути (см. `[REFAC-0001]`).
+Split `gitlab-repo-provider.js` (564 lines — the largest module in the project) by
+responsibilities, reducing coupling and preparing the future removal of the
+DOM-heuristic path (see `[REFAC-0001]`).
 
-Класс `GitLabRepoProvider` сейчас совмещает как минимум 4 роли + инфраструктуру:
+The `GitLabRepoProvider` class currently combines at least 4 roles + infrastructure:
 
-1. **Парсинг URL/путей** — `init` (group/name/host из URL), `initChangeInfo`
-   (iid и API-URL ручной нарезкой строк), `extractBranchCommitIdAndFilePath*`
-   (commit id и путь файла регэкспами по `href`).
-2. **DOM-скрейпинг** (привязан к разметке GitLab, самая хрупкая часть) —
+1. **URL/path parsing** — `init` (group/name/host from the URL), `initChangeInfo`
+   (iid and API URL by manual string slicing), `extractBranchCommitIdAndFilePath*`
+   (commit id and file path via regexes over `href`).
+2. **DOM scraping** (tied to GitLab's markup, the most fragile part) —
    `findSelectedFilePath` (legacy + rapid diffs), `getChangeBranchNames`,
    `#findDiffHeadSha`, `#extractBranchCommitIdByDocSelectorCase1/2`,
-   DOM-проверка в `#isMrMerged`.
-3. **HTTP/API-вызовы** — `#getProjectId`, загрузка MR-инфо, `#getMrLastCommitId`,
-   atom-фид коммитов master.
-4. **Эвристический резолв target-коммита смерженного MR** — `getTargetCommitId`,
+   the DOM check in `#isMrMerged`.
+3. **HTTP/API calls** — `#getProjectId`, loading MR info, `#getMrLastCommitId`,
+   the atom feed of master commits.
+4. **Heuristic resolution of the target commit of a merged MR** — `getTargetCommitId`,
    `#isMrMerged`, `#findTargetBranchPreviousCommitId`,
    `#findTargetBranchCommitIdByTitle`, `#loadFilteredByTitleMasterCommitEntries`
    (+ `MasterCommitManager`).
 
-Плюс: generic-утилита `SingleEntryCache` живёт прямо в этом файле, и в классе
-дублируются 3–4 ad-hoc-кэша (init, MR-инфо, target-commit, filteredByTitle),
-каждый со своей парой `#cache/#cacheKey`.
+Plus: the generic `SingleEntryCache` utility lives right in this file, and the class
+duplicates 3–4 ad-hoc caches (init, MR info, target commit, filteredByTitle),
+each with its own `#cache/#cacheKey` pair.
 
-## Контекст
+## Context
 
-Прежняя формулировка REFAC-0002 («упростить/декомпозировать `main.js`, выделить
-сервисы») **выполнена** коммитами «Refac 2»: `main.js` ужат до 9-строчной точки
-входа, логика разъехалась по `app.js`, провайдерам (UI/API), differ'ам и
-компараторам. Задача переформулирована на оставшийся крупнейший модуль.
+The previous formulation of REFAC-0002 ("simplify/decompose `main.js`, extract
+services") is **done** via the "Refac 2" commits: `main.js` is trimmed to a 9-line
+entry point, the logic moved out into `app.js`, the providers (UI/API), the differs and
+the comparators. The task is reformulated for the remaining largest module.
 
-Связь с `[REFAC-0001]` (done) определяет полезный разрез:
+The link to `[REFAC-0001]` (done) defines a useful cut:
 
-- `GitLabApiRepoProvider` (`gitlab-api-repo-provider.js`) теперь **наследуется**
-  от `GitLabRepoProvider` и переиспользует «остающиеся» (keeper) DOM/URL-части
-  (резолв project id, детект страницы MR/blob, поиск выбранного файла, парсинг
-  URL ветки), переопределяя резолв параметров MR через GitLab MR API.
-- Эвристический резолв коммитов (роль 4) и часть DOM-скрейпинга — кандидаты на
-  **полное удаление** после отладки API-пути (отдельная задача из TODO
-  `[REFAC-0001]`).
+- `GitLabApiRepoProvider` (`gitlab-api-repo-provider.js`) now **extends**
+  `GitLabRepoProvider` and reuses the "remaining" (keeper) DOM/URL parts
+  (project id resolution, MR/blob page detection, selected-file lookup, branch
+  URL parsing), overriding MR-parameter resolution via the GitLab MR API.
+- The heuristic commit resolution (role 4) and part of the DOM scraping are candidates for
+  **full removal** after the API path is debugged (a separate task from the
+  `[REFAC-0001]` TODO).
 
-Поэтому декомпозиция разделяет «остающееся» (общая база для обоих провайдеров) и
-«обречённое» (DOM-эвристика), чтобы будущий снос DOM-пути стал удалением
-модулей, а не правкой внутри большого класса.
+Therefore the decomposition separates the "remaining" (the shared base for both providers) from
+the "doomed" (the DOM heuristic), so that the future teardown of the DOM path becomes a removal
+of modules rather than edits inside a large class.
 
-### Принятый дизайн (согласовано с пользователем 2026-06-14)
+### Accepted design (agreed with the user 2026-06-14)
 
-Две развилки решены в пользу более чистого end-state:
+The two forks are resolved in favor of a cleaner end-state:
 
-- **Базовый класс.** Вводится `GitLabRepoProviderBase` с keeper-логикой; от него
-  наследуются и `GitLabRepoProvider` (DOM/эвристика), и `GitLabApiRepoProvider`
-  (API). Это убирает запах «API-провайдер наследует DOM-провайдер» (его признаёт
-  сам docstring `gitlab-api-repo-provider.js`).
-- **Глубина — полная:** 4 новых модуля + тонкий базовый класс.
+- **Base class.** A `GitLabRepoProviderBase` with keeper logic is introduced; both
+  `GitLabRepoProvider` (DOM/heuristic) and `GitLabApiRepoProvider` (API) inherit from it.
+  This removes the "the API provider inherits the DOM provider" smell (acknowledged
+  by the `gitlab-api-repo-provider.js` docstring itself).
+- **Depth — full:** 4 new modules + a thin base class.
 
-Целевая иерархия:
+Target hierarchy:
 
 ```
-RepoProvider (repo-provider.js, без изменений)
+RepoProvider (repo-provider.js, unchanged)
  └ GitLabRepoProviderBase (gitlab-repo-provider-base.js, NEW) — keepers
-     ├ GitLabRepoProvider (gitlab-repo-provider.js) — DOM/эвристический путь (doomed)
-     └ GitLabApiRepoProvider (gitlab-api-repo-provider.js) — API-путь
+     ├ GitLabRepoProvider (gitlab-repo-provider.js) — DOM/heuristic path (doomed)
+     └ GitLabApiRepoProvider (gitlab-api-repo-provider.js) — API path
 ```
 
-Коллабораторы (композиция):
+Collaborators (composition):
 
-| Модуль (файл) | Класс | Роль | Судьба |
+| Module (file) | Class | Role | Fate |
 |---|---|---|---|
-| `single-entry-cache.js` | `SingleEntryCache` | generic «последнее значение по ключу» | keeper |
-| `gitlab-url-parser.js` | `GitLabUrlParser` | **чистый** парсинг URL/путей (без DOM/сети) | keeper |
-| `gitlab-dom-scraper.js` | `GitLabDomScraper` | все чтения DOM страницы GitLab | keeper* |
-| `merged-mr-commit-resolver.js` | `MergedMrCommitResolver` | эвристика резолва target-коммита смерженного MR | **doomed** |
-| `master-commit-manager.js` | `MasterCommitManager` | существует; используется резолвером | doomed |
+| `single-entry-cache.js` | `SingleEntryCache` | generic "last value by key" | keeper |
+| `gitlab-url-parser.js` | `GitLabUrlParser` | **pure** URL/path parsing (no DOM/network) | keeper |
+| `gitlab-dom-scraper.js` | `GitLabDomScraper` | all reads of the GitLab page DOM | keeper* |
+| `merged-mr-commit-resolver.js` | `MergedMrCommitResolver` | heuristic resolution of the target commit of a merged MR | **doomed** |
+| `master-commit-manager.js` | `MasterCommitManager` | exists; used by the resolver | doomed |
 
-\* `GitLabDomScraper` — keeper в целом (его `findSelectedFilePath`/ref-selector
-нужны и API-пути), но часть методов (`getMergeRequestBranchNames`,
-`findDiffHeadSha`, `isMergedByBadge`) зовёт только DOM-провайдер/резолвер — они
-уйдут вместе с DOM-путём.
+\* `GitLabDomScraper` — a keeper overall (its `findSelectedFilePath`/ref-selector
+are needed by the API path too), but some methods (`getMergeRequestBranchNames`,
+`findDiffHeadSha`, `isMergedByBadge`) are called only by the DOM provider/resolver — they
+will go away together with the DOM path.
 
-Связи: `[REFAC-0001]` (API-провайдер и план удаления DOM-пути),
-`[REFAC-0004]` (нейтрализация DTO и абстракция загрузчика контента).
+Links: `[REFAC-0001]` (the API provider and the plan to remove the DOM path),
+`[REFAC-0004]` (DTO neutralization and content-loader abstraction).
 
-## План реализации (для следующей сессии)
+## Implementation plan (for the next session)
 
-Рефакторинг **строго поведение-сохраняющий**: публичный интерфейс `RepoProvider`
-не меняется, `App`/differ-страница/`repo-provider-factory.js`/`FallbackRepoProvider`
-не трогаются (кроме, возможно, порядка в manifest). Контракт безопасности — все
-существующие тесты остаются зелёными без правок их ожиданий.
+The refactoring is **strictly behavior-preserving**: the public `RepoProvider` interface
+does not change, `App`/the differ page/`repo-provider-factory.js`/`FallbackRepoProvider`
+are not touched (except, possibly, the order in the manifest). The safety contract — all
+existing tests stay green without editing their expectations.
 
-### Распределение текущих членов `GitLabRepoProvider` → новые места
+### Distribution of the current `GitLabRepoProvider` members → new locations
 
-| Сейчас (в `GitLabRepoProvider`) | Куда переезжает |
+| Now (in `GitLabRepoProvider`) | Where it moves |
 |---|---|
 | `class SingleEntryCache` | → `single-entry-cache.js` |
-| `isAvailable`, `init` (+ init-кэш), `getProjectInfo`, `getChangeInfo`, `isChangeViewActive`, `getBranchFileType`, `findSelectedFilePath`, `extractBranchCommitIdAndFilePath`, `#getProjectId` | → **`GitLabRepoProviderBase`** (keepers) |
-| `#findSelectedFilePathLegacy/InRapidDiffs`, `#extractRapidDiffFilePath`, `#findDataPathElements` | → `GitLabDomScraper.findSelectedFilePath()` (+ приватные) |
+| `isAvailable`, `init` (+ init cache), `getProjectInfo`, `getChangeInfo`, `isChangeViewActive`, `getBranchFileType`, `findSelectedFilePath`, `extractBranchCommitIdAndFilePath`, `#getProjectId` | → **`GitLabRepoProviderBase`** (keepers) |
+| `#findSelectedFilePathLegacy/InRapidDiffs`, `#extractRapidDiffFilePath`, `#findDataPathElements` | → `GitLabDomScraper.findSelectedFilePath()` (+ private) |
 | `#extractBranchCommitIdByDocSelectorCase1/2` | → `GitLabDomScraper.findBranchCommitIdText()` |
-| `getChangeBranchNames` (DOM `detail-page-description`) | → `GitLabDomScraper.getMergeRequestBranchNames()`; DOM-провайдер делегирует |
+| `getChangeBranchNames` (DOM `detail-page-description`) | → `GitLabDomScraper.getMergeRequestBranchNames()`; the DOM provider delegates |
 | `#findDiffHeadSha` | → `GitLabDomScraper.findDiffHeadSha()` |
 | `#extractBranchCommitIdAndFilePathByRegex` | → `GitLabUrlParser.extractBranchCommitIdAndFilePath(href, projectName, hint)` |
-| URL-нарезка в `init`/`initChangeInfo` | → `GitLabUrlParser.parseProject(href)` / `extractMrIid(href)` / `buildMrApiUrl(projectInfo, iid)` |
-| `initChangeInfo` (+ MR-инфо-кэш), `getSourceCommitId`, `#getMrLastCommitId` | → остаются в **`GitLabRepoProvider`** (DOM-путь) |
-| `getTargetCommitId` (+ target-кэш) | → делегирует в `MergedMrCommitResolver` |
-| `#isMrMerged`, `#findTargetBranchPreviousCommitId`, `#findTargetBranchCommitIdByTitle`, `#loadFilteredByTitleMasterCommitEntries` (+ кэш), поле `#masterCommitManager` | → `MergedMrCommitResolver` |
+| URL slicing in `init`/`initChangeInfo` | → `GitLabUrlParser.parseProject(href)` / `extractMrIid(href)` / `buildMrApiUrl(projectInfo, iid)` |
+| `initChangeInfo` (+ MR info cache), `getSourceCommitId`, `#getMrLastCommitId` | → stay in **`GitLabRepoProvider`** (DOM path) |
+| `getTargetCommitId` (+ target cache) | → delegates to `MergedMrCommitResolver` |
+| `#isMrMerged`, `#findTargetBranchPreviousCommitId`, `#findTargetBranchCommitIdByTitle`, `#loadFilteredByTitleMasterCommitEntries` (+ cache), the `#masterCommitManager` field | → `MergedMrCommitResolver` |
 
-### Контракты новых модулей
+### Contracts of the new modules
 
-**`GitLabUrlParser`** (чистый, без DOM/сети — поэтому легко юнит-тестировать):
-- `parseProject(href)` → `{ url, hostUrl, groupName, name }` или `null`
-- `extractMrIid(href)` → `string|null` (объединяет дублирующиеся `#extractIid`
-  DOM- и API-провайдеров)
-- `buildMrApiUrl(projectInfo, iid)` → `string` (логика из `initChangeInfo`)
+**`GitLabUrlParser`** (pure, no DOM/network — therefore easy to unit-test):
+- `parseProject(href)` → `{ url, hostUrl, groupName, name }` or `null`
+- `extractMrIid(href)` → `string|null` (merges the duplicated `#extractIid`
+  of the DOM and API providers)
+- `buildMrApiUrl(projectInfo, iid)` → `string` (the logic from `initChangeInfo`)
 - `isMrDiffPage(href)` → `boolean`
 - `getBranchFileType(href)` → `FileType|null`
 - `extractBranchCommitIdAndFilePath(href, projectName, branchCommitIdHint)` →
   `{ branchCommitId, filePath }|null`
 
-**`GitLabDomScraper`** (только чтение DOM; тестируется на jsdom-разметке, как уже
-делает `gitlab-repo-provider.test.js`):
-- `findSelectedFilePath()` (+ приватные legacy/rapid-diffs хелперы)
+**`GitLabDomScraper`** (DOM reads only; tested against jsdom markup, as
+`gitlab-repo-provider.test.js` already does):
+- `findSelectedFilePath()` (+ private legacy/rapid-diffs helpers)
 - `findBranchCommitIdText()` (ref-selector case1/case2)
 - `getMergeRequestBranchNames()` → `MergeRequestBranchNames|null`
 - `findDiffHeadSha()` → `string|null`
 - `isMergedByBadge()` → `boolean`
 
-**`MergedMrCommitResolver`** (вся эвристика роли 4 в одном месте):
+**`MergedMrCommitResolver`** (all of role 4's heuristic in one place):
 - ctor: `(projectInfo, domScraper, masterCommitManager, loadContent)`
 - `resolveTargetCommitId(sourceCommitId, changeTitle, targetBranchName, mrInfoUrl)`
-  → `string` — переносит ветвление merged/opened из `getTargetCommitId`, держит
-  target-commit-кэш и `#filteredByTitleMasterCommitEntries`-кэш
-- приватные: `#isMerged(mrInfoUrl)` (бейдж через `domScraper.isMergedByBadge()` +
-  API через `loadContent(mrInfoUrl)`), `#findPreviousCommitId`,
+  → `string` — carries over the merged/opened branching from `getTargetCommitId`, holds
+  the target-commit cache and the `#filteredByTitleMasterCommitEntries` cache
+- private: `#isMerged(mrInfoUrl)` (badge via `domScraper.isMergedByBadge()` +
+  API via `loadContent(mrInfoUrl)`), `#findPreviousCommitId`,
   `#findCommitIdByTitle`, `#loadFilteredEntries`
 
 **`GitLabRepoProviderBase`**:
-- ctor принимает `loadContent = loadFileContent` (DI для тестов; API-провайдер уже
-  так делает), создаёт `projectInfo`, `mergeRequestInfo`, `urlParser`,
-  `domScraper` (поля **не** `#`, чтобы подклассы имели доступ — как уже сделаны
-  `projectInfo`/`mergeRequestInfo`), init-кэш через `SingleEntryCache`
-- содержит keeper-методы из таблицы выше; `init()` = резолв project id
-  (`#getProjectId` через `loadContent`) с кэшем — ровно как сейчас
+- the ctor takes `loadContent = loadFileContent` (DI for tests; the API provider already
+  does this), creates `projectInfo`, `mergeRequestInfo`, `urlParser`,
+  `domScraper` (the fields are **not** `#`, so subclasses have access — as already done for
+  `projectInfo`/`mergeRequestInfo`), an init cache via `SingleEntryCache`
+- contains the keeper methods from the table above; `init()` = project id resolution
+  (`#getProjectId` via `loadContent`) with a cache — exactly as now
 
-**`GitLabApiRepoProvider`** (после правки):
-- `extends GitLabRepoProviderBase` (вместо `GitLabRepoProvider`)
-- удалить собственные `#extractIid`/`#isMrDiffPage` → использовать
+**`GitLabApiRepoProvider`** (after the change):
+- `extends GitLabRepoProviderBase` (instead of `GitLabRepoProvider`)
+- remove its own `#extractIid`/`#isMrDiffPage` → use
   `this.urlParser`
-- сохранить `#loadMr`/`#mr`/`#mrCacheKey`, override `init` (super.init + проба
-  API), `initChangeInfo`, `getChangeBranchNames`, `getSourceCommitId`,
+- keep `#loadMr`/`#mr`/`#mrCacheKey`, override `init` (super.init + an API
+  probe), `initChangeInfo`, `getChangeBranchNames`, `getSourceCommitId`,
   `getTargetCommitId`
 
-### Поэтапно (каждый этап — отдельный коммит, `npm test` зелёный после каждого)
+### Step by step (each step — a separate commit, `npm test` green after each)
 
-0. Зафиксировать зелёный baseline `npm test`.
-1. **SingleEntryCache** → `single-entry-cache.js`; перевести init/MR-инфо/target
-   кэши на него. Поведение идентично.
-2. **GitLabUrlParser** — вынести чистую URL-логику; заменить инлайн-парсинг в
-   обоих провайдерах (включая дубль `#extractIid`/`#isMrDiffPage`). + юнит-тесты.
-3. **GitLabDomScraper** — вынести все DOM-чтения; провайдер делегирует.
-   Существующие DOM-тесты остаются (бьют публичный API провайдера).
-4. **MergedMrCommitResolver** — вынести эвристику из `GitLabRepoProvider`.
-   + юнит-тесты (нужны стабы `fetch`/`localStorage`/`Date.now` — см. риски).
-5. **GitLabRepoProviderBase** — ввести базу с keeper-методами; `GitLabRepoProvider`
-   → DOM/эвристика поверх базы; `GitLabApiRepoProvider` → `extends` базу. Прогон
-   тестов + ручной smoke (открытый MR на self-managed и на gitlab.com,
-   смерженный MR, blob-страница).
+0. Record a green `npm test` baseline.
+1. **SingleEntryCache** → `single-entry-cache.js`; move the init/MR-info/target
+   caches onto it. Behavior identical.
+2. **GitLabUrlParser** — extract the pure URL logic; replace the inline parsing in
+   both providers (including the duplicated `#extractIid`/`#isMrDiffPage`). + unit tests.
+3. **GitLabDomScraper** — extract all DOM reads; the provider delegates.
+   The existing DOM tests stay (they hit the provider's public API).
+4. **MergedMrCommitResolver** — extract the heuristic from `GitLabRepoProvider`.
+   + unit tests (stubs for `fetch`/`localStorage`/`Date.now` are needed — see risks).
+5. **GitLabRepoProviderBase** — introduce the base with the keeper methods; `GitLabRepoProvider`
+   → DOM/heuristic on top of the base; `GitLabApiRepoProvider` → `extends` the base. Run
+   the tests + a manual smoke test (an opened MR on self-managed and on gitlab.com,
+   a merged MR, a blob page).
 
-### Сопутствующие правки (обязательны)
+### Accompanying edits (mandatory)
 
-- **`manifest.json`** (`content_scripts`): добавить 5 файлов в правильном порядке
+- **`manifest.json`** (`content_scripts`): add 5 files in the correct order
   — `single-entry-cache.js`, `gitlab-url-parser.js`, `gitlab-dom-scraper.js`
-  (без зависимостей → до базы); `merged-mr-commit-resolver.js` (после
-  `master-commit-manager.js`); `gitlab-repo-provider-base.js` (после
-  `repo-provider.js` и трёх утилит, **до** `gitlab-repo-provider.js`).
-  ⚠️ Порядок `content_scripts` — guarded-изменение: **согласовать с пользователем
-  до правки** (правило CLAUDE.md / `docs/conventions.md`).
-- **`test/support/scope.js`**: те же файлы в `SCOPE_FILES` (тот же относительный
-  порядок) + классы в `EXPORTED_NAMES` (`SingleEntryCache`, `GitLabUrlParser`,
+  (no dependencies → before the base); `merged-mr-commit-resolver.js` (after
+  `master-commit-manager.js`); `gitlab-repo-provider-base.js` (after
+  `repo-provider.js` and the three utilities, **before** `gitlab-repo-provider.js`).
+  ⚠️ The `content_scripts` order — a guarded change: **agree with the user
+  before editing** (the CLAUDE.md rule / `docs/conventions.md`).
+- **`test/support/scope.js`**: the same files in `SCOPE_FILES` (the same relative
+  order) + the classes in `EXPORTED_NAMES` (`SingleEntryCache`, `GitLabUrlParser`,
   `GitLabDomScraper`, `MergedMrCommitResolver`, `GitLabRepoProviderBase`).
-- **Тесты**: новые `*.test.js` на каждый вынесенный модуль (стиль —
-  `test-design-preferences`: много мелких, публичный API). Существующие
+- **Tests**: new `*.test.js` for each extracted module (style —
+  `test-design-preferences`: many small ones, public API). The existing
   `gitlab-repo-provider.test.js` / `gitlab-api-repo-provider.test.js` /
-  `fallback-repo-provider.test.js` остаются зелёными без правки ожиданий.
-- **`docs/architecture.md`**: обновить таблицу ключевых файлов (новые модули +
-  новое описание `gitlab-repo-provider.js`) и схему иерархии провайдеров.
+  `fallback-repo-provider.test.js` stay green without editing their expectations.
+- **`docs/architecture.md`**: update the key-files table (new modules +
+  a new description of `gitlab-repo-provider.js`) and the provider hierarchy diagram.
 
-### Риски / на что смотреть
+### Risks / what to watch
 
-- **`super.init()` API-провайдера**: после ввода базы `super.init()` должен
-  делать ровно то же, что текущий `GitLabRepoProvider.init` (резолв project id +
-  кэш). API-проба остаётся в override'е.
-- **Зависимость по порядку вызовов**: `MergedMrCommitResolver.#isMerged` читает
-  `mrInfoUrl` (сейчас `mergeRequestInfo.infoUrl`, ставится в `initChangeInfo`).
-  Проверить, что в потоке `App` `initChangeInfo` вызывается до `getTargetCommitId`,
-  и пробросить `mrInfoUrl` в `resolveTargetCommitId`.
-- **jsdom в тестах резолвера**: `MasterCommitManager` использует `localStorage`,
-  `fetch`, `Date.now()` — в юнит-тестах резолвера их стабить/инжектить.
-- **Доступ подклассов к коллабораторам**: `urlParser`/`domScraper` на базе —
-  обычные поля (не `#`), т.к. в JS нет `protected`; это согласуется с тем, что
-  `projectInfo`/`mergeRequestInfo` уже публичные поля.
-- **Глобальный scope `<script>`**: новые файлы не должны само-исполнять код на
-  загрузке (в отличие от `bpmn-differ.js`/`dmn-differ.js`) — только декларации
-  классов.
+- **The API provider's `super.init()`**: after the base is introduced, `super.init()` must
+  do exactly what the current `GitLabRepoProvider.init` does (project id resolution +
+  cache). The API probe stays in the override.
+- **Call-order dependency**: `MergedMrCommitResolver.#isMerged` reads
+  `mrInfoUrl` (currently `mergeRequestInfo.infoUrl`, set in `initChangeInfo`).
+  Check that in the `App` flow `initChangeInfo` is called before `getTargetCommitId`,
+  and pass `mrInfoUrl` into `resolveTargetCommitId`.
+- **jsdom in the resolver tests**: `MasterCommitManager` uses `localStorage`,
+  `fetch`, `Date.now()` — stub/inject them in the resolver unit tests.
+- **Subclass access to collaborators**: `urlParser`/`domScraper` on the base are
+  ordinary fields (not `#`), since JS has no `protected`; this is consistent with
+  `projectInfo`/`mergeRequestInfo` already being public fields.
+- **Global `<script>` scope**: the new files must not self-execute code on
+  load (unlike `bpmn-differ.js`/`dmn-differ.js`) — class declarations only.
 
-### Промпт для старта новой сессии
+### Prompt to start a new session
 
-> Реализуй REFAC-0002 по плану из `docs/issues/refactor/refac-0002-decompose-gitlab-provider.md`.
-> Дизайн уже согласован (общая база `GitLabRepoProviderBase` + полная
-> декомпозиция на 4 модуля). Действуй поэтапно (этапы 1→5), после каждого —
-> `npm test`. Порядок `content_scripts` в `manifest.json` меняешь только после
-> явного подтверждения пользователя. Поведение `RepoProvider` не меняется;
-> существующие тесты должны остаться зелёными. По завершении — MR и запись в
-> «Историю работы».
+> Implement REFAC-0002 following the plan in `docs/issues/refactor/refac-0002-decompose-gitlab-provider.md`.
+> The design is already agreed (a shared base `GitLabRepoProviderBase` + full
+> decomposition into 4 modules). Proceed step by step (stages 1→5), running
+> `npm test` after each. Change the `content_scripts` order in `manifest.json` only after
+> the user's explicit confirmation. The behavior of `RepoProvider` does not change;
+> the existing tests must stay green. When done — an MR and a Work log
+> entry.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-15 · claude-opus-4-8 · ветка `refactor/refac-0002-decompose-gitlab-provider`
+### 2026-06-15 · claude-opus-4-8 · branch `refactor/refac-0002-decompose-gitlab-provider`
 
-Реализована полная декомпозиция по согласованному дизайну (база
-`GitLabRepoProviderBase` + 4 модуля), строго поведение-сохраняющая. Поэтапно,
-`npm test` зелёный после каждого этапа (итог 253 теста, было 195):
+Implemented the full decomposition per the agreed design (the
+`GitLabRepoProviderBase` base + 4 modules), strictly behavior-preserving. Step by step,
+`npm test` green after each step (253 tests in total, was 195):
 
-1. `single-entry-cache.js` (`SingleEntryCache`) — init/MR-инфо-кэши переведены на него (`ac46e04`).
-2. `gitlab-url-parser.js` (`GitLabUrlParser`) — чистый парсинг URL; оба провайдера делегируют; объединён дубль `#extractIid` (`0b8ed5c`).
-3. `gitlab-dom-scraper.js` (`GitLabDomScraper`) — все чтения DOM (`5e15f5f`).
-4. `merged-mr-commit-resolver.js` (`MergedMrCommitResolver`) — эвристика target-коммита смерженного MR (`a39e113`).
-5. `gitlab-repo-provider-base.js` (`GitLabRepoProviderBase`) — общая keeper-база; `GitLabRepoProvider` (DOM/эвристика) и `GitLabApiRepoProvider` (API) теперь оба `extends` её; `loadContent` через DI (`d6aa493`).
+1. `single-entry-cache.js` (`SingleEntryCache`) — the init/MR-info caches moved onto it (`ac46e04`).
+2. `gitlab-url-parser.js` (`GitLabUrlParser`) — pure URL parsing; both providers delegate; the duplicated `#extractIid` merged (`0b8ed5c`).
+3. `gitlab-dom-scraper.js` (`GitLabDomScraper`) — all DOM reads (`5e15f5f`).
+4. `merged-mr-commit-resolver.js` (`MergedMrCommitResolver`) — the merged-MR target-commit heuristic (`a39e113`).
+5. `gitlab-repo-provider-base.js` (`GitLabRepoProviderBase`) — the shared keeper base; `GitLabRepoProvider` (DOM/heuristic) and `GitLabApiRepoProvider` (API) now both `extends` it; `loadContent` via DI (`d6aa493`).
 
-Сопутствующее: порядок `content_scripts` в `manifest.json` обновлён (с явного
-подтверждения пользователя) и зеркально в `test/support/scope.js`; новые
-`*.test.js` на каждый модуль; обновлены `docs/architecture.md`, `docs/testing.md`,
-`.claude/agents/bpmn-explorer.md`. Ревью `code-reviewer`: блокеров нет, логика
-перенесена дословно. Эвристический DOM-путь (`GitLabRepoProvider` +
-`MergedMrCommitResolver` + часть `GitLabDomScraper`) теперь изолирован и готов к
-будущему удалению (TODO из `[REFAC-0001]`).
+Accompanying: the `content_scripts` order in `manifest.json` was updated (with the user's explicit
+confirmation) and mirrored in `test/support/scope.js`; new
+`*.test.js` for each module; `docs/architecture.md`, `docs/testing.md`,
+`.claude/agents/code-explorer.md` updated. The `code-reviewer` review: no blockers, the logic was
+ported verbatim. The heuristic DOM path (`GitLabRepoProvider` +
+`MergedMrCommitResolver` + part of `GitLabDomScraper`) is now isolated and ready for
+future removal (the TODO from `[REFAC-0001]`).

@@ -1,19 +1,19 @@
 ---
 id: PERF-0001
-title: Сократить сетевое взаимодействие
+title: Reduce network interaction
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Исключить лишние запросы к GitLab; грузить только необходимое; минимизировать скачивание содержимого файлов и истории коммитов.
+Eliminate unnecessary requests to GitLab; load only what is needed; minimize downloading of file contents and commit history.
 
-## Контекст
+## Context
 
-- Ленивая постраничная загрузка в `#getProjectId` (сейчас одним запросом `per_page=100`). Код: `gitlab-repo-provider.js#getProjectId`.
+- Lazy paginated loading in `#getProjectId` (currently a single request with `per_page=100`). Code: `gitlab-repo-provider.js#getProjectId`.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

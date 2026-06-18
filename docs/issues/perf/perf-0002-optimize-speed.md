@@ -1,19 +1,19 @@
 ---
 id: PERF-0002
-title: Оптимизировать скорость работы
+title: Optimize performance speed
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Меньше лишних перерисовок; кэшировать повторные запросы.
+Fewer unnecessary repaints; cache repeated requests.
 
-## Контекст
+## Context
 
-<!-- Ссылки на MR, логи, симптомы, затронутые файлы, связи с другими задачами. -->
+<!-- Links to MRs, logs, symptoms, affected files, relations to other tasks. -->
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

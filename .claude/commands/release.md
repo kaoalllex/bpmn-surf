@@ -1,18 +1,18 @@
 ---
-description: Подготовить релиз — бамп версии в manifest.json и коммит
-argument-hint: [major|minor|patch] (по умолчанию minor)
+description: Prepare a release — bump the version in manifest.json and commit
+argument-hint: [major|minor|patch] (default minor)
 allowed-tools: Read, Edit, Bash(git *)
 ---
 
-Подготовь релиз расширения:
+Prepare an extension release:
 
-1. Прочитай текущую версию из `manifest.json` (формат `0.MINOR.PATCH`)
-2. Подними версию согласно аргументу `$ARGUMENTS` (по умолчанию minor: 0.18.0 → 0.19.0)
-3. Это единственный разрешённый случай правки `manifest.json` — меняй ТОЛЬКО поле `version`
-4. Подними **ту же версию** в `version.json` (поле `version`) — это публичный источник версии для встроенного нотификатора обновлений (FEAT-0012). Два файла обязаны быть в синхроне; `downloadUrl`/`changelogUrl` в `version.json` не трогай (заполняются один раз после переезда на GitHub)
-5. Покажи `git log --oneline` с момента последнего изменения версии (`git log -p --follow manifest.json | grep -n version` или `git log --oneline -15`) и составь краткий changelog
-6. Добавь запись в `CHANGELOG.md` сверху: секция `## X.Y.Z` с пунктами changelog'а (этот текст видят пользователи в блоке «Что нового»)
-7. Покажи изменение и предложи коммит вида `release: vX.Y.Z` — коммить только после подтверждения
-8. Коммит — по правилам `docs/git-workflow.md`: не в master, а в отдельной ветке с последующим MR
+1. Read the current version from `manifest.json` (format `0.MINOR.PATCH`)
+2. Bump the version according to the `$ARGUMENTS` argument (default minor: 0.18.0 → 0.19.0)
+3. This is the only permitted case for editing `manifest.json` — change ONLY the `version` field
+4. Bump the **same version** in `version.json` (the `version` field) — this is the public version source for the built-in update notifier (FEAT-0012). The two files must stay in sync; do not touch `downloadUrl`/`changelogUrl` in `version.json` (they are filled in once after the migration to GitHub)
+5. Show `git log --oneline` since the last version change (`git log -p --follow manifest.json | grep -n version` or `git log --oneline -15`) and compose a short changelog
+6. Add an entry to the top of `CHANGELOG.md`: a `## X.Y.Z` section with the changelog items (this text is shown to users in the "What's new" block)
+7. Show the change and propose a commit like `release: vX.Y.Z` — commit only after confirmation
+8. Commit per `docs/git-workflow.md`: not into master, but into a separate branch with a follow-up MR
 
-Отвечай на русском.
+Respond in the language the user opened the conversation with.

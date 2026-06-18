@@ -1,42 +1,42 @@
 ---
 id: REFAC-0011
-title: DI для классов, завязанных на fetch/localStorage/location — снять тест-долг
+title: DI for classes coupled to fetch/localStorage/location — pay down the test debt
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Несколько классов несут реальную логику, но завязаны на глобали
-(`fetch`/`localStorage`/`sessionStorage`/`location`) напрямую, без инъекции
-коллабораторов — поэтому не покрыты юнит-тестами и числятся в
+Several classes carry real logic but are coupled to globals
+(`fetch`/`localStorage`/`sessionStorage`/`location`) directly, without injecting
+collaborators — so they are not covered by unit tests and are listed in
 `UNTESTED_BY_DESIGN` (`test/structure/source-layout.test.js`):
 
 - `master-commit-manager.js` — `fetch` + `localStorage` + `DOMParser` + `Date.now()`
-  внутри методов; кэш-инвалидация багоопасна (ср. [BUG-0008]). Относится к
-  «обречённому» DOM-пути ([REFAC-0008]) — возможно, уйдёт вместе с ним, тогда тест
-  не нужен.
-- key-building в `handler-navigator.js` / `call-activity-navigator.js`
-  (`#getHandlerKey` и аналог) — чистая логика построения namespaced-ключа из BO,
-  зеркалит уже покрытые `HandlerLocator`/`CallActivityLocator`, но приватна и
-  завязана на overlay/DOM.
+  inside methods; cache invalidation is bug-prone (cf. [BUG-0008]). It belongs to
+  the "doomed" DOM path ([REFAC-0008]) — it may go away with it, in which case the test
+  is not needed.
+- key-building in `handler-navigator.js` / `call-activity-navigator.js`
+  (`#getHandlerKey` and its analog) — pure logic for building a namespaced key from the BO,
+  mirrors the already-covered `HandlerLocator`/`CallActivityLocator`, but it is private and
+  coupled to the overlay/DOM.
 
-Образец для подражания — `MergedMrCommitResolver`: все side-effect-коллабораторы
-(`loadContent`, `domScraper`, `masterCommitManager`) инъектируются через
-конструктор, тест обходится без `fetch`/`localStorage`.
+A model to follow is `MergedMrCommitResolver`: all side-effect collaborators
+(`loadContent`, `domScraper`, `masterCommitManager`) are injected through the
+constructor, and the test does without `fetch`/`localStorage`.
 
-Предложение: для не-«обречённых» классов вынести side-effects в инъектируемые
-коллабораторы (или выделить чистую функцию построения ключа), покрыть тестами и
-убрать запись из `UNTESTED_BY_DESIGN`. Поведение не меняется.
+Proposal: for the non-"doomed" classes, extract the side-effects into injectable
+collaborators (or extract a pure key-building function), cover them with tests, and
+remove the entry from `UNTESTED_BY_DESIGN`. Behavior does not change.
 
-## Контекст
+## Context
 
-- `PageReloader` уже покрыт контрактным тестом счётчика попыток
-  (`test/content/page-reloader.test.js`) без рефакторинга — `location.reload`
-  в jsdom no-op, проверяется наблюдаемый счётчик в `sessionStorage`.
-- Связано с [REFAC-0008] (удаление DOM-резолва коммитов) — определяет судьбу
+- `PageReloader` is already covered by a contract test on the retry counter
+  (`test/content/page-reloader.test.js`) without refactoring — `location.reload`
+  is a no-op in jsdom, and the observable counter in `sessionStorage` is checked.
+- Related to [REFAC-0008] (removal of the DOM commit resolution) — it determines the fate of
   `MasterCommitManager`.
-- Структурный тест `source-layout.test.js` следит, чтобы список
-  `UNTESTED_BY_DESIGN` не «протух»: добавив тест, нужно убрать запись оттуда.
+- The structural test `source-layout.test.js` ensures the `UNTESTED_BY_DESIGN`
+  list does not go "stale": after adding a test, the entry must be removed from there.
 
-## История работы
+## Work log

@@ -1,146 +1,146 @@
 ---
 id: UX-0003
-title: Доработать отображение для удалённых и новых схем
+title: Improve the display for deleted and new schemas
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-Доработать поведение differ-страницы для схем, отсутствующих в одной из сравниваемых версий
-(файл удалён в MR / файл новый, которого нет в target-ветке), а также когда файл отсутствует
-в **обеих** версиях.
+Improve the differ-page behavior for schemas missing in one of the compared versions
+(a file deleted in the MR / a new file that is absent in the target branch), and also when the file is missing
+in **both** versions.
 
-**Принятый подход** (а не сплошная заливка схемы красным/зелёным из первоначальной идеи —
-от неё отказались как от визуально спорной):
+**Accepted approach** (rather than fully filling the schema with red/green from the original idea —
+which was rejected as visually questionable):
 
-1. **Существующая сторона рендерится как обычно**, без поэлементной покраски и без заливки
-   всей схемы.
-2. **Признак отсутствия — в лейбле версии**, а не отдельным баннером. Когда пользователь
-   переключается на сторону, где файла нет, в месте лейбла ветки (см. `BranchIndicator`)
-   выводится, что схема в этой версии отсутствует (приглушённый/italic-стиль, чтобы отличать
-   от обычного лейбла). Точную формулировку выбрать при реализации
-   («схема отсутствует» / «удалена» / «нет в этой версии»).
-3. **При переключении на отсутствующую сторону canvas очищается** (пустая диаграмма), вместо
-   текущего `alert('File does not exist…')`. Diff-подсветку и выделение при этом гасить.
-4. **Обе стороны отсутствуют (BUG-0001)** — вместо немого пустого экрана показать на canvas
-   сообщение-заглушку (напр. «Файл отсутствует в обеих версиях»). Делать **в той же сессии** —
-   см. [BUG-0001].
+1. **The existing side renders as usual**, without per-element coloring and without filling
+   the whole schema.
+2. **The absence marker goes into the version label**, not a separate banner. When the user
+   switches to the side where the file is missing, in place of the branch label (see `BranchIndicator`)
+   it states that the schema is absent in this version (a muted/italic style, to distinguish it
+   from the normal label). Choose the exact wording during implementation
+   ("schema is absent" / "deleted" / "not in this version").
+3. **When switching to the absent side, the canvas is cleared** (an empty diagram), instead of
+   the current `alert('File does not exist…')`. Diff highlighting and selection are turned off as well.
+4. **Both sides absent (BUG-0001)** — instead of a silent blank screen, show a placeholder message on the canvas
+   (e.g. "File is absent in both versions"). Do this **in the same session** —
+   see [BUG-0001].
 
-Кнопку «Switch branch» **не прячем** — для новой/удалённой схемы `sourceRef` есть, значит
-кнопка и так активна; признак отсутствия даём через лейбл + очистку canvas. На пустой стороне
-имеет смысл дизейблить кнопку Highlight (сравнивать не с чем).
+We do **not** hide the "Switch branch" button — for a new/deleted schema `sourceRef` exists, so the
+button is active anyway; we signal absence via the label + canvas clearing. On the empty side it
+makes sense to disable the Highlight button (there is nothing to compare against).
 
-Отказались от пунктов исходной формулировки: сплошная заливка всей схемы цветом; скрытие кнопки
-смены ветки; покраска всех элементов новой схемы в таблице.
+We dropped the items from the original formulation: filling the whole schema with color; hiding the branch-switch
+button; coloring all elements of the new schema in the table.
 
-## Контекст
+## Context
 
-Связано с [BUG-0001] — **реализовывать совместно** (общий код пути «одна/обе стороны
-отсутствуют»). BUG-0001: при удалении файла и в MR, и в master старый код падал на
-`requireDefined` (404 при загрузке master). Сейчас `loadFileContent(url, false)` возвращает
-`null`, краш не воспроизводится, но при обеих пустых сторонах `run()` делает ранний `return` →
-остаётся пустая белая страница. Нужна видимая заглушка.
+Linked with [BUG-0001] — **implement jointly** (shared code for the "one/both sides
+absent" path). BUG-0001: when a file is deleted both in the MR and in master, the old code crashed on
+`requireDefined` (404 loading master). Now `loadFileContent(url, false)` returns
+`null`, the crash does not reproduce, but when both sides are empty `run()` does an early `return` →
+a blank white page remains. A visible placeholder is needed.
 
-### Результаты исследования кодовой базы (актуально на 2026-06-16)
+### Codebase research findings (current as of 2026-06-16)
 
-Общая архитектура BPMN- и DMN-дифферов параллельна; ключевые классы — общие
-(`src/differ/shared/`), поэтому большая часть правок делается один раз для обоих. Меняя общие
-классы, проверять оба дифера (правило из CLAUDE.md).
+The overall architecture of the BPMN and DMN differs is parallel; the key classes are shared
+(`src/differ/shared/`), so most edits are made once for both. When changing shared
+classes, check both differs (the rule from CLAUDE.md).
 
-**Детект отсутствия версии:**
-- `src/differ/shared/diagram-versions.js` — `DiagramVersions` хранит `#branchXml` (target) и
-  `#mrXml` (source); любая из них `null`, если файла нет. Загрузка через
+**Detecting an absent version:**
+- `src/differ/shared/diagram-versions.js` — `DiagramVersions` holds `#branchXml` (target) and
+  `#mrXml` (source); either is `null` if the file is missing. Loading via
   `loadFileContent(url, false)` (`diagram-versions.js:32-34`), 404 → `null`.
-- `src/core/utils.js:23-69` — `loadFileContent(url, throwIf404=false)` возвращает `null` при 404.
+- `src/core/utils.js:23-69` — `loadFileContent(url, throwIf404=false)` returns `null` on 404.
 
-**Точки «обе стороны пустые» (BUG-0001):**
-- `src/differ/bpmn/bpmn-differ.js:100-103` и `:190-196` — ранний `return` + `console.error`.
-- `src/differ/dmn/dmn-differ.js:39-42` и `:84-90` — то же для DMN.
+**The "both sides empty" points (BUG-0001):**
+- `src/differ/bpmn/bpmn-differ.js:100-103` and `:190-196` — early `return` + `console.error`.
+- `src/differ/dmn/dmn-differ.js:39-42` and `:84-90` — the same for DMN.
 
-**Лейбл версии (куда писать «схема отсутствует»):**
-- `src/differ/shared/branch-indicator.js` — `BranchIndicator`. Сейчас `setShownLabel(label)`
-  (`:36-45`) рендерит «`role · label`» и красит target/MR-цветом; `isTargetBranchShown()`
-  (`:47-49`) отражает текущую сторону. Добавить метод вида `setAbsentLabel(label)` для
-  состояния «нет схемы», сохранив корректный `isTargetBranchShown()` (нужен для Download и
-  повторного switch).
-- Используется в обоих дифферах: `bpmn-differ.js:127`, `dmn-differ.js:60`; элемент монтируется
-  в шапке `bpmn-differ-view.js:226-233`.
+**The version label (where to write "schema is absent"):**
+- `src/differ/shared/branch-indicator.js` — `BranchIndicator`. Currently `setShownLabel(label)`
+  (`:36-45`) renders "`role · label`" and colors it in the target/MR color; `isTargetBranchShown()`
+  (`:47-49`) reflects the current side. Add a method like `setAbsentLabel(label)` for
+  the "no schema" state, keeping a correct `isTargetBranchShown()` (needed for Download and
+  a repeated switch).
+- Used in both differs: `bpmn-differ.js:127`, `dmn-differ.js:60`; the element is mounted
+  in the header `bpmn-differ-view.js:226-233`.
 
-**Переключение версий (где сейчас alert вместо очистки):**
-- `src/differ/bpmn/bpmn-differ.js:207-223` — `#switchBranch()`; ветки `else` вызывают
-  `this.#versions.alertFileNotExistInBranch(...)`. Показ версии — `#showBranch()` (`:230-241`),
-  `#showMr()` (`:243-254`); импорт XML — `#importXml()` (`:275-286`, `bpmnJS.importXML`).
-- `src/differ/dmn/dmn-differ.js:101-117` — `#switchBranch()` (аналогично); `#showMr()`/
-  `#showBranch()` `:119-143`; импорт `#showXml()` `:145+`.
-- `src/differ/shared/diagram-versions.js:54-56` — `alertFileNotExistInBranch()` (его и
-  заменяем на очистку canvas; проверить также вызов из `download()` `:37-39`).
+**Version switching (where there is currently an alert instead of clearing):**
+- `src/differ/bpmn/bpmn-differ.js:207-223` — `#switchBranch()`; the `else` branches call
+  `this.#versions.alertFileNotExistInBranch(...)`. Showing a version — `#showBranch()` (`:230-241`),
+  `#showMr()` (`:243-254`); XML import — `#importXml()` (`:275-286`, `bpmnJS.importXML`).
+- `src/differ/dmn/dmn-differ.js:101-117` — `#switchBranch()` (similarly); `#showMr()`/
+  `#showBranch()` `:119-143`; import `#showXml()` `:145+`.
+- `src/differ/shared/diagram-versions.js:54-56` — `alertFileNotExistInBranch()` (this is what we
+  replace with canvas clearing; also check the call from `download()` `:37-39`).
 
-**Очистка canvas:**
-- BPMN — у `bpmn-js` есть `bpmnJS.clear()` (пустой canvas).
-- DMN — у `dmn-js` простого `clear()` нет; способ очистки **уточнить при реализации**
-  (вероятно импорт пустой DMN-таблицы либо скрытие контейнера). Текущий путь импорта/сброса —
-  `dmn-differ.js:#showXml` (`:145+`) + `DmnTableViewport.reset()`. Это единственный технически
-  неясный момент плана.
+**Clearing the canvas:**
+- BPMN — `bpmn-js` has `bpmnJS.clear()` (an empty canvas).
+- DMN — `dmn-js` has no simple `clear()`; the clearing method is **to be determined during implementation**
+  (probably importing an empty DMN table or hiding the container). The current import/reset path —
+  `dmn-differ.js:#showXml` (`:145+`) + `DmnTableViewport.reset()`. This is the single technically
+  unclear point of the plan.
 
-**Подсветка / таблица изменений (что гасить на пустой стороне):**
-- `src/differ/bpmn/bpmn-differ.js:306-330` — `#highlightDiffs()` зовёт `diffHighlighter.paint()`
-  и `changesTableView.fill()`. На пустой стороне сравнения нет → таблицу/подсветку сбрасывать,
-  Highlight-кнопку дизейблить.
-- Кнопки Switch/Highlight: `src/differ/bpmn/bpmn-differ-view.js:237-272`
-  (`disabled: !isSourceVersionDefined()`); footer/таблица создаётся только при
-  `isSourceVersionDefined()` (`:123-128`). DMN-вью — `src/differ/dmn/dmn-differ-view.js:133-139`.
+**Highlighting / changes table (what to turn off on the empty side):**
+- `src/differ/bpmn/bpmn-differ.js:306-330` — `#highlightDiffs()` calls `diffHighlighter.paint()`
+  and `changesTableView.fill()`. On the empty side there is no comparison → reset the table/highlighting,
+  disable the Highlight button.
+- The Switch/Highlight buttons: `src/differ/bpmn/bpmn-differ-view.js:237-272`
+  (`disabled: !isSourceVersionDefined()`); the footer/table is created only when
+  `isSourceVersionDefined()` (`:123-128`). The DMN view — `src/differ/dmn/dmn-differ-view.js:133-139`.
 
-### Тесты (по стилю проекта — много мелких юнит-тестов на публичный API)
-- `BranchIndicator`: `setAbsentLabel` → текст/состояние; `isTargetBranchShown()` после absent.
-- Если выделится чистая функция «куда переключаемся и пусто ли там» — покрыть её.
-- DOM/`importXML`-часть — ручная проверка (см. `docs/testing.md`).
+### Tests (per the project style — many small unit tests on the public API)
+- `BranchIndicator`: `setAbsentLabel` → text/state; `isTargetBranchShown()` after absent.
+- If a pure function "where we are switching and whether it is empty there" is extracted — cover it.
+- The DOM/`importXML` part — manual check (see `docs/testing.md`).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0003-absent-schemas` (доработка по фидбэку)
+### 2026-06-16 · claude-opus-4-8 · branch `feature/ux-0003-absent-schemas` (rework per feedback)
 
-По просьбе пользователя уточнены тексты absent-лейбла (вместо общего «not in this version»):
-side-specific, т.к. противоположная сторона при switch всегда существует —
-- пустой source (Changed) → `file deleted` (`BranchIndicator.ABSENT_NOTE_DELETED`);
-- пустой target (Original) → `file does not exist` (`ABSENT_NOTE_NEW`).
-Сообщение «обе пусты» приведено к `File does not exist in either version`.
-Добавлен дизейбл кнопки **Download** на стороне без файла (и при обеих пустых):
-`BpmnDifferView`/`DmnDifferView.setDownloadButtonEnabled`, вызовы из `#showAbsentSide`,
-ветки «обе пусты» и `#showXml` (включение обратно). Тесты обновлены, `npm test` зелёный (690).
+At the user's request, the absent-label texts were clarified (instead of the generic "not in this version"):
+side-specific, since the opposite side on switch always exists —
+- empty source (Changed) → `file deleted` (`BranchIndicator.ABSENT_NOTE_DELETED`);
+- empty target (Original) → `file does not exist` (`ABSENT_NOTE_NEW`).
+The "both empty" message was brought to `File does not exist in either version`.
+Added disabling of the **Download** button on the side without a file (and when both are empty):
+`BpmnDifferView`/`DmnDifferView.setDownloadButtonEnabled`, calls from `#showAbsentSide`,
+the "both empty" branches, and `#showXml` (turning it back on). Tests updated, `npm test` green (690).
 
-### 2026-06-16 · claude-opus-4-8 · ветка `feature/ux-0003-absent-schemas`
+### 2026-06-16 · claude-opus-4-8 · branch `feature/ux-0003-absent-schemas`
 
-Реализован принятый подход (совместно с [BUG-0001]). Изменения:
-- Новый общий класс `DifferEmptyState` (`src/differ/shared/differ-empty-state.js`) — заглушка
-  внутри canvas-ячейки (тулбар остаётся доступным, в отличие от полноэкранного
-  `DifferLoadingOverlay`). Зарегистрирован в `utils.js#loadScripts`, `manifest.json`
-  (`web_accessible_resources`) и `scope.js#SCOPE_FILES`; стили `.differ-empty-state` в `styles.css`.
-- `BranchIndicator.setAbsentLabel(targetSide)` — приглушённый italic-лейбл
-  «role · label · not in this version», `isTargetBranchShown()` остаётся корректным;
-  `setShownLabel` сбрасывает italic обратно.
-- BPMN (`bpmn-differ.js`): `#switchBranch` вместо alert вызывает `#showAbsentSide()` —
-  `bpmnJS.clear()` + absent-лейбл + сброс diff-подсветки (`setDiffElementIds([])`),
-  `ChangesTableView.clear()` (новый метод), сброс выделения, дизейбл кнопки Highlight
-  (`BpmnDifferView.setHighlightButtonEnabled`); кнопка снова включается в `#showXml`.
-- DMN (`dmn-differ.js`): `#switchBranch` → `#showAbsentSide()` — absent-лейбл + пустой
-  перекрыватель canvas (`showEmptyState('')`), т.к. у `dmn-js` нет `clear()`; в `#showXml`
-  перекрыватель скрывается.
-- Обе стороны пусты (BUG-0001): вместо немого пустого экрана — `view.showEmptyState('File not
-  found in either version')` в обоих диферах.
-- `DiagramVersions.alertFileNotExistInBranch` удалён; alert инлайнен в `download()` (отдельное
-  действие, фидбэк сохранён).
+Implemented the accepted approach (jointly with [BUG-0001]). Changes:
+- A new shared class `DifferEmptyState` (`src/differ/shared/differ-empty-state.js`) — a placeholder
+  inside the canvas cell (the toolbar stays accessible, unlike the full-screen
+  `DifferLoadingOverlay`). Registered in `utils.js#loadScripts`, `manifest.json`
+  (`web_accessible_resources`) and `scope.js#SCOPE_FILES`; styles `.differ-empty-state` in `styles.css`.
+- `BranchIndicator.setAbsentLabel(targetSide)` — a muted italic label
+  "role · label · not in this version", `isTargetBranchShown()` stays correct;
+  `setShownLabel` resets the italic back.
+- BPMN (`bpmn-differ.js`): `#switchBranch` instead of an alert calls `#showAbsentSide()` —
+  `bpmnJS.clear()` + the absent label + resetting the diff highlighting (`setDiffElementIds([])`),
+  `ChangesTableView.clear()` (a new method), resetting the selection, disabling the Highlight button
+  (`BpmnDifferView.setHighlightButtonEnabled`); the button is re-enabled in `#showXml`.
+- DMN (`dmn-differ.js`): `#switchBranch` → `#showAbsentSide()` — the absent label + an empty
+  canvas overlay (`showEmptyState('')`), since `dmn-js` has no `clear()`; in `#showXml`
+  the overlay is hidden.
+- Both sides empty (BUG-0001): instead of a silent blank screen — `view.showEmptyState('File not
+  found in either version')` in both differs.
+- `DiagramVersions.alertFileNotExistInBranch` removed; the alert is inlined into `download()` (a separate
+  action, the feedback preserved).
 
-Тесты: `npm test` зелёный (689). Добавлены юнит-тесты `DifferEmptyState` и `BranchIndicator.setAbsentLabel`.
-DOM/`importXML`-часть (рендер пустого canvas, перекрыватель DMN) — по ручному чеклисту (`docs/testing.md`).
+Tests: `npm test` green (689). Added unit tests for `DifferEmptyState` and `BranchIndicator.setAbsentLabel`.
+The DOM/`importXML` part (rendering an empty canvas, the DMN overlay) — per the manual checklist (`docs/testing.md`).
 
-### 2026-06-16 · claude-opus-4-8 · master (планирование, без коммита)
+### 2026-06-16 · claude-opus-4-8 · master (planning, no commit)
 
-Исследована текущая обработка отсутствующих схем (файлы/строки — в «Контексте»). С пользователем
-выбран подход: рендер существующей стороны без покраски; признак отсутствия в лейбле версии;
-очистка canvas при переключении на пустую сторону; заглушка при обеих пустых (совместно с
-[BUG-0001]). Отброшена идея сплошной заливки схемы и скрытия кнопки. Реализация — в следующей
-сессии (оба дифера + общие классы), сразу с BUG-0001.
+Researched the current handling of absent schemas (files/lines — in "Context"). With the user, an
+approach was chosen: render the existing side without coloring; the absence marker in the version label;
+clearing the canvas when switching to the empty side; a placeholder when both are empty (jointly with
+[BUG-0001]). The idea of fully filling the schema and hiding the button was discarded. Implementation — in the next
+session (both differs + shared classes), together with BUG-0001 right away.

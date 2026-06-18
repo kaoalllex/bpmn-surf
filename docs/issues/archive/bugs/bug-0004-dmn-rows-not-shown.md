@@ -1,23 +1,23 @@
 ---
 id: BUG-0004
-title: Не все строки DMN отображаются
+title: Not all DMN rows are displayed
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-В большую dmn-таблицу добавили снизу 4 строки — часть режимов зума показывает только 3 последние.
+4 rows were added to the bottom of a large DMN table — some zoom modes show only the last 3.
 
-## Контекст
+## Context
 
 - MR: https://gitlab.example.com/example-group/example-adapter/-/merge_requests/775/diffs#747aeb319c37e4c2379be395ca41f33cd784ec42
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0004-close-stale`
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0004-close-stale`
 
-Закрыта как неактуальная: пользователь проверил на исходном MR — все строки большой DMN-таблицы отображаются во всех режимах зума, баг не воспроизводится. Изменений кода не требуется.
+Closed as no longer relevant: the user checked the original MR — all rows of the large DMN table are displayed in all zoom modes, the bug does not reproduce. No code changes required.

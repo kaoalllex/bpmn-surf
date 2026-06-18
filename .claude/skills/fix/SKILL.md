@@ -1,29 +1,29 @@
 ---
 name: fix
-description: Исправление багов BPMN Diff — текущее поведение неверное и должно стать правильным минимальным изменением. Использовать при "исправь", "баг", "ошибка", "не работает", "почини", "падает", "не находится/не резолвится", "не отображается", "fix", "error", "bug", при наличии stack trace, 404, лога ошибки или описания неверного результата (в т.ч. перехват хоткеев, поломка после обновления GitLab, проблемы с резолвом коммитов/версий, кэшем или SPA-навигацией). В отличие от feature (добавляет новое поведение) — здесь восстанавливается ожидаемое; в отличие от refactor (поведение не меняется) — здесь поведение исправляется.
+description: Fix bugs in BPMN Diff — the current behavior is wrong and must become correct with a minimal change. Use for "fix", "bug", "error", "doesn't work", "crashes", "isn't found/resolved", "isn't displayed", when there is a stack trace, a 404, an error log, or a description of an incorrect result (including hotkey interception, breakage after a GitLab update, problems with commit/version resolution, the cache, or SPA navigation). Unlike feature (adds new behavior) — here the expected behavior is restored; unlike refactor (behavior stays the same) — here behavior is corrected.
 ---
 
-# Исправление багов
+# Bug fixing
 
 ## Workflow
-1. **Диагностика** — изучи описание/stack trace, локализуй код, найди root cause. В коде много `console.debug` — логи с временными метками (`appendTimeToConsoleLogs`) помогают понять последовательность событий. Пустая белая differ-вкладка → ищи в её консоли `... file is unavailable in both versions` (лог содержит оба raw-URL; обычно это неверный резолв target-коммита старого/merged MR, а не транзиентный сбой — ретраи не помогают)
-2. **План** — минимальное изменение; оцени побочные эффекты; для сложного фикса — подтверждение
-3. **Реализация** — только то, что нужно для фикса; fix ≠ refactor
-4. **Верификация** — ошибка исправлена, остальное не затронуто; запусти `npm test` (юнит-тесты, ~0.5 сек); если баг в покрытом тестами классе (см. `docs/testing.md`) — сначала добавь падающий тест/фикстуру, затем фикс
-5. **Учёт задачи** — если баг относится к задаче из `docs/issues/` (или это новый баг): обнови её файл по правилам `docs/issues/README.md` — добавь запись в «Историю работы» (модель · дата · коммит/ветка + что сделано) и выстави `status` (`done`/`partial`); при `done` — перенеси файл в `docs/issues/archive/bugs/` (`git mv`). Нет файла, но баг стоит зафиксировать — заведи новый файл в `docs/issues/bugs/`
+1. **Diagnosis** — study the description/stack trace, localize the code, find the root cause. The code has many `console.debug` — logs with timestamps (`appendTimeToConsoleLogs`) help reconstruct the sequence of events. A blank white differ tab → look in its console for `... file is unavailable in both versions` (the log contains both raw URLs; usually it is an incorrect resolution of the target commit of an old/merged MR, not a transient failure — retries do not help)
+2. **Plan** — minimal change; assess side effects; for a complex fix — confirmation
+3. **Implementation** — only what is needed for the fix; fix ≠ refactor
+4. **Verification** — the error is fixed, nothing else is affected; run `npm test` (unit tests, ~0.5 sec); if the bug is in a test-covered class (see `docs/testing.md`) — first add a failing test/fixture, then the fix
+5. **Task tracking** — if the bug relates to a task in `docs/issues/` (or it is a new bug): update its file per `docs/issues/README.md` — add an entry to the "Work log" (model · date · commit/branch + what was done) and set `status` (`done`/`partial`); when `done` — move the file to `docs/issues/archive/bugs/` (`git mv`). No file, but the bug is worth recording — create a new file in `docs/issues/bugs/`
 
-## Правила
-- Минимальный diff, не менять логику без необходимости
-- Добавь краткий комментарий (на английском), если причина бага неочевидна
-- Типичные источники багов в проекте: селекторы DOM GitLab (меняются с обновлениями GitLab), резолв коммитов для merged MR, кэш в localStorage, повторная инициализация при SPA-навигации (`mouseup`/`popstate`), общие классы differ-страницы (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType` — изменение их API ломает и BPMN-, и DMN-diff), порядок загрузки `utils.js#loadScripts` на странице differ'а
-- Если причина не ясна: остановись, изложи гипотезы, запроси информацию
+## Rules
+- Minimal diff, do not change logic unnecessarily
+- Add a short comment (in English) if the cause of the bug is non-obvious
+- Typical bug sources in the project: GitLab DOM selectors (change with GitLab updates), commit resolution for a merged MR, the localStorage cache, re-initialization on SPA navigation (`mouseup`/`popstate`), the shared differ-page classes (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType` — changing their API breaks both BPMN and DMN diff), the load order in `utils.js#loadScripts` on the differ page
+- If the cause is unclear: stop, lay out the hypotheses, request information
 
-## Шаблон анализа
+## Analysis template
 
 ```
-## Проблема
+## Problem
 ## Root cause
-## Решение
-## Файлы для изменения
-## Риски
+## Solution
+## Files to change
+## Risks
 ```

@@ -1,78 +1,78 @@
 ---
 name: feature
-description: Реализация новых функций для Chrome Extension. Использовать при запросах "добавь", "новая фича", "реализуй", "создай", "implement"
+description: Implement new functions for the Chrome Extension. Use for requests like "add", "new feature", "implement", "create"
 ---
 
 # Skill: feature
 
-## Когда использовать
-- Пользователь просит "добавь", "новая фича", "реализуй", "создай"
-- Требуется расширить функциональность расширения
-- Нужно добавить новый UI элемент или поведение
-- Требуется интеграция с новыми API
+## When to use
+- The user asks to "add", "new feature", "implement", "create"
+- The extension's functionality needs to be extended
+- A new UI element or behavior must be added
+- Integration with new APIs is required
 
 ## Workflow
 
-### 1. Уточнение требований
-- Убедиться что требования понятны и полны
-- Если критическая информация отсутствует — задать уточняющие вопросы
-- Предложить варианты реализации если есть выбор
+### 1. Clarifying requirements
+- Make sure the requirements are clear and complete
+- If critical information is missing — ask clarifying questions
+- Propose implementation options when there is a choice
 
-### 2. План реализации
-- Описать шаги реализации
-- Указать какие файлы будут затронуты
-- Предложить архитектуру решения
+### 2. Implementation plan
+- Describe the implementation steps
+- State which files will be affected
+- Propose the solution architecture
 
-### 3. Подтверждение
-- Получить подтверждение плана от пользователя
-- **НЕ начинать** реализацию без подтверждения для сложных изменений
+### 3. Confirmation
+- Get the user's confirmation of the plan
+- **Do NOT start** the implementation without confirmation for complex changes
 
-### 4. Реализация
-- Следовать плану
-- Соблюдать [стиль кода](../../CODE_STYLE.md)
-- Писать тесты если это уместно
+### 4. Implementation
+- Follow the plan
+- Adhere to the [code style](../../CODE_STYLE.md)
+- Write tests when appropriate
 
-### 5. Верификация
-- Проверить что новая фича работает
-- Убедиться что существующее поведение не сломано
+### 5. Verification
+- Check that the new feature works
+- Make sure existing behavior is not broken
 
-## Правила
+## Rules
 
-### При разработке:
-1. **Следовать архитектуре** — не нарушать существующую структуру
-2. **Сохранять совместимость** — не ломать существующий функционал
-3. **Минимальные изменения** — не делать лишних изменений
-4. **Чистый код** — следовать [правилам стиля](../../CODE_STYLE.md)
+### When developing:
+1. **Follow the architecture** — do not violate the existing structure
+2. **Preserve compatibility** — do not break existing functionality
+3. **Minimal changes** — do not make unnecessary changes
+4. **Clean code** — follow the [style rules](../../CODE_STYLE.md)
 
 ### Integration points
-- Новые компоненты должны интегрироваться с существующей архитектурой
-- Использовать существующие провайдеры и утилиты где возможно
-- Избегать дупликации логики
+- New components must integrate with the existing architecture
+- Use existing providers and utilities where possible
+- Avoid logic duplication
 
-## Примеры
+## Examples
 
 ### Good trigger phrases
-- "добавь кнопку экспорта"
-- "новая фича: сравнение с локальным файлом"
-- "реализуй подсветку синтаксиса"
-- "создай настройку для цвета highlighting"
+- "add an export button"
+- "new feature: comparison with a local file"
+- "implement syntax highlighting"
+- "create a setting for the highlighting color"
 - "implement dark mode toggle"
 
 ### Plan example
 ```
-## План реализации
+## Implementation plan
 
-### Файлы
-- `gitlab-ui-repo-provider.js` — добавить кнопку
-- `app.js` — обработчик события
-- `styles.css` — стили кнопки
+### Files
+- `gitlab-ui-repo-provider.js` — add a button
+- `app.js` — event handler
+- `styles.css` — button styles
 
-### Шаги
-1. Добавить кнопку в UI
-2. Добавить обработчик клика
-3. Реализовать логику экспорта
-4. Добавить стили
+### Steps
+1. Add the button to the UI
+2. Add a click handler
+3. Implement the export logic
+4. Add styles
 
-### Риски
-- Может потребоваться изменение manifest.json для permissions
+### Risks
+- May require a manifest.json change for permissions
 ```

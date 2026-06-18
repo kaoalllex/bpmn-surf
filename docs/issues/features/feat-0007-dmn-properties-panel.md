@@ -1,20 +1,20 @@
 ---
 id: FEAT-0007
-title: Панель свойств для DMN
+title: Properties panel for DMN
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Добавить панель свойств для DMN. Заодно добавить кнопку hide/show панели свойств для DMN (для BPMN есть, для DMN — нет).
+Add a properties panel for DMN. Also add a hide/show button for the DMN properties panel (BPMN has one, DMN does not).
 
-## Контекст
+## Context
 
 - https://github.com/bpmn-io/dmn-js-properties-panel
-- Код: `dmn-differ-view.js` (после кнопки закрытия ячейки).
+- Code: `dmn-differ-view.js` (after the cell close button).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

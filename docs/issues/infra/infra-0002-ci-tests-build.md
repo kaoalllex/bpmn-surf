@@ -1,19 +1,19 @@
 ---
 id: INFRA-0002
-title: 'CI: запуск тестов и сборка дистрибутива'
+title: 'CI: running tests and building the distribution'
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Средствами GitLab при мердже в master запускать тесты и собирать дистрибутив.
+Using GitLab, run tests and build the distribution on merge into master.
 
-## Контекст
+## Context
 
-- Частично: юнит-тесты (`node:test` + `jsdom`) уже есть в `test/` (`npm test`). Осталась сборка дистрибутива и запуск в CI.
+- Partially: unit tests (`node:test` + `jsdom`) already exist in `test/` (`npm test`). What remains is building the distribution and running it in CI.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

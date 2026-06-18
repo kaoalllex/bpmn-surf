@@ -1,19 +1,19 @@
 ---
 id: FEAT-0010
-title: Кнопка перехода к документации процесса
+title: Button to navigate to the process documentation
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Хранить ссылку на документацию и добавить быстрый переход из просмотрщика.
+Store a link to the documentation and add quick navigation from the viewer.
 
-## Контекст
+## Context
 
-- Обсуждение: https://chat.example.com/example/pl/9q4tppopxbynueq15inp9c7brh
+- Discussion: https://chat.example.com/example/pl/9q4tppopxbynueq15inp9c7brh
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

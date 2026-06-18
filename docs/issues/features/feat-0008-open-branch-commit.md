@@ -1,19 +1,19 @@
 ---
 id: FEAT-0008
-title: Переход к коммиту текущего бранча
+title: Navigate to the current branch's commit
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Рядом с полем `Branch` кнопка `[Open]` — открывает коммит в соседней вкладке.
+Next to the `Branch` field, an `[Open]` button — opens the commit in an adjacent tab.
 
-## Контекст
+## Context
 
-- Пример ссылки: https://gitlab.example.com/example-group/example-service/-/commit/85c64b3ed8c345ddd9f27f614f70a0e5136b5873
+- Example link: https://gitlab.example.com/example-group/example-service/-/commit/85c64b3ed8c345ddd9f27f614f70a0e5136b5873
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

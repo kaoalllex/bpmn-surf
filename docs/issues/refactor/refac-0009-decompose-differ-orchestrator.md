@@ -1,40 +1,40 @@
 ---
 id: REFAC-0009
-title: Разгрузить оркестратор BpmnDiffer — отделить проводку от glue к bpmn-js и DOM
+title: Lighten the BpmnDiffer orchestrator — separate wiring from the glue to bpmn-js and the DOM
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-`bpmn-differ.js` (`BpmnDiffer`, ~460 строк) одновременно оркестрирует поток
-diff'а (загрузка версий → сравнение → покраска → таблица) и держит много
-низкоуровневого glue, не относящегося к оркестрации:
+`bpmn-differ.js` (`BpmnDiffer`, ~460 lines) simultaneously orchestrates the diff
+flow (load versions → compare → coloring → table) and holds a lot of
+low-level glue unrelated to orchestration:
 
-- создание и конфигурация модельера bpmn-js (`#createModeler`);
-- хаки сокрытия UI редактора (`#hideSchemaEditorControls` с `delay(100)` дважды,
+- creating and configuring the bpmn-js modeler (`#createModeler`);
+- hacks for hiding the editor UI (`#hideSchemaEditorControls` with `delay(100)` twice,
   `#hideModelerPalleteAndPoweredByLabel`);
-- навигация вкладки-opener трюком с `window.name` (`#navigateOpenerTab`);
-- резолв URL ресурса во вложенном табе (`#getLinkOrScriptHref`).
+- opener-tab navigation via the `window.name` trick (`#navigateOpenerTab`);
+- resolving the resource URL in a nested tab (`#getLinkOrScriptHref`).
 
-Смешение уровней делает класс трудночитаемым, повышает churn и не даёт покрыть
-оркестрацию юнит-тестами (сейчас он в `UNTESTED_BY_DESIGN`).
+Mixing levels makes the class hard to read, increases churn, and prevents covering
+the orchestration with unit tests (it is currently in `UNTESTED_BY_DESIGN`).
 
-Предложение: выделить отдельные коллабораторы — например `BpmnModelerFactory`
-(создание/конфиг bpmn-js + сокрытие палитры/контекст-пада) и `OpenerTabNavigator`
-(трюк с `window.name`, fallback на новую вкладку). Тогда `BpmnDiffer` остаётся
-тонким оркестратором; выделенные части по возможности покрываются тестами.
+Proposal: extract separate collaborators — for example `BpmnModelerFactory`
+(creating/configuring bpmn-js + hiding the palette/context pad) and `OpenerTabNavigator`
+(the `window.name` trick, fallback to a new tab). Then `BpmnDiffer` remains
+a thin orchestrator; the extracted parts are covered with tests where possible.
 
-Поведение не меняется — это рефакторинг (см. ограничение «не смешивать рефакторинг
-с фичами/фиксами»; делать маленькими шагами).
+Behavior does not change — this is a refactoring (see the constraint "don't mix refactoring
+with features/fixes"; do it in small steps).
 
-## Контекст
+## Context
 
-- Затронуто: `src/differ/bpmn/bpmn-differ.js`; зеркально стоит оценить
-  `src/differ/dmn/dmn-differ.js`.
-- Связано с [REFAC-0010] (общая база BPMN/DMN-differ'ов) — разгрузку удобно делать
-  до или совместно с выделением общей базы.
-- `OpenerTabNavigator` — кандидат на отдельный покрываемый класс (логика выбора
-  «навигировать opener vs. новая вкладка»).
+- Affected: `src/differ/bpmn/bpmn-differ.js`; it is worth assessing
+  `src/differ/dmn/dmn-differ.js` in parallel.
+- Related to [REFAC-0010] (a shared base for the BPMN/DMN differs) — it is convenient to do the lightening
+  before or together with extracting the shared base.
+- `OpenerTabNavigator` is a candidate for a separate testable class (the logic of choosing
+  "navigate the opener vs. a new tab").
 
-## История работы
+## Work log
