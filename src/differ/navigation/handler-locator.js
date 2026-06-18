@@ -186,6 +186,55 @@ class HandlerLocator {
         return match ? `class:${capitalizeFirstLetter(match[1])}` : null;
     }
 
+    /**
+     * Derives the namespaced handler key (topic:<topic> | class:<Name>) carried
+     * by a BPMN business object, or null if it references no recognised handler.
+     *
+     * Implementation attributes (external type+topic / camunda:delegateExpression
+     * / camunda:class) are defined on the camunda:ServiceTaskLike that owns them.
+     * Where they live depends on the element:
+     *  - a service / send / business-rule task carries them on the BO itself;
+     *  - a message event (end or intermediate-throw) carries them on its nested
+     *    bpmn:MessageEventDefinition, not on the event BO.
+     * #implementationHolder picks the right one. camunda:expression is
+     * intentionally ignored (a method call, not a class — parity with the badge's
+     * scope). Attributes are read via get() because `class` is a reserved word
+     * (bo.class would not work).
+     * @returns {string|null}
+     */
+    static handlerKeyFromBusinessObject(bo) {
+        const impl = HandlerLocator.#implementationHolder(bo);
+        if (!impl) {
+            return null;
+        }
+        if (impl.type === 'external' && impl.topic) {
+            return `topic:${impl.topic}`;
+        }
+        const delegateExpression = impl.get && impl.get('camunda:delegateExpression');
+        if (delegateExpression) {
+            return HandlerLocator.classKeyFromDelegateExpression(delegateExpression);
+        }
+        const className = impl.get && impl.get('camunda:class');
+        if (className) {
+            return HandlerLocator.classKeyFromClassName(className);
+        }
+        return null;
+    }
+
+    // The moddle object that actually carries the implementation attributes: a
+    // nested bpmn:MessageEventDefinition when the BO has one (message events
+    // store them there), otherwise the BO itself (service/send/business-rule
+    // tasks store them directly). Other event-definition types (timer, signal,
+    // error, …) carry no class/delegate, so the BO falls through and yields null.
+    static #implementationHolder(bo) {
+        if (!bo) {
+            return null;
+        }
+        const defs = bo.eventDefinitions || (bo.get && bo.get('eventDefinitions'));
+        const msgDef = defs && defs.find(d => d.$type === 'bpmn:MessageEventDefinition');
+        return msgDef || bo;
+    }
+
     // 'com.foo.Bar' -> 'Bar'; an already-simple name is returned unchanged.
     static simpleClassName(className) {
         if (!className) {
