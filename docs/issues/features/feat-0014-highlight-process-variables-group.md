@@ -1,46 +1,46 @@
 ---
 id: FEAT-0014
-title: Подсвечивать группу «Process variables» у подпроцессов при изменениях потомков
-priority: medium
+title: Highlight the "Process variables" group on subprocesses when descendants change
+priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-В панели свойств BPMN-differ группа «Process variables» (id `CamundaPlatform__ProcessVariables`,
-есть у `bpmn:Process` / `bpmn:SubProcess` / пулов) не подсвечивается синим при изменениях,
-хотя другие группы подсвечиваются.
+In the BPMN-differ properties panel, the "Process variables" group (id `CamundaPlatform__ProcessVariables`,
+present on `bpmn:Process` / `bpmn:SubProcess` / pools) is not highlighted in blue on changes,
+even though other groups are highlighted.
 
-Причина: «Process variables» — производный read-only список. Панель собирает его через
-`getVariablesForScope` из form fields, output-маппингов и прочих источников переменных
-**внутри** scope. Собственного XML-свойства у группы нет, поэтому в `BpmnXmlComparator`
-(`#DIFF_TO_PROPERTY_GROUP_MAP`) ей нечего сопоставить: реальное изменение всегда лежит на
-дочернем элементе и уже детектируется там (и подсвечивается в его группе, напр. «Outputs» /
-«Form fields»).
+Reason: "Process variables" is a derived read-only list. The panel assembles it via
+`getVariablesForScope` from form fields, output mappings, and other variable sources
+**within** the scope. The group has no XML property of its own, so in `BpmnXmlComparator`
+(`#DIFF_TO_PROPERTY_GROUP_MAP`) there is nothing to map it to: the actual change always lies on a
+child element and is already detected there (and highlighted in its group, e.g. "Outputs" /
+"Form fields").
 
-Нужно: подсвечивать «Process variables» на родительском подпроцессе/процессе, когда меняется
-переменная, попадающая в его scope. Фактически — пробросить релевантные изменения потомков
-вверх к содержащему scope-элементу.
+What's needed: highlight "Process variables" on the parent subprocess/process when a
+variable that falls into its scope changes. Effectively — propagate relevant descendant changes
+up to the containing scope element.
 
-Открытые вопросы для дизайна:
-- какие именно изменения потомков считать влияющими на process variables (output parameters,
+Open design questions:
+- which descendant changes exactly should be considered as affecting process variables (output parameters,
   form fields, result variables, in/out target, conditional event `variableName`, …);
-- на какую глубину агрегировать (вложенные подпроцессы);
-- производительность на крупных диаграммах.
+- to what depth to aggregate (nested subprocesses);
+- performance on large diagrams.
 
-## Контекст
+## Context
 
-- Обнаружено при ручной проверке апгрейда внешних библиотек (MR
+- Discovered during manual verification of the external-libraries upgrade (MR
   https://gitlab.example.com/kaoalllex/bpmn-diff/-/merge_requests/77; bpmn-js 16→18, dmn-js 15→17,
-  properties-panel 3.7→3.44). **Не регресс**: группа не подсвечивалась и до апгрейда.
-- Затронутые файлы: `src/differ/bpmn/bpmn-xml-comparator.js` (карта diff→группа, агрегация),
-  `src/differ/bpmn/properties-panel-highlighter.js` (подсветка по тексту заголовка).
-- Диагностика уже есть: компаратор логирует diff без сопоставленной группы
-  (`bpmn-xml-comparator.js`, ворнинг в цикле обхода diff'ов), а хайлайтер — случай, когда
-  группа есть в diff-карте, но её заголовок не найден в DOM панели. Лог поможет уточнить
-  конкретный сценарий пользователя.
+  properties-panel 3.7→3.44). **Not a regression**: the group was not highlighted before the upgrade either.
+- Affected files: `src/differ/bpmn/bpmn-xml-comparator.js` (diff→group map, aggregation),
+  `src/differ/bpmn/properties-panel-highlighter.js` (highlighting by header text).
+- Diagnostics already exist: the comparator logs a diff without a mapped group
+  (`bpmn-xml-comparator.js`, a warning in the diff traversal loop), and the highlighter — the case where
+  the group is in the diff map but its header is not found in the panel DOM. The log will help pinpoint
+  the user's specific scenario.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry per the template below.
+     Add new entries at the top (freshest first). -->

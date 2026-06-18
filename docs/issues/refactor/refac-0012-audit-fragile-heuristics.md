@@ -1,57 +1,57 @@
 ---
 id: REFAC-0012
-title: Аудит хрупких эвристик — найти, заменить на надёжное или защитить + логировать
+title: Audit fragile heuristics — find them, replace with something reliable or guard + log
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-В проекте есть места, где значение выводится **эвристикой/угадыванием** вместо
-надёжного источника, и при несовпадении предположения код тихо выдаёт неверный
-результат (без явной ошибки). [BUG-0012] — наглядный пример: разбор blob-URL
-угадывал границу `ref`/`path` жадным regex и анкором на имя проекта, в итоге `ref`
-склеивался с путём, а диагностировать пришлось по сетевому логу.
+The project has places where a value is derived by a **heuristic/guess** instead of
+a reliable source, and when the assumption does not hold the code silently yields an incorrect
+result (with no explicit error). [BUG-0012] is a clear example: parsing the blob-URL
+guessed the `ref`/`path` boundary with a greedy regex and an anchor on the project name, and as a result the `ref`
+got glued to the path, and it had to be diagnosed from the network log.
 
-Нужно:
-1. **Найти** аналогичные хрупкие места (эвристики, угадывание, regex по URL/DOM,
-   допущения о структуре путей/markup GitLab).
-2. Для каждого определить:
-   - есть ли **надёжный детерминированный источник** (API, явный атрибут, точный
-     формат) — тогда заменить эвристику на него;
-   - если без эвристики никак — добавить **механизм защиты** (валидация результата,
-     проверка инварианта: «ref — это hex-SHA или известная ветка», «filePath не
-     пустой» и т.п.) **+ явное логирование** (`console.warn`/`error` с входными
-     данными), чтобы причина была видна сразу, а не выводилась из сетевого лога.
+We need to:
+1. **Find** similar fragile places (heuristics, guessing, regex over URL/DOM,
+   assumptions about the structure of GitLab paths/markup).
+2. For each, determine:
+   - whether there is a **reliable deterministic source** (API, an explicit attribute, an exact
+     format) — then replace the heuristic with it;
+   - if there is no way around a heuristic — add a **guard mechanism** (validating the result,
+     checking an invariant: "ref is a hex-SHA or a known branch", "filePath is not
+     empty", etc.) **+ explicit logging** (`console.warn`/`error` with the input
+     data), so the cause is visible immediately rather than inferred from the network log.
 
-Цель — не переписать всё, а составить список с приоритетами и пристрелочными
-вариантами решения; точечные фиксы заводить отдельными задачами по мере разбора.
+The goal is not to rewrite everything, but to compile a prioritized list with tentative
+solution options; introduce pinpoint fixes as separate tasks as the analysis proceeds.
 
-## Контекст
+## Context
 
-Известные кандидаты (стартовая точка, список расширить при аудите):
+Known candidates (a starting point, the list to be extended during the audit):
 
 - `GitLabUrlParser.extractBranchCommitIdAndFilePath`
-  (`src/content/providers/gitlab/gitlab-url-parser.js`) — жадный catch-all regex и
-  анкор на `projectName`; границу ref/path надёжно из URL не вывести (ветки содержат
-  `/`). Опора на DOM-подсказку, которая может быть `null`. См. [BUG-0012].
-- `GitLabDomScraper` (`src/content/providers/gitlab/gitlab-dom-scraper.js`) — весь
-  разбор markup GitLab: `findBranchCommitIdText` (два case-селектора),
+  (`src/content/providers/gitlab/gitlab-url-parser.js`) — a greedy catch-all regex and
+  an anchor on `projectName`; the ref/path boundary cannot be reliably derived from the URL (branches contain
+  `/`). Reliance on a DOM hint that may be `null`. See [BUG-0012].
+- `GitLabDomScraper` (`src/content/providers/gitlab/gitlab-dom-scraper.js`) — the entire
+  parsing of GitLab markup: `findBranchCommitIdText` (two case selectors),
   `findSelectedFilePath`, `getMergeRequestBranchNames`, `findDiffHeadSha`,
-  `isMergedByBadge`. Самая хрупкая часть (ломается с обновлениями GitLab); при
-  ненахождении часто возвращает `null` молча.
-- Резолв коммита target-версии для merged MR (исторически шёл через DOM —
-  см. [REFAC-0008]) — проверить остаточные эвристики.
-- `HandlerLocator` — соответствие хендлеров по **простому** имени класса, а не FQN
-  (коллизии `class:Bar`); вывод топика из имени класса для `@WrapToExternalTask`;
-  вывод bean→class по дефолтной Spring-конвенции
-  (`src/differ/navigation/handler-locator.js`, см. её header-комментарий о
-  known limitations). Эвристики осознанные — нужен хотя бы лог при неоднозначности.
-- Резолв called-process файла Call Activity по processId
-  (см. [BUG-0006], [REFAC-0007]).
+  `isMergedByBadge`. The most fragile part (breaks with GitLab updates); on
+  a non-match it often returns `null` silently.
+- Resolving the target-version commit for a merged MR (historically went through the DOM —
+  see [REFAC-0008]) — check for residual heuristics.
+- `HandlerLocator` — matching handlers by **simple** class name rather than FQN
+  (collisions of `class:Bar`); deriving the topic from the class name for `@WrapToExternalTask`;
+  deriving bean→class by the default Spring convention
+  (`src/differ/navigation/handler-locator.js`, see its header comment about
+  known limitations). The heuristics are deliberate — there should be at least a log on ambiguity.
+- Resolving the called-process file of a Call Activity by processId
+  (see [BUG-0006], [REFAC-0007]).
 
-Связано: [BUG-0012] (первопричина-пример), [REFAC-0008] (вынос DOM-резолва коммита).
+Related: [BUG-0012] (the root-cause example), [REFAC-0008] (extraction of the DOM commit resolution).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись. Новые записи сверху. -->
+<!-- Each AI session on the task is a separate entry. New entries on top. -->

@@ -1,19 +1,19 @@
 ---
 id: REFAC-0004
-title: Абстракция платформы хранения кода → поддержка GitHub
+title: Code-hosting platform abstraction → GitHub support
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Ввести абстракцию платформы хранения кода для последующей поддержки GitHub.
+Introduce a code-hosting platform abstraction to enable subsequent GitHub support.
 
-## Контекст
+## Context
 
-Ввести интерфейс поверх GitLab (`GitLabRepositoryProvider` / `GitHubRepositoryProvider`), вынести GitLab-специфику, определить точки расширения. Целевая задача после публикации в Open Source.
+Introduce an interface on top of GitLab (`GitLabRepositoryProvider` / `GitHubRepositoryProvider`), extract the GitLab-specific parts, and define extension points. A target task for after the Open Source release.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

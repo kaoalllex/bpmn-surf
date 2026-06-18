@@ -37,7 +37,7 @@
     ],
     "action": {
         "default_popup": "src/popup/popup.html",
-        "default_title": "BPMN differ — обновление"
+        "default_title": "BPMN differ — update"
     },
     "background": {
         "service_worker": "src/background/update-service-worker.js"

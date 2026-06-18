@@ -1,66 +1,66 @@
 ---
 name: refactor
-description: Улучшение структуры и читаемости кода без изменения поведения. Использовать при запросах "рефакторинг", "упрости", "почисти код", "улучши код"
+description: Improve the structure and readability of the code without changing behavior. Use for requests like "refactor", "simplify", "clean up the code", "improve the code"
 ---
 
 # Skill: refactor
 
-## Когда использовать
-- Пользователь просит "рефакторинг", "улучши код", "упрости", "почисти код"
-- Обнаружена дупликация кода
-- Логика слишком сложная или запутанная
-- Нужно улучшить разделение ответственности
-- Имена переменных/функций не отражают их назначение
+## When to use
+- The user asks to "refactor", "improve the code", "simplify", "clean up the code"
+- Code duplication is found
+- The logic is too complex or convoluted
+- Separation of concerns needs improvement
+- Variable/function names do not reflect their purpose
 
-## Правила
+## Rules
 
-### Что МОЖНО делать:
-- Рефакторить существующие файлы для ясности и поддерживаемости
-- Улучшать внутреннюю структуру и именование
-- Уменьшать дупликацию кода
-- Упрощать логику
-- Улучшать разделение ответственности
-- Предлагать небольшие сфокусированные улучшения
+### What is ALLOWED:
+- Refactor existing files for clarity and maintainability
+- Improve internal structure and naming
+- Reduce code duplication
+- Simplify logic
+- Improve separation of concerns
+- Propose small, focused improvements
 
-### Требования к изменениям:
-- Сохранять существующее поведение **точно**
-- Сохранять публичный UI и пользовательский поток
-- Сохранять обратную совместимость
+### Requirements for changes:
+- Preserve existing behavior **exactly**
+- Preserve the public UI and the user flow
+- Preserve backward compatibility
 
 ### Refactoring Guidelines
-1. **One concern per change** — одна задача за раз
-2. Keep diffs small and focused — маленькие фокусированные diff'ы
-3. Do not mix refactoring with feature changes — не смешивать с новыми фичами
+1. **One concern per change** — one task at a time
+2. Keep diffs small and focused
+3. Do not mix refactoring with feature changes
 4. If unsure — explain assumptions before changing code
 
 ### If behavior might change:
-- **Stop** — остановиться
-- **Explain the risk** — объяснить риск
-- **Ask for confirmation** — запросить подтверждение
+- **Stop**
+- **Explain the risk**
+- **Ask for confirmation**
 
 ## Communication
-- Объяснять **почему** предлагается рефакторинг
-- Описывать **trade-offs** (компромиссы)
-- Избегать overengineering
-- Спрашивать перед структурными изменениями
+- Explain **why** the refactoring is proposed
+- Describe the **trade-offs**
+- Avoid overengineering
+- Ask before structural changes
 
 ## Workflow
 
-1. **Объяснить** что планируется рефакторить и зачем
-2. **Предложить план** с конкретными файлами и изменениями
-3. **Дождаться подтверждения** перед применением изменений
-4. **Применить** изменения инкрементально
-5. **Проверить** что поведение не изменилось
+1. **Explain** what is planned to refactor and why
+2. **Propose a plan** with specific files and changes
+3. **Wait for confirmation** before applying changes
+4. **Apply** changes incrementally
+5. **Verify** that behavior has not changed
 
-## Примеры
+## Examples
 
 ### Good trigger phrases
-- "рефакторинг bpmn-differ.js"
-- "упрости эту функцию"
-- "почисти код от дупликации"
-- "улучши структуру файла"
+- "refactor bpmn-differ.js"
+- "simplify this function"
+- "clean up the code from duplication"
+- "improve the file structure"
 - "reduce duplication in this code"
 
-### Bad (требует уточнения)
-- "перепиши всё заново" — слишком масштабно
-- "добавь логирование и почисти код" — смешивание фичи и рефакторинга
+### Bad (needs clarification)
+- "rewrite everything from scratch" — too large in scope
+- "add logging and clean up the code" — mixing feature and refactoring

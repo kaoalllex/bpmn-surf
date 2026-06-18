@@ -1,19 +1,19 @@
 ---
 id: FEAT-0013
-title: Сбор статистики использования / телеметрия
+title: Usage statistics collection / telemetry
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Фиксировать использование функций, ошибки, производительность. Рассмотреть анонимную телеметрию вместе с механизмом автообновления.
+Record feature usage, errors, performance. Consider anonymous telemetry together with the auto-update mechanism.
 
-## Контекст
+## Context
 
-- Связано с [FEAT-0012].
+- Related to [FEAT-0012].
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

@@ -1,19 +1,19 @@
 ---
 id: UX-0005
-title: Зафиксировать высоту таблицы изменений
+title: Fix the height of the changes table
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-Сделать независимый скролл панели изменений и зафиксировать её высоту, чтобы исключить смещение при открытии больших панелей свойств.
+Make the changes panel scroll independently and fix its height, to avoid shifting when large property panels are opened.
 
-## Контекст
+## Context
 
-- Независимый скролл панели изменений; исключить смещение при открытии больших панелей свойств.
+- Independent scroll of the changes panel; avoid shifting when large property panels are opened.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

@@ -1,9 +1,9 @@
-// Индикатор доступного обновления в тулбаре differ-страницы (FEAT-0012).
-// Общий для BPMN и DMN (как BranchIndicator). Differ-страница — обычный
-// web-контекст (about:blank) без доступа к chrome.*, поэтому данные об
-// обновлении приходят в параметрах (их читает content-script из состояния SW),
-// а клик открывает popup как вкладку (window.open по popupUrl, переданному
-// content-script'ом через chrome.runtime.getURL).
+// Indicator of an available update in the differ page toolbar (FEAT-0012).
+// Shared between BPMN and DMN (like BranchIndicator). The differ page is a plain
+// web context (about:blank) with no access to chrome.*, so the update data
+// arrives via parameters (read by the content-script from the SW state), and a
+// click opens the popup as a tab (window.open with the popupUrl passed by the
+// content-script via chrome.runtime.getURL).
 class UpdateIndicator {
     // updateInfo: { updateAvailable, latestVersion, popupUrl } | null
     constructor(updateInfo) {
@@ -16,9 +16,9 @@ class UpdateIndicator {
             && this.updateInfo.latestVersion);
     }
 
-    // Создаёт кликабельный элемент-«колокольчик». onActivate вызывается по
-    // клику (вью подвязывает открытие popup'а). Возвращает null, если обновления
-    // нет — вызывающий не добавляет элемент в тулбар.
+    // Creates a clickable "bell" element. onActivate is called on click (the view
+    // wires up opening the popup). Returns null if there is no update — the caller
+    // does not add the element to the toolbar.
     createElement(onActivate) {
         if (!this.isAvailable()) {
             return null;
@@ -26,7 +26,7 @@ class UpdateIndicator {
         const button = document.createElement('button');
         button.className = 'differ-btn differ-update-indicator';
         button.textContent = `🔔 v${this.updateInfo.latestVersion}`;
-        button.title = 'Доступно обновление BPMN differ — открыть окно обновления';
+        button.title = 'A BPMN differ update is available — open the update window';
         button.addEventListener('click', () => {
             if (typeof onActivate === 'function') {
                 onActivate();

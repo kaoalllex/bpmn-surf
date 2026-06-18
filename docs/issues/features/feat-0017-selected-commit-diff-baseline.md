@@ -1,64 +1,64 @@
 ---
 id: FEAT-0017
-title: Исследование — база сравнения и подпись «Original» при выборе коммита MR
+title: Investigation — comparison baseline and the "Original" label when an MR commit is selected
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-В режиме выбранного коммита MR (`?commit_id=`, FEAT-0001) сторона «Original» = родитель
-именно выбранного коммита (`parent_ids[0]`). Для файла, который **появился внутри MR**,
-это даёт разный «оригинал» в зависимости от открытого коммита и может сбивать с толку:
+In selected-MR-commit mode (`?commit_id=`, FEAT-0001) the "Original" side = the parent
+of the selected commit specifically (`parent_ids[0]`). For a file that **first appeared inside the MR**,
+this gives a different "original" depending on the opened commit and can be confusing:
 
-- открыт **первый** коммит MR → родитель до-MR-ный → файла нет → корректно «added»;
-- открыт **последний** коммит MR → родитель — предыдущий коммит MR (файл там уже есть) →
-  инкрементальный дифф, а не «файл добавлен в MR».
+- the **first** MR commit is opened → the parent is pre-MR → the file is absent → correctly "added";
+- the **last** MR commit is opened → the parent is the previous MR commit (the file is already there) →
+  an incremental diff, not "file added in the MR".
 
-Поведение **корректное** (так же ведёт себя GitLab в дифф одиночного коммита) и
-соответствует спецификации FEAT-0001. Кумулятивный вид «что MR делает с файлом целиком»
-**уже доступен** — это общий дифф MR (страница `/diffs` без выбранного коммита): там
-`target = merge-base`, и новый файл показывается как добавленный.
+The behavior is **correct** (GitLab behaves the same way in a single-commit diff) and
+matches the FEAT-0001 specification. The cumulative view "what the MR does to the file as a whole"
+**is already available** — it is the overall MR diff (the `/diffs` page without a selected commit): there
+`target = merge-base`, and the new file is shown as added.
 
-Задача — не «починить» (бага нет), а решить, нужно ли снижать путаницу и как.
+The task is not to "fix" (there is no bug) but to decide whether reducing the confusion is needed and how.
 
-## Контекст
+## Context
 
-- Пример: MR https://gitlab.example.com/example-group/example-service/-/merge_requests/3931 ,
-  файл `pllOfferSigning.bpmn` (впервые появился в MR; MR замерджен). Открытие первого
-  коммита `d72d870a` → «оригинала нет»; открытие последнего `e644ef1f` → `Original ·
-  …(60bd4b11)` (предыдущий коммит MR). Сам дифф при этом верный — вопрос в смысле/подписи.
-- Код: `gitlab-api-repo-provider.js` (`getSourceCommitId`/`getTargetCommitId`/`getDiffSideLabels`),
-  `branch-indicator.js` (роль `Original`/`Changed`), `differ-params.js`. Связано с
-  [FEAT-0001] (дифф выбранного коммита) и [FEAT-0009] (подписи сторон, роль).
+- Example: MR https://gitlab.example.com/example-group/example-service/-/merge_requests/3931 ,
+  file `pllOfferSigning.bpmn` (first appeared in the MR; the MR is merged). Opening the first
+  commit `d72d870a` → "no original"; opening the last `e644ef1f` → `Original ·
+  …(60bd4b11)` (the previous MR commit). The diff itself is correct — the question is about the meaning/label.
+- Code: `gitlab-api-repo-provider.js` (`getSourceCommitId`/`getTargetCommitId`/`getDiffSideLabels`),
+  `branch-indicator.js` (the `Original`/`Changed` role), `differ-params.js`. Related to
+  [FEAT-0001] (selected-commit diff) and [FEAT-0009] (side labels, role).
 
-### Замеченные корнер-кейсы (учесть при проработке)
+### Observed corner cases (account for during the work)
 
-1. **Подпись `Original` у первого коммита** = коммит с целевой ветки (точка ветвления).
-   Если файл там есть (не новый), подпись покажет сообщение постороннего master-коммита
-   как «Original» — формально верно, но может сбивать.
-2. **Merge-коммит как выбранный** — берётся только первый родитель (`parent_ids[0]`),
-   дифф против него может быть неожиданным.
-3. **Fallback на `base_sha`** (root-коммит/ошибка резолва родителя) — тогда «Original»
-   внезапно становится базой MR, а не предыдущим коммитом, без явного признака.
+1. **The `Original` label of the first commit** = the commit from the target branch (the branch point).
+   If the file is there (not new), the label will show the message of an unrelated master commit
+   as "Original" — formally correct, but it may be confusing.
+2. **A merge commit as the selected one** — only the first parent is taken (`parent_ids[0]`),
+   the diff against it may be unexpected.
+3. **Fallback to `base_sha`** (root commit / parent-resolution error) — then "Original"
+   suddenly becomes the MR base rather than the previous commit, without an explicit indication.
 
-### Возможные направления (выбрать при проработке)
+### Possible directions (choose during the work)
 
-- **A. Яснее подпись.** В режиме выбранного коммита явно помечать, что Original — это
-  предыдущий коммит MR (а не база MR / целевая ветка). Мелкая правка, без смены логики.
-- **B. Опция базы сравнения.** Дать переключатель «против родителя коммита» ↔ «против
-  базы MR» для выбранного файла. Крупнее; частично дублирует общий дифф MR.
-- **C. Ничего не менять, задокументировать.** Зафиксировать: выбран коммит → дифф против
-  предыдущего коммита; весь MR → против базы MR.
+- **A. Clearer label.** In selected-commit mode, explicitly mark that Original is the
+  previous MR commit (and not the MR base / target branch). A small change, no logic change.
+- **B. Comparison-baseline option.** Provide a toggle "against the commit's parent" ↔ "against the
+  MR base" for the selected file. Larger; partially duplicates the overall MR diff.
+- **C. Change nothing, document.** Fix it down: a commit is selected → diff against the
+  previous commit; the whole MR → against the MR base.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry per the template below.
+     Add new entries at the top (freshest first). -->
 
-### 2026-06-16 · claude-opus-4-8 · ветка `feature/branch-name-not-hash`
+### 2026-06-16 · claude-opus-4-8 · branch `feature/branch-name-not-hash`
 
-Задача заведена по итогам обсуждения в рамках FEAT-0009. Проверено на MR 3931: логика
-резолва (`source = выбранный коммит`, `target = parent_ids[0]`) и подписи корректны, сам
-дифф верный — расхождение только в ожиданиях («Original» = предыдущий коммит, а не база
-MR). Зафиксированы корнер-кейсы и направления A/B/C. Правок кода не делалось.
+Task created following the discussion within FEAT-0009. Verified on MR 3931: the resolution
+logic (`source = selected commit`, `target = parent_ids[0]`) and labels are correct, the diff
+itself is correct — the discrepancy is only in expectations ("Original" = the previous commit, not the MR
+base). The corner cases and directions A/B/C are recorded. No code changes were made.

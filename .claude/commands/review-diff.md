@@ -1,12 +1,12 @@
 ---
-description: Ревью текущих незакоммиченных изменений субагентом code-reviewer
+description: Review the current uncommitted changes with the code-reviewer subagent
 allowed-tools: Bash(git *), Agent
 ---
 
-Контекст:
-- Статус: !`git status --short`
+Context:
+- Status: !`git status --short`
 - Diff: !`git diff HEAD --stat`
 
-Запусти субагента `code-reviewer` для ревью текущих изменений (`git diff HEAD`, включая staged). Если изменений нет — сообщи и остановись. Передай ему дополнительный фокус из аргументов, если указан: $ARGUMENTS
+Run the `code-reviewer` subagent to review the current changes (`git diff HEAD`, including staged). If there are no changes — report it and stop. Pass it the additional focus from the arguments, if provided: $ARGUMENTS
 
-Резюмируй вердикт и блокирующие замечания на русском.
+Summarize the verdict and blocking findings in the language the user opened the conversation with.

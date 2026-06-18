@@ -1,7 +1,7 @@
 # Project Context: BPMN Diff for GitLab
 
 ## Purpose
-Chrome Extension (Manifest V3) для **визуального сравнения BPMN 2.0 и DMN диаграмм** внутри **GitLab merge requests**.
+Chrome Extension (Manifest V3) for **visually comparing BPMN 2.0 and DMN diagrams** inside **GitLab merge requests**.
 
 ## Core Functionality
 - Detects BPMN/DMN files in GitLab MRs or branch views
@@ -103,44 +103,44 @@ If behavior might change:
 
 ## LSP Integration
 
-LSP включён для этого проекта (`.lsp.json` настроен, `typescript-language-server` доступен).
+LSP is enabled for this project (`.lsp.json` is configured, `typescript-language-server` is available).
 
-### Доступные операции LSP
+### Available LSP operations
 
-Агенты должны использовать LSP-инструмент для анализа кода:
+Agents should use the LSP tool for code analysis:
 
-| Операция | Когда использовать |
+| Operation | When to use |
 |----------|-------------------|
-| `goToDefinition` | Узнать, где определена функция/класс/переменная |
-| `findReferences` | Найти все использования символа |
-| `hover` | Получить информацию о типе/сигнатуре функции |
-| `documentSymbol` | Изучить структуру файла (классы, функции) |
-| `workspaceSymbol` | Найти символ по имени во всём проекте |
-| `diagnostics` | Проверить файл на ошибки |
-| `codeActions` | Найти доступные рефакторинги/исправления |
+| `goToDefinition` | Find where a function/class/variable is defined |
+| `findReferences` | Find all usages of a symbol |
+| `hover` | Get type/signature information for a function |
+| `documentSymbol` | Explore a file's structure (classes, functions) |
+| `workspaceSymbol` | Find a symbol by name across the whole project |
+| `diagnostics` | Check a file for errors |
+| `codeActions` | Find available refactorings/fixes |
 
-### Анализ внешних библиотек
+### Analyzing external libraries
 
-Для изучения API внешних библиотек (`libs/`, npm-пакеты):
+To study the API of external libraries (`libs/`, npm packages):
 
-1. **bpmn-js, dmn-js**: Используйте `workspaceSymbol` для поиска классов/методов
-2. **Неизвестный API**: Используйте `hover` для получения сигнатур и типов
-3. **Поиск примеров**: Используйте `findReferences` чтобы найти, как API используется в проекте
+1. **bpmn-js, dmn-js**: Use `workspaceSymbol` to search for classes/methods
+2. **Unknown API**: Use `hover` to get signatures and types
+3. **Finding examples**: Use `findReferences` to find how the API is used in the project
 
-Пример workflow при изучении незнакомого метода:
+Example workflow when studying an unfamiliar method:
 ```
-1. goToDefinition → найти реализацию
-2. hover → получить сигнатуру и тип
-3. findReferences → найти примеры использования
-4. diagnostics → убедиться в отсутствии ошибок
+1. goToDefinition → find the implementation
+2. hover → get the signature and type
+3. findReferences → find usage examples
+4. diagnostics → confirm there are no errors
 ```
 
 ### Best Practices
 
-- **Всегда проверяйте диагностику** перед внесением изменений
-- **Используйте `hover`** для уточнения типов и сигнатур
-- **Находите все ссылки** перед рефакторингом публичных API
-- **Изучайте определения** перед использованием неизвестных функций
+- **Always check diagnostics** before making changes
+- **Use `hover`** to clarify types and signatures
+- **Find all references** before refactoring public APIs
+- **Study definitions** before using unfamiliar functions
 
 ## Default Assumptions
 

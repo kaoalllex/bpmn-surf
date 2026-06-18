@@ -1,19 +1,19 @@
 ---
 id: INFRA-0003
-title: Линтеры и форматирование
+title: Linters and formatting
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Подключить ESLint и Prettier; автопроверки перед коммитом.
+Set up ESLint and Prettier; automatic checks before commit.
 
-## Контекст
+## Context
 
-<!-- Ссылки на MR, логи, симптомы, затронутые файлы, связи с другими задачами. -->
+<!-- Links to MRs, logs, symptoms, affected files, relations to other tasks. -->
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

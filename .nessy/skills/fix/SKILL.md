@@ -1,81 +1,81 @@
 ---
 name: fix
-description: Исправление багов и ошибок в коде. Использовать при запросах "исправь", "баг", "ошибка", "почини", "fix", "error", "bug"
+description: Fix bugs and errors in the code. Use for requests like "fix", "bug", "error", "repair"
 ---
 
 # Skill: fix
 
-## Когда использовать
-- Пользователь сообщает об ошибке: "исправь", "баг", "ошибка", "почини"
-- Есть stack trace или описание проблемы
-- Нужно исправить regression
-- Требуется hotfix для критической проблемы
+## When to use
+- The user reports an error: "fix", "bug", "error", "repair"
+- There is a stack trace or a problem description
+- A regression must be fixed
+- A hotfix for a critical problem is required
 
 ## Workflow
 
-### 1. Диагностика
-- Изучить описание ошибки или stack trace
-- Локализовать проблемный код
-- Понять корневую причину (root cause)
-- Воспроизвести проблему если возможно
+### 1. Diagnosis
+- Study the error description or stack trace
+- Localize the problematic code
+- Understand the root cause
+- Reproduce the problem if possible
 
-### 2. План исправления
-- Предложить минимальное изменение для фикса
-- Оценить риски побочных эффектов
-- Если фикс сложный — объяснить план и получить подтверждение
+### 2. Fix plan
+- Propose the minimal change for the fix
+- Assess the risk of side effects
+- If the fix is complex — explain the plan and get confirmation
 
-### 3. Реализация
-- Применить минимальное изменение
-- Не использовать фикс как повод для рефакторинга
-- Сохранить существующее поведение
+### 3. Implementation
+- Apply the minimal change
+- Do not use the fix as an excuse for refactoring
+- Preserve existing behavior
 
-### 4. Верификация
-- Проверить что ошибка исправлена
-- Убедиться что другие части системы не затронуты
-- Запустить тесты если они есть
+### 4. Verification
+- Check that the error is fixed
+- Make sure other parts of the system are not affected
+- Run the tests if there are any
 
-## Правила
+## Rules
 
-### При исправлении:
-1. **Минимальные изменения** — только то что нужно для фикса
-2. **Не рефакторить** — fix ≠ refactor, не смешивать
-3. **Сохранять поведение** — не менять логику без необходимости
-4. **Комментировать** — добавить комментарий если причина бага неочевидна
+### When fixing:
+1. **Minimal changes** — only what is needed for the fix
+2. **Do not refactor** — fix ≠ refactor, do not mix them
+3. **Preserve behavior** — do not change logic unnecessarily
+4. **Comment** — add a comment if the cause of the bug is non-obvious
 
 ### If unsure:
-- **Stop** — остановиться если причина не ясна
-- **Explain** — объяснить что найдено и какие есть гипотезы
-- **Ask** — запросить дополнительную информацию или подтверждение
+- **Stop** — stop if the cause is unclear
+- **Explain** — explain what was found and what hypotheses there are
+- **Ask** — request additional information or confirmation
 
-## Шаблон анализа бага
+## Bug analysis template
 
 ```
-## Проблема
-Описание ошибки
+## Problem
+Error description
 
 ## Root cause
-Причина проблемы в коде
+The cause of the problem in the code
 
-## Решение
-Как будет исправлено
+## Solution
+How it will be fixed
 
-## Файлы для изменения
+## Files to change
 - file1.js
 - file2.js
 
-## Риски
-Возможные побочные эффекты
+## Risks
+Possible side effects
 ```
 
-## Примеры
+## Examples
 
 ### Good trigger phrases
-- "исправь ошибку в bpmn-differ.js"
-- "баг: не работает кнопка сравнения"
-- "почини утечку памяти"
-- "fix: null pointer в GitLabRepoProvider"
+- "fix the error in bpmn-differ.js"
+- "bug: the compare button doesn't work"
+- "repair the memory leak"
+- "fix: null pointer in GitLabRepoProvider"
 - "error when loading DMN file"
 
-### Bad (требует уточнения)
-- "всё сломалось" — нужно описание проблемы
-- "исправь и добавь логирование" — смешивание fix и feature
+### Bad (needs clarification)
+- "everything is broken" — a problem description is needed
+- "fix it and add logging" — mixing fix and feature

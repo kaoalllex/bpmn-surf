@@ -1,19 +1,19 @@
 ---
 id: REFAC-0005
-title: '⚠️ Перевод проекта на TypeScript'
+title: '⚠️ Migrate the project to TypeScript'
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Перевести проект на TypeScript: типизация моделей/сервисов для снижения ошибок при рефакторинге.
+Migrate the project to TypeScript: type the models/services to reduce errors during refactoring.
 
-## Контекст
+## Context
 
-- Конфликтует с текущим ограничением проекта (только vanilla JS, без build-шага). Требует отдельного решения по архитектуре.
+- Conflicts with the current project constraint (vanilla JS only, no build step). Requires a separate architectural decision.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

@@ -1,62 +1,62 @@
 ---
 name: analyze
-description: Анализирует архитектуру, логику работы и структуру кода. Использовать при вопросах "как работает", "анализ", "архитектура", "объясни код", "изучи код"
+description: Analyzes the architecture, working logic, and structure of the code. Use for questions like "how does it work", "analysis", "architecture", "explain the code", "study the code"
 ---
 
 # Skill: analyze
 
-## Когда использовать
-- Пользователь спрашивает "как работает", "анализ", "архитектура"
-- Нужно объяснить логику работы компонента
-- Требуется изучить код перед изменениями
-- Нужно понять взаимосвязи между файлами
-- Пользователь просит "объясни код", "изучи"
+## When to use
+- The user asks "how does it work", "analysis", "architecture"
+- You need to explain the working logic of a component
+- The code must be studied before changes
+- You need to understand the relationships between files
+- The user asks to "explain the code", "study"
 
-## Правила
+## Rules
 
-### При анализе:
-1. **Читать контекст** — изучать окружающий код, импорты, зависимости
-2. **Понимать поток данных** — как данные проходят через систему
-3. **Выявлять зависимости** — какие файлы от каких зависят
-4. **Объяснять ясно** — просто и по делу, без излишней детализации
+### When analyzing:
+1. **Read the context** — study the surrounding code, imports, dependencies
+2. **Understand the data flow** — how data passes through the system
+3. **Identify dependencies** — which files depend on which
+4. **Explain clearly** — simply and to the point, without excessive detail
 
 ### Communication
-- Объяснять **что** делает код
-- Объяснять **почему** это сделано именно так (если понятно из контекста)
-- Указывать на **потенциальные проблемы** (edge cases, сложность)
-- Предлагать **улучшения** только если явно просят
+- Explain **what** the code does
+- Explain **why** it is done this way (if clear from the context)
+- Point out **potential problems** (edge cases, complexity)
+- Propose **improvements** only if explicitly asked
 
-## Формат вывода
+## Output format
 
-При анализе предоставлять:
-1. **Краткое резюме** — что делает компонент/функция
-2. **Ключевую логику** — основные шаги/алгоритм
-3. **Зависимости** — от чего зависит, что использует
-4. **Потенциальные проблемы** — если есть (опционально)
+When analyzing, provide:
+1. **Brief summary** — what the component/function does
+2. **Key logic** — the main steps/algorithm
+3. **Dependencies** — what it depends on, what it uses
+4. **Potential problems** — if any (optional)
 
-## Примеры
+## Examples
 
 ### Good trigger phrases
-- "как работает bpmn-differ.js"
-- "анализ архитектуры"
-- "объясни логику gitlab-repo-provider"
-- "изучи код перед изменениями"
-- "как устроено сравнение диаграмм"
+- "how does bpmn-differ.js work"
+- "architecture analysis"
+- "explain the logic of gitlab-repo-provider"
+- "study the code before changes"
+- "how is diagram comparison structured"
 
 ### Expected output structure
 ```
-## Резюме
-Краткое описание (2-3 предложения)
+## Summary
+Brief description (2-3 sentences)
 
-## Как работает
-1. Шаг 1
-2. Шаг 2
+## How it works
+1. Step 1
+2. Step 2
 ...
 
-## Зависимости
-- Файл A
-- Файл B
+## Dependencies
+- File A
+- File B
 
-## Примечания
-Важные детали или потенциальные проблемы
+## Notes
+Important details or potential problems
 ```

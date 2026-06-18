@@ -1,139 +1,139 @@
 # BPMN Diff
 
-Расширение браузера для просмотра и визуального сравнения BPMN 2.0 и DMN диаграмм в GitLab.
+Browser extension for viewing and visually comparing BPMN 2.0 and DMN diagrams in GitLab.
 
-## Требования
+## Requirements
 
 - Google Chrome
-- Другие Chromium-браузеры с поддержкой Chrome Extension Manifest V3
+- Other Chromium browsers with support for Chrome Extension Manifest V3
 
-## Установка
+## Installation
 
-Рекомендуемый способ — из git-клона: тогда обновление сводится к `git pull` + перезагрузке (см. «Обновление»).
+The recommended way is from a git clone: then updating comes down to `git pull` + a reload (see "Updating").
 
 ```bash
-git clone <repo-url> ~/tools/bpmn-diff   # папка — на ваш выбор
+git clone <repo-url> ~/tools/bpmn-diff   # folder is up to you
 ```
 
-1. Откройте страницу расширений: `chrome://extensions`
-2. Включите **Режим разработчика** (переключатель в правом верхнем углу)
-3. Нажмите кнопку **Загрузить распакованное** (Load unpacked)
-4. Выберите папку клона (например `~/tools/bpmn-diff`) — расширению не нужна сборка, оно работает прямо из исходников
+1. Open the extensions page: `chrome://extensions`
+2. Enable **Developer mode** (toggle in the top-right corner)
+3. Click the **Load unpacked** button
+4. Select the clone folder (for example `~/tools/bpmn-diff`) — the extension needs no build, it runs straight from the sources
 
-## Обновление
+## Updating
 
-Расширение само проверяет выход новых версий и показывает уведомление: бейдж на иконке, окно по клику на иконку (что нового, кнопка обновления, тумблер автопроверки) и значок «🔔 vX» в тулбаре окна сравнения. Проверка — только чтение публичного `version.json`, никакие данные не отправляются; автопроверку можно выключить.
+The extension checks for new versions itself and shows a notification: a badge on the icon, a window on clicking the icon (what's new, an update button, an auto-check toggle), and a "🔔 vX" mark in the toolbar of the comparison window. The check only reads the public `version.json`, no data is sent; auto-check can be turned off.
 
-Применить обновление (для git-установки):
+Apply an update (for a git install):
 
 ```bash
 cd ~/tools/bpmn-diff && git pull
 ```
 
-затем в окне обновления нажмите **«Перезагрузить расширение»** — оно перечитает файлы с диска (либо вручную нажмите ⟳ у расширения в `chrome://extensions`). Расширение не заменяет свои файлы самостоятельно (ограничение режима «Загрузить распакованное») — оно лишь уведомляет и проводит по шагам.
+then in the update window click **"Reload extension"** — it will re-read the files from disk (or manually click ⟳ on the extension in `chrome://extensions`). The extension does not replace its own files on its own (a limitation of "Load unpacked" mode) — it only notifies and walks you through the steps.
 
-> Автопроверка активируется, когда в `src/core/config.js` заданы `UPDATE_*` URL публичного источника версии (см. комментарий там). До этого расширение работает как обычно, просто без проверки обновлений.
+> Auto-check is activated when the `UPDATE_*` URLs of the public version source are set in `src/core/config.js` (see the comment there). Until then the extension works as usual, just without update checks.
 
-## Возможности
+## Features
 
-- Сравнение двух версий BPMN/DMN диаграмм в GitLab MR (ветка MR vs. target branch)
-- Сравнение с локальными файлами
-- Подсветка изменений: добавленные, удалённые и изменённые элементы
-- Таблица изменений с переходом к элементу по клику
-- Переключение между версиями (switch branch) и скачивание любой из версий
-- Управление масштабом и навигацией (zoom/pan, "Fit view")
-- Панель свойств для просмотра деталей элементов, включая условия sequence flow
-- Переход в диаграмму вызываемого процесса из Call Activity ("Dive in")
+- Comparing two versions of BPMN/DMN diagrams in a GitLab MR (MR branch vs. target branch)
+- Comparing against local files
+- Highlighting changes: added, removed, and modified elements
+- A changes table with navigation to an element on click
+- Switching between versions (switch branch) and downloading any of the versions
+- Zoom and navigation controls (zoom/pan, "Fit view")
+- A properties panel for viewing element details, including sequence flow conditions
+- Navigating into the diagram of the called process from a Call Activity ("Dive in")
 
-### Сравнение в MR
+### Comparing in an MR
 
-1. Откройте merge request в GitLab, содержащий изменения BPMN/DMN файлов
-2. На странице MR появится кнопка **Show schema diff** (для BPMN) или **Show decision diff** (для DMN)
-3. Нажмите кнопку — откроется страница с визуальным сравнением двух версий диаграммы
-4. Изменённые элементы будут подсвечены:
-   - 🟢 Зелёный — добавленные элементы
-   - 🔴 Красный — удалённые элементы
+1. Open a merge request in GitLab containing changes to BPMN/DMN files
+2. A **Show schema diff** (for BPMN) or **Show decision diff** (for DMN) button appears on the MR page
+3. Click the button — a page with a visual comparison of the two diagram versions opens
+4. Changed elements will be highlighted:
+   - 🟢 Green — added elements
+   - 🔴 Red — removed elements
 
-### Просмотр схемы в репозитории
+### Viewing a schema in the repository
 
-1. Откройте файл `.bpmn` или `.dmn` в проекте GitLab
-2. Рядом с названием файла появятся кнопки:
-   - **Show schema** / **Show decision** — открыть диаграмму для просмотра
-   - **Show diff with local** — сравнить с локальной версией файла
+1. Open a `.bpmn` or `.dmn` file in a GitLab project
+2. Buttons appear next to the file name:
+   - **Show schema** / **Show decision** — open the diagram for viewing
+   - **Show diff with local** — compare against a local version of the file
 
-## Технологии
+## Technologies
 
-Vanilla JavaScript (ES6+), без фреймворков и build-шага. Используемые библиотеки (вендорятся в `libs/`, см. «Обновление библиотек»):
-- [bpmn-js](https://github.com/bpmn-io/bpmn-js) — визуализация BPMN диаграмм
-- [dmn-js](https://github.com/bpmn-io/dmn-js) — визуализация DMN решений
-- [bpmn-js-properties-panel](https://github.com/bpmn-io/bpmn-js-properties-panel) — панель свойств элементов
-- [camunda-bpmn-moddle](https://github.com/camunda/camunda-bpmn-moddle) — Camunda-расширения BPMN моделей
+Vanilla JavaScript (ES6+), without frameworks and without a build step. Libraries used (vendored in `libs/`, see "Updating libraries"):
+- [bpmn-js](https://github.com/bpmn-io/bpmn-js) — BPMN diagram visualization
+- [dmn-js](https://github.com/bpmn-io/dmn-js) — DMN decision visualization
+- [bpmn-js-properties-panel](https://github.com/bpmn-io/bpmn-js-properties-panel) — element properties panel
+- [camunda-bpmn-moddle](https://github.com/camunda/camunda-bpmn-moddle) — Camunda extensions of BPMN models
 
-## Разработка
+## Development
 
-Runtime-зависимостей нет — расширение загружается распакованным прямо из корня репозитория (см. «Установка»). Dev-зависимости нужны для юнит-тестов (`jsdom`) и для синхронизации `libs/`:
+There are no runtime dependencies — the extension is loaded unpacked straight from the repository root (see "Installation"). Dev dependencies are needed for unit tests (`jsdom`) and for syncing `libs/`:
 
 ```bash
 npm install
 ```
 
-### Обновление библиотек
+### Updating libraries
 
-Файлы в `libs/` не правятся руками — они копируются из npm-пакетов скриптом:
+Files in `libs/` are not edited by hand — they are copied from npm packages by a script:
 
 ```bash
-# 1. поменять версию пакета в package.json#devDependencies
+# 1. change the package version in package.json#devDependencies
 npm install
 npm run sync:libs
-# 2. просмотреть diff libs/, прогнать npm test, проверить расширение в браузере
+# 2. review the diff of libs/, run npm test, check the extension in the browser
 ```
 
-Какие файлы и откуда копируются — задано декларативно в `scripts/sync-libs.js`. Подробности и нюансы — `docs/conventions.md`.
+Which files are copied and from where is defined declaratively in `scripts/sync-libs.js`. Details and nuances — `docs/conventions.md`.
 
-### Тесты
+### Tests
 
 ```bash
 npm test
 ```
 
-Раннер — встроенный `node:test`, прогон занимает ~0.5 сек. Запускать перед каждым push — CI-пайплайна в проекте пока нет. Подробнее об устройстве тестов — `docs/testing.md`.
+The runner is the built-in `node:test`, a run takes ~0.5 sec. Run before every push — there is no CI pipeline in the project yet. More about how the tests are built — `docs/testing.md`.
 
 ### GitLab CLI (glab)
 
-Для работы с MR используется [glab](https://gitlab.com/gitlab-org/cli). Установка на macOS:
+[glab](https://gitlab.com/gitlab-org/cli) is used for working with MRs. Installation on macOS:
 
 ```bash
 brew install glab
 glab auth login --hostname gitlab.example.com
 ```
 
-Для авторизации понадобится access token с правами `api`, `read_repository`, `write_repository`.
+For authorization you will need an access token with `api`, `read_repository`, `write_repository` rights.
 
-### Workflow с git worktree (параллельные сессии Claude Code)
+### Workflow with git worktree (parallel Claude Code sessions)
 
-Каждая задача делается в отдельной ветке `feature/<task>` или `fix/<task>` от свежего `origin/master`; master protected, мерж — только через MR после ревью. Полные правила — `docs/git-workflow.md`.
+Each task is done in a separate branch `feature/<task>` or `fix/<task>` off a fresh `origin/master`; master is protected, merging is only through an MR after review. Full rules — `docs/git-workflow.md`.
 
-Для параллельной работы нескольких сессий Claude Code используются git worktree — по одному на задачу:
+For parallel work of several Claude Code sessions, git worktrees are used — one per task:
 
 ```bash
-# создать worktree под задачу
+# create a worktree for a task
 git fetch origin
 git worktree add ../<dir> -b feature/<task> origin/master
 
-# запустить Claude Code внутри него
+# launch Claude Code inside it
 cd ../<dir> && claude
 
-# посмотреть изменения: открыть директорию в редакторе, либо
-git diff origin/master...feature/<task>   # закоммиченные изменения ветки
-git -C <dir> diff                         # незакоммиченные изменения в worktree
+# view changes: open the directory in an editor, or
+git diff origin/master...feature/<task>   # committed changes of the branch
+git -C <dir> diff                         # uncommitted changes in the worktree
 
-# список worktree
+# list worktrees
 git worktree list
 
-# удалить worktree после мержа MR
+# remove a worktree after merging the MR
 git worktree remove <dir>
 ```
 
-## Ссылки
+## Links
 
-- [Канал в Time](https://chat.example.com/example/channels/bpmn-diff)
+- [Chat channel](https://chat.example.com/example/channels/bpmn-diff)

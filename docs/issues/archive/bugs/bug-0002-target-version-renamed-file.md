@@ -1,90 +1,90 @@
 ---
 id: BUG-0002
-title: Не находим target-версию при переименовании файла схемы
+title: We don't find the target version when a schema file is renamed
 priority: high
 status: done
 ---
 
-## Постановка
+## Statement
 
-Схему переименовали — в master такого имени нет, дифф не строится.
+The schema was renamed — no such name exists in master, the diff is not built.
 
-## Контекст
+## Context
 
 - MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/4119/diffs?commit_id=a34a768619d0efd47a331ea94df3653cd0c9dfde#aaaf91f17e455f9dd71767bf9d2c5ac5d5df2350
 
-### Корень проблемы
+### Root of the problem
 
-Через весь поток данных протаскивается **один** `filePath`, и он используется для обеих сторон диффа:
+A **single** `filePath` is threaded through the entire data flow, and it is used for both sides of the diff:
 
-1. `findSelectedFilePath()` (`gitlab-dom-scraper.js`) возвращает путь, как он показан на странице diffs MR — это **`new_path`** (новое имя).
-2. `app.js#addDiffButton` (`app.js:134`) кладёт его в `params.filePath` → `DiffParamsBuilder` → `DifferParams.filePath`.
-3. `DifferParams.rawFileUrl(ref)` (`differ-params.js:43`) строит URL `…/-/raw/<ref>/<filePath>` — **с тем же `filePath` для обоих ref**.
+1. `findSelectedFilePath()` (`gitlab-dom-scraper.js`) returns the path as shown on the MR diffs page — this is **`new_path`** (the new name).
+2. `app.js#addDiffButton` (`app.js:134`) puts it into `params.filePath` → `DiffParamsBuilder` → `DifferParams.filePath`.
+3. `DifferParams.rawFileUrl(ref)` (`differ-params.js:43`) builds the URL `…/-/raw/<ref>/<filePath>` — **with the same `filePath` for both refs**.
 4. `DiagramVersions` (`diagram-versions.js:20-25`):
-   - `loadMrXml()` → `…/-/raw/<head_sha>/<new_path>` → **OK** (в source-ветке файл с новым именем есть);
-   - `loadBranchXml()` → `…/-/raw/<base_sha>/<new_path>` → **404**, т.к. в target-коммите файл лежит под `old_path`.
+   - `loadMrXml()` → `…/-/raw/<head_sha>/<new_path>` → **OK** (the file with the new name exists in the source branch);
+   - `loadBranchXml()` → `…/-/raw/<base_sha>/<new_path>` → **404**, because in the target commit the file is under `old_path`.
 
-Итог: `branchXml = null`, `mrXml ≠ null`. Срабатывает не «оба отсутствуют», а ветка UX-0003 «target отсутствует» → новая версия показывается как новый файл, **дифф не строится**.
+Result: `branchXml = null`, `mrXml ≠ null`. It triggers not "both absent" but the UX-0003 branch "target absent" → the new version is shown as a new file, **the diff is not built**.
 
-Инфо о переименовании уже доступна, но для схем не используется: MR changes API (`old_path`/`new_path`/`renamed_file`, паттерн — `handler-locator.js:318-358`, `extractHandlerFileChanges`) и rapid-diffs DOM `data-file-data` (`gitlab-dom-scraper.js:197`).
+The rename info is already available but unused for schemas: MR changes API (`old_path`/`new_path`/`renamed_file`, pattern — `handler-locator.js:318-358`, `extractHandlerFileChanges`) and the rapid-diffs DOM `data-file-data` (`gitlab-dom-scraper.js:197`).
 
-## План реализации
+## Implementation plan
 
-**Выбранный подход (вариант A + ленивый резолв на клике).** Резолвить `old_path` через MR changes API в провайдере и протаскивать в дифер отдельный нейтральный `targetFilePath` (по умолчанию = `filePath`). Когда переименования нет — поведение **байт-в-байт прежнее**, меняется только rename-случай. Дифер остаётся платформо-нейтральным. `getTargetFilePath` вызывается **лениво в обработчике клика** по кнопке (не на hot-path `mouseup`).
+**Chosen approach (variant A + lazy resolution on click).** Resolve `old_path` via the MR changes API in the provider and thread a separate neutral `targetFilePath` (defaults to = `filePath`) into the differ. When there is no rename — the behavior is **byte-for-byte the same**, only the rename case changes. The differ stays platform-neutral. `getTargetFilePath` is called **lazily in the click handler** of the button (not on the `mouseup` hot path).
 
-Альтернативы и причины отказа: **B** (только DOM `data-file-data`) — работает лишь на rapid diffs (gitlab.com), заявленный MR на self-managed gitlab.example.com с legacy-разметкой не чинит; **C** (ленивый retry на дифере при 404) — тащит GitLab-специфичный вызов `/changes` в нейтральное ядро дифера; **D** (гибрид A+B) — избыточно сейчас.
+Alternatives and reasons for rejection: **B** (DOM `data-file-data` only) — works only on rapid diffs (gitlab.com), does not fix the reported MR on the self-managed gitlab.example.com with legacy markup; **C** (lazy retry on the differ on 404) — drags the GitLab-specific `/changes` call into the neutral differ core; **D** (hybrid A+B) — excessive for now.
 
-### Шаги
+### Steps
 
-1. **Pure-функция извлечения переименований** — `gitlab-repo-provider-base.js`, статический `extractRenameMap(changesResponse)` (зеркало `extractHandlerFileChanges`): из `changes[]` собирает `Map(new_path → old_path)` только для записей-переименований (`renamed_file`, либо `new_path !== old_path` и не `new_file`/`deleted_file`).
+1. **Pure rename-extraction function** — `gitlab-repo-provider-base.js`, static `extractRenameMap(changesResponse)` (mirroring `extractHandlerFileChanges`): from `changes[]` it assembles `Map(new_path → old_path)` only for rename entries (`renamed_file`, or `new_path !== old_path` and not `new_file`/`deleted_file`).
 
-2. **Метод провайдера** — `GitLabRepoProviderBase.getTargetFilePath(filePath)`:
-   - `iid = urlParser.extractMrIid(...)`; нет iid → вернуть `filePath` (branch-view, без запроса);
-   - тянет `/api/v4/projects/{id}/merge_requests/{iid}/changes` через `this.loadContent` (кэш по URL, как `#mr`/`#commits`);
-   - возвращает `renameMap.get(filePath) || filePath`; любая ошибка → `filePath` (безопасный дефолт = текущее поведение).
-   - В интерфейс `repo-provider.js` добавить дефолт `getTargetFilePath(filePath) → filePath` (`FallbackRepoProvider` делегирует автоматически).
+2. **Provider method** — `GitLabRepoProviderBase.getTargetFilePath(filePath)`:
+   - `iid = urlParser.extractMrIid(...)`; no iid → return `filePath` (branch-view, no request);
+   - fetches `/api/v4/projects/{id}/merge_requests/{iid}/changes` via `this.loadContent` (cached by URL, like `#mr`/`#commits`);
+   - returns `renameMap.get(filePath) || filePath`; any error → `filePath` (safe default = current behavior).
+   - Add a default `getTargetFilePath(filePath) → filePath` to the `repo-provider.js` interface (`FallbackRepoProvider` delegates automatically).
 
-3. **Резолв на клике** — `app.js#openDiffer` (или click-обёртка в `#addButton`): только для `UI_BUTTON_TYPE.DIFF` сделать `const targetFilePath = await this.#repoProvider.getTargetFilePath(params.filePath)` и подмешать в params перед `openDiffer`. Hot-path `mouseup` не трогается.
+3. **Resolution on click** — `app.js#openDiffer` (or the click wrapper in `#addButton`): only for `UI_BUTTON_TYPE.DIFF` do `const targetFilePath = await this.#repoProvider.getTargetFilePath(params.filePath)` and mix it into params before `openDiffer`. The `mouseup` hot path is not touched.
 
-4. **Протаскивание пути target-стороны:**
-   - `DifferParams`: `this.targetFilePath = params.targetFilePath || this.filePath;` + `rawFileUrl(ref, filePath = this.filePath)`. `toNestedDifferParams` — без переноса (дефолт = `filePath`, поведение вложенного дифера прежнее).
-   - `DiagramVersions.loadBranchXml()` → `#loadXml(targetRef, params.targetFilePath)`; `loadMrXml()` без изменений.
+4. **Threading the target-side path:**
+   - `DifferParams`: `this.targetFilePath = params.targetFilePath || this.filePath;` + `rawFileUrl(ref, filePath = this.filePath)`. `toNestedDifferParams` — no carry-over (default = `filePath`, the nested differ's behavior unchanged).
+   - `DiagramVersions.loadBranchXml()` → `#loadXml(targetRef, params.targetFilePath)`; `loadMrXml()` unchanged.
 
-5. **Тесты** (мелкие, публичный API): `extractRenameMap` (rename / new / deleted / без переименования); `getTargetFilePath` (old_path при rename; filePath без rename / без iid / при ошибке; один fetch — кэш; через DI `loadContent`); `DifferParams.targetFilePath` дефолт + `rawFileUrl(ref, path)`; `DiagramVersions.loadBranchXml` использует `targetFilePath`; дефолт интерфейса.
+5. **Tests** (small, public API): `extractRenameMap` (rename / new / deleted / no rename); `getTargetFilePath` (old_path on rename; filePath without rename / without iid / on error; single fetch — caching; via DI `loadContent`); `DifferParams.targetFilePath` default + `rawFileUrl(ref, path)`; `DiagramVersions.loadBranchXml` uses `targetFilePath`; the interface default.
 
-6. **Доки:** обновить таблицу в `architecture.md` (DifferParams/DiagramVersions/база/поток app.js), запись в «Историю работы» ниже, `status: in-progress` на время работы.
+6. **Docs:** update the table in `architecture.md` (DifferParams/DiagramVersions/base/app.js flow), an entry in the "Work log" below, `status: in-progress` for the duration of the work.
 
-### Замечания
+### Notes
 
-- Новых файлов нет (функция — статик на существующей базе) → реестры/`manifest.json` не трогаем.
-- `/changes` формально deprecated, но работает на нашем GitLab и уже используется в `handler-locator` — берём его для единообразия; на больших MR это один кэшируемый запрос на клик.
-- Имя для скачивания target-версии останется новым (`fileName`); при желании потом — отдельный `targetFileName` (вне scope этого фикса).
+- No new files (the function is a static on an existing base) → registries/`manifest.json` are not touched.
+- `/changes` is formally deprecated but works on our GitLab and is already used in `handler-locator` — we take it for consistency; on large MRs this is one cacheable request per click.
+- The download name for the target version will stay the new one (`fileName`); if desired, a separate `targetFileName` later (out of scope of this fix).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0002-target-version-renamed-file`
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0002-target-version-renamed-file`
 
-Доработка по замечанию (ранее помечено «вне scope»): при переименовании показывать имя файла, соответствующее стороне, и использовать его при скачивании.
+Follow-up on the note (previously marked "out of scope"): on a rename, show the file name corresponding to the side and use it when downloading.
 
-- `differ-params.js`: поле `targetFileName` = basename(`targetFilePath`) (дефолт = `fileName`).
-- `diagram-versions.js`: `download(content, branchName, fileName=params.fileName)` — имя передаётся вызывающей стороной.
-- `bpmn-differ-view.js` / `dmn-differ-view.js`: `setFileName(name)` обновляет имя в заголовке (хранится ссылка на span).
-- `bpmn-differ.js` / `dmn-differ.js`: в `#showMr` → `fileName`, в `#showBranch` / `#showAbsentSide(target)` → `targetFileName`; скачивание target-стороны — с `targetFileName`. Без переименования имена совпадают → поведение прежнее.
-- Тесты (+2): `DifferParams.targetFileName` (дефолт + basename при переименовании). Все 704 зелёные.
+- `differ-params.js`: field `targetFileName` = basename(`targetFilePath`) (default = `fileName`).
+- `diagram-versions.js`: `download(content, branchName, fileName=params.fileName)` — the name is passed by the caller.
+- `bpmn-differ-view.js` / `dmn-differ-view.js`: `setFileName(name)` updates the name in the header (a reference to the span is kept).
+- `bpmn-differ.js` / `dmn-differ.js`: in `#showMr` → `fileName`, in `#showBranch` / `#showAbsentSide(target)` → `targetFileName`; downloading the target side — with `targetFileName`. Without a rename the names match → behavior unchanged.
+- Tests (+2): `DifferParams.targetFileName` (default + basename on rename). All 704 green.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0002-target-version-renamed-file`
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0002-target-version-renamed-file`
 
-Реализован выбранный подход (вариант A + ленивый резолв на клике):
+Implemented the chosen approach (variant A + lazy resolution on click):
 
-- `gitlab-repo-provider-base.js`: статик `extractRenameMap(changesResponse)` (Map `new_path → old_path` только для переименований) + метод `getTargetFilePath(filePath)` (резолв через MR `/changes` API, кэш по URL в `#renameMaps`; нет iid / нет переименования / ошибка → `filePath`).
-- `repo-provider.js`: дефолт интерфейса `getTargetFilePath(filePath) → filePath` (identity). `FallbackRepoProvider`: явная делегация активному провайдеру (у него нет авто-Proxy — все методы делегируются вручную).
-- `app.js#openDiffer`: для `UI_BUTTON_TYPE.DIFF` лениво резолвит `targetFilePath` на клике (вне hot-path `mouseup`) и подмешивает в params только при отличии от `filePath`.
-- `differ-params.js`: поле `targetFilePath` (дефолт = `filePath`) + `rawFileUrl(ref, filePath=this.filePath)`. `toNestedDifferParams` без изменений.
-- `diagram-versions.js`: `loadBranchXml()` грузит target по `params.targetFilePath`; `loadMrXml()` — по `filePath`.
+- `gitlab-repo-provider-base.js`: static `extractRenameMap(changesResponse)` (Map `new_path → old_path` only for renames) + method `getTargetFilePath(filePath)` (resolution via the MR `/changes` API, cached by URL in `#renameMaps`; no iid / no rename / error → `filePath`).
+- `repo-provider.js`: interface default `getTargetFilePath(filePath) → filePath` (identity). `FallbackRepoProvider`: explicit delegation to the active provider (it has no auto-Proxy — all methods are delegated manually).
+- `app.js#openDiffer`: for `UI_BUTTON_TYPE.DIFF`, lazily resolves `targetFilePath` on click (off the `mouseup` hot path) and mixes it into params only when it differs from `filePath`.
+- `differ-params.js`: field `targetFilePath` (default = `filePath`) + `rawFileUrl(ref, filePath=this.filePath)`. `toNestedDifferParams` unchanged.
+- `diagram-versions.js`: `loadBranchXml()` loads the target by `params.targetFilePath`; `loadMrXml()` — by `filePath`.
 
-Тесты (+12, все 702 зелёные): `extractRenameMap` (rename / без флага / new+deleted+unchanged / пустой ответ), `getTargetFilePath` (old_path при rename; filePath без rename / без iid без запроса / при ошибке; один fetch — кэш), `DifferParams` (`targetFilePath` дефолт + explicit; `rawFileUrl(ref, path)`).
+Tests (+12, all 702 green): `extractRenameMap` (rename / no flag / new+deleted+unchanged / empty response), `getTargetFilePath` (old_path on rename; filePath without rename / without iid no request / on error; single fetch — caching), `DifferParams` (`targetFilePath` default + explicit; `rawFileUrl(ref, path)`).
 
-Отклонение от плана: отдельный юнит-тест `DiagramVersions.loadBranchXml` не добавлен — класс в `UNTESTED_BY_DESIGN` (завязан на глобальный `loadFileContent` без DI), а его новое поведение полностью определяется протестированным `DifferParams.rawFileUrl(ref, filePath)`. DI-рефактор `DiagramVersions` вне scope минимального фикса.
+Deviation from the plan: a separate unit test `DiagramVersions.loadBranchXml` was not added — the class is in `UNTESTED_BY_DESIGN` (tied to the global `loadFileContent` without DI), and its new behavior is fully determined by the tested `DifferParams.rawFileUrl(ref, filePath)`. DI refactoring of `DiagramVersions` is out of scope of the minimal fix.

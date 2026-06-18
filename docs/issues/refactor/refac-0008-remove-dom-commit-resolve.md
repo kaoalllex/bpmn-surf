@@ -1,32 +1,32 @@
 ---
 id: REFAC-0008
-title: Удалить DOM-эвристики резолва коммитов MR после обкатки API
+title: Remove the DOM heuristics for resolving MR commits after the API has been battle-tested
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-После того как резолв через GitLab MR API (`GitLabApiRepoProvider`, `[REFAC-0001]`) подтвердит надёжность на практике (включая `gitlab.example.com`) — удалить DOM/эвристический путь резолва коммитов MR, который сейчас оставлен фолбэком.
+Once resolution via the GitLab MR API (`GitLabApiRepoProvider`, `[REFAC-0001]`) has proven reliable in practice (including on `gitlab.example.com`) — remove the DOM/heuristic path for resolving MR commits, which is currently kept as a fallback.
 
-Под удаление (в `gitlab-repo-provider.js`, если не используется branch-view/детекцией):
+To be removed (in `gitlab-repo-provider.js`, unless used by branch-view/detection):
 
-- `#getMrLastCommitId` (парсинг `commits.json`);
-- `#findDiffHeadSha` (regex по `data-noteable-data`);
-- `#isMrMerged` (DOM-бейдж «Merged» + проверка через MR API);
-- `#findTargetBranchPreviousCommitId` / `#findTargetBranchCommitIdByTitle` / `#loadFilteredByTitleMasterCommitEntries` (atom-feed);
-- `master-commit-manager.js` (`MasterCommitManager`) — если больше нигде не нужен;
-- старая логика `getSourceCommitId`/`getTargetCommitId`/`initChangeInfo`/`getChangeBranchNames` в DOM-провайдере.
+- `#getMrLastCommitId` (parsing `commits.json`);
+- `#findDiffHeadSha` (regex over `data-noteable-data`);
+- `#isMrMerged` (the "Merged" DOM badge + a check via the MR API);
+- `#findTargetBranchPreviousCommitId` / `#findTargetBranchCommitIdByTitle` / `#loadFilteredByTitleMasterCommitEntries` (atom feed);
+- `master-commit-manager.js` (`MasterCommitManager`) — if it is no longer needed anywhere;
+- the old `getSourceCommitId`/`getTargetCommitId`/`initChangeInfo`/`getChangeBranchNames` logic in the DOM provider.
 
-Решить попутно: оставлять ли `GitLabRepoProvider` как whole-provider фолбэк в `repo-provider-factory.js` или схлопнуть в один провайдер (тогда нужно вынести в общую базу/хелперы DOM/URL-методы детекции, которые у API-провайдера наследуются: `findSelectedFilePath`, `getBranchFileType`, `extractBranchCommitIdAndFilePath`, `isChangeViewActive`, резолв project id).
+Decide along the way: whether to keep `GitLabRepoProvider` as a whole-provider fallback in `repo-provider-factory.js`, or to collapse it into a single provider (in which case the DOM/URL detection methods inherited by the API provider must be moved into a shared base/helpers: `findSelectedFilePath`, `getBranchFileType`, `extractBranchCommitIdAndFilePath`, `isChangeViewActive`, project id resolution).
 
-## Контекст
+## Context
 
-- Породившая задача: `[REFAC-0001]` (переход на MR API; DOM-путь оставлен фолбэком осознанно).
-- Не путать с `[REFAC-0007]` (удаление старого резолва CallActivity-схемы — другой механизм).
-- Удалять только после реальной обкатки API на проде; пока `FallbackRepoProvider` держит DOM-провайдер запасным на случай, если на MR-странице API не отдаёт `diff_refs`.
+- Originating task: `[REFAC-0001]` (switch to the MR API; the DOM path was deliberately kept as a fallback).
+- Not to be confused with `[REFAC-0007]` (removal of the old CallActivity schema resolution — a different mechanism).
+- Remove only after real battle-testing of the API in prod; for now `FallbackRepoProvider` keeps the DOM provider as a backup in case the API does not return `diff_refs` on the MR page.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

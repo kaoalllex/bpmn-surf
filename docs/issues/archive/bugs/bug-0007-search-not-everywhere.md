@@ -1,30 +1,30 @@
 ---
 id: BUG-0007
-title: Поиск в диффере работает не везде
+title: Search in the differ doesn't work everywhere
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-Внутренний поиск bpmn-moddle (Ctrl/Cmd+F) на Win10 перехватывается поиском Chrome.
+The built-in bpmn-moddle search (Ctrl/Cmd+F) on Win10 is intercepted by Chrome's search.
 
-## Контекст
+## Context
 
-- Не работает на Windows при русской раскладке — баг bpmn-io: https://github.com/bpmn-io/bpmn-js/issues/1888
-- Воркэраунд: перед Ctrl+F переключиться на англ. раскладку.
-- Нужно: на вкладке диффера всегда использовать только внутренний поиск.
+- Doesn't work on Windows with a non-Latin keyboard layout — a bpmn-io bug: https://github.com/bpmn-io/bpmn-js/issues/1888
+- Workaround: switch to the English layout before Ctrl+F.
+- Needed: on the differ tab, always use only the built-in search.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-15 · claude-opus-4-8 · ветка `feature/feat-0006-search-element`
+### 2026-06-15 · claude-opus-4-8 · branch `feature/feat-0006-search-element`
 
-Закрыт вместе с [FEAT-0006]. На differ-вкладке теперь собственная плавающая
-панель поиска (`SearchPanel`, `search-panel.js`) вместо встроенного поиска
-вьювера. Ctrl/Cmd+F перехватывается по `event.code === 'KeyF'` (физическая
-клавиша, не зависит от раскладки → работает и на русской раскладке Win10, где
-ломался bpmn-io) + `preventDefault` подавляет нативный поиск Chrome. Воркэраунд
-с переключением раскладки больше не нужен.
+Closed together with [FEAT-0006]. The differ tab now has its own floating
+search panel (`SearchPanel`, `search-panel.js`) instead of the viewer's built-in
+search. Ctrl/Cmd+F is intercepted by `event.code === 'KeyF'` (the physical
+key, independent of the layout → works even on a non-Latin Win10 layout, where
+bpmn-io broke) + `preventDefault` suppresses Chrome's native search. The workaround
+with switching the layout is no longer needed.

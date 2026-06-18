@@ -1,50 +1,50 @@
 ---
 id: PERF-0003
-title: Показывать схему сразу, изменённые хендлеры догружать в фоне
+title: Show the schema immediately, load changed handlers in the background
 priority: high
 status: done
 ---
 
-## Постановка
+## Statement
 
-На differ-странице между открытием и появлением диаграммы — заметная задержка (на больших MR — секунды). Причина: загрузка изменённых хендлеров блокирует первичный рендер. Нужно показывать схему сразу, а подсветку изменённых делегатов/хендлеров догружать асинхронно (и желательно — параллельными запросами вместо последовательных).
+On the differ page, between opening it and the diagram appearing, there is a noticeable delay (on large MRs — seconds). The reason: loading the changed handlers blocks the initial render. We need to show the schema immediately, and load the highlighting of changed delegates/handlers asynchronously (and preferably — with parallel requests instead of sequential ones).
 
-## Контекст
+## Context
 
-Поток в `bpmn-differ.js#show()`:
+The flow in `bpmn-differ.js#show()`:
 
 ```
-await #loadVersions()        // XML двух версий — быстро
-await #loadChangedHandlers() // БЛОКИРУЕТ: ~30+ .kt-файлов по очереди
-await #showMr()/#showBranch()// только теперь рендер
-#view.showCanvas()           // только теперь схема видна
+await #loadVersions()        // XML of two versions — fast
+await #loadChangedHandlers() // BLOCKS: ~30+ .kt files one by one
+await #showMr()/#showBranch()// only now the render
+#view.showCanvas()           // only now the schema is visible
 // "ready!"
 ```
 
-- `#loadChangedHandlers()` — `src/differ/bpmn/bpmn-differ.js` (вызов перед `#showMr()`).
-- `findChangedHandlers()` — `src/differ/navigation/handler-locator.js`: после `GET /merge_requests/{iid}/changes` идёт **последовательный** цикл по изменённым `.kt`/`.java`-файлам, каждый — отдельный `loadFileContent` (логи `changed handler files (N)` → `changed handler keys (M)`).
-- Подсветка обновляется в `#showXml()` → `refreshChangedBadges()` при каждом импорте XML, т.е. корректно отработает и если хендлеры пришли уже после рендера.
+- `#loadChangedHandlers()` — `src/differ/bpmn/bpmn-differ.js` (called before `#showMr()`).
+- `findChangedHandlers()` — `src/differ/navigation/handler-locator.js`: after `GET /merge_requests/{iid}/changes` there is a **sequential** loop over the changed `.kt`/`.java` files, each one a separate `loadFileContent` (logs `changed handler files (N)` → `changed handler keys (M)`).
+- The highlighting is updated in `#showXml()` → `refreshChangedBadges()` on every XML import, i.e. it works correctly even if the handlers arrive after the render.
 
-Направление решения:
-- увести `#loadChangedHandlers()` из блокирующего пути — рендер схемы и `showCanvas()` раньше, загрузка хендлеров фоном (`.catch(...)`), по готовности — `setChangedHandlers()` + обновить бэйджи;
-- параллелить per-file загрузку в `handler-locator.js` (вместо последовательного цикла);
-- проверить оба differ'а (BPMN и DMN используют общие классы differ-страницы).
+Direction of the solution:
+- move `#loadChangedHandlers()` out of the blocking path — the schema render and `showCanvas()` earlier, the handler loading in the background (`.catch(...)`), and once ready — `setChangedHandlers()` + refresh the badges;
+- parallelize the per-file loading in `handler-locator.js` (instead of the sequential loop);
+- check both differs (BPMN and DMN use the shared differ-page classes).
 
-Лог симптома: на MR с 30 изменёнными файлами `ready!` наступает через ~5 c после `loading branch bpmn xml...`, и всё это время экран пустой.
+Symptom log: on an MR with 30 changed files, `ready!` arrives ~5 s after `loading branch bpmn xml...`, and the screen stays empty all that time.
 
-Связи: [PERF-0002] (меньше перерисовок/кэш), [PERF-0001] (сетевое взаимодействие). Индикатор загрузки как UX-страховка на время резолва/рендера — [UX-0008].
+Links: [PERF-0002] (fewer redraws/cache), [PERF-0001] (network interaction). A loading indicator as a UX safeguard during resolution/render — [UX-0008].
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->
 
-### 2026-06-16 · claude-opus-4-8 · ветка `perf/async-changed-handlers`
+### 2026-06-16 · claude-opus-4-8 · branch `perf/async-changed-handlers`
 
-Убрал загрузку изменённых хендлеров из блокирующего пути первичного рендера и распараллелил per-file загрузку.
+Removed the loading of changed handlers from the blocking path of the initial render and parallelized the per-file loading.
 
-- `bpmn-differ.js#show()`: `#loadChangedHandlers()` больше не `await`-ится — схема рендерится и `showCanvas()` вызывается сразу, скан хендлеров идёт фоном.
-- `#loadChangedHandlers()`: после `setChangedHandlers()` добавлен вызов `refreshChangedBadges()` — бэйджи догружаются на уже отрисованную диаграмму. Гонка покрыта с двух сторон: если скан завершился раньше импорта, бэйджи переставит сам `#showXml()`.
-- `handler-locator.js#findChangedHandlers()`: последовательный цикл по `.kt/.java` заменён на параллельный `Promise.all`; ключи собираются в исходном порядке (детерминизм при коллизии ключей сохранён).
-- DMN-differ хендлеры не использует — проверено, изменений не требует.
+- `bpmn-differ.js#show()`: `#loadChangedHandlers()` is no longer `await`-ed — the schema is rendered and `showCanvas()` is called immediately, the handler scan runs in the background.
+- `#loadChangedHandlers()`: after `setChangedHandlers()` a call to `refreshChangedBadges()` was added — the badges are loaded onto the already-rendered diagram. The race is covered from both sides: if the scan finishes before the import, `#showXml()` itself will place the badges.
+- `handler-locator.js#findChangedHandlers()`: the sequential loop over `.kt/.java` was replaced with a parallel `Promise.all`; the keys are collected in the original order (determinism on key collision is preserved).
+- The DMN differ does not use handlers — verified, no changes required.
 - `npm test` — 657 passed.

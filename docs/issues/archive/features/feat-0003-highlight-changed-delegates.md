@@ -1,91 +1,91 @@
 ---
 id: FEAT-0003
-title: Подсветка элементов, чьи делегаты изменились
+title: Highlight elements whose delegates have changed
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-Подсвечивать Service Task и др. элементы, которые по схеме не менялись, но в этом же MR менялась логика их Java/Kotlin-делегата. Должно быть видно и когда параметры элемента тоже менялись (сейчас уже синий от изменения пропертей).
+Highlight Service Tasks and other elements that did not change per the schema, but whose Java/Kotlin delegate logic changed in this same MR. It should be visible even when the element's parameters also changed (currently it is already blue from a property change).
 
-Варианты: «кнопка» перехода к делегату рядом с элементом / в панели Implementation (выделять, если делегат изменён в этом MR); рамка вокруг элемента; отдельный цвет (конфликт цветов).
+Options: a "button" to navigate to the delegate next to the element / in the Implementation panel (highlight it if the delegate was changed in this MR); a frame around the element; a separate color (color conflict).
 
-## Контекст
+## Context
 
-- Связано с [FEAT-0004].
-- Затронутые файлы: `handler-navigator.js`, `handler-locator.js`.
-- Сделано: external task (был) + делегаты (`camunda:class`/`delegateExpression`) и Java-хендлеры (см. «План доработки» ниже и Историю). Глубокий анализ транзитивных зависимостей вынесен в отдельную задачу [FEAT-0015].
+- Related to [FEAT-0004].
+- Affected files: `handler-navigator.js`, `handler-locator.js`.
+- Done: external task (existed) + delegates (`camunda:class`/`delegateExpression`) and Java handlers (see the "Refinement plan" below and the Work log). Deep analysis of transitive dependencies was moved to a separate task [FEAT-0015].
 
-## План доработки (FEAT-0003 подсветка + FEAT-0004 открытие кода)
+## Refinement plan (FEAT-0003 highlighting + FEAT-0004 opening the code)
 
-> Подготовлен 2026-06-15. Решения согласованы с пользователем: поддержать **и** `camunda:class`, **и** `camunda:delegateExpression`; матч — по **простому имени класса** (не FQN); добавить расширение `.java`. Транзитивный анализ — в [FEAT-0015]. **Реализован 2026-06-15** (см. Историю) — план оставлен как запись о сделанном.
+> Prepared 2026-06-15. Decisions agreed with the user: support **both** `camunda:class` **and** `camunda:delegateExpression`; matching — by the **simple class name** (not FQN); add the `.java` extension. Transitive analysis — in [FEAT-0015]. **Implemented 2026-06-15** (see the Work log) — the plan is kept as a record of what was done.
 
-### Идея: единый ключ хендлера
+### Idea: a unified handler key
 
-Сейчас весь функционал завязан на topic-строку: `Map<topic, {filePath, diffType}>`, BO читается как external/topic, поиск — по топику. Обобщаем до **namespaced-ключа**:
+Currently the whole feature is tied to the topic string: `Map<topic, {filePath, diffType}>`, the BO is read as external/topic, the search is by topic. We generalize to a **namespaced key**:
 
-- `topic:<topic>` — external task (как сейчас);
-- `class:<SimpleName>` — делегат (и `camunda:class`, и `delegateExpression`).
+- `topic:<topic>` — external task (as now);
+- `class:<SimpleName>` — delegate (both `camunda:class` and `delegateExpression`).
 
-`camunda:class="com.foo.Bar"` → `class:Bar`. `delegateExpression="${bar}"` → бин `bar` → по Spring-конвенции (имя бина = имя класса с маленькой буквы) класс `Bar` → `class:Bar`. Изменённый файл `Bar.kt`/`Bar.java`, объявляющий `class Bar`, → `class:Bar`. Все три сходятся на `class:Bar` — переиспользуем существующий поиск `class <Name>` (`#searchWrapToExternalTaskLocation`).
+`camunda:class="com.foo.Bar"` → `class:Bar`. `delegateExpression="${bar}"` → bean `bar` → by the Spring convention (bean name = class name lowercased) class `Bar` → `class:Bar`. A changed file `Bar.kt`/`Bar.java` declaring `class Bar` → `class:Bar`. All three converge on `class:Bar` — we reuse the existing search `class <Name>` (`#searchWrapToExternalTaskLocation`).
 
-### Изменения по файлам
+### Changes by file
 
-**1. `src/differ/navigation/handler-navigator.js`** — сторона «спроса» (элемент → ключ):
-- `#getExternalTopic(elem)` (стр. 91-97) → `#getHandlerKey(elem)`, возвращает namespaced-ключ или null:
+**1. `src/differ/navigation/handler-navigator.js`** — the "demand" side (element → key):
+- `#getExternalTopic(elem)` (lines 91-97) → `#getHandlerKey(elem)`, returns a namespaced key or null:
   - `bo.type === 'external' && bo.topic` → `topic:${bo.topic}`;
   - `bo.get('camunda:class')` → `class:${simpleClassName(...)}`;
-  - `bo.get('camunda:delegateExpression')` → вынуть бин из `${...}`, `class:${capitalizeFirstLetter(bean)}`; сложное выражение (точки/вызовы) → null (ограничение).
-  - ⚠️ Атрибуты читать через `bo.get('camunda:class')` / `bo.get('camunda:delegateExpression')` (а не `bo.class` — `class` зарезервировано). Проверено: атрибуты есть в `libs/camunda-bpmn-moddle/resources/camunda.json`.
-- Все обращения к topic в `refreshChangedBadges` (68-74), `showOverlayForSelectedElement` (79-89), `#onOpenCode`/`#resolveTargetUrl` (119-168) → работать с обобщённым ключом. Делегатные таски теперь тоже получают on-demand бейдж по выделению — ожидаемо.
-- Для fallback-поиска `blobSearchPageUrl` нужен «человеческий» термин: для `topic:` — топик, для `class:` — имя класса. Прокинуть термин из ключа.
-- Обновить шапку-комментарий (стр. 1-20): делегаты больше не «future extension».
+  - `bo.get('camunda:delegateExpression')` → extract the bean from `${...}`, `class:${capitalizeFirstLetter(bean)}`; a complex expression (dots/calls) → null (limitation).
+  - ⚠️ Read the attributes via `bo.get('camunda:class')` / `bo.get('camunda:delegateExpression')` (not `bo.class` — `class` is reserved). Verified: the attributes exist in `libs/camunda-bpmn-moddle/resources/camunda.json`.
+- All references to topic in `refreshChangedBadges` (68-74), `showOverlayForSelectedElement` (79-89), `#onOpenCode`/`#resolveTargetUrl` (119-168) → work with the generalized key. Delegate tasks now also get an on-demand badge on selection — as expected.
+- For the fallback search `blobSearchPageUrl` a "human" term is needed: for `topic:` — the topic, for `class:` — the class name. Thread the term through from the key.
+- Update the header comment (lines 1-20): delegates are no longer a "future extension".
 
-**2. `src/differ/navigation/handler-locator.js`** — стороны «предложения» (изменённые файлы) и резолва:
-- `#HANDLER_FILE_EXTENSIONS` (стр. 25): `['.kt', '.java']`. Регэксп подписки уже language-agnostic; `class <Name>` работает и в Java.
-- `findChangedHandlers` (128-150): для каждого изменённого хендлер-файла собирать ключи = topic-ключи (`extractHandlerTopics`, как сейчас) ∪ class-ключи. Добавить static `extractDeclaredClassNames(content)` (regex `\bclass\s+([A-Za-z_]\w*)`) → `class:<Name>`. Над-сбор безопасен: `class:Foo` даёт бейдж, только если на схеме есть элемент с делегатом `Foo`.
-- `resolveLocation(topic, ref)` (157-174) → `resolveLocation(key, ref)`, диспетчер по префиксу:
-  - `topic:` → как сейчас (`#searchSubscriptionLocation || #searchWrapToExternalTaskLocation`);
-  - `class:` → новый `#searchClassDeclarationLocation(className, ref)` — это `#searchWrapToExternalTaskLocation` (296-318) без требования аннотации `@WrapToExternalTask` (берём первый hit в хендлер-файле). Рефакторинг: выделить общий приватный поиск по `class <Name>` с опц. предпочтением аннотации.
-- Обновить шапку (стр. 4-22): делегаты поддержаны; оставить заметку только про транзитивность ([FEAT-0015]).
-- (Опционально, вне минимального объёма) переименовать класс `ExternalTaskHandlerLocator` → `HandlerLocator` (затрагивает `test/support/scope.js`, `bpmn-differ.js`, тесты). Можно отложить, обновив только doc-комментарий.
+**2. `src/differ/navigation/handler-locator.js`** — the "supply" side (changed files) and resolution:
+- `#HANDLER_FILE_EXTENSIONS` (line 25): `['.kt', '.java']`. The subscription regexp is already language-agnostic; `class <Name>` works in Java too.
+- `findChangedHandlers` (128-150): for each changed handler file collect keys = topic keys (`extractHandlerTopics`, as now) ∪ class keys. Add a static `extractDeclaredClassNames(content)` (regex `\bclass\s+([A-Za-z_]\w*)`) → `class:<Name>`. Over-collecting is safe: `class:Foo` yields a badge only if there is an element on the schema with the delegate `Foo`.
+- `resolveLocation(topic, ref)` (157-174) → `resolveLocation(key, ref)`, a dispatcher by prefix:
+  - `topic:` → as now (`#searchSubscriptionLocation || #searchWrapToExternalTaskLocation`);
+  - `class:` → the new `#searchClassDeclarationLocation(className, ref)` — this is `#searchWrapToExternalTaskLocation` (296-318) without the requirement of the `@WrapToExternalTask` annotation (we take the first hit in the handler file). Refactoring: extract a common private search by `class <Name>` with an optional preference for the annotation.
+- Update the header (lines 4-22): delegates are supported; keep only the note about transitivity ([FEAT-0015]).
+- (Optional, beyond the minimal scope) rename the class `ExternalTaskHandlerLocator` → `HandlerLocator` (affects `test/support/scope.js`, `bpmn-differ.js`, the tests). Can be deferred, updating only the doc comment.
 
-**3. `src/differ/bpmn/bpmn-differ.js`** — изменений не требуется: map для него непрозрачен; `#loadChangedHandlers` (331-345) и проброс в навигатор остаются.
+**3. `src/differ/bpmn/bpmn-differ.js`** — no changes required: the map is opaque to it; `#loadChangedHandlers` (331-345) and the pass-through into the navigator remain.
 
-### Заметка про FQN и коллизии (по запросу)
+### Note on FQN and collisions (on request)
 
-Матч по простому имени класса (`Bar`) допускает теоретическую **коллизию**: два класса `Bar` в разных пакетах дадут один ключ `class:Bar` — бейдж/резолв может указать не на тот файл. На практике редко. Если станет проблемой — перейти на FQN: ключ `class:com.foo.Bar`, package брать из пути изменённого файла + объявления, на стороне BO — прямо из `camunda:class`. Зафиксировать этот компромисс комментарием у `#getHandlerKey` и `extractDeclaredClassNames`.
+Matching by the simple class name (`Bar`) allows a theoretical **collision**: two classes `Bar` in different packages would yield the same key `class:Bar` — the badge/resolution may point to the wrong file. In practice this is rare. If it becomes a problem — switch to FQN: the key `class:com.foo.Bar`, take the package from the path of the changed file + the declaration, and on the BO side — directly from `camunda:class`. Record this trade-off with a comment near `#getHandlerKey` and `extractDeclaredClassNames`.
 
-### Известные ограничения (задокументировать в коде и в Истории по завершении)
-- `delegateExpression` с нестандартным бином (`@Component("custom")`, бин ≠ декапитализированное имя класса) не резолвится по конвенции — вне объёма этой итерации.
-- `delegateExpression` со сложным выражением (вызовы методов, навигация по точкам) → ключ не строится.
-- Матч по простому имени → возможные коллизии пакетов (см. выше).
+### Known limitations (to be documented in the code and in the Work log upon completion)
+- A `delegateExpression` with a non-standard bean (`@Component("custom")`, bean ≠ the decapitalized class name) is not resolved by the convention — out of scope for this iteration.
+- A `delegateExpression` with a complex expression (method calls, dot navigation) → no key is built.
+- Matching by the simple name → possible package collisions (see above).
 
-### Тесты (`test/handler-locator.test.js`; стиль — много мелких, только публичный API)
-- `isHandlerFile` принимает `.java`.
-- `extractDeclaredClassNames`: один/несколько классов, с модификаторами/аннотациями, Kotlin и Java, пусто/null.
-- Чистые хелперы ключей сделать static и покрыть: `simpleClassName('com.foo.Bar') === 'Bar'`, извлечение бина из `${bar}`, `capitalizeFirstLetter`. Разместить в локаторе, чтобы тестировать без bpmn-js.
-- Навигаторная сторона (`#getHandlerKey`) завязана на bpmn-js BO → юнитами не покрываем (как и сейчас у `HandlerNavigator`); проверка — ручная.
+### Tests (`test/handler-locator.test.js`; style — many small tests, public API only)
+- `isHandlerFile` accepts `.java`.
+- `extractDeclaredClassNames`: one/several classes, with modifiers/annotations, Kotlin and Java, empty/null.
+- Make the pure key helpers static and cover them: `simpleClassName('com.foo.Bar') === 'Bar'`, extracting the bean from `${bar}`, `capitalizeFirstLetter`. Place them in the locator so they can be tested without bpmn-js.
+- The navigator side (`#getHandlerKey`) is tied to the bpmn-js BO → we do not cover it with unit tests (as is currently the case for `HandlerNavigator`); the check is manual.
 
-### Ручная проверка
-MR с изменением: (а) external-task `.kt` — регресс; (б) делегат `camunda:class` на `.kt` и `.java`; (в) делегат `delegateExpression="${bean}"`. Проверить бейдж нужного цвета (added/changed/removed) и открытие кода / MR-diff. См. `docs/testing.md`.
+### Manual check
+An MR with a change to: (a) an external task `.kt` — regression; (b) a `camunda:class` delegate on `.kt` and `.java`; (c) a `delegateExpression="${bean}"` delegate. Check the badge of the right color (added/changed/removed) and the opening of the code / MR-diff. See `docs/testing.md`.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->
 
-### 2026-06-15 · claude-opus-4-8 · (ветка `feature/delegate-change-highlight`)
+### 2026-06-15 · claude-opus-4-8 · (branch `feature/delegate-change-highlight`)
 
-Реализован обобщённый путь хендлеров — задача закрыта. Введён namespaced-ключ `topic:<topic>` | `class:<SimpleName>`, на нём завязаны и подсветка, и открытие кода (FEAT-0004):
+The generalized handler path was implemented — the task is closed. A namespaced key `topic:<topic>` | `class:<SimpleName>` was introduced, on which both the highlighting and the opening of the code (FEAT-0004) are based:
 
-- `handler-navigator.js`: `#getExternalTopic` → `#getHandlerKey(elem)` — строит ключ из BO: external task → `topic:`; `camunda:delegateExpression="${bean}"` → `class:<Bean с большой буквы>`; `camunda:class` → `class:<SimpleName>` (delegateExpression проверяется раньше class; через статические хелперы локатора). Атрибуты читаются `bo.get('camunda:class')` / `bo.get('camunda:delegateExpression')` (`class` зарезервирован). Делегатные таски теперь тоже получают on-demand бейдж по выделению.
-- `handler-locator.js`: `#HANDLER_FILE_EXTENSIONS` += `.java`; `extractDeclaredClassNames` (regex `\bclass\s+<Name>`) + `extractHandlerKeys` (topic-ключи ∪ class-ключи); статические хелперы ключей `simpleClassName` / `classKeyFromClassName` / `classKeyFromDelegateExpression` / `termFromKey`; `findChangedHandlers` собирает namespaced-ключи; `resolveLocation(key, ref)` — диспетчер по префиксу; `#searchWrapToExternalTaskLocation` и новый `#searchClassDeclarationLocation` сведены к общему `#searchClassLocation(className, ref, preferAnnotation)`.
-- Тесты: `isHandlerFile` для `.java`; покрыты `extractDeclaredClassNames`, `extractHandlerKeys`, `simpleClassName`, `classKeyFromClassName`, `classKeyFromDelegateExpression` (вкл. `${...}`/`#{...}`, сложные выражения → null), `termFromKey`. Навигаторная сторона (`#getHandlerKey`) на bpmn-js BO — ручная проверка. Все 278 тестов зелёные.
+- `handler-navigator.js`: `#getExternalTopic` → `#getHandlerKey(elem)` — builds the key from the BO: external task → `topic:`; `camunda:delegateExpression="${bean}"` → `class:<Bean capitalized>`; `camunda:class` → `class:<SimpleName>` (delegateExpression is checked before class; via the locator's static helpers). The attributes are read with `bo.get('camunda:class')` / `bo.get('camunda:delegateExpression')` (`class` is reserved). Delegate tasks now also get an on-demand badge on selection.
+- `handler-locator.js`: `#HANDLER_FILE_EXTENSIONS` += `.java`; `extractDeclaredClassNames` (regex `\bclass\s+<Name>`) + `extractHandlerKeys` (topic keys ∪ class keys); the static key helpers `simpleClassName` / `classKeyFromClassName` / `classKeyFromDelegateExpression` / `termFromKey`; `findChangedHandlers` collects namespaced keys; `resolveLocation(key, ref)` — a dispatcher by prefix; `#searchWrapToExternalTaskLocation` and the new `#searchClassDeclarationLocation` were reduced to a common `#searchClassLocation(className, ref, preferAnnotation)`.
+- Tests: `isHandlerFile` for `.java`; covered `extractDeclaredClassNames`, `extractHandlerKeys`, `simpleClassName`, `classKeyFromClassName`, `classKeyFromDelegateExpression` (incl. `${...}`/`#{...}`, complex expressions → null), `termFromKey`. The navigator side (`#getHandlerKey`) on the bpmn-js BO — a manual check. All 278 tests green.
 
-Ограничения (задокументированы в шапке `handler-locator.js`): нестандартный бин делегата, сложное выражение `delegateExpression`, коллизии простых имён классов между пакетами; транзитивный анализ — [FEAT-0015]. Класс `ExternalTaskHandlerLocator` переименован в `HandlerLocator` — имя отражает поддержку и external task, и делегатов (затронуты `handler-navigator.js`, `bpmn-differ.js`, `test/support/scope.js`, тесты, `docs/architecture.md`).
+Limitations (documented in the `handler-locator.js` header): a non-standard delegate bean, a complex `delegateExpression` expression, collisions of simple class names between packages; transitive analysis — [FEAT-0015]. The class `ExternalTaskHandlerLocator` was renamed to `HandlerLocator` — the name reflects support for both external tasks and delegates (affected `handler-navigator.js`, `bpmn-differ.js`, `test/support/scope.js`, the tests, `docs/architecture.md`).
 
-### 2026-06-14 · — · (ветка `feature/delegate-change-highlight`)
+### 2026-06-14 · — · (branch `feature/delegate-change-highlight`)
 
-Сделано для external task на Kotlin: на таске с затронутым в MR обработчиком постоянно показывается overlay-плашка «‹/›» (`handler-navigator.js`), цвет — по типу изменения файла-хендлера (зелёный=добавлен, синий=изменён, красный=удалён, как цвета diff'а); тип определяется по флагам MR changes API, обратным сканом `.kt`-файлов по топику (`handler-locator.js#findChangedHandlers` → `Map<topic, {filePath, diffType}>`). Удалённый хендлер сканируется на target-ref и виден на target-версии схемы (где шаг ещё есть); добавленный — на mr-версии. Сигнал развязан с синей подсветкой (изменение имени топика в схеме).
+Done for an external task in Kotlin: on a task whose handler was affected in the MR, an overlay badge "‹/›" (`handler-navigator.js`) is shown permanently, the color — by the change type of the handler file (green=added, blue=changed, red=removed, like the diff colors); the type is determined by the flags of the MR changes API, by a reverse scan of `.kt` files by topic (`handler-locator.js#findChangedHandlers` → `Map<topic, {filePath, diffType}>`). A removed handler is scanned on the target ref and is visible on the target version of the schema (where the step still exists); an added one — on the mr version. The signal is decoupled from the blue highlighting (a change of the topic name in the schema).

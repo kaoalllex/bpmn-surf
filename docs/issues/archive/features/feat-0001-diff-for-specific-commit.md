@@ -1,33 +1,33 @@
 ---
 id: FEAT-0001
-title: Дифф для конкретного коммита в MR
+title: Diff for a specific commit in an MR
 priority: high
 status: done
 ---
 
-## Постановка
+## Statement
 
-Сейчас для любого коммита MR показывается итоговая версия схемы (берётся последний коммит). Нужно: сравнивать схему выбранного коммита с вышестоящим коммитом этого же MR (а если его нет — с целевой веткой).
+Currently, for any MR commit the final version of the schema is shown (the latest commit is taken). We need to: compare the schema of the selected commit with the preceding commit of the same MR (and if there is none — with the target branch).
 
-## Контекст
+## Context
 
-- Пример MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/3931/diffs
+- Example MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/3931/diffs
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->
 
-### 2026-06-16 · claude-opus-4-8 · ветка `feature/diff-for-specific-commit`
+### 2026-06-16 · claude-opus-4-8 · branch `feature/diff-for-specific-commit`
 
-Реализовано в primary-провайдере `GitLabApiRepoProvider`. Когда в diffs-вью MR выбран
-конкретный коммит, URL содержит `?commit_id=<sha>`; добавлен чистый
-`GitLabUrlParser.extractCommitId(href)`. `getSourceCommitId()` при наличии `commit_id`
-отдаёт выбранный коммит, `getTargetCommitId()` — его первого git-родителя
-(`GET /api/v4/projects/{id}/repository/commits/{sha}` → `parent_ids[0]`, кэш по sha).
-Это точно воспроизводит одиночный diff GitLab; для первого коммита MR родитель = точка
-ветвления на целевой ветке, поэтому случай «вышестоящего нет → целевая ветка» выходит
-сам собой. Фоллбэк на `diff_refs.base_sha`, если родителя нет (root-коммит) или запрос
-упал. DOM-эвристический `GitLabRepoProvider` (обречённый фоллбэк, REFAC-0001) не
-поддержан — известное ограничение. Юнит-тесты: `extractCommitId` (парсер) и сценарии
-выбранного коммита у API-провайдера.
+Implemented in the primary provider `GitLabApiRepoProvider`. When a specific commit is selected in the MR diffs view,
+the URL contains `?commit_id=<sha>`; a pure
+`GitLabUrlParser.extractCommitId(href)` was added. `getSourceCommitId()`, when `commit_id` is present,
+returns the selected commit, `getTargetCommitId()` — its first git parent
+(`GET /api/v4/projects/{id}/repository/commits/{sha}` → `parent_ids[0]`, cached by sha).
+This exactly reproduces GitLab's single diff; for the first commit of the MR the parent = the branch-off point
+on the target branch, so the case "no preceding commit → target branch" works out
+by itself. Fallback to `diff_refs.base_sha` if there is no parent (root commit) or the request
+failed. The DOM-heuristic `GitLabRepoProvider` (doomed fallback, REFAC-0001) is not
+supported — a known limitation. Unit tests: `extractCommitId` (parser) and the scenarios of the
+selected commit in the API provider.

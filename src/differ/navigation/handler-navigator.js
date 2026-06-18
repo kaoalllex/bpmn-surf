@@ -23,9 +23,9 @@
 class HandlerNavigator {
     // Tooltip per change kind; absence (selection badge) falls back to a neutral one.
     static #BADGE_TITLES = {
-        added: 'Хендлер добавлен в этом MR — открыть его diff',
-        changed: 'Хендлер изменён в этом MR — открыть его diff',
-        removed: 'Хендлер удалён в этом MR — открыть его diff'
+        added: 'Handler added in this MR — open its diff',
+        changed: 'Handler changed in this MR — open its diff',
+        removed: 'Handler removed in this MR — open its diff'
     };
 
     #overlays;
@@ -109,7 +109,7 @@ class HandlerNavigator {
 
     #addBadge(elementId, key, diffType) {
         const cssClass = diffType ? `handler-link handler-link-${diffType}` : 'handler-link';
-        const title = HandlerNavigator.#BADGE_TITLES[diffType] || 'Открыть код хендлера';
+        const title = HandlerNavigator.#BADGE_TITLES[diffType] || 'Open the handler code';
 
         const overlayId = this.#overlays.add(elementId, 'note', {
             position: { bottom: 0, right: 0 },

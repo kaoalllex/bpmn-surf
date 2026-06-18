@@ -1,29 +1,29 @@
 ---
 id: BUG-0013
-title: Поиск хендлера не находит источник на инстансах с Advanced Search (Elasticsearch)
+title: Handler search doesn't find the source on instances with Advanced Search (Elasticsearch)
 priority: high
 status: done
 ---
 
-## Постановка
+## Statement
 
-В режиме просмотра BPMN-схемы на `gitlab.example.com` переход к хендлеру service-таски
-не находит источник, хотя таска объявлена корректно:
+In BPMN schema view mode on `gitlab.example.com`, navigation to a service task's handler
+doesn't find the source, even though the task is declared correctly:
 
 ```
 handler source not found for topic 'ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage'
 ```
 
-Это **отдельная** причина от [BUG-0012] (склейка ref/path): после фикса BUG-0012 в
-запрос уходит чистый SHA (`ref=a4084af3387695c4182c04522b6fa644bb033d78`), но Search
-API всё равно возвращает пусто.
+This is a **separate** cause from [BUG-0012] (ref/path merging): after the BUG-0012 fix, a
+clean SHA goes into the request (`ref=a4084af3387695c4182c04522b6fa644bb033d78`), but the Search
+API still returns empty.
 
-## Контекст
+## Context
 
-Воспроизведение:
-- Схема: `…/example-project/example-repo/-/blob/a4084af3387695c4182c04522b6fa644bb033d78/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
-- Таска `CreateSigningDocumentInStorage`, хендлер объявлен ровно тем способом, который
-  ищет `#searchSubscriptionLocation` (литеральная строка топика в аннотации):
+Reproduction:
+- Schema: `…/example-project/example-repo/-/blob/a4084af3387695c4182c04522b6fa644bb033d78/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
+- Task `CreateSigningDocumentInStorage`, the handler is declared in exactly the way that
+  `#searchSubscriptionLocation` searches for (the literal topic string in the annotation):
 
   ```kotlin
   @Component("ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage")
@@ -31,80 +31,80 @@ API всё равно возвращает пусто.
   class CreateSigningDocumentInStorageTask
   ```
 
-Код локатора (`handler-locator.js`) ищет двумя термами:
-1. `#searchSubscriptionLocation` → `ExternalTaskSubscription("<topic>")` (литерал с кавычками/скобками);
-2. fallback `#searchWrapToExternalTaskLocation` → `class <Topic-с-заглавной>` (для этого
-   проекта заведомо мимо — класс называется `<Шаг>Task`, а не как топик).
+The locator code (`handler-locator.js`) searches with two terms:
+1. `#searchSubscriptionLocation` → `ExternalTaskSubscription("<topic>")` (a literal with quotes/parens);
+2. fallback `#searchWrapToExternalTaskLocation` → `class <Topic-capitalized>` (for this
+   project a guaranteed miss — the class is named `<Step>Task`, not like the topic).
 
-### Что проверено
+### What was verified
 
-Эксперимент на тестовом проекте gitlab.com (`dev.example/bpmn-diff-test`, id 57703231),
-файл с такой же аннотацией на дефолтной ветке, тот же Search API:
+An experiment on the gitlab.com test project (`dev.example/bpmn-diff-test`, id 57703231),
+a file with the same annotation on the default branch, the same Search API:
 
-| Терм | ref | Результат |
+| Term | ref | Result |
 |------|-----|-----------|
-| `ExternalTaskSubscription("<topic>")` (кавычки+скобки) | `main` | **1** найден |
-| `ExternalTaskSubscription("<topic>")` | commit SHA | **1** найден |
-| `ExternalTaskSubscription("<topic>")` | — (default) | **1** найден |
-| bare `<topic>` | `main` / SHA / — | **1** найден |
-| `class CreateSigningDocInStorageTask` | `main` | **1** найден |
-| `class <topic-as-class>` (наш fallback) | `main` | 0 (ожидаемо) |
+| `ExternalTaskSubscription("<topic>")` (quotes+parens) | `main` | **1** found |
+| `ExternalTaskSubscription("<topic>")` | commit SHA | **1** found |
+| `ExternalTaskSubscription("<topic>")` | — (default) | **1** found |
+| bare `<topic>` | `main` / SHA / — | **1** found |
+| `class CreateSigningDocInStorageTask` | `main` | **1** found |
+| `class <topic-as-class>` (our fallback) | `main` | 0 (as expected) |
 
-Вывод: на инстансе с **basic search** (Gitaly `git grep`, как у gitlab.com тестового
-проекта) логика локатора **корректна** — литерал с пунктуацией, ref по SHA и bare-топик
-находят файл. Раз на example тот же запрос даёт `200` + `[]`, у example другой бэкенд —
-**Advanced Search (Elasticsearch)**, а у него:
-- `ref` для blob-поиска **игнорируется**, индексируется только дефолтная ветка;
-- строка запроса парсится иначе (`"` = phrase, `(` `)` — служебные) → литерал
-  `ExternalTaskSubscription("…")` может не матчиться.
+Conclusion: on an instance with **basic search** (Gitaly `git grep`, like the gitlab.com test
+project) the locator logic is **correct** — a literal with punctuation, ref by SHA, and the bare topic
+find the file. Since on example the same request gives `200` + `[]`, example has a different backend —
+**Advanced Search (Elasticsearch)**, and it:
+- **ignores** the `ref` for blob search, only the default branch is indexed;
+- parses the query string differently (`"` = phrase, `(` `)` — service chars) → the literal
+  `ExternalTaskSubscription("…")` may not match.
 
-### Root cause (подтверждено на example)
+### Root cause (confirmed on example)
 
-**Подтверждено: кандидат A** — пунктуация ломает запрос в ES. Терм с `"`/`()` не
-находит, хотя файл в индексе есть; bare-строка топика находит. Лечится переходом на
-bare-поиск строки топика (только идентификатор, без спецсимволов) + фильтрация
-результатов по handler-файлам, чей сниппет содержит `ExternalTaskSubscription`/топик.
+**Confirmed: candidate A** — punctuation breaks the query in ES. The term with `"`/`()` doesn't
+find it, even though the file is in the index; the bare topic string finds it. Fixed by switching to a
+bare search of the topic string (the identifier only, without special chars) + filtering
+the results by handler files whose snippet contains `ExternalTaskSubscription`/the topic.
 
-(Кандидат B — ES индексирует только дефолтную ветку — отпал: bare-поиск находит хендлер
-и с ref, и без. Параллельно подтвердилось, что ES реально индексирует только `master`
-[в ответе `"ref":"master"` при запросе без ref], но хендлер там есть, так что для
-просмотра это не блокер.)
+(Candidate B — ES indexes only the default branch — was ruled out: the bare search finds the handler
+both with and without a ref. In parallel it was confirmed that ES does in fact index only `master`
+[`"ref":"master"` in the response on a request without a ref], but the handler is there, so for
+viewing this is not a blocker.)
 
-### Диагностика для подтверждения (выполнить в браузере с сессией example)
+### Diagnostics to confirm (run in a browser with a example session)
 
-scope=blobs, проект 118208, топик `ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`:
+scope=blobs, project 118208, topic `ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`:
 
-- D1 bare-топик, без ref: `…/api/v4/projects/118208/search?scope=blobs&search=ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`
-- D2 bare-топик, ref=SHA схемы: `…&ref=a4084af3387695c4182c04522b6fa644bb033d78&search=ModuleA_…_CreateSigningDocumentInStorage`
-- D3 кавычки+скобки, без ref: `…&search=ExternalTaskSubscription("ModuleA_…_CreateSigningDocumentInStorage")`
+- D1 bare topic, no ref: `…/api/v4/projects/118208/search?scope=blobs&search=ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`
+- D2 bare topic, ref=schema SHA: `…&ref=a4084af3387695c4182c04522b6fa644bb033d78&search=ModuleA_…_CreateSigningDocumentInStorage`
+- D3 quotes+parens, no ref: `…&search=ExternalTaskSubscription("ModuleA_…_CreateSigningDocumentInStorage")`
 
-Интерпретация:
-- D1 непусто, D3 пусто → **кандидат A** (пунктуация). Фикс — bare-поиск топика.
-- D1 непусто, D3 непусто, D2 пусто → ref-параметр ломает ES-запрос → не слать ref (или
-  не слать, когда это SHA).
-- D1 пусто → **кандидат B** (нет в индексе дефолтной ветки) → решение шире.
+Interpretation:
+- D1 non-empty, D3 empty → **candidate A** (punctuation). Fix — bare topic search.
+- D1 non-empty, D3 non-empty, D2 empty → the ref parameter breaks the ES query → don't send ref (or
+  don't send it when it is a SHA).
+- D1 empty → **candidate B** (not in the default branch index) → a wider solution.
 
-### Как чинить (сделано)
+### How to fix (done)
 
-Инстанс-независимый фикс — в `#searchSubscriptionLocation` ищется **bare-строка топика**
-вместо `ExternalTaskSubscription("<topic>")`: идентификатор без спецсимволов дружелюбен и
-к basic, и к ES, а отсев ложных совпадений уже делается (фильтр по handler-файлам +
-предпочтение сниппета с `ExternalTaskSubscription`). Отправку `ref` оставили: на ES она
-игнорируется (всё равно ищется master), на basic-search инстансах корректно скоупит.
-Затронутый файл: `src/differ/navigation/handler-locator.js`.
+The instance-independent fix — in `#searchSubscriptionLocation`, search for **the bare topic string**
+instead of `ExternalTaskSubscription("<topic>")`: an identifier without special chars is friendly to
+both basic search and ES, and the filtering of false matches is already done (a filter by handler files +
+a preference for the snippet with `ExternalTaskSubscription`). Sending `ref` was kept: on ES it's
+ignored (master is searched anyway), on basic-search instances it scopes correctly.
+Affected file: `src/differ/navigation/handler-locator.js`.
 
-Связано: [BUG-0012] (склейка ref/path — починена, дала чистый ref, после чего проявился
-этот баг), [REFAC-0012] (эвристики в `HandlerLocator`).
+Related: [BUG-0012] (ref/path merging — fixed, produced a clean ref, after which this
+bug surfaced), [REFAC-0012] (heuristics in `HandlerLocator`).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись. Новые записи сверху. -->
+<!-- Each AI session on the task is a separate entry. New entries on top. -->
 
 - **Opus 4.8 · 2026-06-17 · fix/bug-0012-ref-path-merged-in-blob-url-parse** —
-  Расследование + фикс. Подтверждено, что хендлер объявлен корректно
-  (`@ExternalTaskSubscription("<topic>")`), а логика локатора работает на basic-search
-  (проверено на gitlab.com тестовом проекте — все термы находят файл). Диагностика
-  D1–D3 на example (пользователь прогнал в браузере) подтвердила **кандидат A**: bare-топик
-  находит хендлер (с ref и без), а терм с `"`/`()` даёт `[]`. Фикс: `#searchSubscriptionLocation`
-  теперь ищет bare-строку топика (`handler-locator.js:384-396`). `npm test` — 765 pass.
+  Investigation + fix. Confirmed that the handler is declared correctly
+  (`@ExternalTaskSubscription("<topic>")`), and the locator logic works on basic search
+  (verified on the gitlab.com test project — all terms find the file). Diagnostics
+  D1–D3 on example (the user ran them in the browser) confirmed **candidate A**: the bare topic
+  finds the handler (with and without ref), and the term with `"`/`()` gives `[]`. Fix: `#searchSubscriptionLocation`
+  now searches for the bare topic string (`handler-locator.js:384-396`). `npm test` — 765 pass.
   status=done.

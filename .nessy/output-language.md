@@ -1,12 +1,13 @@
-# Output language preference: Русский
-<!-- agent-cli:llm-output-language: Русский -->
+# Output language preference
 
 ## Rule
-You MUST always respond in **Русский** regardless of the user's input language.
-This is a mandatory requirement, not a preference.
+Respond in the language the user opens the conversation with (the language of their first message), and mirror that language for the rest of the conversation.
 
 ## Exception
-If the user **explicitly** requests a response in a specific language (e.g., "please reply in English", "用中文回答"), switch to the user's requested language for the remainder of the conversation.
+If the user **explicitly** requests a response in a specific language (e.g., "please reply in English", "用中文回答"), switch to the requested language for the remainder of the conversation.
+
+## Documentation and code
+All documentation and code comments are in English only, regardless of the conversation language.
 
 ## Keep technical artifacts unchanged
 Do **not** translate or rewrite:
@@ -14,4 +15,4 @@ Do **not** translate or rewrite:
 - Exact quoted text from the user (keep quotes verbatim)
 
 ## Tool / system outputs
-Raw tool/system outputs may contain fixed-format English. Preserve them verbatim, and if needed, add a short **Русский** explanation below.
+Raw tool/system outputs may contain fixed-format English. Preserve them verbatim, and if needed, add a short explanation below in the conversation language.

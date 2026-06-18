@@ -1,21 +1,21 @@
 ---
 id: FEAT-0016
-title: Поддержка FireFox
+title: FireFox support
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Сделать так, чтобы расширение работало не только в Chrome, но и в FireFox.
+Make the extension work not only in Chrome but also in FireFox.
 
-## Контекст
+## Context
 
-- Сейчас расширение — Chrome Extension (Manifest V3), полагается на `chrome.*` API.
-- Потребуется абстракция/полифилл браузерного API (`chrome` ↔ `browser`) и проверка совместимости MV3 в FireFox.
-- Ортогонально [REFAC-0004] (абстракция платформы хранения кода GitLab→GitHub — это про источник данных, а не про браузер).
+- Currently the extension is a Chrome Extension (Manifest V3), relying on the `chrome.*` API.
+- An abstraction/polyfill of the browser API (`chrome` ↔ `browser`) will be needed, plus a check of MV3 compatibility in FireFox.
+- Orthogonal to [REFAC-0004] (abstraction of the code storage platform GitLab→GitHub — that's about the data source, not the browser).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry per the template below.
+     Add new entries at the top (freshest first). -->

@@ -1,28 +1,28 @@
 ---
 id: FEAT-0015
-title: Глубокий анализ изменений хендлеров (транзитивные зависимости)
+title: Deep analysis of handler changes (transitive dependencies)
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Сейчас элемент подсвечивается как «хендлер изменён в этом MR» только если изменился **сам файл класса хендлера** (`handler-locator.js#findChangedHandlers` сканирует лишь файлы из MR-diff). Если логика хендлера поменялась в файле, который он импортирует/использует (транзитивная зависимость), — изменение не детектируется и бейдж не появляется.
+Currently an element is highlighted as "handler changed in this MR" only if the **handler class file itself** changed (`handler-locator.js#findChangedHandlers` scans only the files from the MR diff). If the handler's logic changed in a file that it imports/uses (a transitive dependency), the change is not detected and no badge appears.
 
-Нужно учитывать изменения в транзитивных зависимостях класса хендлера, а не только в самом файле.
+We need to account for changes in the transitive dependencies of the handler class, not just in the file itself.
 
-## Контекст
+## Context
 
-- Выделено из [FEAT-0003] (был п.3 «глубокий анализ»); базовая подсветка/открытие кода — там же и в [FEAT-0004].
-- Затронутый файл: `src/differ/navigation/handler-locator.js` (`findChangedHandlers`, стр. 128-150 — точка, где сейчас флагается только сам файл-хендлер; см. комментарий-заметку в шапке файла).
-- Открытые вопросы реализации (решить при взятии в работу):
-  - Как строить граф зависимостей без локального чекаута репозитория? Парсинг `import`-ов по содержимому файлов + резолв через GitLab blob-search/tree API — потенциально много запросов.
-  - Глубина обхода (1 уровень / N уровней / транзитивно до фикс-точки) и защита от циклов.
-  - Где остановиться, чтобы не сканировать пол-репозитория (фильтры по пакету/модулю, лимиты).
-  - Производительность и кэширование: резолв «класс → файл» уже кэшируется в локаторе, граф зависимостей кэшировать аналогично.
-- Низкий приоритет: дорогая фича с неочевидным соотношением польза/стоимость; делать после базовой поддержки делегатов и Java из [FEAT-0003]/[FEAT-0004].
+- Split off from [FEAT-0003] (it was item 3, "deep analysis"); the basic highlighting/code opening is there and in [FEAT-0004].
+- Affected file: `src/differ/navigation/handler-locator.js` (`findChangedHandlers`, lines 128-150 — the point where currently only the handler file itself is flagged; see the note comment in the file header).
+- Open implementation questions (to resolve when picked up):
+  - How to build the dependency graph without a local checkout of the repository? Parsing `import`s from file contents + resolving via the GitLab blob-search/tree API — potentially many requests.
+  - Traversal depth (1 level / N levels / transitively to a fixed point) and protection against cycles.
+  - Where to stop so as not to scan half the repository (filters by package/module, limits).
+  - Performance and caching: the "class → file" resolution is already cached in the locator; cache the dependency graph similarly.
+- Low priority: an expensive feature with an unclear benefit/cost ratio; do it after the basic support for delegates and Java from [FEAT-0003]/[FEAT-0004].
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry per the template below.
+     Add new entries at the top (freshest first). -->

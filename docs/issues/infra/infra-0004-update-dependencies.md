@@ -1,21 +1,21 @@
 ---
 id: INFRA-0004
-title: Регулярное обновление версий зависимостей
+title: Regular updates of dependency versions
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Поддерживать версии внешних библиотек в актуальном состоянии: периодически обновлять `bpmn-js`, `dmn-js`, панель свойств и прочие зависимости до свежих релизов (багфиксы, безопасность, новые возможности). Версии задаются в `package.json`, файлы в `libs/` пересобираются `npm run sync:libs` (вручную `libs/` не править).
+Keep the versions of external libraries up to date: periodically update `bpmn-js`, `dmn-js`, the properties panel, and other dependencies to fresh releases (bug fixes, security, new features). Versions are set in `package.json`, files in `libs/` are rebuilt by `npm run sync:libs` (do not edit `libs/` manually).
 
-## Контекст
+## Context
 
-- Версии зависимостей — в `package.json`; после бампа — `npm run sync:libs`, затем `npm test` и ручная проверка BPMN- и DMN-diff (см. `docs/testing.md`).
-- При обновлении сверять upstream changelog на предмет уже исправленных в проекте багов — например, перехват Ctrl+F в bpmn-js ([BUG-0007], bpmn-io/bpmn-js#1888).
-- Связано с [INFRA-0001] (механизм подтягивания либ и переход на минифицированные сборки) и [INFRA-0003] (автопроверки): обновление версий удобно увязать с этими работами.
+- Dependency versions are in `package.json`; after a bump — `npm run sync:libs`, then `npm test` and manual verification of BPMN and DMN diff (see `docs/testing.md`).
+- When updating, check the upstream changelog for bugs already fixed in the project — for example, Ctrl+F interception in bpmn-js ([BUG-0007], bpmn-io/bpmn-js#1888).
+- Related to [INFRA-0001] (mechanism for pulling in libraries and switching to minified builds) and [INFRA-0003] (automatic checks): version updates are convenient to tie together with this work.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

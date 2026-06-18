@@ -1,33 +1,33 @@
 ---
 id: FEAT-0006
-title: Поиск элемента на схеме
+title: Search for an element on the schema
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-Поиск по названию элемента или по названию/значению его параметра (напр. найти ветку, в условии которой используется переменная `preapprove_reapeated_turnover`). Найденный элемент — подсветить.
+Search by an element's name or by the name/value of its parameter (e.g. find a branch whose condition uses the variable `preapprove_reapeated_turnover`). Highlight the found element.
 
-## Контекст
+## Context
 
-- Встроенный Ctrl+F вьювера ищет только по наименованию элементов.
-- Связано с [BUG-0007].
+- The viewer's built-in Ctrl+F searches only by element names.
+- Related to [BUG-0007].
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->
 
-### 2026-06-15 · claude-opus-4-8 · ветка `feature/feat-0006-search-element`
+### 2026-06-15 · claude-opus-4-8 · branch `feature/feat-0006-search-element`
 
-Реализован полнотекстовый поиск по элементам BPMN-схемы. Новый `ElementSearcher`
-(`element-searcher.js`) строит индекс из `elementRegistry` и ищет id по имени,
-id и любым параметрам — condition expression и его переменным, In/Out mappings,
+Implemented full-text search over the elements of a BPMN schema. The new `ElementSearcher`
+(`element-searcher.js`) builds an index from `elementRegistry` and searches ids by name,
+id and any parameters — condition expression and its variables, In/Out mappings,
 Inputs/Outputs, delegate/class/topic/expression, calledElement, documentation
-(рекурсивный обход moddle-объекта, без захода в ссылки на другие элементы).
-Плавающая панель `SearchPanel` (`search-panel.js`) открывается по Ctrl/Cmd+F,
-подсвечивает все совпадения, центрирует и выделяет текущее (панель свойств
-показывает его параметры), даёт навигацию ◀/▶ и счётчик. Покрытие: 28 юнит-тестов
-на `ElementSearcher`. Заодно закрыт [BUG-0007] (раскладко-независимый перехват
-Ctrl+F). Только BPMN; DMN-таблица ищется штатным Ctrl+F браузера по DOM-тексту.
+(a recursive traversal of the moddle object, without following references to other elements).
+The floating `SearchPanel` (`search-panel.js`) opens on Ctrl/Cmd+F,
+highlights all matches, centers and selects the current one (the properties panel
+shows its parameters), provides ◀/▶ navigation and a counter. Coverage: 28 unit tests
+on `ElementSearcher`. Along the way [BUG-0007] was closed (layout-independent interception of
+Ctrl+F). BPMN only; a DMN table is searched with the browser's standard Ctrl+F over DOM text.

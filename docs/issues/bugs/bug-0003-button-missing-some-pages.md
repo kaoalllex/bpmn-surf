@@ -1,20 +1,20 @@
 ---
 id: BUG-0003
-title: Кнопка BPMN Diff не отображается на части страниц
+title: BPMN Diff button is not shown on some pages
 priority: high
 status: open
 ---
 
-## Постановка
+## Statement
 
-Найти и устранить проблемы детектирования подходящих страниц GitLab; добавить диагностику причин скрытия.
+Find and fix the detection problems for eligible GitLab pages; add diagnostics for the reasons the button is hidden.
 
-## Контекст
+## Context
 
-- Частный случай: при снятой галке «Show one file at a time» GitLab показывает все файлы подряд, плагин не понимает, что выбран bpmn/dmn → кнопки нет. Нужно рисовать кнопку сразу ко всем блокам bpmn/dmn-файлов.
-- Исходный баг: https://chat.example.com/example/pl/hzu9eoc44384xq4jk6a1apna8a
+- Special case: when the "Show one file at a time" checkbox is unchecked, GitLab shows all files in a row, and the plugin does not understand that a bpmn/dmn file is selected → there is no button. The button must be drawn immediately for all bpmn/dmn file blocks.
+- Original bug: https://chat.example.com/example/pl/hzu9eoc44384xq4jk6a1apna8a
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

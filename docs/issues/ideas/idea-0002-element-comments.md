@@ -1,19 +1,19 @@
 ---
 id: IDEA-0002
-title: Комментарии к элементам схемы
+title: Comments on diagram elements
 priority: low
 status: open
 ---
 
-## Постановка
+## Statement
 
-Добавлять заметки к BPMN-элементам прямо в моделлере и просматривать их; под капотом — механизм комментариев GitLab.
+Add notes to BPMN elements right in the modeler and view them; under the hood — the GitLab comments mechanism.
 
-## Контекст
+## Context
 
-<!-- Ссылки на MR, логи, симптомы, затронутые файлы, связи с другими задачами. -->
+<!-- Links to MRs, logs, symptoms, affected files, relations to other tasks. -->
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (most recent first). -->

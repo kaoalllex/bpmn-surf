@@ -1,14 +1,14 @@
 'use strict';
 
-// Service worker механизма обновления (FEAT-0012). Фоновая проверка новой
-// версии по расписанию (chrome.alarms), бейдж на иконке, хранение состояния в
-// chrome.storage.local и обработка сообщений от popup и страницы диффера.
+// Service worker of the update mechanism (FEAT-0012). Scheduled background check
+// for a new version (chrome.alarms), badge on the icon, state storage in
+// chrome.storage.local, and handling of messages from the popup and the differ page.
 //
-// Расширение НЕ заменяет свои файлы само (ограничение load-unpacked) — SW лишь
-// уведомляет; применяет обновление пользователь (git pull + chrome.runtime.reload).
+// The extension does NOT replace its own files (load-unpacked limitation) — the SW
+// only notifies; the user applies the update (git pull + chrome.runtime.reload).
 //
-// Чистая логика — в version-info.js / update-checker.js (юнит-тесты);
-// здесь только chrome.*-glue.
+// Pure logic lives in version-info.js / update-checker.js (unit-tested);
+// here only chrome.*-glue.
 
 importScripts(
     '/src/core/config.js',
@@ -19,7 +19,7 @@ importScripts(
 const ALARM_NAME = 'bpmn-diff-update-check';
 const BADGE_COLOR = '#1f75cb';
 
-// --- состояние в storage ---------------------------------------------------
+// --- state in storage ------------------------------------------------------
 
 async function readState() {
     const stored = await chrome.storage.local.get(UPDATE_STORAGE_KEY);
@@ -37,18 +37,18 @@ async function writeState(patch) {
     return next;
 }
 
-// --- бейдж -----------------------------------------------------------------
+// --- badge -----------------------------------------------------------------
 
 async function setBadge(updateAvailable) {
     try {
         await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
         await chrome.action.setBadgeText({ text: updateAvailable ? '●' : '' });
     } catch (e) {
-        // action может быть недоступен в редких состояниях — не критично.
+        // action may be unavailable in rare states — not critical.
     }
 }
 
-// --- проверка --------------------------------------------------------------
+// --- check -----------------------------------------------------------------
 
 async function runCheck() {
     const { enabled } = await readState();
@@ -69,7 +69,7 @@ async function runCheck() {
     return lastResult;
 }
 
-// --- расписание ------------------------------------------------------------
+// --- schedule --------------------------------------------------------------
 
 async function ensureAlarm() {
     const existing = await chrome.alarms.get(ALARM_NAME);
@@ -97,13 +97,13 @@ chrome.alarms.onAlarm.addListener(alarm => {
     }
 });
 
-// --- сообщения от popup / страницы диффера ---------------------------------
+// --- messages from popup / differ page -------------------------------------
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleMessage(message).then(sendResponse).catch(err => {
         sendResponse({ ok: false, error: String((err && err.message) || err) });
     });
-    return true; // ответ асинхронный
+    return true; // response is asynchronous
 });
 
 async function buildStateReply() {
@@ -113,7 +113,7 @@ async function buildStateReply() {
         enabled: state.enabled,
         currentVersion: chrome.runtime.getManifest().version,
         lastResult: state.lastResult,
-        // прозрачность: показываем, куда именно ходим
+        // transparency: show exactly where we go
         manifestUrl: UPDATE_VERSION_MANIFEST_URL,
         homeUrl: UPDATE_HOME_URL,
         gitPullCommand: UPDATE_GIT_PULL_COMMAND
@@ -140,7 +140,7 @@ async function handleMessage(message) {
         }
 
         case 'update:reload':
-            // unpacked: перечитывает файлы с диска (трактуется как update).
+            // unpacked: re-reads files from disk (treated as an update).
             chrome.runtime.reload();
             return { ok: true };
 
@@ -149,8 +149,8 @@ async function handleMessage(message) {
                 await chrome.action.openPopup();
                 return { ok: true };
             } catch (e) {
-                // openPopup доступен не всегда (требует фокус окна) —
-                // fallback: открыть popup как вкладку.
+                // openPopup is not always available (requires window focus) —
+                // fallback: open the popup as a tab.
                 await chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/popup.html') });
                 return { ok: true, fallback: 'tab' };
             }

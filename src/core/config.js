@@ -2,27 +2,28 @@
 const MASTER_BRANCH_NAME = 'master';
 //const MASTER_BRANCH_NAME = 'main';
 
-// --- Обновление расширения (FEAT-0012) ------------------------------------
-// Источник версии — публичный version.json (см. формат в корневом version.json
-// и docs/architecture.md). Расширение само НЕ заменяет свои файлы (ограничение
-// load-unpacked): оно только уведомляет и ведёт пользователя по обновлению.
+// --- Extension update (FEAT-0012) ------------------------------------------
+// The version source is a public version.json (see the format in the root
+// version.json and docs/architecture.md). The extension does NOT replace its
+// own files (a load-unpacked limitation): it only notifies and guides the user
+// through the update.
 //
-// TODO(github-migration): заполнить после переезда исходников на публичный
-// GitHub. Пока URL пустые → проверка обновлений неактивна (никаких сетевых
-// запросов, ошибок нет). Origin из *_URL должен быть в manifest#host_permissions.
-// Пример (raw GitHub): https://raw.githubusercontent.com/<owner>/bpmn-diff/master/version.json
+// TODO(github-migration): fill in after moving the sources to public GitHub.
+// While the URLs are empty → update checking is inactive (no network requests,
+// no errors). The origin from *_URL must be in manifest#host_permissions.
+// Example (raw GitHub): https://raw.githubusercontent.com/<owner>/bpmn-diff/master/version.json
 const UPDATE_VERSION_MANIFEST_URL = '';
-// Пример: https://raw.githubusercontent.com/<owner>/bpmn-diff/master/CHANGELOG.md
+// Example: https://raw.githubusercontent.com/<owner>/bpmn-diff/master/CHANGELOG.md
 const UPDATE_CHANGELOG_URL = '';
-// Страница загрузки/релизов (открывается по кнопке «Обновить»).
-// Пример: https://github.com/<owner>/bpmn-diff
+// Download/releases page (opened by the "Update" button).
+// Example: https://github.com/<owner>/bpmn-diff
 const UPDATE_HOME_URL = '';
-// Команда обновления для git-установки (показывается в popup с copy-кнопкой).
+// Update command for a git install (shown in the popup with a copy button).
 const UPDATE_GIT_PULL_COMMAND = 'git pull';
 
-// Как часто проверять обновления (минуты). chrome.alarms.
+// How often to check for updates (minutes). chrome.alarms.
 const UPDATE_CHECK_INTERVAL_MINUTES = 360;
-// Автопроверка по умолчанию включена; пользователь выключает тумблером в popup.
+// Auto-check is enabled by default; the user turns it off with a toggle in the popup.
 const UPDATE_CHECK_ENABLED_DEFAULT = true;
-// Ключ настроек/результата в chrome.storage.local.
+// Settings/result key in chrome.storage.local.
 const UPDATE_STORAGE_KEY = 'updateState';

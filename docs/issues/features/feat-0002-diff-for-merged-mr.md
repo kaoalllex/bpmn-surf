@@ -1,19 +1,19 @@
 ---
 id: FEAT-0002
-title: Дифф для уже замерженных MR
+title: Diff for an already-merged MR
 priority: high
 status: open
 ---
 
-## Постановка
+## Statement
 
-Находить коммиты/версии схем после мержа и строить дифф без открытого активного MR.
+Find the schema commits/versions after the merge and build a diff without an open active MR.
 
-## Контекст
+## Context
 
-<!-- Ссылки на MR, логи, симптомы, затронутые файлы, связи с другими задачами. -->
+<!-- Links to MRs, logs, symptoms, affected files, relations to other tasks. -->
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

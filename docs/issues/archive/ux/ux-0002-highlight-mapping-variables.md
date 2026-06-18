@@ -1,27 +1,27 @@
 ---
 id: UX-0002
-title: Подсветка конкретных переменных при изменениях в маппинге
+title: Highlight specific variables on mapping changes
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-При изменении In/Out mappings выделять конкретные добавленные/удалённые/изменённые переменные, а не всю группу в панели свойств.
+When In/Out mappings change, highlight the specific added/removed/changed variables, rather than the whole group in the properties panel.
 
-## Контекст
+## Context
 
-- Сейчас при изменении In/Out mappings выделяется вся группа в панели свойств.
+- Currently, when In/Out mappings change, the whole group is highlighted in the properties panel.
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-15 · claude-opus-4-8 · ветка `feature/ux-0002-highlight-mapping-variables`
+### 2026-06-15 · claude-opus-4-8 · branch `feature/ux-0002-highlight-mapping-variables`
 
-Поэлементная подсветка изменённых записей в списочных группах панели свойств (In/Out mappings, Inputs/Outputs) поверх существующей подсветки заголовка группы.
+Per-item highlighting of changed entries in the list groups of the properties panel (In/Out mappings, Inputs/Outputs) on top of the existing group-header highlighting.
 
-- `bpmn-xml-comparator.js`: `compare()` дополнительно отдаёт `nodeIdToMappingChanges` (id → Map(группа → `[{label, changed}]`)); извлечение записей из прямых потомков `bpmn:extensionElements`, матч по `target` (mappings) / `name` (inputs/outputs), `changed` различает «изменено» (есть в обеих, различается) и «добавлено/удалено» (только в показываемой версии). Записи `businessKey`/`variables="all"` пропускаются (они в других группах панели).
-- `properties-panel-highlighter.js`: `setDiffData` принимает 3-й аргумент; заголовок группы красится как раньше, дополнительно красятся конкретные записи (changed→синий, added→зелёный/MR, removed→красный/target по `isTargetBranchShownFunc`); фолбэк на подсветку только группы, если запись не сопоставлена.
-- Тесты: `bpmn-xml-comparator-camunda.test.js` (+5), `properties-panel-highlighter.test.js` (+6), расширена фикстура `properties-panel.html`. `npm test` — 587 зелёных.
+- `bpmn-xml-comparator.js`: `compare()` additionally returns `nodeIdToMappingChanges` (id → Map(group → `[{label, changed}]`)); entries are extracted from the direct children of `bpmn:extensionElements`, matched by `target` (mappings) / `name` (inputs/outputs), `changed` distinguishes "changed" (present in both, differs) from "added/removed" (only in the shown version). The `businessKey`/`variables="all"` entries are skipped (they are in other panel groups).
+- `properties-panel-highlighter.js`: `setDiffData` takes a 3rd argument; the group header is colored as before, additionally the specific entries are colored (changed→blue, added→green/MR, removed→red/target per `isTargetBranchShownFunc`); falls back to highlighting only the group if the entry was not matched.
+- Tests: `bpmn-xml-comparator-camunda.test.js` (+5), `properties-panel-highlighter.test.js` (+6), the `properties-panel.html` fixture extended. `npm test` — 587 green.

@@ -1,11 +1,11 @@
 'use strict';
 
-// Чистая логика версий и changelog для механизма обновления (FEAT-0012).
-// Без DOM/сети/chrome.* — переиспользуется service worker'ом и popup'ом,
-// покрыта юнит-тестами (test/update/version-info.test.js).
+// Pure version and changelog logic for the update mechanism (FEAT-0012).
+// No DOM/network/chrome.* — reused by the service worker and the popup,
+// covered by unit tests (test/update/version-info.test.js).
 class VersionInfo {
-    // Нормализует строку версии к массиву чисел: 'v0.18.0', '[0.18.0]', '0.18'
-    // → [0, 18, 0]. Нечисловые части → 0. Пустая/невалидная → [].
+    // Normalizes a version string to an array of numbers: 'v0.18.0', '[0.18.0]', '0.18'
+    // → [0, 18, 0]. Non-numeric parts → 0. Empty/invalid → [].
     static parse(version) {
         if (typeof version !== 'string') {
             return [];
@@ -20,8 +20,8 @@ class VersionInfo {
         });
     }
 
-    // Численное сравнение версий (а не лексическое — иначе '0.9' > '0.18').
-    // Возвращает -1 / 0 / 1. Недостающие части трактуются как 0 ('1.2' == '1.2.0').
+    // Numeric version comparison (not lexical — otherwise '0.9' > '0.18').
+    // Returns -1 / 0 / 1. Missing parts are treated as 0 ('1.2' == '1.2.0').
     static compare(a, b) {
         const pa = VersionInfo.parse(a);
         const pb = VersionInfo.parse(b);
@@ -35,7 +35,7 @@ class VersionInfo {
         return 0;
     }
 
-    // true, если latest строго новее current.
+    // true if latest is strictly newer than current.
     static isNewer(current, latest) {
         if (VersionInfo.parse(latest).length === 0) {
             return false;
@@ -43,9 +43,9 @@ class VersionInfo {
         return VersionInfo.compare(latest, current) > 0;
     }
 
-    // Разбирает CHANGELOG.md на записи [{version, body}] в порядке файла
-    // (свежие сверху). Запись = заголовок '## <версия>' + текст до следующего
-    // заголовка уровня '#'/'##'. version нормализуется (без 'v'/скобок).
+    // Parses CHANGELOG.md into entries [{version, body}] in file order
+    // (newest on top). An entry = the '## <version>' heading + text up to the next
+    // '#'/'##' level heading. version is normalized (no 'v'/brackets).
     static parseChangelog(markdown) {
         if (typeof markdown !== 'string') {
             return [];
@@ -60,7 +60,7 @@ class VersionInfo {
                 current = { version, body: [] };
                 entries.push(current);
             } else if (line.startsWith('# ')) {
-                // Заголовок верхнего уровня (название файла) закрывает текущую секцию.
+                // A top-level heading (the file title) closes the current section.
                 current = null;
             } else if (current) {
                 current.body.push(line);
@@ -69,8 +69,8 @@ class VersionInfo {
         return entries.map(e => ({ version: e.version, body: e.body.join('\n').trim() }));
     }
 
-    // Записи changelog строго новее установленной версии (порядок сохраняется —
-    // свежие сверху). Используется для блока «Что нового».
+    // Changelog entries strictly newer than the installed version (order is preserved —
+    // newest on top). Used for the "What's new" block.
     static changesSince(markdown, currentVersion) {
         return VersionInfo.parseChangelog(markdown)
             .filter(entry => VersionInfo.isNewer(currentVersion, entry.version));

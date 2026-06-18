@@ -1,10 +1,10 @@
 # Code Style
 
 ## Description
-Правила стиля кода и форматирования для проекта BPMN Diff Chrome Extension.
+Code style and formatting rules for the BPMN Diff Chrome Extension project.
 
 ## Application
-Применяется **автоматически** при всех изменениях кода (refactor, feature, fix, analyze).
+Applied **automatically** to all code changes (refactor, feature, fix, analyze).
 
 ## Rules
 

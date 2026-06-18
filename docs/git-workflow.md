@@ -1,51 +1,51 @@
-# Git и GitLab workflow
+# Git and GitLab workflow
 
-Читать перед любыми git-операциями (ветки, коммиты, push, MR, rebase).
+Read before any git operations (branches, commits, push, MR, rebase).
 
-Наш GitLab: **https://gitlab.example.com**. CLI для работы с MR — `glab`.
+Our GitLab: **https://gitlab.example.com**. The CLI for working with MRs is `glab`.
 
-## Ветки
+## Branches
 
-- Основная ветка — **master**, она protected. **НИКОГДА не коммитить и не пушить в master напрямую.**
-- Каждая задача делается в отдельной ветке вида `feature/<описание>` или `fix/<описание>`, созданной от свежего `origin/master` (перед созданием — `git fetch origin`).
-- Сессии Claude Code запускаются человеком в отдельных git worktree — по одному на задачу. Работай только в своей текущей рабочей директории и своей ветке; не создавай worktree сам и не переключай ветки в других директориях.
-- Не удалять чужие ветки, не менять настройки репозитория.
+- The main branch is **master**, it is protected. **NEVER commit or push to master directly.**
+- Each task is done in a separate branch of the form `feature/<description>` or `fix/<description>`, created from a fresh `origin/master` (before creating — `git fetch origin`).
+- Claude Code sessions are launched by a human in separate git worktrees — one per task. Work only in your current working directory and your branch; do not create worktrees yourself and do not switch branches in other directories.
+- Do not delete others' branches, do not change the repository settings.
 
-## Коммиты
+## Commits
 
-- Сообщения минималистичные, по существу; без `Co-Authored-By` и упоминаний автора/инструментов.
-- Маленькие, инкрементальные, ревьюибельные изменения; не смешивать рефакторинг с фичами/фиксами.
+- Messages are minimalist, to the point; without `Co-Authored-By` and without mentions of the author/tools.
+- Small, incremental, reviewable changes; do not mix refactoring with features/fixes.
 
-## Перед push
+## Before push
 
-- Прогнать тесты локально: `npm test`. **Не пушить с падающими тестами.**
-- Если master ушёл вперёд — `git rebase origin/master`, разрешить конфликты, снова прогнать тесты.
-- Никакого `git push --force` в общие ветки; в своей feature-ветке после rebase — только `--force-with-lease`.
+- Run the tests locally: `npm test`. **Do not push with failing tests.**
+- If master has moved ahead — `git rebase origin/master`, resolve conflicts, run the tests again.
+- No `git push --force` to shared branches; in your own feature branch after a rebase — only `--force-with-lease`.
 
 ## Merge Request
 
-- **Завершение любой задачи = MR.** По готовности изменений (тесты зелёные) запушь ветку и создай MR в master через `glab mr create`. Это поведение по умолчанию — **не спрашивай, коммитить ли в master / нужен ли MR**, master всегда через MR.
-- **Всегда** передавай `--remove-source-branch` в `glab mr create` — чтобы галка «удалить исходную ветку при мерже» стояла во всех MR (без флага берётся плавающий дефолт проекта). После мержа ветка удаляется автоматически, отдельная уборка не нужна.
-- Если работа случайно начата на `master` — заведи feature/fix-ветку и перенеси изменения туда перед коммитом; не уточняй это вопросом, просто сделай и коротко сообщи.
-- **Не спрашивай разрешения** на push своей feature-ветки и открытие MR — по готовности (зелёные тесты) пушь и создавай MR автоматически, затем коротко сообщи результат (ссылку на MR). Это касается только своей ветки и MR; в master по-прежнему не пушить, мерж — только человек.
-- Мерж MR выполняет только человек после ревью. **Не мержить MR самостоятельно, не использовать auto-merge.**
+- **Completing any task = MR.** Once the changes are ready (tests green) push the branch and create an MR into master via `glab mr create`. This is the default behavior — **do not ask whether to commit to master / whether an MR is needed**, master is always via MR.
+- **Always** pass `--remove-source-branch` to `glab mr create` — so that the "delete source branch on merge" checkbox is set in all MRs (without the flag the project's floating default is used). After the merge the branch is deleted automatically, no separate cleanup is needed.
+- If work was accidentally started on `master` — create a feature/fix branch and move the changes there before committing; do not raise this as a question, just do it and report briefly.
+- **Do not ask permission** to push your own feature branch and open an MR — when ready (tests green) push and create the MR automatically, then briefly report the result (the link to the MR). This applies only to your own branch and MR; master still must not be pushed to, the merge — only the human.
+- The MR merge is performed only by the human after review. **Do not merge the MR yourself, do not use auto-merge.**
 
-## Завершение задачи / уборка
+## Finishing the task / cleanup
 
-После того как человек проверил MR и **замержил** его, по команде вида «прибраться» / «закончить задачу» / «почистить» выполнить локальную уборку:
+After the human has reviewed the MR and **merged** it, on a command like "tidy up" / "finish the task" / "clean up" perform the local cleanup:
 
 1. `git checkout master`
-2. `git pull` (подтянуть свежий master с уже влитым MR)
-3. `git branch -d <feature-ветка>` (удалить локальную feature-ветку; `-d`, не `-D` — если ветка не слита, остановиться и сообщить)
+2. `git pull` (pull the fresh master with the already merged MR)
+3. `git branch -d <feature-branch>` (delete the local feature branch; `-d`, not `-D` — if the branch is not merged, stop and report)
 
-Удалённую ветку обычно убирает GitLab при мерже; если осталась — `git push origin --delete <ветка>`. Не делать уборку, пока MR не замержен.
+The remote branch is usually removed by GitLab on merge; if it remains — `git push origin --delete <branch>`. Do not do the cleanup until the MR is merged.
 
 ## CI
 
-- CI-пайплайна (`.gitlab-ci.yml`) в проекте пока **нет** — это задел на будущее. Планируется, что пайплайн будет гонять тесты на MR и master, и MR нельзя будет мержить с красным пайплайном. Когда пайплайн появится — обновить этот файл.
-- Пока пайплайна нет — локальный прогон тестов перед push обязателен.
+- There is no CI pipeline (`.gitlab-ci.yml`) in the project yet — this is groundwork for the future. The plan is for the pipeline to run the tests on MRs and master, and that an MR cannot be merged with a red pipeline. When the pipeline appears — update this file.
+- While there is no pipeline — a local test run before push is mandatory.
 
-## Параллельная работа
+## Parallel work
 
-- Над проектом могут одновременно работать несколько сессий Claude Code в разных worktree.
-- Не трогай файлы вне рамок своей задачи, особенно общие конфиги и lock-файлы (`manifest.json`, `package.json`, `package-lock.json`, `.claude/`, `CLAUDE.md`, `docs/`) — кроме случаев, когда их изменение и есть задача. Это минимизирует мердж-конфликты.
+- Several Claude Code sessions may work on the project simultaneously in different worktrees.
+- Do not touch files outside the scope of your task, especially shared configs and lock files (`manifest.json`, `package.json`, `package-lock.json`, `.claude/`, `CLAUDE.md`, `docs/`) — except when changing them is the task itself. This minimizes merge conflicts.

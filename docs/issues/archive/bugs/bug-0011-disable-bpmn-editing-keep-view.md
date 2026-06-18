@@ -1,82 +1,82 @@
 ---
 id: BUG-0011
-title: Полностью отключить редактирование BPMN-диаграммы, сохранив режим просмотра
+title: Fully disable BPMN diagram editing while keeping view mode
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-В BPMN-диффере диаграмму всё ещё можно редактировать, хотя редактирование должно
-быть отключено: элементы перетаскиваются, точки/изломы стрелок (waypoints) двигаются,
-двойной клик по элементу открывает правку названия/описания на канве, а поля панели
-свойств — настоящие редактируемые input'ы. Это побочные правки никуда не сохраняются
-(дифер ничего не коммитит), но создают ложное впечатление редактора и мешают просмотру.
+In the BPMN differ the diagram can still be edited, even though editing should
+be disabled: elements are draggable, arrow points/bends (waypoints) move,
+double-clicking an element opens name/description editing on the canvas, and the properties-panel
+fields are real editable inputs. These side edits are not saved anywhere
+(the differ commits nothing), but they create a false impression of an editor and hinder viewing.
 
-Нужно **полностью** отключить редактирование, **сохранив полноценный режим просмотра**:
-- выделение элемента кликом → панель свойств показывает его параметры;
-- подсветка диффа (зелёный/красный/синий), таблица изменений, поиск, плашки навигации
-  (Call Activity «⤵», обработчики «‹/›») работают как сейчас;
-- задел под будущие плашки-комментарии к элементам ([IDEA-0002]) не ломается —
-  overlays и выделение должны остаться рабочими.
+We need to **fully** disable editing **while keeping a full-fledged view mode**:
+- selecting an element by click → the properties panel shows its parameters;
+- diff highlighting (green/red/blue), the change table, search, navigation badges
+  (Call Activity "⤵", handlers "‹/›") work as they do now;
+- the groundwork for future element comment badges ([IDEA-0002]) is not broken —
+  overlays and selection must remain working.
 
-DMN-сторона уже read-only (грузится `dmn-viewer`, моделлер не создаётся) — её **не трогаем**.
+The DMN side is already read-only (`dmn-viewer` is loaded, no modeler is created) — we **don't touch** it.
 
-## Контекст
+## Context
 
-### Корневая причина
+### Root cause
 
-Дифер рендерит BPMN через **полноценный редактор** `BpmnJS` Modeler
-(`libs/bpmn-js/bpmn-modeler.production.min.js`, bpmn-js 18.18), а не через viewer
-(`bpmn-differ.js:166` `#createModeler()` → `new BpmnJS({...})`). Редактирование пытались
-отключить **косметически**, спрятав видимые контролы через `display:none`:
-- `#hideModelerPalleteAndPoweredByLabel()` (`bpmn-differ.js:471`) — прячет `.djs-palette`;
-- `#hideSchemaEditorControls()` (`bpmn-differ.js:463`) — прячет `.djs-context-pad`,
-  вызывается на **каждом** `selection.changed` (`#onSelectedElementChanged`, `bpmn-differ.js:365`),
-  дважды, с `delay(100)`.
+The differ renders BPMN via a **full-fledged editor** `BpmnJS` Modeler
+(`libs/bpmn-js/bpmn-modeler.production.min.js`, bpmn-js 18.18), not via a viewer
+(`bpmn-differ.js:166` `#createModeler()` → `new BpmnJS({...})`). Editing was attempted to be
+disabled **cosmetically**, hiding the visible controls via `display:none`:
+- `#hideModelerPalleteAndPoweredByLabel()` (`bpmn-differ.js:471`) — hides `.djs-palette`;
+- `#hideSchemaEditorControls()` (`bpmn-differ.js:463`) — hides `.djs-context-pad`,
+  called on **every** `selection.changed` (`#onSelectedElementChanged`, `bpmn-differ.js:365`),
+  twice, with `delay(100)`.
 
-Скрытие кнопок не отключает интерактивные модули моделлера. Активными остаются
-(события подтверждены в dist `bpmn-modeler.production.min.js`):
-`shape.move.start` (перетаскивание фигур), `bendpoint.move.start`,
-`connectionSegment.move.start` (двигать стрелки/waypoints),
-`element.dblclick` → `directEditing.activate` (правка текста на канве),
-`resize.start`, `connect.start`. Плюс редактируемые поля панели свойств.
+Hiding the buttons does not disable the modeler's interactive modules. The following stay
+active (events confirmed in the dist `bpmn-modeler.production.min.js`):
+`shape.move.start` (dragging shapes), `bendpoint.move.start`,
+`connectionSegment.move.start` (move arrows/waypoints),
+`element.dblclick` → `directEditing.activate` (text editing on the canvas),
+`resize.start`, `connect.start`. Plus the editable properties-panel fields.
 
-### Почему нельзя просто заменить Modeler на Viewer
+### Why we can't just replace the Modeler with a Viewer
 
-Два потребителя завязаны на editing-инфраструктуру моделлера, и при переходе на
-`NavigatedViewer` они отвалятся:
-1. **Подсветка диффа** — `DiffHighlighter.paint()` (`diff-highlighter.js:40,63`) красит
-   через `modeling.setColor(...)`. Сервис `modeling` есть только в Modeler. (Маркеры
-   `canvas.addMarker` — `diff-highlighter.js:105` — работают и во viewer; проблема именно
-   в `setColor`.)
-2. **Панель свойств** `bpmn-js-properties-panel` (5.58) построена поверх Modeler
-   (commandStack/modeling); во viewer не инициализируется.
+Two consumers depend on the modeler's editing infrastructure, and on a switch to
+`NavigatedViewer` they would break:
+1. **Diff highlighting** — `DiffHighlighter.paint()` (`diff-highlighter.js:40,63`) colors
+   via `modeling.setColor(...)`. The `modeling` service exists only in the Modeler. (Markers
+   `canvas.addMarker` — `diff-highlighter.js:105` — work in a viewer too; the problem is precisely
+   in `setColor`.)
+2. The **properties panel** `bpmn-js-properties-panel` (5.58) is built on top of the Modeler
+   (commandStack/modeling); it does not initialize in a viewer.
 
-Поэтому правильный путь — **оставить Modeler, но заглушить редактирующие взаимодействия**,
-а не менять движок.
+Therefore the correct path is to **keep the Modeler but mute the editing interactions**,
+rather than swap the engine.
 
-### Проверено
+### Verified
 
-- Глобального флага `readOnly` у `bpmn-js-properties-panel` 5.58 нет: в dist `config.readOnly`
-  относится только к вложенному FEEL/CodeMirror-редактору, не ко всей панели. Значит панель
-  глушим отдельно (см. шаг 2).
-- Контейнер панели свойств: `BpmnDifferView.PROPS_ID` (`bpmn-differ-view.js:6`,
-  `bpmnProps_<суффикс>`); корневой класс контента панели — `.bio-properties-panel`.
-- Связь: [IDEA-0002] (комментарии к элементам) — opt-in оверлеи поверх схемы; этот фикс
-  должен оставить overlays/selection рабочими, чтобы не блокировать IDEA-0002.
+- `bpmn-js-properties-panel` 5.58 has no global `readOnly` flag: in the dist, `config.readOnly`
+  applies only to the nested FEEL/CodeMirror editor, not to the whole panel. So we mute the panel
+  separately (see step 2).
+- Properties panel container: `BpmnDifferView.PROPS_ID` (`bpmn-differ-view.js:6`,
+  `bpmnProps_<suffix>`); the root class of the panel content is `.bio-properties-panel`.
+- Relation: [IDEA-0002] (element comments) — opt-in overlays over the schema; this fix
+  must leave overlays/selection working so as not to block IDEA-0002.
 
-## Что и как править
+## What and how to fix
 
-Все правки — только в BPMN-стороне: `bpmn-differ.js` + `styles.css`. DMN не трогаем.
+All edits are on the BPMN side only: `bpmn-differ.js` + `styles.css`. We don't touch DMN.
 
-### Шаг 1. Veto edit-взаимодействий на канве (EventBus)
+### Step 1. Veto edit interactions on the canvas (EventBus)
 
-bpmn-js шлёт отменяемые `*.start`/`activate` события; высокоприоритетный слушатель,
-вернувший `false`, отменяет действие — команда даже не создаётся. Подход аддитивный,
-не лезет во внутренности DI, устойчив к версиям библиотеки.
+bpmn-js sends cancelable `*.start`/`activate` events; a high-priority listener
+that returns `false` cancels the action — the command isn't even created. The approach is additive,
+doesn't dig into DI internals, and is resilient to library versions.
 
-В `show()` рядом с получением `bpmnJSEventBus` (`bpmn-differ.js:51`) добавить:
+In `show()`, next to obtaining `bpmnJSEventBus` (`bpmn-differ.js:51`), add:
 
 ```js
 const EDIT_EVENTS = [
@@ -88,23 +88,23 @@ const EDIT_EVENTS = [
 bpmnJSEventBus.on(EDIT_EVENTS, 2000, () => false);
 ```
 
-- Сохраняется: `element.click` (выделение → `selection.changed` → панель свойств и плашки),
+- Preserved: `element.click` (selection → `selection.changed` → properties panel and badges),
   hover, overlays, zoom/pan.
-- После этого `#hideSchemaEditorControls()` на каждом выделении не нужен (context-pad
-  содержит только edit-действия): можно убрать его вызов из `#onSelectedElementChanged`
-  (`bpmn-differ.js:365`) и сам метод (`bpmn-differ.js:463`) вместе с хаком `delay(100)`.
-  Косметическое одноразовое скрытие палитры/`.bjs-powered-by`
-  (`#hideModelerPalleteAndPoweredByLabel`, `bpmn-differ.js:471`) — оставить.
-  При желании в тот же метод добавить одноразовое скрытие `.djs-context-pad`.
+- After this, `#hideSchemaEditorControls()` on every selection is not needed (the context-pad
+  contains only edit actions): its call can be removed from `#onSelectedElementChanged`
+  (`bpmn-differ.js:365`) and the method itself (`bpmn-differ.js:463`) together with the `delay(100)` hack.
+  The cosmetic one-time hiding of the palette/`.bjs-powered-by`
+  (`#hideModelerPalleteAndPoweredByLabel`, `bpmn-differ.js:471`) — keep it.
+  If desired, add one-time hiding of `.djs-context-pad` to the same method.
 
-Список `EDIT_EVENTS` вынести в `static` поле класса (или модульную константу) — это даёт
-точку для юнит-теста (см. ниже) и единый источник правды.
+The `EDIT_EVENTS` list should be moved to a `static` class field (or a module constant) — this gives
+a point for the unit test (see below) and a single source of truth.
 
-### Шаг 2. Панель свойств — read-only
+### Step 2. Properties panel — read-only
 
-Глобального флага нет, панель перерисовывается (preact), поэтому надёжнее CSS, а не
-DOM-атрибуты. Блокируем поля ввода, оставляя сворачивание/разворачивание групп и скролл.
-В `styles.css` (секция differ-страницы):
+There is no global flag, the panel re-renders (preact), so CSS is more reliable than
+DOM attributes. We block input fields while keeping group collapse/expand and scrolling.
+In `styles.css` (the differ-page section):
 
 ```css
 /* BUG-0011: properties panel is view-only — block field input, keep group
@@ -118,172 +118,172 @@ DOM-атрибуты. Блокируем поля ввода, оставляя �
 }
 ```
 
-- Заголовки групп — отдельные кнопки (`.bio-properties-panel-group-header`), их
-  `pointer-events` не трогаем → раскрытие групп и просмотр свойств сохраняются.
-- Проверить классы по факту в DOM запущенного дифера (имена `.bio-properties-panel*`
-  принадлежат `@bpmn-io/properties-panel`); при расхождении — подправить селекторы.
-  При необходимости сузить scope: на контейнер `#${BpmnDifferView.PROPS_ID}` повесить
-  класс-маркер и префиксовать им селекторы.
+- Group headers are separate buttons (`.bio-properties-panel-group-header`); we don't touch their
+  `pointer-events` → group expansion and viewing properties are preserved.
+- Verify the classes against the actual DOM of the running differ (the names `.bio-properties-panel*`
+  belong to `@bpmn-io/properties-panel`); on a mismatch — adjust the selectors.
+  If the scope needs narrowing: put a marker class on the container `#${BpmnDifferView.PROPS_ID}`
+  and prefix the selectors with it.
 
-### Чего НЕ делать (риски выхода за scope)
+### What NOT to do (out-of-scope risks)
 
-- Не менять `bpmn-modeler.production.min.js` на viewer-сборку (сломает `setColor` и панель).
-- Не переопределять модули моделлера (`contextPadProvider`/`paletteProvider`/`labelEditingProvider`)
-  через `additionalModules` — это рабочая, но более хрупкая к версиям альтернатива; для
-  данной задачи veto на EventBus достигает того же проще. Если шаг 1 окажется недостаточным,
-  рассмотреть как запасной вариант и описать в истории.
-- Не трогать DMN-дифер и общие классы так, чтобы менялось их поведение для DMN.
+- Don't replace `bpmn-modeler.production.min.js` with a viewer build (it would break `setColor` and the panel).
+- Don't override the modeler's modules (`contextPadProvider`/`paletteProvider`/`labelEditingProvider`)
+  via `additionalModules` — this is a working but more version-fragile alternative; for
+  this task the EventBus veto achieves the same more simply. If step 1 turns out to be insufficient,
+  consider it as a fallback and describe it in the log.
+- Don't touch the DMN differ and shared classes in a way that changes their behavior for DMN.
 
-## Сохранение текущей функциональности (чек-лист регрессии)
+## Preserving current functionality (regression checklist)
 
-После правок проверить (ручная проверка в реальном дифере + прогон тестов):
+After the edits, verify (manual check in the real differ + a test run):
 
-1. **Выделение**: клик по элементу → панель свойств показывает его параметры; повторные
-   клики обновляют панель. `selection.changed` → `#onSelectedElementChanged` отрабатывает.
-2. **Подсветка диффа**: зелёный/красный/синий на фигурах и строках, TextAnnotation,
-   таблица изменений в футере, кнопка Highlight (toggle + pulse-анимация) — без изменений.
-3. **Поиск** (Ctrl/Cmd+F, в т.ч. русская раскладка): находит, центрирует, выделяет элемент,
-   панель свойств показывает его параметры (поиск использует `selection.select`).
-4. **Плашки навигации**: Call Activity «⤵» и обработчики «‹/›» появляются на выделенном
-   элементе, кликабельны, проваливание/открытие кода работает (overlays + клики живы).
-5. **Switch branch / download / zoom / fit / close** — без изменений.
-6. **Редактирование запрещено**: перетащить элемент — нельзя; потянуть стрелку/waypoint —
-   нельзя; двойной клик по элементу не открывает правку текста; поля панели свойств не
-   редактируются; палитра/context-pad не видны.
-7. **Вложенный дифер Call Activity** (новая вкладка) — то же поведение (тот же `BpmnDiffer`).
-8. **DMN-дифер** — поведение не изменилось.
+1. **Selection**: click on an element → the properties panel shows its parameters; repeated
+   clicks update the panel. `selection.changed` → `#onSelectedElementChanged` fires.
+2. **Diff highlighting**: green/red/blue on shapes and rows, TextAnnotation,
+   the change table in the footer, the Highlight button (toggle + pulse animation) — unchanged.
+3. **Search** (Ctrl/Cmd+F, including a non-Latin layout): finds, centers, selects the element,
+   the properties panel shows its parameters (search uses `selection.select`).
+4. **Navigation badges**: Call Activity "⤵" and handlers "‹/›" appear on the selected
+   element, are clickable, dive-in/opening the code works (overlays + clicks alive).
+5. **Switch branch / download / zoom / fit / close** — unchanged.
+6. **Editing is forbidden**: dragging an element — no; pulling an arrow/waypoint —
+   no; double-clicking an element does not open text editing; the properties-panel fields are not
+   editable; the palette/context-pad are not visible.
+7. **Nested Call Activity differ** (new tab) — the same behavior (the same `BpmnDiffer`).
+8. **DMN differ** — behavior unchanged.
 
-## Тесты
+## Tests
 
-- Юнит-тесты на живой bpmn-js моделлер тяжёлые и хрупкие — основную проверку отключения
-  редактирования делаем **ручной** (чек-лист выше, пп. 1–6).
-- Что покрыть юнитом (в духе проекта: мелкие тесты на чистые функции/публичные данные —
-  `test/bpmn/bpmn-differ.test.js` зеркалит `src/differ/bpmn/bpmn-differ.js`):
-  - `EDIT_EVENTS` как `static`-поле содержит ожидаемый набор имён событий (защита от
-    случайного удаления строки в списке) — без инстанцирования моделлера.
-  - Если scope панели сужается классом-маркером — тривиальный тест, что класс проставляется
-    (по аналогии с `BpmnDifferView.clampPanelWidth`).
-- Перед push — `npm test` (структурные тесты реестров не затрагиваются: новых файлов нет).
+- Unit tests against a live bpmn-js modeler are heavy and fragile — the main check of disabling
+  editing is done **manually** (the checklist above, items 1–6).
+- What to cover with a unit (in the project's spirit: small tests on pure functions/public data —
+  `test/bpmn/bpmn-differ.test.js` mirrors `src/differ/bpmn/bpmn-differ.js`):
+  - `EDIT_EVENTS` as a `static` field contains the expected set of event names (a guard against
+    accidentally removing a line from the list) — without instantiating the modeler.
+  - If the panel scope is narrowed by a marker class — a trivial test that the class is set
+    (by analogy with `BpmnDifferView.clampPanelWidth`).
+- Before push — `npm test` (the registry structural tests are not affected: there are no new files).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing` (condition re-inject)
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing` (condition re-inject)
 
-Остаток той же таймингово-регрессии в условии: раскрыть группу Condition, затем
-выделить другой sequence flow с изменённым условием → форматирование/подсветка не
-появлялись. Отличие от прочих хайлайтов: условие не перекрашивает существующий узел
-панели (такие цвета переживают ре-рендер), а **инжектит свой `div`** рядом с нативным
-input. Panel ре-рендерится на смене выделения (preact) и вычищает чужой узел при
-реконсиляции; мой поллинг находил **старый** input мгновенно и инжектил блок до
-ре-рендера → preact его срезал. Раньше это маскировал `delay(100)`.
+The remainder of the same timing regression in the condition: expand the Condition group, then
+select another sequence flow with a changed condition → the formatting/highlighting did not
+appear. The difference from other highlights: the condition does not recolor an existing panel
+node (such colors survive a re-render), it **injects its own `div`** next to the native
+input. The panel re-renders on selection change (preact) and purges the foreign node during
+reconciliation; my polling found the **old** input instantly and injected the block before
+the re-render → preact cut it off. Previously `delay(100)` masked this.
 
-Решение: в `showConditionExpression` инжект + подтверждение, что блок пережил интервал
-поллинга, с ре-инжектом до стабилизации панели (`doWithAttempts(…, 30, 50)`); input
-перечитывается каждую попытку (preact может заменить узел), блок помечается
-`data-condition-for=<id>`. Добавлен регрессионный тест (панель один раз срезает блок →
-метод переинжектит). 708 tests passed.
+Solution: in `showConditionExpression`, inject + confirm that the block survived the polling
+interval, with a re-inject until the panel stabilizes (`doWithAttempts(…, 30, 50)`); the input
+is re-read each attempt (preact may replace the node), the block is marked
+`data-condition-for=<id>`. A regression test was added (the panel cuts the block once →
+the method re-injects). 708 tests passed.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing` (аудит + doWithAttempts)
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing` (audit + doWithAttempts)
 
-Аудит «нет ли ещё мест, зависевших от удалённого `delay(100)`». Проверены все
-обращения к DOM в `src/differ`. Все потребители **preact-рендеренной** панели свойств
-теперь поллят: `#findGroupHeader`, `#highlightListItems`, `showConditionExpression`,
-`#setPropertiesPanelContainerMaxHeight`. Навигаторы оверлеев (`showDiveInOverlay`,
-`showOverlayForSelectedElement`) тоже были за тем же `delay(100)`, но читают DOM,
-который diagram-js `overlays.add()` создаёт **синхронно** (не preact) — поллинг им не
-нужен, регрессии нет. DMN-сторона (`dmn-differ`, `dmn-diff-painter`) — отдельный поток,
-моим изменением не затронута, где надо уже поллит (`.view-drd`). Косметические
-одноразовые скрытия палитры/`.bjs-powered-by` — init-time, вне flow выделения.
+Audit "are there other places that depended on the removed `delay(100)`". All
+DOM accesses in `src/differ` were checked. All consumers of the **preact-rendered** properties
+panel now poll: `#findGroupHeader`, `#highlightListItems`, `showConditionExpression`,
+`#setPropertiesPanelContainerMaxHeight`. The overlay navigators (`showDiveInOverlay`,
+`showOverlayForSelectedElement`) were also behind the same `delay(100)`, but they read DOM
+that diagram-js `overlays.add()` creates **synchronously** (not preact) — they don't need
+polling, no regression. The DMN side (`dmn-differ`, `dmn-diff-painter`) is a separate flow,
+not affected by my change, and where needed it already polls (`.view-drd`). The cosmetic
+one-time hiding of the palette/`.bjs-powered-by` is init-time, outside the selection flow.
 
-Заодно улучшен `doWithAttempts` (`utils.js`): убран лишний `await delay` после
-последней проверки (мёртвое ожидание перед `return null`), `var`→`const`,
-добавлен док-комментарий о контракте (синхронный `action`, falsy = retry). Контракт
-бюджета `attempts × delayMs` сохранён — потребители (`gitlab-dom-scraper`, `dmn-differ`)
-не затронуты. Тест усилен: проверка ровно `attempts` вызовов при неудаче. 707 tests passed.
+At the same time, `doWithAttempts` (`utils.js`) was improved: a superfluous `await delay` after
+the last check was removed (a dead wait before `return null`), `var`→`const`,
+a doc comment about the contract was added (synchronous `action`, falsy = retry). The
+`attempts × delayMs` budget contract is preserved — consumers (`gitlab-dom-scraper`, `dmn-differ`)
+are unaffected. The test was strengthened: a check for exactly `attempts` calls on failure. 707 tests passed.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing` (регрессия 3)
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing` (regression 3)
 
-Третья грань той же таймингово-регрессии: перестало работать форматирование/подсветка
-Condition Expression (группа Condition красилась, но текст условия не форматировался).
-Причина — `PropertiesPanelHighlighter.showConditionExpression` синхронно искал
-`#bio-properties-panel-conditionExpression` сразу при выделении, до рендера панели
-preact'ом; раньше это прикрывал удалённый `await delay(100)`. Решение: метод стал
-`async` и поллит появление элемента через `doWithAttempts` (как `#findGroupHeader`
-и `#highlightListItems`). Тесты `showConditionExpression` переведены на `await`,
-добавлен регрессионный тест (input появляется через 60мс — форматирование дожидается).
+The third facet of the same timing regression: Condition Expression formatting/highlighting
+stopped working (the Condition group was colored, but the condition text was not formatted).
+The cause — `PropertiesPanelHighlighter.showConditionExpression` synchronously looked for
+`#bio-properties-panel-conditionExpression` immediately on selection, before preact rendered the
+panel; previously the removed `await delay(100)` covered this. Solution: the method became
+`async` and polls for the element's appearance via `doWithAttempts` (like `#findGroupHeader`
+and `#highlightListItems`). The `showConditionExpression` tests were switched to `await`,
+a regression test was added (the input appears after 60ms — formatting waits for it).
 707 tests passed.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing` (регрессия 2)
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing` (regression 2)
 
-Фикс второй грани той же регрессии: после Switch branch (особенно если списочный
-элемент раскрыт) элементы списка переставали краситься. Корень — порядок вызовов:
-`#showXml` при импорте переселектит элемент → синхронный `selection.changed` →
-`highlightDiffPropGroups`, который **синхронно захватывает текущие diff-данные**.
-Но `setDiffData` нового направления вызывался только в `#highlightDiffs` уже **после**
-`#showXml`. То есть подсветка панели на свитче читала данные предыдущего направления;
-для added/removed-элементов (лейбл есть лишь в одной версии) `#findListItemHeaders`
-их не находил. Раньше это маскировалось удалённым `await delay(100)`, который
-откладывал подсветку на макрозадачу — уже после `setDiffData`.
+Fix of the second facet of the same regression: after Switch branch (especially if a list
+item is expanded) the list elements stopped being colored. The root — the call order:
+`#showXml` on import re-selects the element → synchronous `selection.changed` →
+`highlightDiffPropGroups`, which **synchronously captures the current diff data**.
+But `setDiffData` of the new direction was called only in `#highlightDiffs`, already **after**
+`#showXml`. That is, panel highlighting on the switch read the previous direction's data;
+for added/removed elements (the label exists in only one version) `#findListItemHeaders`
+didn't find them. Previously this was masked by the removed `await delay(100)`, which
+deferred highlighting to a macrotask — already after `setDiffData`.
 
-Решение: `#highlightDiffs` разделён на `#prepareDiffData` (compute + `setDiffData`,
-вызывается **до** `#showXml`) и `#paintDiffs` (покраска канвы/таблицы, **после**
-импорта). Теперь подсветка на `selection.changed` сразу видит корректное направление —
-без двойных вызовов и гонок. Заодно чинится подсветка condition-выражения на свитче
-(тоже зависит от `setDiffData`). Проверка — ручная (оркестрация `bpmn-differ.js`,
+Solution: `#highlightDiffs` is split into `#prepareDiffData` (compute + `setDiffData`,
+called **before** `#showXml`) and `#paintDiffs` (painting the canvas/table, **after**
+import). Now highlighting on `selection.changed` immediately sees the correct direction —
+without double calls and races. At the same time the condition-expression highlighting on the switch is fixed
+(it also depends on `setDiffData`). Verification — manual (orchestration of `bpmn-differ.js`,
 UNTESTED_BY_DESIGN). 706 tests passed.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing` (регрессия)
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing` (regression)
 
-Фикс регрессии по фидбэку: сломалась подсветка элементов списочных свойств в панели
-(ошибки `list item "…" not found in group "…"`). Причина — удаление метода
-`#hideSchemaEditorControls()` заодно убрало `await delay(100)`, который неявно давал
-preact-панели время отрендерить DOM до подсветки. `PropertiesPanelHighlighter.#highlightListItems`
-искал элементы списка однократно (в отличие от `#findGroupHeader`, который поллит через
-`doWithAttempts`) и попадал на ещё не отрендеренный список. Решение:
-`#highlightListItems` теперь дожидается появления списка (`doWithAttempts` на
-`.bio-properties-panel-collapsible-entry-header-title`) и только затем матчит дескрипторы —
-устойчиво к таймингу, без возврата хака с фиксированной задержкой. Метод стал `async`,
-вызов в `highlightDiffPropGroups` обёрнут `await`. Добавлен регрессионный тест
-(`properties-panel-highlighter.test.js`: список рендерится через 60мс — подсветка дожидается).
+Fix of a regression per feedback: highlighting of list-property elements in the panel broke
+(errors `list item "…" not found in group "…"`). The cause — removing the method
+`#hideSchemaEditorControls()` also removed `await delay(100)`, which implicitly gave the
+preact panel time to render the DOM before highlighting. `PropertiesPanelHighlighter.#highlightListItems`
+searched for the list elements once (unlike `#findGroupHeader`, which polls via
+`doWithAttempts`) and hit a list that wasn't rendered yet. Solution:
+`#highlightListItems` now waits for the list to appear (`doWithAttempts` on
+`.bio-properties-panel-collapsible-entry-header-title`) and only then matches the descriptors —
+resilient to timing, without bringing back the fixed-delay hack. The method became `async`, the
+call in `highlightDiffPropGroups` wrapped in `await`. A regression test was added
+(`properties-panel-highlighter.test.js`: the list renders after 60ms — highlighting waits for it).
 706 tests passed.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing` (доп.)
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing` (extra)
 
-Доработка по фидбэку: первоначальный CSS блокировал только текстовые поля, но в
-панели свойств оставались работающими тогглы (вкл/выкл) и кнопки добавления/удаления
-списочных элементов. Причина: тоггл рендерится как скрытый `<input>` под кликабельным
-слайдером (`.bio-properties-panel-toggle-switch__switcher`), а add/remove — отдельные
-`<button>` (`add-entry`/`remove-entry`/`remove-list-entry`/`dropdown-button`/
-`group-header-button`); чекбокс переключается и кликом по лейблу. Классы выверены по
-`libs/bpmn-js-properties-panel/assets/properties-panel.css`. В `styles.css` расширил
-правило `pointer-events: none` на эти кликабельные обёртки. Сворачивание групп/списков
-и раскрытие collapsible-записей оставлены рабочими (их триггерит `onClick: toggleOpen`
-на заголовке, не на кнопках). Тесты: 705 passed.
+Follow-up per feedback: the initial CSS blocked only text fields, but the
+properties panel still had working toggles (on/off) and add/remove buttons for
+list elements. The cause: a toggle is rendered as a hidden `<input>` under a clickable
+slider (`.bio-properties-panel-toggle-switch__switcher`), and add/remove are separate
+`<button>`s (`add-entry`/`remove-entry`/`remove-list-entry`/`dropdown-button`/
+`group-header-button`); the checkbox is also toggled by clicking the label. The classes were verified against
+`libs/bpmn-js-properties-panel/assets/properties-panel.css`. In `styles.css` I extended the
+`pointer-events: none` rule to these clickable wrappers. Group/list collapse
+and expanding collapsible entries were left working (they are triggered by `onClick: toggleOpen`
+on the header, not on the buttons). Tests: 705 passed.
 
-### 2026-06-17 · claude-opus-4-8 · ветка `fix/bug-0011-disable-bpmn-editing`
+### 2026-06-17 · claude-opus-4-8 · branch `fix/bug-0011-disable-bpmn-editing`
 
-Реализован план из «Что и как править» полностью.
+The plan from "What and how to fix" was implemented in full.
 
-- **Шаг 1 (veto на EventBus).** `bpmn-differ.js`: список edit-событий вынесен в
-  `static BpmnDiffer.EDIT_EVENTS`; в `show()` рядом с получением `bpmnJSEventBus`
-  повешен высокоприоритетный (2000) слушатель `() => false`. Удалён метод
-  `#hideSchemaEditorControls()` и его вызов из `#onSelectedElementChanged`
-  (вместе с хаком `delay(100)` — `delay` остаётся в utils.js, используется в других местах).
-  Косметическое скрытие палитры/`.bjs-powered-by` оставлено.
-- **Шаг 2 (панель свойств read-only).** `styles.css`: `pointer-events: none` на
+- **Step 1 (EventBus veto).** `bpmn-differ.js`: the list of edit events was moved to
+  `static BpmnDiffer.EDIT_EVENTS`; in `show()`, next to obtaining `bpmnJSEventBus`,
+  a high-priority (2000) listener `() => false` was attached. The method
+  `#hideSchemaEditorControls()` and its call from `#onSelectedElementChanged` were removed
+  (together with the `delay(100)` hack — `delay` stays in utils.js, used elsewhere).
+  The cosmetic hiding of the palette/`.bjs-powered-by` was kept.
+- **Step 2 (properties panel read-only).** `styles.css`: `pointer-events: none` on
   `input/textarea/select/[contenteditable]/.bio-properties-panel-feel-editor`
-  внутри `.bio-properties-panel`; заголовки групп не тронуты (свёртка/скролл живы).
-- **Context-pad.** Скрыт через CSS `.djs-context-pad { display:none !important }`,
-  а не одноразовым JS-хаком (контекст-пад создаётся лениво при первом выделении —
-  одноразовое скрытие на init ненадёжно).
-- **Тест.** Добавлен `test/differ/bpmn/bpmn-differ.test.js` — проверяет состав
-  `EDIT_EVENTS` (защита от случайного удаления события из списка). `bpmn-differ.js`
-  убран из `UNTESTED_BY_DESIGN` в `test/structure/source-layout.test.js`.
-- `npm test` — 705 passed. DMN не затронут (на DMN-стороне нет `.djs-context-pad`
-  и `.bio-properties-panel`, dmn-viewer уже read-only).
+  inside `.bio-properties-panel`; group headers untouched (collapse/scroll alive).
+- **Context-pad.** Hidden via CSS `.djs-context-pad { display:none !important }`,
+  not a one-time JS hack (the context-pad is created lazily on the first selection —
+  one-time hiding at init is unreliable).
+- **Test.** Added `test/differ/bpmn/bpmn-differ.test.js` — it checks the composition of
+  `EDIT_EVENTS` (a guard against accidentally removing an event from the list). `bpmn-differ.js`
+  was removed from `UNTESTED_BY_DESIGN` in `test/structure/source-layout.test.js`.
+- `npm test` — 705 passed. DMN unaffected (on the DMN side there is no `.djs-context-pad`
+  and no `.bio-properties-panel`, dmn-viewer is already read-only).
 
-Регрессионный чек-лист (пп. 1–6) — ручная проверка в реальном дифере на стороне
-ревьюера перед мержем; автоматически покрыт только состав `EDIT_EVENTS`.
+The regression checklist (items 1–6) — manual check in the real differ on the
+reviewer's side before the merge; only the composition of `EDIT_EVENTS` is covered automatically.

@@ -1,8 +1,8 @@
 'use strict';
 
-// UI окна обновления (FEAT-0012). Сетью и состоянием владеет service worker;
-// popup только отображает состояние и шлёт ему команды. Один и тот же файл
-// работает как action-popup и как открытая вкладка.
+// Update window UI (FEAT-0012). The service worker owns the network and state;
+// the popup only displays state and sends it commands. The same file works
+// both as an action popup and as an open tab.
 
 const els = {
     currentVersion: document.getElementById('currentVersion'),
@@ -30,7 +30,7 @@ function send(message) {
 function formatCheckedAt(ts) {
     if (!ts) return '';
     try {
-        return `Проверено: ${new Date(ts).toLocaleString('ru-RU')}`;
+        return `Checked: ${new Date(ts).toLocaleString('en-US')}`;
     } catch (e) {
         return '';
     }
@@ -57,30 +57,30 @@ function render(state) {
     els.autoCheck.checked = !!state.enabled;
     els.checkedAt.textContent = formatCheckedAt(result.checkedAt);
 
-    // транспарентность: что и куда проверяем
+    // transparency: what we check and where
     if (state.manifestUrl) {
         els.transparency.textContent =
-            `Проверка версии: ${state.manifestUrl} — только чтение (GET), без cookies, ничего не отправляется.`;
+            `Version check: ${state.manifestUrl} — read only (GET), no cookies, nothing is sent.`;
     } else {
         els.transparency.textContent =
-            'Источник обновлений не настроен — автоматическая проверка отключена.';
+            'Update source is not configured — automatic checking is disabled.';
     }
 
     const available = !!result.updateAvailable;
     els.statusBlock.classList.toggle('up-to-date', !available && state.manifestUrl && !result.error);
 
     if (!state.enabled) {
-        els.statusLine.textContent = 'Автопроверка выключена.';
+        els.statusLine.textContent = 'Automatic checking is off.';
     } else if (!state.manifestUrl) {
-        els.statusLine.textContent = 'Источник обновлений не настроен.';
+        els.statusLine.textContent = 'Update source is not configured.';
     } else if (result.error) {
-        els.statusLine.textContent = 'Не удалось проверить обновления.';
+        els.statusLine.textContent = 'Could not check for updates.';
     } else if (available) {
-        els.statusLine.textContent = 'Доступно обновление.';
+        els.statusLine.textContent = 'An update is available.';
     } else if (result.checkedAt) {
-        els.statusLine.textContent = 'Установлена последняя версия.';
+        els.statusLine.textContent = 'You are on the latest version.';
     } else {
-        els.statusLine.textContent = 'Обновления ещё не проверялись.';
+        els.statusLine.textContent = 'Updates have not been checked yet.';
     }
 
     if (available) {
@@ -106,7 +106,7 @@ async function refresh() {
 
 async function checkNow() {
     els.checkNowBtn.disabled = true;
-    els.statusLine.textContent = 'Проверяю обновления…';
+    els.statusLine.textContent = 'Checking for updates…';
     try {
         const state = await send({ type: 'update:checkNow' });
         if (state && state.ok) render(state);
@@ -124,7 +124,7 @@ function copyCommand() {
     const text = els.gitPull.textContent;
     navigator.clipboard.writeText(text).then(() => {
         const prev = els.copyCmd.textContent;
-        els.copyCmd.textContent = 'скопировано';
+        els.copyCmd.textContent = 'copied';
         setTimeout(() => { els.copyCmd.textContent = prev; }, 1500);
     }).catch(() => {});
 }

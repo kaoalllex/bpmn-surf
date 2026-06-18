@@ -1,19 +1,19 @@
 ---
 id: FEAT-0005
-title: Переход к просмотру вызываемой DMN
+title: Navigate to the called DMN
 priority: medium
 status: open
 ---
 
-## Постановка
+## Statement
 
-По аналогии с «проваливанием» в CallActivity — открывать в отдельной вкладке dmn-ку, вызываемую из `Business rule task`.
+By analogy with "drilling down" into a CallActivity — open in a separate tab the DMN called from a `Business rule task`.
 
-## Контекст
+## Context
 
-<!-- Ссылки на MR, логи, симптомы, затронутые файлы, связи с другими задачами. -->
+<!-- Links to MRs, logs, symptoms, affected files, relations to other tasks. -->
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries at the top (most recent first). -->

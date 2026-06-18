@@ -1,5 +1,5 @@
-/* Popup механизма обновления (FEAT-0012). Работает и как action-popup,
-   и как отдельная вкладка. Нейтральный светлый стиль, близкий к GitLab. */
+/* Update mechanism popup (FEAT-0012). Works both as an action popup
+   and as a standalone tab. Neutral light style, close to GitLab. */
 
 :root {
     --pu-fg: #303030;

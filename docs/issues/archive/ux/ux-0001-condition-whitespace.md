@@ -1,41 +1,41 @@
 ---
 id: UX-0001
-title: Условия на Sequence Flow — игнорировать незначимые пробелы
+title: Conditions on Sequence Flow — ignore insignificant whitespace
 priority: medium
 status: done
 ---
 
-## Постановка
+## Statement
 
-При сравнении условий на Sequence Flow (`bpmn:conditionExpression`) незначимые пробелы и переносы строк вне строковых литералов должны игнорироваться. Дополнительно — улучшить читаемость длинных/сложных expression при отображении.
+When comparing conditions on a Sequence Flow (`bpmn:conditionExpression`), insignificant whitespace and line breaks outside string literals should be ignored. Additionally — improve the readability of long/complex expressions when displaying them.
 
-## Контекст
+## Context
 
-- Пример MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/4335/diffs
+- Example MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/4335/diffs
   ```
-  было:                                   стало:
+  before:                                 after:
   ${                                      ${
     ( !execution.hasVariable("skip…") ||    !(execution.hasVariable("skip…") &&
       !skipRelatedSearch )   &&             skipRelatedSearch ) &&
     estates.hasAnyEstate…()               estates.hasAnyEstate…()
   }                                       }
   ```
-- Затронутые файлы: `bpmn-xml-comparator.js#normalizeExpression` (сравнение), `condition-formatter.js` (отображение).
+- Affected files: `bpmn-xml-comparator.js#normalizeExpression` (comparison), `condition-formatter.js` (display).
 
-## История работы
+## Work log
 
-<!-- Каждая сессия ИИ над задачей — отдельная запись по шаблону ниже.
-     Новые записи добавляй сверху (свежие первыми). -->
+<!-- Each AI session on the task is a separate entry following the template below.
+     Add new entries on top (freshest first). -->
 
-### 2026-06-15 · claude-opus-4-8 · (ветка `feature/ux-0001-condition-readability`)
+### 2026-06-15 · claude-opus-4-8 · (branch `feature/ux-0001-condition-readability`)
 
-Доделана читаемость отображения condition expression в `ConditionFormatter`:
-- весь пробельный материал вне строковых литералов (пробелы, табы, переносы строк) считается незначимым — форматтер сам строит отступы, исходная раскладка XML больше не протекает в вывод (раньше многострочные условия рендерились со встроенными `\n`/`\t`);
-- скобка после `!` (и любого не-словного символа) распознаётся как группирующая, а не вызов функции — раньше `!(...)` ломала отступы;
-- срез висящих пробелов в конце строк (`trimEnd` в `#flush`);
-- значимые пробелы внутри строковых литералов сохраняются.
-Покрыто юнит-тестами (`test/differ/bpmn/condition-formatter.test.js`). Задача закрыта.
+Finished the readability of condition-expression display in `ConditionFormatter`:
+- all whitespace material outside string literals (spaces, tabs, line breaks) is treated as insignificant — the formatter builds the indentation itself, the original XML layout no longer leaks into the output (previously multi-line conditions were rendered with embedded `\n`/`\t`);
+- a parenthesis after `!` (and any non-word character) is recognized as grouping, not a function call — previously `!(...)` broke the indentation;
+- trailing whitespace at line ends is trimmed (`trimEnd` in `#flush`);
+- significant whitespace inside string literals is preserved.
+Covered by unit tests (`test/differ/bpmn/condition-formatter.test.js`). The task is closed.
 
-### 2026-06-11 · — · (ветка `fix/backlog-autonomous-fixes`)
+### 2026-06-11 · — · (branch `fix/backlog-autonomous-fixes`)
 
-При сравнении `bpmn:conditionExpression` незначимые пробелы и переносы строк вне строковых литералов теперь игнорируются (`bpmn-xml-comparator.js#normalizeExpression`). Осталось: улучшить читаемость длинных/сложных expression при отображении.
+When comparing `bpmn:conditionExpression`, insignificant whitespace and line breaks outside string literals are now ignored (`bpmn-xml-comparator.js#normalizeExpression`). Remaining: improve the readability of long/complex expressions when displaying them.
