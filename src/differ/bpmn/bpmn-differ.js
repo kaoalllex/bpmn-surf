@@ -9,10 +9,15 @@ class BpmnDiffer {
     // bpmn-js events; a high-priority listener returning false aborts the action
     // before the default editing handlers run. Viewing (click/selection, hover,
     // overlays, zoom/pan) is untouched.
+    //
+    // BUG-0015: `element.dblclick`/`directEditing.activate` are deliberately NOT
+    // vetoed — double-click opens the contenteditable label overlay, the only way
+    // to select & copy a label/comment text on the canvas. The overlay's edits are
+    // blocked separately via a `beforeinput` veto (see show()), keeping it read-only
+    // while preserving copy.
     static EDIT_EVENTS = [
         'shape.move.start', 'bendpoint.move.start', 'connectionSegment.move.start',
-        'resize.start', 'connect.start', 'global-connect.start',
-        'element.dblclick', 'directEditing.activate'
+        'resize.start', 'connect.start', 'global-connect.start'
     ];
 
     #rawParams;
@@ -115,6 +120,19 @@ class BpmnDiffer {
         const propsContainer = document.getElementById(BpmnDifferView.PROPS_ID);
         if (propsContainer) {
             propsContainer.addEventListener('beforeinput', (event) => event.preventDefault(), true);
+        }
+
+        // BUG-0015: keep canvas label/comment text selectable and copyable while
+        // blocking edits. Double-click opens bpmn-js' contenteditable overlay
+        // (.djs-direct-editing-content) — the only way to copy SVG label text — but
+        // it must stay read-only. Same trick as the panel above: a delegated
+        // capture-phase `beforeinput` veto cancels typing, delete, paste and drop,
+        // while Ctrl/Cmd+C and selection never fire `beforeinput`, so copying keeps
+        // working. Delegating on the stable canvas container survives the lazy
+        // re-creation of the overlay without polling/MutationObserver.
+        const canvasContainer = document.getElementById(BpmnDifferView.CANVAS_ID);
+        if (canvasContainer) {
+            canvasContainer.addEventListener('beforeinput', (event) => event.preventDefault(), true);
         }
 
         bpmnJSEventBus.on('selection.changed', (event) => {

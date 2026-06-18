@@ -39,8 +39,7 @@ describe('BpmnDiffer.EDIT_EVENTS', () => {
         // Array prototype, which deepStrictEqual rejects (see scope.js#mapToObject).
         assert.deepEqual([...BpmnDiffer.EDIT_EVENTS], [
             'shape.move.start', 'bendpoint.move.start', 'connectionSegment.move.start',
-            'resize.start', 'connect.start', 'global-connect.start',
-            'element.dblclick', 'directEditing.activate'
+            'resize.start', 'connect.start', 'global-connect.start'
         ]);
     });
 });
