@@ -45,7 +45,6 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/differ/dmn/dmn-table-viewport.js',
     'src/differ/shared/diagram-versions.js',
     'src/differ/navigation/call-activity-navigator.js',
-    'src/differ/navigation/handler-navigator.js',
     // doomed (slated for removal once primary paths are proven)
     'src/differ/navigation/process-file-index.js',
     // global-coupled test debt

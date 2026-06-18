@@ -433,6 +433,91 @@ describe('HandlerLocator.classKeyFromDelegateExpression', () => {
     });
 });
 
+describe('HandlerLocator.handlerKeyFromBusinessObject', () => {
+    // Minimal moddle-like BO: get(name) reads camunda attributes; `type`/`topic`
+    // are plain properties (as camunda-moddle defines the external-task fields).
+    function bo({ attrs = {}, type, topic, eventDefinitions } = {}) {
+        return {
+            type,
+            topic,
+            eventDefinitions,
+            get: (name) => attrs[name]
+        };
+    }
+
+    function msgDef(opts) {
+        const def = bo(opts);
+        def.$type = 'bpmn:MessageEventDefinition';
+        return def;
+    }
+
+    function timerDef() {
+        const def = bo({});
+        def.$type = 'bpmn:TimerEventDefinition';
+        return def;
+    }
+
+    it('returns a class key for a service task with camunda:class (regression)', () => {
+        assert.equal(
+            HandlerLocator.handlerKeyFromBusinessObject(bo({ attrs: { 'camunda:class': 'com.foo.ScoreCarDelegate' } })),
+            'class:ScoreCarDelegate'
+        );
+    });
+
+    it('returns a topic key for an external service task (regression)', () => {
+        assert.equal(
+            HandlerLocator.handlerKeyFromBusinessObject(bo({ type: 'external', topic: 'score-car' })),
+            'topic:score-car'
+        );
+    });
+
+    it('returns a class key from a delegateExpression on a service task (regression)', () => {
+        assert.equal(
+            HandlerLocator.handlerKeyFromBusinessObject(bo({ attrs: { 'camunda:delegateExpression': '${scoreCarDelegate}' } })),
+            'class:ScoreCarDelegate'
+        );
+    });
+
+    it('reads camunda:class from a nested messageEventDefinition (message end event)', () => {
+        const event = bo({ eventDefinitions: [msgDef({ attrs: { 'camunda:class': 'com.foo.NotifyDelegate' } })] });
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'class:NotifyDelegate');
+    });
+
+    it('reads a delegateExpression from a nested messageEventDefinition', () => {
+        const event = bo({ eventDefinitions: [msgDef({ attrs: { 'camunda:delegateExpression': '${notifyBean}' } })] });
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'class:NotifyBean');
+    });
+
+    it('reads external type/topic from a nested messageEventDefinition', () => {
+        const event = bo({ eventDefinitions: [msgDef({ type: 'external', topic: 'notify-topic' })] });
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'topic:notify-topic');
+    });
+
+    it('picks the messageEventDefinition among several event definitions', () => {
+        const event = bo({ eventDefinitions: [timerDef(), msgDef({ attrs: { 'camunda:class': 'Notify' } })] });
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'class:Notify');
+    });
+
+    it('returns null for a message event with no implementation', () => {
+        const event = bo({ eventDefinitions: [msgDef({})] });
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), null);
+    });
+
+    it('returns null for a non-message event definition (timer/signal)', () => {
+        const event = bo({ eventDefinitions: [timerDef()] });
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), null);
+    });
+
+    it('returns null for an element without eventDefinitions or implementation', () => {
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(bo({})), null);
+    });
+
+    it('returns null for a missing business object', () => {
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(null), null);
+        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(undefined), null);
+    });
+});
+
 describe('HandlerLocator.termFromKey', () => {
     it('returns the topic of a topic key', () => {
         assert.equal(HandlerLocator.termFromKey('topic:my-topic'), 'my-topic');

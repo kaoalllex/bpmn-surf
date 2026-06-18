@@ -91,26 +91,20 @@ class HandlerNavigator {
         this.#selectionOverlayId = this.#addBadge(elementId, key, null);
     }
 
-    // The namespaced handler key for a service task, or null if it has no
-    // recognised handler reference. Attributes are read via bo.get() because
-    // `class` is a reserved word (bo.class would not work).
+    // The namespaced handler key for an element, or null if it references no
+    // recognised handler. Covers both service-task-like tasks (attributes on the
+    // BO) and message events (attributes on a nested bpmn:MessageEventDefinition);
+    // see HandlerLocator.handlerKeyFromBusinessObject.
     #getHandlerKey(elem) {
-        const bo = elem && elem.businessObject;
-        if (!bo) {
+        // A bpmn-js external label (e.g. an event's caption) is a separate
+        // registry element that shares its host's businessObject, so it would
+        // otherwise yield the host's key and get a duplicate badge — refreshChangedBadges
+        // iterates labels too. The selection path already normalises `_label` ids;
+        // skip labels here so both badge paths agree (BUG-0016).
+        if (!elem || elem.labelTarget) {
             return null;
         }
-        if (bo.type === 'external' && bo.topic) {
-            return `topic:${bo.topic}`;
-        }
-        const delegateExpression = bo.get && bo.get('camunda:delegateExpression');
-        if (delegateExpression) {
-            return HandlerLocator.classKeyFromDelegateExpression(delegateExpression);
-        }
-        const className = bo.get && bo.get('camunda:class');
-        if (className) {
-            return HandlerLocator.classKeyFromClassName(className);
-        }
-        return null;
+        return HandlerLocator.handlerKeyFromBusinessObject(elem.businessObject);
     }
 
     #addBadge(elementId, key, diffType) {
