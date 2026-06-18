@@ -13,10 +13,12 @@ description: Fix bugs in BPMN Diff — the current behavior is wrong and must be
 5. **Task tracking** — if the bug relates to a task in `docs/issues/` (or it is a new bug): update its file per `docs/issues/README.md` — add an entry to the "Work log" (model · date · commit/branch + what was done) and set `status` (`done`/`partial`); when `done` — move the file to `docs/issues/archive/bugs/` (`git mv`). No file, but the bug is worth recording — create a new file in `docs/issues/bugs/`
 
 ## Rules
+- ⚠️ The differ is **view-only, but text must stay selectable/copyable**. When restricting interaction (vetoing bpmn-js events, `BpmnDiffer.EDIT_EVENTS`, disabling editing), verify that mouse selection and Ctrl/Cmd+C copy still work both on the canvas (labels, `bpmn:TextAnnotation`) and in the properties-panel fields — this exact path regressed twice (BUG-0011 → BUG-0014 → BUG-0015)
 - Minimal diff, do not change logic unnecessarily
 - Add a short comment (in English) if the cause of the bug is non-obvious
 - Typical bug sources in the project: GitLab DOM selectors (change with GitLab updates), commit resolution for a merged MR, the localStorage cache, re-initialization on SPA navigation (`mouseup`/`popstate`), the shared differ-page classes (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType` — changing their API breaks both BPMN and DMN diff), the load order in `utils.js#loadScripts` on the differ page
 - If the cause is unclear: stop, lay out the hypotheses, request information
+- The Bash cwd is the repo root and persists between calls — do not prepend `cd <repo>` to commands (it adds noise, and `cd` inside a compound command can trigger a permission prompt)
 
 ## Analysis template
 

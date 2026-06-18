@@ -38,3 +38,4 @@ There are no integration auto-tests. Checking is manual: load the unpacked exten
 - Quick syntax check: `for f in *.js; do node --check "$f"; done`
 - After changes in the shared differ-page classes (`differ-params.js`, `diagram-versions.js`, `branch-indicator.js`, `diff-type.js`, `utils.js`) **be sure to check both the BPMN and the DMN diff**
 - Differ-page checklist: diff highlighting, switch branch, highlight on/off, the change table + clicking a row, sequenceFlow conditions in the properties panel, zoom/pan/fit, hide properties, download, dive-in into a Call Activity, branch-only mode (without an MR)
+- View-only invariants (after any change that restricts interaction): editing stays disabled, **yet** mouse selection + Ctrl/Cmd+C copy still work on a canvas label and on a properties-panel field value (regression class BUG-0011 → BUG-0014 → BUG-0015)

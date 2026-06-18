@@ -32,6 +32,7 @@ Get the changes via `git diff` (or `git diff HEAD` / the range specified in the 
 - Run `npm test` — unit tests (`test/`, node:test + jsdom) must be green; changing test expectations without an explicitly stated behavior change is a finding
 - Mixing concerns: refactor + feature in one diff is a finding
 - Structural changes (new files, moving/renaming logic, changing flows) without updating the instructions (`docs/architecture.md`, `docs/conventions.md`, CLAUDE.md, `.claude/agents/`/`.claude/skills/`) is a finding
+- ⚠️ If a change vetoes bpmn-js interaction events or disables editing (`BpmnDiffer.EDIT_EVENTS`, high-priority `() => false` listeners): flag whether text selection and Ctrl/Cmd+C copy are preserved on the canvas and in the properties panel — this is a known regression class (BUG-0011 → BUG-0014 → BUG-0015)
 - Leaks: event handlers, localStorage cache, Map caches
 - Compatibility with GitLab SPA navigation (re-initialization)
 

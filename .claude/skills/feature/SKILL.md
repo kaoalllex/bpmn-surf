@@ -21,6 +21,7 @@ description: Implement new functionality for the BPMN Diff Chrome Extension — 
 - Remember the shared global scope: a new content script is added at the right place in the `content_scripts` order; a new differ-page file — to `utils.js#loadScripts` (before `bpmn-differ.js`) AND to `web_accessible_resources`
 - Put differ-page features in the appropriate class file (params, versions, view, comparator, highlighter, viewport, changes-table, etc.), not in the orchestrators `bpmn-differ.js`/`dmn-differ.js`; account for the shared bpmn↔dmn classes (see `docs/architecture.md`)
 - A new file or an architecture change → update `docs/architecture.md` (the key-files table), and if needed CLAUDE.md and the instructions in `.claude/agents/`, `.claude/skills/`
+- The Bash cwd is the repo root and persists between calls — do not prepend `cd <repo>` to commands (it adds noise, and `cd` inside a compound command can trigger a permission prompt)
 
 ## Plan example
 
