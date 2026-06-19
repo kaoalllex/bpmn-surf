@@ -45,8 +45,11 @@ class BpmnDiffer {
     #processFileIndex = null;
     #callActivityLocator = null;
     #callActivityNavigator = null;
+    #decisionLocator = null;
+    #decisionNavigator = null;
     #callerLocator = null;
     #backNavigator = null;
+    #tabNavigator = null;
     #handlerLocator = null;
     #handlerNavigator = null;
     #elementSearcher = null;
@@ -91,6 +94,15 @@ class BpmnDiffer {
             (processFilePath, processFileName) => this.#diveIntoCalledDiffer(processFilePath, processFileName),
             (url) => window.open(url, '_blank')
         );
+        this.#decisionNavigator = new DecisionNavigator(
+            bpmnJSOverlays,
+            this.#elementRegistry,
+            this.#decisionLocator,
+            () => this.#selectedElementId,
+            () => this.#getShownRef(),
+            (decisionFilePath, decisionFileName) => this.#diveIntoCalledDiffer(decisionFilePath, decisionFileName),
+            (url) => window.open(url, '_blank')
+        );
         this.#handlerNavigator = new HandlerNavigator(
             bpmnJSOverlays,
             this.#elementRegistry,
@@ -99,7 +111,7 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (url) => window.open(url, '_blank'),
-            (url) => this.#navigateOpenerTab(url)
+            (url) => this.#tabNavigator.navigateOpenerTab(url)
         );
 
         this.#elementSearcher = new ElementSearcher();
@@ -213,11 +225,21 @@ class BpmnDiffer {
             this.#params.platform.projectId,
             this.#processFileIndex
         );
+        // FEAT-0005: resolve the DMN file called from a Business Rule Task
+        // (decisionRef → defining .dmn) by a targeted blob-search; no fallback.
+        this.#decisionLocator = new DecisionLocator(
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId
+        );
         this.#callerLocator = new CallerLocator(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
             this.#params.platform.projectId
         );
+        // Shared opener-tab navigation (open a nested differ, step back to the
+        // opener) used by both the dive-in and dive-out paths (FEAT-0005).
+        this.#tabNavigator = new DifferTabNavigator();
         this.#handlerLocator = new HandlerLocator(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
@@ -480,6 +502,7 @@ class BpmnDiffer {
         this.#propertiesPanelHighlighter.highlightDiffPropGroups(this.#selectedElementId);
         this.#propertiesPanelHighlighter.showConditionExpression(this.#selectedElementId);
         this.#callActivityNavigator.showDiveInOverlay();
+        this.#decisionNavigator.showDiveInOverlay();
         this.#handlerNavigator.showOverlayForSelectedElement();
     }
 
@@ -506,36 +529,6 @@ class BpmnDiffer {
         }
     }
 
-    // Navigates the tab that opened this differ (the originating MR tab) to the
-    // given URL and brings it to the foreground, so opening a handler's MR diff
-    // returns to the already-open MR instead of spawning another tab. Returns
-    // false when no such tab is available (then the caller falls back to a new tab).
-    #navigateOpenerTab(url) {
-        const opener = window.opener;
-        if (!opener || opener.closed) {
-            return false;
-        }
-        try {
-            // opener.focus() alone does not reliably switch the active tab in
-            // Chrome. Opening the URL with the opener's window name as the target
-            // reuses that tab, navigates it AND brings it to the front. The name
-            // is set transiently and restored, so GitLab's tab keeps its own
-            // window.name (it survives the navigation as a browsing-context prop).
-            const TARGET = 'gl-bpmn-diff-opener-tab';
-            const prevName = opener.name;
-            opener.name = TARGET;
-            window.open(url, TARGET);
-            opener.name = prevName;
-        } catch (error) {
-            // Cross-origin opener: cannot use the named-target trick; navigate
-            // directly (the tab may not come to the front, but the URL opens).
-            console.warn('cannot focus opener tab via named target; navigating directly', error);
-            opener.location.href = url;
-            opener.focus();
-        }
-        return true;
-    }
-
     // Commit/ref of the diagram version currently shown (for opening handler code
     // and for resolving a Call Activity's called process file).
     #getShownRef() {
@@ -545,17 +538,12 @@ class BpmnDiffer {
     }
 
     // Opens another diagram's differ in a new tab, carrying the platform/refs
-    // plus the FEAT-0023 navigation hints in `extra` (direction-specific).
+    // plus the FEAT-0023 navigation hints in `extra` (direction-specific). The
+    // differ kind (BPMN vs DMN) is chosen by extension, so diving into a called
+    // DMN decision opens the DMN differ (FEAT-0005).
     async #openDifferForFile(filePath, fileName, extra) {
         const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
-        await openDiffer(
-            params,
-            null,
-            BpmnDiffer.MSG_ID,
-            // Find href in the head of this document
-            // because chrome.runtime.getURL not working in this new tab
-            (resourceName) => this.#getLinkOrScriptHref(resourceName)
-        );
+        await this.#tabNavigator.openNestedDiffer(params, fileName);
     }
 
     // Dive IN (down): open the called process file, recording THIS diagram as the
@@ -579,7 +567,7 @@ class BpmnDiffer {
     // we dived from) is preserved for free; we just bring it to the front and close
     // this tab. If that tab was already closed, reopen it as a caller (up) instead.
     #diveOutToOpener() {
-        if (this.#focusOpenerAndClose()) {
+        if (this.#tabNavigator.focusOpenerAndClose()) {
             return;
         }
         if (this.#params.divedInFrom) {
@@ -588,43 +576,11 @@ class BpmnDiffer {
         }
     }
 
-    // Brings the opener tab (the calling differ) to the front WITHOUT navigating
-    // it — opening an existing named target with an empty URL focuses it but does
-    // not reload it, so the caller keeps its state — then closes this tab.
-    // Returns false when there is no usable opener (then #goBack reopens instead).
-    #focusOpenerAndClose() {
-        const opener = window.opener;
-        if (!opener || opener.closed) {
-            return false;
-        }
-        try {
-            // Same named-target trick as #navigateOpenerTab, but with an empty URL:
-            // window.open('', name) returns the existing context without navigating
-            // it (so no reload), while still bringing that tab to the foreground —
-            // opener.focus() alone does not reliably switch the active tab in Chrome.
-            const TARGET = 'gl-bpmn-diff-opener-tab';
-            const prevName = opener.name;
-            opener.name = TARGET;
-            window.open('', TARGET);
-            opener.name = prevName;
-        } catch (error) {
-            // Cross-origin opener: cannot use the named-target trick; fall back to
-            // a plain focus() (the tab may not come forward, but it stays valid).
-            console.warn('cannot focus opener tab via named target; using focus()', error);
-            try {
-                opener.focus();
-            } catch (focusError) {
-                console.warn('cannot focus opener tab', focusError);
-                return false;
-            }
-        }
-        window.close();
-        return true;
-    }
-
-    // Selects the Call Activity that calls one of the given process ids, when the
-    // page was opened by diving out to a caller (FEAT-0023). Selecting drives the
-    // properties panel and the dive-in overlay, so the call site is highlighted.
+    // Selects the call site for one of the given ids, when the page was opened by
+    // diving out to a caller. The id namespace tells the direction apart without
+    // colliding: a Call Activity's calledElement (a process id, FEAT-0023) or a
+    // Business Rule Task's decisionRef (a decision id, FEAT-0005). Selecting drives
+    // the properties panel and the dive-in overlay, so the call site is highlighted.
     #applyInitialCallActivitySelection() {
         const ids = this.#params.selectCalledProcessIds;
         if (!ids || ids.length === 0) {
@@ -632,11 +588,17 @@ class BpmnDiffer {
         }
         const wanted = new Set(ids);
         const match = this.#elementRegistry.getAll().find((element) => {
-            if (element.type !== 'bpmn:CallActivity') {
+            const businessObject = element.businessObject;
+            if (!businessObject) {
                 return false;
             }
-            const businessObject = element.businessObject;
-            return businessObject && wanted.has(businessObject.calledElement);
+            if (element.type === 'bpmn:CallActivity') {
+                return wanted.has(businessObject.calledElement);
+            }
+            if (element.type === 'bpmn:BusinessRuleTask') {
+                return wanted.has(businessObject.decisionRef);
+            }
+            return false;
         });
         if (!match) {
             return;
@@ -720,21 +682,6 @@ class BpmnDiffer {
             console.warn('cannot read process ids from the current diagram', error);
             return [];
         }
-    }
-
-    #getLinkOrScriptHref(resourceName) {
-        for (const script of document.scripts) {
-            if (script.src.endsWith(resourceName)) {
-                return script.src;
-            }
-        }
-        for (const styleSheet of document.styleSheets) {
-            if (styleSheet.href.endsWith(resourceName)) {
-                return styleSheet.href;
-            }
-        }
-        console.error('cannot find url of link or style sheet: ' + resourceName);
-        return null;
     }
 
     #hideModelerPalleteAndPoweredByLabel() {

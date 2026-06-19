@@ -44,10 +44,12 @@ class DifferParams {
         // and marks it among the listed callers.
         this.divedInFrom = params.divedInFrom || null;
 
-        // FEAT-0023, dive-out (up): process ids whose Call Activity should be
-        // auto-selected once this diagram renders — used when stepping up to a
-        // caller, so the element from which it calls the diagram we came from is
-        // highlighted (showing where the call happens). null/empty = no auto-select.
+        // Dive-out (up): the ids whose call site should be auto-selected once
+        // this diagram renders — used when stepping up to a caller, so the element
+        // from which it calls the diagram we came from is highlighted. The id
+        // namespace tells the direction apart without colliding: process ids for a
+        // Call Activity's calledElement (FEAT-0023) or decision ids for a Business
+        // Rule Task's decisionRef (FEAT-0005). null/empty = no auto-select.
         this.selectCalledProcessIds = params.selectCalledProcessIds || null;
     }
 

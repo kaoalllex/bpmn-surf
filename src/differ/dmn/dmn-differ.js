@@ -16,6 +16,9 @@ class DmnDiffer {
     #dmnJS = null;
     #xmlComparator = null;
     #diffPainter = null;
+    #decisionCallerLocator = null;
+    #backNavigator = null;
+    #tabNavigator = null;
 
     constructor(rawParams) {
         this.#rawParams = rawParams;
@@ -58,12 +61,23 @@ class DmnDiffer {
 
     #init() {
         this.#params = new DifferParams(this.#rawParams);
+        // The back navigation (FEAT-0005) calls the platform API to find callers.
+        this.#params.requirePlatformInfo();
 
         this.#versions = new DiagramVersions(this.#params);
         this.#branchIndicator = new BranchIndicator(this.#params.targetLabel, this.#params.sourceLabel);
         this.#viewport = new DmnTableViewport();
         this.#xmlComparator = new DmnXmlComparator();
         this.#diffPainter = new DmnDiffPainter();
+        // FEAT-0005: reverse search for the BPMN files whose Business Rule Task
+        // calls this decision (decisionRef="<id>"), for the back navigation.
+        this.#decisionCallerLocator = new DecisionCallerLocator(
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId
+        );
+        // Shared opener-tab navigation (open a nested differ, step back up).
+        this.#tabNavigator = new DifferTabNavigator();
         this.#view = new DmnDifferView(this.#params, this.#branchIndicator, this.#viewport, {
             onDownload: () => this.#downloadShownBranchFile(),
             onSwitchBranch: () => this.#switchBranch()
@@ -71,6 +85,22 @@ class DmnDiffer {
         // Update notification (FEAT-0012): info comes raw in params from the
         // content script (which read it from the service worker's state).
         this.#view.setUpdateInfo(this.#rawParams.updateInfo);
+
+        // Back navigation (FEAT-0005, the DMN direction of FEAT-0023): dive out to
+        // the diagram we came from, plus a picker of any BPMN diagram that calls
+        // this decision (reverse blob-search, lazy). Stepping up to a caller asks
+        // it to auto-select the Business Rule Task that calls one of our decisions.
+        this.#backNavigator = new BackNavigator({
+            callerLocator: this.#decisionCallerLocator,
+            divedInFrom: this.#params.divedInFrom,
+            getProcessIdsFunc: () => this.#getCurrentDecisionIds(),
+            getCurrentRefFunc: () => this.#getShownRef(),
+            currentFilePath: this.#params.filePath,
+            onDiveOutToOpener: () => this.#diveOutToOpener(),
+            onOpenCaller: (filePath, fileName) => this.#diveOutToCallerDiffer(filePath, fileName),
+            onOpenUrl: (url) => window.open(url, '_blank')
+        });
+        this.#view.setBackNavigator(this.#backNavigator);
     }
 
     async #loadVersions() {
@@ -190,6 +220,72 @@ class DmnDiffer {
         // console.debug('highlight diffs...');
         const diff = this.#xmlComparator.compare(myXml, otherXml);
         this.#diffPainter.paint(diff, diffTypeForMissing);
+    }
+
+    // Commit/ref of the decision version currently shown (for resolving the BPMN
+    // files that call this decision, FEAT-0005).
+    #getShownRef() {
+        return this.#branchIndicator.isTargetBranchShown()
+            ? this.#params.targetRef
+            : this.#params.sourceRef;
+    }
+
+    // The DMN XML of the version currently shown.
+    #getShownXml() {
+        return this.#branchIndicator.isTargetBranchShown()
+            ? this.#versions.branchXml
+            : this.#versions.mrXml;
+    }
+
+    // Decision ids defined by the DMN currently shown — the ids a Business Rule
+    // Task in a BPMN file would reference (decisionRef), so the reverse search can
+    // find this decision's callers (FEAT-0005). Read from the shown XML rather
+    // than the viewer (which renders only the first decision, see DmnXmlComparator).
+    #getCurrentDecisionIds() {
+        const xml = this.#getShownXml();
+        if (!xml) {
+            return [];
+        }
+        try {
+            const doc = parseXml(xml);
+            return Array.from(doc.getElementsByTagName('decision'))
+                .map((node) => node.getAttribute('id'))
+                .filter(Boolean);
+        } catch (error) {
+            console.warn('cannot read decision ids from the current dmn', error);
+            return [];
+        }
+    }
+
+    // Opens another diagram's differ in a new tab, carrying the platform/refs plus
+    // the navigation hints in `extra`. The differ kind is chosen by extension, so
+    // stepping up to a BPMN caller opens the BPMN differ (FEAT-0005).
+    async #openDifferForFile(filePath, fileName, extra) {
+        const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
+        await this.#tabNavigator.openNestedDiffer(params, fileName);
+    }
+
+    // Dive OUT (up): open a calling BPMN diagram, asking it to auto-select the
+    // Business Rule Task from which it calls this decision — so the call site is
+    // highlighted (the BPMN side matches by decisionRef, FEAT-0005).
+    #diveOutToCallerDiffer(filePath, fileName) {
+        return this.#openDifferForFile(filePath, fileName, {
+            selectCalledProcessIds: this.#getCurrentDecisionIds()
+        });
+    }
+
+    // Dive out to the diagram we dived in FROM (FEAT-0023): its tab is still open
+    // and untouched, so its state is preserved for free; we just bring it to the
+    // front and close this tab. If that tab was already closed, reopen it as a
+    // caller (up) instead.
+    #diveOutToOpener() {
+        if (this.#tabNavigator.focusOpenerAndClose()) {
+            return;
+        }
+        if (this.#params.divedInFrom) {
+            this.#diveOutToCallerDiffer(
+                this.#params.divedInFrom.filePath, this.#params.divedInFrom.fileName);
+        }
     }
 
     #hidePoweredByLabel() {
