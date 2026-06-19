@@ -27,13 +27,38 @@ Scope of the rename:
 
 Brand identity (folded in from the original UX-0009 scope):
 
-- A single accent brand color/tone across the project. An accent style for the
-  injected GitLab button ("Show schema diff" / "Show decision diff") so it is
-  distinguishable from native GitLab buttons, while keeping the native button
-  shape (size, rounding, placement). Scope — accent color via a dedicated CSS
-  class, no full style override (theme-conflict risk). Coordinate the tone with
-  the accent already used by `differ-update-indicator`
-  (`hsl(212, 73%, 46%)` in `src/differ/styles.css`).
+- **Single accent = `hsl(212, 73%, 46%)`** (decision 2026-06-19) — reuse the tone
+  already used by `differ-update-indicator` in `src/differ/styles.css`; do not
+  introduce a second brand hue. The cyan `hsl(180, 100%, 70%)` stays strictly
+  functional (canvas highlight), not brand. The "surf" feel comes from the
+  wordmark/icon, not from a new color.
+- Accent style for the injected GitLab button so it is distinguishable from
+  native buttons, while keeping the native button shape (size, rounding,
+  placement). Accent via a dedicated CSS class, no full style override
+  (theme-conflict risk).
+- **Extension icon** — `manifest.json` currently has neither top-level `icons`
+  nor `action.default_icon`. A brand needs an icon (and the Web Store requires
+  one in area B). Add icon assets as part of the rename.
+- **Wordmark in the differ toolbar** (next to `differ-update-indicator`) — the
+  brand's home inside the tool itself, and a natural anchor for the feedback
+  link ([FEAT-0024]).
+- Rename the popup (`src/popup/popup.html` / `popup.css` still say "BPMN differ").
+
+### Decisions (2026-06-19)
+
+- **Relaunch scope: area A first, then B.** R1 = internal `bpmn-surf` relaunch
+  (rename + browsing features), shipped to the company via the chat channel. The
+  public GitHub/Web Store launch (area B) is a later milestone — see [INFRA-0007].
+- **The rename commit is gated** on the browsing story being true: it lands only
+  after [FEAT-0023] (back navigation) and [FEAT-0005] (navigate to called DMN).
+  The name promises free movement between schemas (dive in *and* out); shipping
+  it before back-nav exists would make the brand a promise the product can't keep.
+- **Button accent — main labels only.** Apply the accent to `Show schema diff` /
+  `Show decision diff` and `Show schema` / `Show decision`; do **not** accent the
+  secondary `Show diff with local`. (Resolves the first open question below.)
+- **Content-script button CSS — a separate content-style file**, independent of
+  the differ-page styles (the button lives in GitLab's DOM, not on the differ
+  page). (Resolves the second open question below.)
 
 ## Context
 
@@ -53,15 +78,20 @@ Brand identity (folded in from the original UX-0009 scope):
 
 ### Open questions
 
-- Apply the button accent to all three labels or only the main "Show schema /
-  decision diff" (not "Show diff with local").
-- Where to keep the content-script button CSS (a separate content style file?)
-  so it does not depend on differ-page styles.
+- ~~Apply the button accent to all three labels or only the main ones~~ →
+  resolved: main labels only (see Decisions).
+- ~~Where to keep the content-script button CSS~~ → resolved: a separate
+  content-style file (see Decisions).
 
 ### Relations
 
-- [FEAT-0023] — back navigation; [FEAT-0005] — navigate to called DMN. Part of
-  the same browsing-first shift this rebrand reflects.
+- [FEAT-0023] — back navigation; [FEAT-0005] — navigate to called DMN. **Gate:**
+  the rename commit lands only after both ship (see Decisions). Part of the same
+  browsing-first shift this rebrand reflects.
+- [FEAT-0024] — in-product feedback link; the relaunch's feedback loop, shipped
+  alongside the brand work in R1.2.
+- [INFRA-0007] — area B (public GitHub launch); the `bpmn-surf` name travels to
+  the public repo there.
 - [IDEA-0003] — the CamOD / prod-operator direction (separate product scope).
 - [UX-0006] — archived; a different button (Highlight on the canvas), listed
   only to avoid confusion.
