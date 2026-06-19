@@ -32,7 +32,7 @@ Our GitLab: **https://gitlab.example.com**. The CLI for working with MRs is `gla
 
 ## Finishing the task / cleanup
 
-After the human has reviewed the MR and **merged** it, on the `/merged` command (or a phrase like "tidy up" / "finish the task" / "clean up") perform the local cleanup:
+After the human has reviewed the MR and **merged** it, on the `/cleanup` command (or a phrase like "tidy up" / "finish the task" / "clean up") perform the local cleanup:
 
 1. `git checkout master`
 2. `git pull` (pull the fresh master with the already merged MR)
