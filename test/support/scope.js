@@ -35,11 +35,13 @@ const SCOPE_FILES = [
     'src/differ/shared/differ-empty-state.js',
     'src/differ/shared/update-indicator.js',
     'src/differ/navigation/call-activity-locator.js',
+    'src/differ/navigation/caller-locator.js',
     'src/differ/navigation/handler-locator.js',
     'src/differ/navigation/handler-navigator.js',
     'src/differ/dmn/dmn-xml-comparator.js',
     'src/differ/dmn/dmn-diff-painter.js',
     'src/differ/bpmn/bpmn-differ-view.js',
+    'src/differ/navigation/back-navigator.js',
     // content-script files, in manifest.json#content_scripts relative order.
     // repo-provider.js / ui-repo-provider.js must precede the gitlab-* providers
     // that extend them (extends is evaluated at load time).
@@ -77,6 +79,8 @@ const EXPORTED_NAMES = [
     'UpdateIndicator',
     'DiffParamsBuilder',
     'CallActivityLocator',
+    'CallerLocator',
+    'BackNavigator',
     'HandlerLocator',
     'HandlerNavigator',
     'BpmnXmlComparator',

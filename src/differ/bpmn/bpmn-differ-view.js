@@ -30,6 +30,7 @@ class BpmnDifferView {
     #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
     #updateInfo = null;
+    #backNavigator = null;
 
     // callbacks: { onDownload, onSwitchBranch, onToggleHighlight }
     constructor(params, branchIndicator, callbacks) {
@@ -42,6 +43,11 @@ class BpmnDifferView {
     // the toolbar indicator (FEAT-0012). Set before build(); null = no indicator.
     setUpdateInfo(updateInfo) {
         this.#updateInfo = updateInfo;
+    }
+
+    // Back-navigation control (FEAT-0023). Set before build(); null = no control.
+    setBackNavigator(backNavigator) {
+        this.#backNavigator = backNavigator;
     }
 
     get viewport() {
@@ -327,6 +333,9 @@ class BpmnDifferView {
         //--- update indicator (FEAT-0012), only when an update is available
         this.#appendUpdateIndicator(toolbar);
 
+        //--- back navigation (FEAT-0023), only when there is somewhere to go back
+        this.#appendBackNavigator(toolbar);
+
         //--- close group (destructive, separated)
         const closeGroup = this.#group();
         closeGroup.appendChild(this.#button({
@@ -350,6 +359,18 @@ class BpmnDifferView {
             const group = this.#group();
             group.appendChild(element);
             toolbar.appendChild(group);
+        }
+    }
+
+    // The control builds its own group (split ⤴ + ▾ + menu) or returns null when
+    // there is nothing to offer (opened directly with no callers to list).
+    #appendBackNavigator(toolbar) {
+        if (!this.#backNavigator) {
+            return;
+        }
+        const element = this.#backNavigator.createElement();
+        if (element) {
+            toolbar.appendChild(element);
         }
     }
 
