@@ -26,6 +26,9 @@ calling diagram onto a stack, "back" pops it. Support multiple levels of nesting
   (in-memory stack), or should it survive SPA navigation / reload?
 - Part of the broader shift toward schema browsing/exploration as a first-class
   use case (not only MR diff).
+- **Gates the `bpmn-surf` rename** ([UX-0009]): the rename commit lands only
+  after this back-navigation ships — the "surf" name implies free movement
+  between schemas (dive in *and* out), which doesn't exist until this is done.
 
 ## Work log
 

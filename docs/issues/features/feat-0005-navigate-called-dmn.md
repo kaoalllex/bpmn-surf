@@ -11,7 +11,9 @@ By analogy with "drilling down" into a CallActivity — open in a separate tab t
 
 ## Context
 
-<!-- Links to MRs, logs, symptoms, affected files, relations to other tasks. -->
+- **Gates the `bpmn-surf` rename** ([UX-0009]), together with [FEAT-0023]: the
+  rename commit lands only after cross-schema navigation (BPMN → called DMN, and
+  back) is real. Part of the browsing-first shift the rebrand reflects.
 
 ## Work log
 
