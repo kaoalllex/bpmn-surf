@@ -213,7 +213,10 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/navigation/process-file-index.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/call-activity-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/call-activity-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/decision-locator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/decision-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/caller-locator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/decision-caller-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/handler-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/handler-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-params.js', doc, getResourceUrlByNameFunc);
@@ -222,6 +225,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/shared/differ-loading-overlay.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-empty-state.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/update-indicator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/differ-tab-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/back-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/dmn/dmn-table-viewport.js', doc, getResourceUrlByNameFunc);
