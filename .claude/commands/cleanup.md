@@ -1,5 +1,5 @@
 ---
-description: After the human merged the MR — sync master and delete the merged feature branch (local + remote)
+description: After the human merged the MR — sync master and delete the merged local feature branch
 allowed-tools: Read, Bash(git *), Bash(glab *)
 ---
 
@@ -14,7 +14,7 @@ Steps:
 3. **Safety check before deleting** — confirm the branch is really merged:
    - `git branch -d <branch>` (with `-d`, **never** `-D`). `-d` refuses to delete a branch not merged into the current HEAD; if it refuses, **stop and report** — the MR may not actually be merged yet, do not force.
    - Optionally double-check via `glab mr list --source-branch <branch> --state merged` before deleting.
-4. Remote branch: GitLab usually removes it on merge (the `--remove-source-branch` flag from `/mr`). If it still exists (`git ls-remote --heads origin <branch>` returns a line), delete it: `git push origin --delete <branch>`.
-5. Report briefly what was deleted (local + remote) and the current branch/commit.
+4. **Do NOT touch the remote branch.** The human deletes it themselves when merging the MR (and `--remove-source-branch` from `/mr` usually removes it automatically). Never run `git push origin --delete` — only the local branch is yours to clean up.
+5. Report briefly what was deleted (local) and the current branch/commit.
 
 Do **not** delete anything if the MR is not merged. Respond in the language the user opened the conversation with.
