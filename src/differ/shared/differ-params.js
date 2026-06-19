@@ -35,6 +35,20 @@ class DifferParams {
         this.targetFileName = getFileNameFromPath(this.targetFilePath);
 
         this.camundaBpmnModdle = params.camundaBpmnModdle;
+
+        // FEAT-0023, dive-in (down): the calling diagram we dived in FROM, whose
+        // tab is still open above us — { filePath, fileName } or null. Set only
+        // when opened by diving into a Call Activity, NOT when stepping up to a
+        // caller (there the opener is a callee, below us). It lets "dive out"
+        // jump straight up to that already-open caller (focus its tab, no reload)
+        // and marks it among the listed callers.
+        this.divedInFrom = params.divedInFrom || null;
+
+        // FEAT-0023, dive-out (up): process ids whose Call Activity should be
+        // auto-selected once this diagram renders — used when stepping up to a
+        // caller, so the element from which it calls the diagram we came from is
+        // highlighted (showing where the call happens). null/empty = no auto-select.
+        this.selectCalledProcessIds = params.selectCalledProcessIds || null;
     }
 
     // Required by the BPMN-only features (Call Activity / handler navigation)
@@ -56,7 +70,10 @@ class DifferParams {
     // process file) on the same platform and refs, but a different file.
     // localFileContent is intentionally not carried over: a nested differ loads
     // both versions from the platform and has no local file context.
-    toNestedDifferParams(filePath, fileName) {
+    // `extra` carries the FEAT-0023 navigation hints, which differ by direction:
+    // diving in (down) passes `divedInFrom` (this diagram), stepping up to a
+    // caller passes `selectCalledProcessIds` (so the caller highlights its call).
+    toNestedDifferParams(filePath, fileName, extra = {}) {
         return {
             platform: this.platform,
             sourceRef: this.sourceRef,
@@ -66,7 +83,8 @@ class DifferParams {
             targetLabel: this.targetLabel,
             filePath: filePath,
             fileName: fileName,
-            camundaBpmnModdle: this.camundaBpmnModdle
+            camundaBpmnModdle: this.camundaBpmnModdle,
+            ...extra
         };
     }
 }

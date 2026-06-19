@@ -20,6 +20,12 @@ class BpmnDiffer {
         'resize.start', 'connect.start', 'global-connect.start'
     ];
 
+    // FEAT-0023: re-asserting the dive-out auto-selection until the properties
+    // panel (which subscribes to selection.changed only after its async mount)
+    // reflects it. Bounded so a panel that never confirms cannot loop forever.
+    static PANEL_SELECT_MAX_ATTEMPTS = 15;
+    static PANEL_SELECT_RETRY_MS = 120;
+
     #rawParams;
     #params = null;
     #versions = null;
@@ -39,6 +45,8 @@ class BpmnDiffer {
     #processFileIndex = null;
     #callActivityLocator = null;
     #callActivityNavigator = null;
+    #callerLocator = null;
+    #backNavigator = null;
     #handlerLocator = null;
     #handlerNavigator = null;
     #elementSearcher = null;
@@ -80,7 +88,7 @@ class BpmnDiffer {
             this.#callActivityLocator,
             () => this.#selectedElementId,
             () => this.#getShownRef(),
-            (processFilePath, processFileName) => this.#openCallActivityDiffer(processFilePath, processFileName),
+            (processFilePath, processFileName) => this.#diveIntoCalledDiffer(processFilePath, processFileName),
             (url) => window.open(url, '_blank')
         );
         this.#handlerNavigator = new HandlerNavigator(
@@ -172,6 +180,15 @@ class BpmnDiffer {
         // Set max-height of the properties panel container to enable scrollbar display when needed
         await this.#setPropertiesPanelContainerMaxHeight();
 
+        // Dive-out (FEAT-0023): if opened by stepping up to a caller, select the
+        // Call Activity from which it calls the diagram we came from, so the call
+        // site is highlighted (and its dive-in arrow is right there to go back).
+        // Runs AFTER the properties panel has mounted (the await above waits for
+        // its container): the panel renders the selection only from selection.changed
+        // events it receives once subscribed, so selecting earlier — before its
+        // async first mount — leaves the panel blank until the user clicks again.
+        this.#applyInitialCallActivitySelection();
+
         console.debug('ready!');
     }
 
@@ -196,6 +213,11 @@ class BpmnDiffer {
             this.#params.platform.projectId,
             this.#processFileIndex
         );
+        this.#callerLocator = new CallerLocator(
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId
+        );
         this.#handlerLocator = new HandlerLocator(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
@@ -213,6 +235,20 @@ class BpmnDiffer {
         // Update notification (FEAT-0012): info comes raw in params from the
         // content script (which read it from the service worker's state).
         this.#view.setUpdateInfo(this.#rawParams.updateInfo);
+
+        // Back navigation (FEAT-0023): default back to where we came from, plus a
+        // picker of any diagram that calls this one (reverse blob-search, lazy).
+        this.#backNavigator = new BackNavigator({
+            callerLocator: this.#callerLocator,
+            divedInFrom: this.#params.divedInFrom,
+            getProcessIdsFunc: () => this.#getCurrentProcessIds(),
+            getCurrentRefFunc: () => this.#getShownRef(),
+            currentFilePath: this.#params.filePath,
+            onDiveOutToOpener: () => this.#diveOutToOpener(),
+            onOpenCaller: (filePath, fileName) => this.#diveOutToCallerDiffer(filePath, fileName),
+            onOpenUrl: (url) => window.open(url, '_blank')
+        });
+        this.#view.setBackNavigator(this.#backNavigator);
     }
 
     #createModeler() {
@@ -508,8 +544,10 @@ class BpmnDiffer {
             : this.#params.sourceRef;
     }
 
-    async #openCallActivityDiffer(processFilePath, processFileName) {
-        const params = this.#params.toNestedDifferParams(processFilePath, processFileName);
+    // Opens another diagram's differ in a new tab, carrying the platform/refs
+    // plus the FEAT-0023 navigation hints in `extra` (direction-specific).
+    async #openDifferForFile(filePath, fileName, extra) {
+        const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
         await openDiffer(
             params,
             null,
@@ -518,6 +556,170 @@ class BpmnDiffer {
             // because chrome.runtime.getURL not working in this new tab
             (resourceName) => this.#getLinkOrScriptHref(resourceName)
         );
+    }
+
+    // Dive IN (down): open the called process file, recording THIS diagram as the
+    // one we dived in from — so the called diagram can dive back out to it.
+    #diveIntoCalledDiffer(filePath, fileName) {
+        return this.#openDifferForFile(filePath, fileName, {
+            divedInFrom: { filePath: this.#params.filePath, fileName: this.#params.fileName }
+        });
+    }
+
+    // Dive OUT (up): open a calling diagram, asking it to auto-select the Call
+    // Activity from which it calls this diagram — so the call site is highlighted.
+    #diveOutToCallerDiffer(filePath, fileName) {
+        return this.#openDifferForFile(filePath, fileName, {
+            selectCalledProcessIds: this.#getCurrentProcessIds()
+        });
+    }
+
+    // Dive out to the diagram we dived in FROM (FEAT-0023): its tab is still open
+    // and untouched, so its state (viewport/selection — including the Call Activity
+    // we dived from) is preserved for free; we just bring it to the front and close
+    // this tab. If that tab was already closed, reopen it as a caller (up) instead.
+    #diveOutToOpener() {
+        if (this.#focusOpenerAndClose()) {
+            return;
+        }
+        if (this.#params.divedInFrom) {
+            this.#diveOutToCallerDiffer(
+                this.#params.divedInFrom.filePath, this.#params.divedInFrom.fileName);
+        }
+    }
+
+    // Brings the opener tab (the calling differ) to the front WITHOUT navigating
+    // it — opening an existing named target with an empty URL focuses it but does
+    // not reload it, so the caller keeps its state — then closes this tab.
+    // Returns false when there is no usable opener (then #goBack reopens instead).
+    #focusOpenerAndClose() {
+        const opener = window.opener;
+        if (!opener || opener.closed) {
+            return false;
+        }
+        try {
+            // Same named-target trick as #navigateOpenerTab, but with an empty URL:
+            // window.open('', name) returns the existing context without navigating
+            // it (so no reload), while still bringing that tab to the foreground —
+            // opener.focus() alone does not reliably switch the active tab in Chrome.
+            const TARGET = 'gl-bpmn-diff-opener-tab';
+            const prevName = opener.name;
+            opener.name = TARGET;
+            window.open('', TARGET);
+            opener.name = prevName;
+        } catch (error) {
+            // Cross-origin opener: cannot use the named-target trick; fall back to
+            // a plain focus() (the tab may not come forward, but it stays valid).
+            console.warn('cannot focus opener tab via named target; using focus()', error);
+            try {
+                opener.focus();
+            } catch (focusError) {
+                console.warn('cannot focus opener tab', focusError);
+                return false;
+            }
+        }
+        window.close();
+        return true;
+    }
+
+    // Selects the Call Activity that calls one of the given process ids, when the
+    // page was opened by diving out to a caller (FEAT-0023). Selecting drives the
+    // properties panel and the dive-in overlay, so the call site is highlighted.
+    #applyInitialCallActivitySelection() {
+        const ids = this.#params.selectCalledProcessIds;
+        if (!ids || ids.length === 0) {
+            return;
+        }
+        const wanted = new Set(ids);
+        const match = this.#elementRegistry.getAll().find((element) => {
+            if (element.type !== 'bpmn:CallActivity') {
+                return false;
+            }
+            const businessObject = element.businessObject;
+            return businessObject && wanted.has(businessObject.calledElement);
+        });
+        if (!match) {
+            return;
+        }
+        try {
+            this.#bpmnJS.get('canvas').scrollToElement(match);
+        } catch (error) {
+            // Older canvas without scrollToElement, or element without bounds.
+        }
+        this.#selectIntoPropertiesPanel(match);
+    }
+
+    // Selects an element AND makes sure the properties panel reflects it.
+    //
+    // The bpmn-js properties panel subscribes to selection.changed only in a
+    // post-mount effect, and after an import it shows the root regardless of the
+    // canvas selection (it re-renders the root via root.added, fires no update of
+    // its own). So a single early select() lands before the panel is listening
+    // and is lost — the canvas shows the element selected while the panel still
+    // shows the whole diagram, until the user clicks the element again.
+    //
+    // We can't observe when that effect subscribes, so we re-assert the selection
+    // until the panel confirms (via propertiesPanel.updated) that it shows the
+    // element — capped so we never loop forever, and abandoned if the user
+    // selects something else meanwhile. Selecting an already-selected element
+    // fires no event, so we clear first to force a fresh selection.changed.
+    #selectIntoPropertiesPanel(match) {
+        const eventBus = this.#bpmnJS.get('eventBus');
+        let settled = false;
+        let attempts = 0;
+
+        const onPanelUpdated = (event) => {
+            if (event && event.element && event.element.id === match.id) {
+                settled = true;
+                eventBus.off('propertiesPanel.updated', onPanelUpdated);
+            }
+        };
+        eventBus.on('propertiesPanel.updated', onPanelUpdated);
+
+        const assertSelection = () => {
+            if (settled) {
+                return;
+            }
+            // The user moved on, or we have tried long enough — give up quietly.
+            if (attempts > 0 && this.#getCurrentSelectedElementId() !== match.id) {
+                eventBus.off('propertiesPanel.updated', onPanelUpdated);
+                return;
+            }
+            if (attempts >= BpmnDiffer.PANEL_SELECT_MAX_ATTEMPTS) {
+                eventBus.off('propertiesPanel.updated', onPanelUpdated);
+                return;
+            }
+            attempts++;
+            try {
+                if (this.#getCurrentSelectedElementId() === match.id) {
+                    this.#selection.select(null);
+                }
+                this.#selection.select(match);
+            } catch (error) {
+                console.warn('cannot select the call activity', error);
+            }
+            setTimeout(assertSelection, BpmnDiffer.PANEL_SELECT_RETRY_MS);
+        };
+        assertSelection();
+    }
+
+    // Process ids defined by the diagram currently rendered — the ids a Call
+    // Activity in another file would reference (calledElement), so the reverse
+    // search can find this diagram's callers (FEAT-0023). Read lazily (after
+    // import), since the modeler is created during show().
+    #getCurrentProcessIds() {
+        try {
+            const definitions = this.#bpmnJS.getDefinitions();
+            if (!definitions || !definitions.rootElements) {
+                return [];
+            }
+            return definitions.rootElements
+                .filter((element) => element.$type === 'bpmn:Process' && element.id)
+                .map((element) => element.id);
+        } catch (error) {
+            console.warn('cannot read process ids from the current diagram', error);
+            return [];
+        }
     }
 
     #getLinkOrScriptHref(resourceName) {
