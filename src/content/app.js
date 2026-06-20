@@ -266,6 +266,17 @@ class App {
      * @private
      */
     async #openDiffer(buttonType, params, extParams, msgId) {
+        // After the extension is reloaded/updated, content scripts injected into
+        // already-open tabs are orphaned: chrome.runtime is dead and any chrome.*
+        // call below (e.g. getURL) throws "Extension context invalidated". The
+        // orphaned script cannot revive itself, so detect the dead context up front
+        // and ask the user to reload the page (a fresh content script then gets a
+        // valid context).
+        if (!chrome.runtime?.id) {
+            alert('BPMN Diff was updated or reloaded. Please refresh this page (F5) to continue.');
+            return;
+        }
+
         let finalParams = extParams ? { ...params, ...extParams } : params;
 
         // Renamed schema: the target (base) commit still holds the file under its
