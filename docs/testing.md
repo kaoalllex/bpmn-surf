@@ -35,6 +35,7 @@ There is no CI pipeline yet (see docs/git-workflow.md, the "CI" section) — the
 
 There are no integration auto-tests. Checking is manual: load the unpacked extension via `chrome://extensions` (Developer mode → Load unpacked) and check it on a GitLab MR / file page. Before committing, mentally verify that the script order and behavior are not broken.
 
+- ⚠️ **After every code change, reload the extension in `chrome://extensions/` (the reload icon on its card) before checking** — otherwise the loaded extension keeps the old code and you verify against stale code, drawing a false conclusion. Reloading also orphans content scripts in tabs opened earlier: a click there throws `Extension context invalidated` (handled gracefully — the user is asked to refresh the page), so reload the GitLab tab too after reloading the extension.
 - Quick syntax check: `for f in *.js; do node --check "$f"; done`
 - After changes in the shared differ-page classes (`differ-params.js`, `diagram-versions.js`, `branch-indicator.js`, `diff-type.js`, `utils.js`) **be sure to check both the BPMN and the DMN diff**
 - Differ-page checklist: diff highlighting, switch branch, highlight on/off, the change table + clicking a row, sequenceFlow conditions in the properties panel, zoom/pan/fit, hide properties, download, dive-in into a Call Activity, branch-only mode (without an MR)
