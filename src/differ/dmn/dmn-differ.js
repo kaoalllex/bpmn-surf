@@ -78,6 +78,10 @@ class DmnDiffer {
         );
         // Shared opener-tab navigation (open a nested differ, step back up).
         this.#tabNavigator = new DifferTabNavigator();
+        // Register this tab in the cross-tab registry so any other tab navigating
+        // to the same DMN decision reuses it instead of opening a duplicate
+        // (BUG-0017; e.g. a BPMN Business Rule Task → DMN, FEAT-0005).
+        this.#tabNavigator.registerTab(this.#params.identityKey());
         this.#view = new DmnDifferView(this.#params, this.#branchIndicator, this.#viewport, {
             onDownload: () => this.#downloadShownBranchFile(),
             onSwitchBranch: () => this.#switchBranch()
@@ -259,8 +263,14 @@ class DmnDiffer {
 
     // Opens another diagram's differ in a new tab, carrying the platform/refs plus
     // the navigation hints in `extra`. The differ kind is chosen by extension, so
-    // stepping up to a BPMN caller opens the BPMN differ (FEAT-0005).
+    // stepping up to a BPMN caller opens the BPMN differ (FEAT-0005). If that
+    // diagram is already open in any tab, reuse it instead of opening a duplicate
+    // (BUG-0017).
     async #openDifferForFile(filePath, fileName, extra) {
+        const identityKey = DifferParams.identityKeyFor(this.#params, filePath);
+        if (await this.#tabNavigator.focusExistingDifferTab(identityKey)) {
+            return;
+        }
         const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
         await this.#tabNavigator.openNestedDiffer(params, fileName);
     }

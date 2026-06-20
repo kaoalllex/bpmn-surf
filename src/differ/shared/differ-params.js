@@ -68,6 +68,28 @@ class DifferParams {
         return `${this.platform.projectUrl}/-/raw/${ref}/${filePath}`;
     }
 
+    // A stable string identifying WHICH diagram diff this tab shows, so a tab that
+    // is about to open a nested differ can first check whether that exact diagram
+    // is already open in an ancestor tab (the window.opener chain) and focus it
+    // instead of opening a duplicate (FEAT-0023 follow-up). The key combines the
+    // refs (project + MR/branch versions) with the file path, so the same file in
+    // a different MR/commit is a different key. Nested differs share all refs and
+    // differ only by file path, so `identityKeyFor(thisParams, targetFilePath)`
+    // computed before the dive equals the key the target tab will publish.
+    identityKey() {
+        return DifferParams.identityKeyFor(this, this.filePath);
+    }
+
+    static identityKeyFor(params, filePath) {
+        return [
+            params.platform.projectUrl,
+            params.changeRequestId || '',
+            params.sourceRef || '',
+            params.targetRef,
+            filePath
+        ].join('\n');
+    }
+
     // Wire params for a nested differ (e.g. diving into a Call Activity's called
     // process file) on the same platform and refs, but a different file.
     // localFileContent is intentionally not carried over: a nested differ loads

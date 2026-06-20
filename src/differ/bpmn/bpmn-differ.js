@@ -240,6 +240,9 @@ class BpmnDiffer {
         // Shared opener-tab navigation (open a nested differ, step back to the
         // opener) used by both the dive-in and dive-out paths (FEAT-0005).
         this.#tabNavigator = new DifferTabNavigator();
+        // Register this tab in the cross-tab registry so any other tab navigating
+        // to the same diagram reuses it instead of opening a duplicate (BUG-0017).
+        this.#tabNavigator.registerTab(this.#params.identityKey());
         this.#handlerLocator = new HandlerLocator(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
@@ -541,7 +544,15 @@ class BpmnDiffer {
     // plus the FEAT-0023 navigation hints in `extra` (direction-specific). The
     // differ kind (BPMN vs DMN) is chosen by extension, so diving into a called
     // DMN decision opens the DMN differ (FEAT-0005).
+    // If that diagram is already open in any tab, reuse it (BUG-0017): bring it to
+    // the front instead of opening a duplicate — regardless of how the user got
+    // there (diving in, stepping up to a caller, or a sibling tab). Only when no
+    // such tab exists do we open a fresh one.
     async #openDifferForFile(filePath, fileName, extra) {
+        const identityKey = DifferParams.identityKeyFor(this.#params, filePath);
+        if (await this.#tabNavigator.focusExistingDifferTab(identityKey)) {
+            return;
+        }
         const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
         await this.#tabNavigator.openNestedDiffer(params, fileName);
     }

@@ -44,7 +44,6 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/differ/dmn/dmn-differ-view.js',
     'src/differ/dmn/dmn-table-viewport.js',
     'src/differ/shared/diagram-versions.js',
-    'src/differ/shared/differ-tab-navigator.js',
     'src/differ/navigation/call-activity-navigator.js',
     'src/differ/navigation/decision-navigator.js',
     // doomed (slated for removal once primary paths are proven)

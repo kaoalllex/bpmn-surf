@@ -120,4 +120,45 @@ describe('DifferParams', () => {
         assert.equal(nested.filePath, 'src/sub.bpmn');
         assert.equal(nested.fileName, 'sub.bpmn');
     });
+
+    // FEAT-0023 follow-up: identityKey is the dedup key used to find an already-open
+    // tab showing the same diagram before opening a duplicate nested differ.
+    describe('identityKey', () => {
+        it('is identical for two params describing the same diagram diff', () => {
+            const a = new DifferParams(validParams);
+            const b = new DifferParams({ ...validParams });
+            assert.equal(a.identityKey(), b.identityKey());
+        });
+
+        it('differs when the file path differs', () => {
+            const a = new DifferParams(validParams);
+            const b = new DifferParams({ ...validParams, filePath: 'src/other.bpmn' });
+            assert.notEqual(a.identityKey(), b.identityKey());
+        });
+
+        it('differs for the same file in a different MR (changeRequestId)', () => {
+            const a = new DifferParams({ ...validParams, changeRequestId: '10' });
+            const b = new DifferParams({ ...validParams, changeRequestId: '20' });
+            assert.notEqual(a.identityKey(), b.identityKey());
+        });
+
+        it('differs for the same file at different source/target refs', () => {
+            const a = new DifferParams(validParams);
+            const bySource = new DifferParams({ ...validParams, sourceRef: 'zzz999' });
+            const byTarget = new DifferParams({ ...validParams, targetRef: 'release' });
+            assert.notEqual(a.identityKey(), bySource.identityKey());
+            assert.notEqual(a.identityKey(), byTarget.identityKey());
+        });
+
+        it('matches the key a nested differ for the same file will publish', () => {
+            // A tab dives into src/sub.bpmn: the key it computes for the target must
+            // equal the key the freshly opened nested tab publishes from its params.
+            const parent = new DifferParams(validParams);
+            const targetKey = DifferParams.identityKeyFor(parent, 'src/sub.bpmn');
+
+            const nestedRaw = parent.toNestedDifferParams('src/sub.bpmn', 'sub.bpmn');
+            const nested = new DifferParams(nestedRaw);
+            assert.equal(nested.identityKey(), targetKey);
+        });
+    });
 });
