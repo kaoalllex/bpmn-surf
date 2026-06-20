@@ -48,4 +48,5 @@ The remote branch is usually removed by GitLab on merge; if it remains — `git 
 ## Parallel work
 
 - Several Claude Code sessions may work on the project simultaneously in different worktrees.
+- To start a new parallel task, a human creates the worktree **before** launching the session: `npm run worktree -- <task-slug> [feature|fix]` (wraps `scripts/new-worktree.sh`). It fetches `origin`, creates `../bpmn-diff-<task-slug>` on a new branch from `origin/master`, runs `npm install` there, and prints the `cd … && claude` command to run. Claude itself does not create worktrees (see above).
 - Do not touch files outside the scope of your task, especially shared configs and lock files (`manifest.json`, `package.json`, `package-lock.json`, `.claude/`, `CLAUDE.md`, `docs/`) — except when changing them is the task itself. This minimizes merge conflicts.
