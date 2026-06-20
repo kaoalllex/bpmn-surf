@@ -38,3 +38,24 @@ describe('BpmnDifferView.clampPanelWidth', () => {
         assert.equal(clamp(50, 250, 100), 250);
     });
 });
+
+describe('BpmnDifferView.isPropsHiddenStored', () => {
+    const isHidden = BpmnDifferView.isPropsHiddenStored.bind(BpmnDifferView);
+
+    it('is hidden when the stored flag is "1"', () => {
+        assert.equal(isHidden('1'), true);
+    });
+
+    it('is shown when the stored flag is "0"', () => {
+        assert.equal(isHidden('0'), false);
+    });
+
+    it('is shown when nothing was stored (null)', () => {
+        assert.equal(isHidden(null), false);
+    });
+
+    it('is shown for any unexpected value', () => {
+        assert.equal(isHidden('true'), false);
+        assert.equal(isHidden(''), false);
+    });
+});
