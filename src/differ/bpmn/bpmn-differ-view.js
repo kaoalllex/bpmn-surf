@@ -14,6 +14,10 @@ class BpmnDifferView {
     static PROPS_MIN_WIDTH = 250;
     static PROPS_DEFAULT_WIDTH = 340;
 
+    // Persisted visibility so an explicit hide/show survives dive-in/out into a
+    // freshly opened differ tab (BUG-0018). Stored globally, like the width.
+    static PROPS_HIDDEN_KEY = 'bpmnDiffer.propsHidden';
+
     #params;
     #branchIndicator;
     #callbacks;
@@ -21,6 +25,7 @@ class BpmnDifferView {
     #canvasCell = null;
     #propsCell = null;
     #splitterCell = null;
+    #hidePropsButton = null;
     #isPropsCellHidden = false;
     #viewport = null;
     #changesTableView = null;
@@ -69,6 +74,11 @@ class BpmnDifferView {
         if (desired < min) return min;
         if (desired > ceil) return ceil;
         return desired;
+    }
+
+    // Interprets the stored visibility flag. Pure (no DOM) — unit-tested.
+    static isPropsHiddenStored(rawValue) {
+        return rawValue === '1';
     }
 
     build() {
@@ -140,6 +150,7 @@ class BpmnDifferView {
         this.#propsCell.style.width = BpmnDifferView.PROPS_DEFAULT_WIDTH + 'px';
         tableCanvasPropsRow.appendChild(this.#propsCell);
         this.#restorePropsWidth();
+        this.#restorePropsHidden();
 
         //--- footer
         if (this.#params.isSourceVersionDefined()) {
@@ -195,6 +206,22 @@ class BpmnDifferView {
                 saved, BpmnDifferView.PROPS_MIN_WIDTH, BpmnDifferView.maxPanelWidth());
             this.#propsCell.style.width = width + 'px';
         }
+    }
+
+    // Restores the last explicit hide/show choice (BUG-0018). No refit here: the
+    // canvas is still visibility:hidden and gets fitted later when it renders.
+    #restorePropsHidden() {
+        if (BpmnDifferView.isPropsHiddenStored(localStorage.getItem(BpmnDifferView.PROPS_HIDDEN_KEY))) {
+            this.#applyPropsHidden(true);
+        }
+    }
+
+    // Applies the panel's visibility to the DOM, the toggle button and the flag.
+    #applyPropsHidden(hidden) {
+        this.#isPropsCellHidden = hidden;
+        this.#propsCell.style.display = hidden ? 'none' : '';
+        this.#splitterCell.style.display = hidden ? 'none' : '';
+        this.#hidePropsButton.textContent = hidden ? 'Show properties' : 'Hide properties';
     }
 
     // mousedown on the splitter → track mousemove on document → resize the
@@ -379,22 +406,16 @@ class BpmnDifferView {
             text: 'Hide properties',
             minWidth: 140,
             onClick: () => {
-                if (this.#isPropsCellHidden) {
-                    button.textContent = 'Hide properties';
-                    this.#propsCell.style.display = '';
-                    this.#splitterCell.style.display = '';
-                    this.#isPropsCellHidden = false;
-                } else {
-                    button.textContent = 'Show properties';
-                    this.#propsCell.style.display = 'none';
-                    this.#splitterCell.style.display = 'none';
-                    this.#isPropsCellHidden = true;
-                }
+                const hidden = !this.#isPropsCellHidden;
+                this.#applyPropsHidden(hidden);
+                // Persist the explicit choice so it survives dive-in/out (BUG-0018).
+                localStorage.setItem(BpmnDifferView.PROPS_HIDDEN_KEY, hidden ? '1' : '0');
                 // Doesn't always work the first time, so call fit twice
                 this.#viewport.fit(true);
                 this.#viewport.fit(true);
             }
         });
+        this.#hidePropsButton = button;
         return button;
     }
 
