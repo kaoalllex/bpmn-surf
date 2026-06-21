@@ -230,12 +230,14 @@ class DmnDiffer {
     // Header file descriptor for a side (FEAT-0026): its path + display name plus
     // the GitLab blob URL built from that side's ref, so the clickable path opens
     // the file in the exact shown version. A side with no repo ref (local file
-    // used as the source) yields url:null → an inactive, non-link path.
+    // used as the source), or where the file is absent (new/deleted in the MR),
+    // yields url:null → an inactive, non-link path (the blob URL would 404 there).
     #shownFileFor(targetSide) {
         const ref = targetSide ? this.#params.targetRef : this.#params.sourceRef;
         const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
         const fileName = targetSide ? this.#params.targetFileName : this.#params.fileName;
-        return { path, fileName, url: ref ? this.#params.blobFileUrl(ref, path) : null };
+        const exists = targetSide ? this.#versions.branchXml : this.#versions.mrXml;
+        return { path, fileName, url: ref && exists ? this.#params.blobFileUrl(ref, path) : null };
     }
 
     // Commit/ref of the decision version currently shown (for resolving the BPMN
