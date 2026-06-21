@@ -68,6 +68,13 @@ class DifferParams {
         return `${this.platform.projectUrl}/-/raw/${ref}/${filePath}`;
     }
 
+    // Human-facing GitLab blob URL for opening the file in the repo UI (FEAT-0026).
+    // Built from the ref (sha), so it shows the file exactly as in the MR head /
+    // selected commit / branch — one universal construction correct in all modes.
+    blobFileUrl(ref, filePath = this.filePath) {
+        return `${this.platform.projectUrl}/-/blob/${ref}/${filePath}`;
+    }
+
     // A stable string identifying WHICH diagram diff this tab shows, so a tab that
     // is about to open a nested differ can first check whether that exact diagram
     // is already open in an ancestor tab (the window.opener chain) and focus it

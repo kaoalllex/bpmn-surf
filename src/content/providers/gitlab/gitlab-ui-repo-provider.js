@@ -116,7 +116,9 @@ class GitLabUIRepoProvider extends UIRepoProvider {
             console.debug('Selected local file has been read');
             const extParams = {
                 localFileContent: content,
-                sourceLabel: 'local file',
+                // The uploaded file's own name, shown as "Local · <name>" in the
+                // header so it is clear which local file is being compared.
+                sourceLabel: file.name,
             };
             onButtonClickFunc(extParams);
         };

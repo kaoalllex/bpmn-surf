@@ -8,6 +8,10 @@ class DmnDifferView {
     // sizing/margins are layered on top via the .differ-btn* classes.
     static BTN_CLASS = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
 
+    // U+200E LEFT-TO-RIGHT MARK — prefixed to the file path so the bidi algorithm
+    // keeps the LTR path order inside the rtl left-truncating element (FEAT-0026).
+    static LRM = '‎';
+
     #params;
     #branchIndicator;
     #viewport;
@@ -15,7 +19,7 @@ class DmnDifferView {
 
     #canvasCell = null;
     #downloadButton = null;
-    #fileNameSpan = null;
+    #filePathElement = null;
     #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
     #updateInfo = null;
@@ -102,11 +106,26 @@ class DmnDifferView {
         this.#emptyState.hide();
     }
 
-    // Updates the file name shown in the header. The two sides can differ when
-    // the file was renamed in the MR: target keeps the old name (BUG-0002).
-    setFileName(fileName) {
-        if (this.#fileNameSpan) {
-            this.#fileNameSpan.textContent = fileName;
+    // Updates the file shown in the header (FEAT-0026): the path text (truncated
+    // from the left via CSS, full path in the tooltip) and the link target for the
+    // currently shown side. The two sides can differ when the file was renamed in
+    // the MR: target keeps the old name/path (BUG-0002). A null/empty url (local
+    // file or a side with no repo ref) renders an inactive, non-link path.
+    setShownFile({ path, fileName, url }) {
+        if (!this.#filePathElement) {
+            return;
+        }
+        const text = path || fileName || '';
+        // LRM prefix keeps the LTR path readable inside the rtl (left-truncating)
+        // element, so the slashes are not reordered (FEAT-0026).
+        this.#filePathElement.textContent = DmnDifferView.LRM + text;
+        this.#filePathElement.title = text;
+        if (url) {
+            this.#filePathElement.setAttribute('href', url);
+            this.#filePathElement.classList.remove('differ-file-path-inactive');
+        } else {
+            this.#filePathElement.removeAttribute('href');
+            this.#filePathElement.classList.add('differ-file-path-inactive');
         }
     }
 
@@ -150,31 +169,34 @@ class DmnDifferView {
         toolbar.className = 'differ-toolbar';
         parentElem.appendChild(toolbar);
 
-        //--- file group
+        //--- file group (FEAT-0026): clickable, left-truncating file path; the
+        //    group can shrink so the path makes room for the rest of the toolbar.
+        //    No "File:" label — the path itself (next to the download button) is
+        //    self-explanatory and the saved width goes to the path.
         const fileGroup = this.#group();
-        const fileLabel = document.createElement('span');
-        fileLabel.className = 'differ-label';
-        fileLabel.textContent = 'File:';
-        fileGroup.appendChild(fileLabel);
+        fileGroup.classList.add('differ-file-group');
 
-        this.#fileNameSpan = document.createElement('span');
-        this.#fileNameSpan.className = 'differ-file-name';
-        this.#fileNameSpan.textContent = this.#params.fileName;
-        fileGroup.appendChild(this.#fileNameSpan);
-
+        // Download stays first (left), at a stable position by the bar's edge, so it
+        // does not drift with the path length; the path is truncated after it.
         this.#downloadButton = this.#button({
             icon: '↓', title: 'Download the file as shown for the current branch',
             onClick: () => this.#callbacks.onDownload()
         });
         fileGroup.appendChild(this.#downloadButton);
+
+        // A real <a> so ctrl/middle-click and plain click (target=_blank) all open
+        // the file in GitLab in a new tab. href/text are set per shown side via
+        // setShownFile(); no href = an inactive, non-link path.
+        this.#filePathElement = document.createElement('a');
+        this.#filePathElement.className = 'differ-file-path';
+        this.#filePathElement.target = '_blank';
+        this.#filePathElement.rel = 'noopener noreferrer';
+        fileGroup.appendChild(this.#filePathElement);
         toolbar.appendChild(fileGroup);
 
-        //--- branch indicator group (left side)
+        //--- branch indicator group (left side). No "Branch:" label — the
+        //    indicator shows the branch name(s) and "Switch branch" is right there.
         const branchGroup = this.#group();
-        const branchLabel = document.createElement('span');
-        branchLabel.className = 'differ-label';
-        branchLabel.textContent = 'Branch:';
-        branchGroup.appendChild(branchLabel);
         branchGroup.appendChild(this.#branchIndicator.createElement());
         toolbar.appendChild(branchGroup);
 

@@ -10,6 +10,10 @@ class BranchIndicator {
     static MR_BRANCH_COLOR = 'darkblue';
     static TARGET_ROLE = 'Original';
     static SOURCE_ROLE = 'Changed';
+    // When the source side is a locally-uploaded file ("Diff with local") the role
+    // word is "Local" rather than "Changed" — the comparison is against a file on
+    // disk, not a branch/commit — and sourceLabel carries the uploaded file's name.
+    static LOCAL_ROLE = 'Local';
     // Muted style + note for a side where the file does not exist (UX-0003):
     // the absence is signalled here, in the label, rather than by a banner.
     // The wording is side-specific: the opposite side always exists (otherwise
@@ -21,13 +25,15 @@ class BranchIndicator {
 
     #targetLabel;
     #sourceLabel;
+    #sourceRole;
     #textNode = null;
     #spanElement = null;
     #targetShown = false;
 
-    constructor(targetLabel, sourceLabel) {
+    constructor(targetLabel, sourceLabel, isLocalSource = false) {
         this.#targetLabel = targetLabel;
         this.#sourceLabel = sourceLabel;
+        this.#sourceRole = isLocalSource ? BranchIndicator.LOCAL_ROLE : BranchIndicator.SOURCE_ROLE;
     }
 
     createElement() {
@@ -48,7 +54,7 @@ class BranchIndicator {
             this.#textNode.textContent = this.#withRole(BranchIndicator.TARGET_ROLE, this.#targetLabel);
             this.#spanElement.style.color = BranchIndicator.TARGET_BRANCH_COLOR;
         } else {
-            this.#textNode.textContent = this.#withRole(BranchIndicator.SOURCE_ROLE, this.#sourceLabel);
+            this.#textNode.textContent = this.#withRole(this.#sourceRole, this.#sourceLabel);
             this.#spanElement.style.color = BranchIndicator.MR_BRANCH_COLOR;
         }
     }
@@ -58,7 +64,7 @@ class BranchIndicator {
     // Download and a subsequent Switch still target the right side.
     setAbsentLabel(targetSide) {
         this.#targetShown = targetSide;
-        const role = targetSide ? BranchIndicator.TARGET_ROLE : BranchIndicator.SOURCE_ROLE;
+        const role = targetSide ? BranchIndicator.TARGET_ROLE : this.#sourceRole;
         const label = targetSide ? this.#targetLabel : this.#sourceLabel;
         const note = targetSide ? BranchIndicator.ABSENT_NOTE_NEW : BranchIndicator.ABSENT_NOTE_DELETED;
         this.#textNode.textContent = `${this.#withRole(role, label)} · ${note}`;
@@ -70,9 +76,11 @@ class BranchIndicator {
         return this.#targetShown;
     }
 
-    // The role word only makes sense when there are two sides to tell apart;
-    // in a single-version view (branch file, no source side) just show the label.
+    // The role word ("Original" / "Changed" / "Local") precedes every label so the
+    // side is clear without relying on colour — including the single-version view
+    // (a file opened just for viewing is the repository's "Original" version), where
+    // the bare ref/sha alone gave no hint of what it was (FEAT-0026 review).
     #withRole(role, label) {
-        return this.#sourceLabel ? `${role} · ${label}` : label;
+        return `${role} · ${label}`;
     }
 }
