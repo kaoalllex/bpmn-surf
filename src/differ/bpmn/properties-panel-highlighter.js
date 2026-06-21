@@ -44,7 +44,7 @@ class PropertiesPanelHighlighter {
         const mappingChanges = this.#nodeIdToMappingChanges.get(elementId);
 
         for (const diffPropGroup of diffPropGroups) {
-            const groupHeader = await this.#findGroupHeader(diffPropGroup);
+            const groupHeader = await findPropertiesGroupHeader(diffPropGroup);
             if (!groupHeader) {
                 console.warn(`property group header not found in panel, cannot highlight: "${diffPropGroup}" (element ${elementId})`);
                 continue;
@@ -58,20 +58,6 @@ class PropertiesPanelHighlighter {
                 await this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
             }
         }
-    }
-
-    // The group header carries the title; its parent is the group container that also holds the list
-    async #findGroupHeader(groupName) {
-        return doWithAttempts(function () {
-            // The group title no longer carries a `title` attribute; match by header text instead
-            const titles = document.querySelectorAll('.bio-properties-panel-group-header-title');
-            for (const title of titles) {
-                if (title.textContent.trim() === groupName) {
-                    return title.parentElement;
-                }
-            }
-            return null;
-        });
     }
 
     async #highlightListItems(groupContainer, descriptors, elementId, groupName) {

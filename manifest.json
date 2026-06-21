@@ -80,6 +80,7 @@
                 "src/differ/bpmn/element-searcher.js",
                 "src/differ/bpmn/search-panel.js",
                 "src/differ/bpmn/properties-panel-highlighter.js",
+                "src/differ/bpmn/properties-group-expander.js",
                 "src/differ/navigation/process-file-index.js",
                 "src/differ/navigation/call-activity-locator.js",
                 "src/differ/navigation/call-activity-navigator.js",

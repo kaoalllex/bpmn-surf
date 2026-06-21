@@ -108,6 +108,23 @@ async function doWithAttempts(action, attempts = 10, delayMs = 150) {
     return null;
 }
 
+// Finds a bpmn-js properties-panel group by its header text, returning the
+// clickable header element (`.bio-properties-panel-group-header`) or null.
+// The group title carries no `title` attribute, so it is matched by text.
+// Polls via doWithAttempts to ride out the panel's async preact re-render
+// (BUG-0011). Shared by PropertiesPanelHighlighter and PropertiesGroupExpander.
+async function findPropertiesGroupHeader(groupName) {
+    return doWithAttempts(function () {
+        const titles = document.querySelectorAll('.bio-properties-panel-group-header-title');
+        for (const title of titles) {
+            if (title.textContent.trim() === groupName) {
+                return title.parentElement;
+            }
+        }
+        return null;
+    });
+}
+
 function requireDefined(arg, argName) {
     if (!arg) {
         throw new Error(`${argName} is undefined`);
@@ -210,6 +227,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/bpmn/element-searcher.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/search-panel.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/properties-group-expander.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/process-file-index.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/call-activity-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/call-activity-navigator.js', doc, getResourceUrlByNameFunc);

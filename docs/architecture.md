@@ -33,8 +33,8 @@ src/
                differ-loading-overlay.js, differ-empty-state.js, update-indicator.js,
                differ-tab-navigator.js
     bpmn/      bpmn-differ.js, bpmn-differ-view.js, bpmn-xml-comparator.js, diff-highlighter.js,
-               changes-table-view.js, properties-panel-highlighter.js, condition-formatter.js, canvas-viewport.js,
-               element-searcher.js, search-panel.js
+               changes-table-view.js, properties-panel-highlighter.js, properties-group-expander.js,
+               condition-formatter.js, canvas-viewport.js, element-searcher.js, search-panel.js
     dmn/       dmn-differ.js, dmn-differ-view.js, dmn-table-viewport.js, dmn-xml-comparator.js, dmn-diff-painter.js
     navigation/ call-activity-locator.js, call-activity-navigator.js, caller-locator.js,
                decision-locator.js, decision-navigator.js, decision-caller-locator.js,
@@ -85,6 +85,7 @@ Flow: `app.js` listens to `mouseup`/`popstate`, detects the page → the provide
 | `diff-highlighter.js` | `DiffHighlighter` — coloring diff elements and highlight markers |
 | `changes-table-view.js` | `ChangesTableView` — the changes table in the footer |
 | `properties-panel-highlighter.js` | `PropertiesPanelHighlighter` — highlighting groups in the properties panel, conditions. For list groups (In/Out mappings, Inputs/Outputs), on top of highlighting the group header it additionally colors the specific changed entries (by `nodeIdToMappingChanges` from the comparator, matched by the entry header text): changed→blue, added→green (MR), removed→red (target); if an entry is not matched — only the group highlight remains |
+| `properties-group-expander.js` | `PropertiesGroupExpander` (FEAT-0029) — auto-expands (only opens, never collapses) the property-panel groups most relevant to the selected element: axis A = changed groups from the diff (`nodeIdToDiffsMap`), axis B = groups characteristic of the element type via the pure `relevantGroupsForElement` (events keyed on `bo.eventDefinitions`, gateway flows, multi-instance, task implementations, non-empty In/Out/Inputs/Outputs). Detects the open state by the `open` class on the header and finds the header by text via the shared `utils.js#findPropertiesGroupHeader` (also used by the highlighter). A missing group is a silent no-op. BPMN only |
 | `condition-formatter.js` | `ConditionFormatter` — formatting condition expressions |
 | `canvas-viewport.js` | `CanvasViewport` — pan/zoom/fit of the canvas |
 | `element-searcher.js` | `ElementSearcher` — full-text search over BPMN elements (FEAT-0006): builds an index from `elementRegistry` and searches ids by name/id/parameters. `buildSearchText(bo)` recursively gathers all primitive values of a moddle object (condition expression and its variables, In/Out mappings, Inputs/Outputs, delegate/class/topic, calledElement, documentation), but does NOT descend into references to other elements (they have their own `id`), otherwise a container would absorb the text of the whole schema. Unlike the viewer's built-in search (name/id only) |
