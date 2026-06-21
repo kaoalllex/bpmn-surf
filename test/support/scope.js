@@ -29,6 +29,7 @@ const SCOPE_FILES = [
     'src/differ/bpmn/bpmn-xml-comparator.js',
     'src/differ/bpmn/element-searcher.js',
     'src/differ/bpmn/properties-panel-highlighter.js',
+    'src/differ/bpmn/properties-group-expander.js',
     'src/differ/shared/differ-params.js',
     'src/differ/shared/differ-tab-navigator.js',
     'src/differ/shared/branch-indicator.js',
@@ -94,6 +95,7 @@ const EXPORTED_NAMES = [
     'BpmnXmlComparator',
     'ElementSearcher',
     'PropertiesPanelHighlighter',
+    'PropertiesGroupExpander',
     'DmnXmlComparator',
     'DmnDiffPainter',
     'BpmnDifferView',
@@ -113,7 +115,8 @@ const EXPORTED_NAMES = [
     // utils.js functions under test
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
-    'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts'
+    'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
+    'findPropertiesGroupHeader'
 ];
 
 // Creates a fresh isolated scope per test file (or per test, if needed):

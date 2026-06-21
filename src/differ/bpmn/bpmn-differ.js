@@ -42,6 +42,7 @@ class BpmnDiffer {
     #diffHighlighter = null;
     #changesTableView = null;
     #propertiesPanelHighlighter = null;
+    #propertiesGroupExpander = null;
     #processFileIndex = null;
     #callActivityLocator = null;
     #callActivityNavigator = null;
@@ -87,6 +88,7 @@ class BpmnDiffer {
             this.#changesTableView.init(this.#elementRegistry, this.#diffHighlighter);
         }
         this.#propertiesPanelHighlighter.init(this.#elementRegistry);
+        this.#propertiesGroupExpander.init(this.#elementRegistry);
         this.#callActivityNavigator = new CallActivityNavigator(
             bpmnJSOverlays,
             this.#elementRegistry,
@@ -270,6 +272,8 @@ class BpmnDiffer {
             new ConditionFormatter(),
             () => this.#branchIndicator.isTargetBranchShown()
         );
+        // FEAT-0029: auto-expand the property groups relevant to the selected element.
+        this.#propertiesGroupExpander = new PropertiesGroupExpander();
         this.#view = new BpmnDifferView(this.#params, this.#branchIndicator, {
             onDownload: () => this.#downloadShownBranchFile(),
             onSwitchBranch: () => this.#switchBranch(),
@@ -490,6 +494,7 @@ class BpmnDiffer {
 
         this.#propertiesPanelHighlighter.setDiffData(
             diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges);
+        this.#propertiesGroupExpander.setDiffData(diff.nodeIdToDiffsMap);
         return diff;
     }
 
@@ -522,6 +527,7 @@ class BpmnDiffer {
         }
         this.#propertiesPanelHighlighter.highlightDiffPropGroups(this.#selectedElementId);
         this.#propertiesPanelHighlighter.showConditionExpression(this.#selectedElementId);
+        this.#propertiesGroupExpander.expandRelevantGroups(this.#selectedElementId);
         this.#callActivityNavigator.showDiveInOverlay();
         this.#decisionNavigator.showDiveInOverlay();
         this.#handlerNavigator.showOverlayForSelectedElement();
