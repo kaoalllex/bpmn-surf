@@ -49,10 +49,11 @@ notes="$(awk -v hdr="## $version" '
     END { sub(/^\n+/, "", buf); sub(/\n+$/, "", buf); printf "%s", buf }
 ' CHANGELOG.md)"
 [ -n "$notes" ] || notes="bpmn-surf $version."
+readme_install="https://gitlab.example.com/kaoalllex/bpmn-diff/-/blob/master/README.md?ref_type=heads#installation"
 notes="$notes
 
 ---
-**Install:** download \`$name-$version.zip\`, unzip it, then load the \`$name\` folder via **Load unpacked** on \`chrome://extensions\` (Developer mode on). See the README for details."
+**Install:** see the [Installation section of the README]($readme_install)."
 
 # --- build the artifact ---
 echo "release: building $zip ..."
