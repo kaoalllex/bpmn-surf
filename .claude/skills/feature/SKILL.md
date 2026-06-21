@@ -1,6 +1,6 @@
 ---
 name: feature
-description: Implement new functionality for the BPMN Diff Chrome Extension — behavior that did not exist before. Use for requests like "add", "new feature", "implement", "create", "support a new case". Unlike fix (repairs existing broken behavior) — here something new is added; unlike refactor (behavior stays the same) — here behavior changes.
+description: Implement new functionality for the bpmn-surf Chrome Extension — behavior that did not exist before. Use for requests like "add", "new feature", "implement", "create", "support a new case". Unlike fix (repairs existing broken behavior) — here something new is added; unlike refactor (behavior stays the same) — here behavior changes.
 ---
 
 # New feature

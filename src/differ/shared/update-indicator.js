@@ -26,7 +26,7 @@ class UpdateIndicator {
         const button = document.createElement('button');
         button.className = 'differ-btn differ-update-indicator';
         button.textContent = `🔔 v${this.updateInfo.latestVersion}`;
-        button.title = 'A BPMN differ update is available — open the update window';
+        button.title = 'Update available for bpmn-surf — open the update window';
         button.addEventListener('click', () => {
             if (typeof onActivate === 'function') {
                 onActivate();

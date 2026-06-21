@@ -1,13 +1,22 @@
 {
     "manifest_version": 3,
-    "name": "BPMN differ for Gitlab",
+    "name": "bpmn-surf",
     "version": "0.18.0",
-    "description": "BPMN 2.0 schemas and DMN visual differ for Gitlab",
+    "description": "Explore and diff BPMN & DMN diagrams",
+    "icons": {
+        "16": "icons/icon-16.png",
+        "32": "icons/icon-32.png",
+        "48": "icons/icon-48.png",
+        "128": "icons/icon-128.png"
+    },
     "content_scripts": [
         {
             "matches": [
                 "https://gitlab.example.com/*",
                 "https://gitlab.com/*"
+            ],
+            "css": [
+                "src/content/content-styles.css"
             ],
             "js": [
                 "src/core/config.js",
@@ -37,7 +46,13 @@
     ],
     "action": {
         "default_popup": "src/popup/popup.html",
-        "default_title": "BPMN differ — update"
+        "default_title": "bpmn-surf — update",
+        "default_icon": {
+            "16": "icons/icon-16.png",
+            "32": "icons/icon-32.png",
+            "48": "icons/icon-48.png",
+            "128": "icons/icon-128.png"
+        }
     },
     "background": {
         "service_worker": "src/background/update-service-worker.js"

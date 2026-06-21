@@ -1,4 +1,4 @@
-# BPMN Diff tasks — format and rules
+# bpmn-surf tasks — format and rules
 
 The backlog is stored **one file per task**. This gives pinpoint reading (the agent opens only the needed task, not the whole list), an independent history for each task, and clean git diffs.
 

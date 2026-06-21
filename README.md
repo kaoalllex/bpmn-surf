@@ -1,6 +1,6 @@
-# BPMN Diff
+# bpmn-surf
 
-Browser extension for viewing and visually comparing BPMN 2.0 and DMN diagrams in GitLab.
+Browser extension for browsing and comparing BPMN 2.0 and DMN diagrams in GitLab: explore schemas stored in a repo, dive into call activities and called decisions and back, and review changes in merge requests.
 
 ## Requirements
 
@@ -48,7 +48,7 @@ then in the update window click **"Reload extension"** — it will re-read the f
 ### Comparing in an MR
 
 1. Open a merge request in GitLab containing changes to BPMN/DMN files
-2. A **Show schema diff** (for BPMN) or **Show decision diff** (for DMN) button appears on the MR page
+2. A **Schema diff** (for BPMN) or **Decision diff** (for DMN) button appears on the MR page
 3. Click the button — a page with a visual comparison of the two diagram versions opens
 4. Changed elements will be highlighted:
    - 🟢 Green — added elements
@@ -58,8 +58,8 @@ then in the update window click **"Reload extension"** — it will re-read the f
 
 1. Open a `.bpmn` or `.dmn` file in a GitLab project
 2. Buttons appear next to the file name:
-   - **Show schema** / **Show decision** — open the diagram for viewing
-   - **Show diff with local** — compare against a local version of the file
+   - **View schema** / **View decision** — open the diagram for viewing
+   - **Diff with local** — compare against a local version of the file
 
 ## Technologies
 

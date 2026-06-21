@@ -1,4 +1,4 @@
-# Project Context: BPMN Diff for GitLab
+# Project Context: bpmn-surf
 
 ## Purpose
 Chrome Extension (Manifest V3) for **visually comparing BPMN 2.0 and DMN diagrams** inside **GitLab merge requests**.

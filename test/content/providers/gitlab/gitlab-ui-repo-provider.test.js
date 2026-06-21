@@ -56,7 +56,7 @@ function addDiffButton(scope, fileType) {
 
 function diffButton(document) {
     return [...document.querySelectorAll('button')]
-        .find(b => b.textContent === 'Show schema diff' || b.textContent === 'Show decision diff');
+        .find(b => b.textContent === 'Schema diff' || b.textContent === 'Decision diff');
 }
 
 describe('GitLabUIRepoProvider.addButton — DIFF', () => {
@@ -68,7 +68,7 @@ describe('GitLabUIRepoProvider.addButton — DIFF', () => {
 
         const button = diffButton(scope.document);
         assert.ok(button, 'button should be inserted');
-        assert.equal(button.textContent, 'Show schema diff');
+        assert.equal(button.textContent, 'Schema diff');
         assert.ok(
             button.closest('.merge-request-tabs-actions'),
             'button should live inside the tabs-actions container'
@@ -86,13 +86,13 @@ describe('GitLabUIRepoProvider.addButton — DIFF', () => {
         assert.ok(button.closest('.merge-request-tabs-actions'));
     });
 
-    it('labels the button "Show decision diff" for DMN', () => {
+    it('labels the button "Decision diff" for DMN', () => {
         const scope = createScope();
         scope.document.body.innerHTML = gitlabComHeaderMarkup();
 
         addDiffButton(scope, scope.FILE_TYPE_DMN);
 
-        assert.equal(diffButton(scope.document).textContent, 'Show decision diff');
+        assert.equal(diffButton(scope.document).textContent, 'Decision diff');
     });
 
     it('does nothing (and does not throw) when no known container is present', () => {
