@@ -116,7 +116,8 @@ async function buildStateReply() {
         // transparency: show exactly where we go
         manifestUrl: UPDATE_VERSION_MANIFEST_URL,
         homeUrl: UPDATE_HOME_URL,
-        gitPullCommand: UPDATE_GIT_PULL_COMMAND
+        gitPullCommand: UPDATE_GIT_PULL_COMMAND,
+        feedbackUrl: FEEDBACK_URL
     };
 }
 
