@@ -153,15 +153,49 @@
     margin-left: auto;
 }
 
-.differ-label {
-    color: hsl(0, 0%, 40%);
-    white-space: nowrap;
+/* clickable file path in the header (FEAT-0026). The group may SHRINK (min-width:0)
+   so a long path is left-truncated rather than pushing the toolbar off the bar, but
+   it does NOT grow: it stays at its content width, so the flexible slack lands on
+   the spacer before "Switch branch" (an empty gap) instead of being reserved here.
+   The download button and branch indicator therefore stay on the left. */
+.differ-file-group {
+    min-width: 0;
 }
 
-.differ-file-name {
+/* The path itself: keeps the old file-name size/weight, but truncates from the
+   LEFT (direction:rtl + ellipsis) so the base name stays visible; the full path
+   is in the title. A left-to-right mark is prefixed in JS so the slashes are not
+   reordered by the rtl context. Link colour appears only on hover/focus, so the
+   resting state reads like a label rather than a loud link. */
+.differ-file-path {
+    min-width: 0;
     font-size: 18px;
     font-weight: bold;
+    direction: rtl;
+    text-align: left;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.differ-file-path:hover,
+.differ-file-path:focus {
+    color: hsl(212, 73%, 46%);
+    text-decoration: underline;
+}
+
+/* a side with no repo ref (local file): plain text, not a link */
+.differ-file-path-inactive {
+    cursor: default;
+}
+
+.differ-file-path-inactive:hover,
+.differ-file-path-inactive:focus {
+    color: inherit;
+    text-decoration: none;
 }
 
 /* keep GitLab's native button look; bump the font and let buttons hug their

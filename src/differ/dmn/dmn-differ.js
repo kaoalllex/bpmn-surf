@@ -65,7 +65,8 @@ class DmnDiffer {
         this.#params.requirePlatformInfo();
 
         this.#versions = new DiagramVersions(this.#params);
-        this.#branchIndicator = new BranchIndicator(this.#params.targetLabel, this.#params.sourceLabel);
+        this.#branchIndicator = new BranchIndicator(
+            this.#params.targetLabel, this.#params.sourceLabel, !!this.#params.localFileContent);
         this.#viewport = new DmnTableViewport();
         this.#xmlComparator = new DmnXmlComparator();
         this.#diffPainter = new DmnDiffPainter();
@@ -160,7 +161,7 @@ class DmnDiffer {
     // branch label and covers the canvas with a blank placeholder (dmn-js has no
     // clear()), keeping the toolbar usable to switch back (UX-0003).
     #showAbsentSide(targetSide) {
-        this.#view.setFileName(targetSide ? this.#params.targetFileName : this.#params.fileName);
+        this.#view.setShownFile(this.#shownFileFor(targetSide));
         this.#branchIndicator.setAbsentLabel(targetSide);
         this.#view.showEmptyState('');
         this.#view.setDownloadButtonEnabled(false);
@@ -170,7 +171,7 @@ class DmnDiffer {
         console.debug('showing mr dmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrDmnXml');
         await this.#showXml(mrXml);
-        this.#view.setFileName(this.#params.fileName);
+        this.#view.setShownFile(this.#shownFileFor(false));
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
         if (this.#versions.branchXml) {
@@ -184,7 +185,7 @@ class DmnDiffer {
         console.debug('showing branch dmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchDmnXml');
         await this.#showXml(branchXml);
-        this.#view.setFileName(this.#params.targetFileName);
+        this.#view.setShownFile(this.#shownFileFor(true));
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
         if (this.#versions.mrXml) {
@@ -224,6 +225,17 @@ class DmnDiffer {
         // console.debug('highlight diffs...');
         const diff = this.#xmlComparator.compare(myXml, otherXml);
         this.#diffPainter.paint(diff, diffTypeForMissing);
+    }
+
+    // Header file descriptor for a side (FEAT-0026): its path + display name plus
+    // the GitLab blob URL built from that side's ref, so the clickable path opens
+    // the file in the exact shown version. A side with no repo ref (local file
+    // used as the source) yields url:null → an inactive, non-link path.
+    #shownFileFor(targetSide) {
+        const ref = targetSide ? this.#params.targetRef : this.#params.sourceRef;
+        const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
+        const fileName = targetSide ? this.#params.targetFileName : this.#params.fileName;
+        return { path, fileName, url: ref ? this.#params.blobFileUrl(ref, path) : null };
     }
 
     // Commit/ref of the decision version currently shown (for resolving the BPMN

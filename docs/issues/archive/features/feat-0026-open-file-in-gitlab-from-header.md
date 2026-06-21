@@ -2,7 +2,7 @@
 id: FEAT-0026
 title: Clickable file path in the differ header — open the file in GitLab
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -103,3 +103,47 @@ unchanged.
 
 <!-- Each AI session on the task — a separate entry by the template above.
      Add new entries on top (freshest first). -->
+
+### 2026-06-21 · claude-opus-4-8 · branch `feature/feat-0026-clickable-file-path`
+
+Implemented per the plan, both differs in sync:
+
+- `differ-params.js` — added `blobFileUrl(ref, filePath)` next to `rawFileUrl`
+  (`/-/blob/<ref>/<path>`). Covered by unit tests (default path, explicit path,
+  nested path, sha-built URL).
+- `bpmn-differ-view.js` + `dmn-differ-view.js` — the `#fileNameSpan` `<span>`
+  became an `<a class="differ-file-path">` (real `href`, `target=_blank`,
+  `rel=noopener`); `setFileName(name)` → `setShownFile({ path, fileName, url })`,
+  which sets the left-truncated path text (LRM-prefixed so the slashes are not
+  reordered in the rtl element), the `title` (full path), and the `href`. An
+  empty `url` removes the href and marks the path inactive (non-link).
+- `bpmn-differ.js` + `dmn-differ.js` — new `#shownFileFor(targetSide)` builds the
+  `{ path, fileName, url }` for the shown side (target → `targetRef`/`targetFilePath`,
+  source → `sourceRef`/`filePath`; `url:null` when that side has no repo ref, e.g.
+  a local file). Wired at the three `setFileName` call sites (absent-side switch,
+  show-branch, show-mr).
+- `styles.css` — replaced the orphaned `.differ-file-name` with `.differ-file-path`
+  (left-truncation via `direction:rtl`+ellipsis, link colour only on hover/focus)
+  and `.differ-file-group` (`flex:1; min-width:0` so the path can shrink).
+
+`npm test` green (950 tests). Download behaviour unchanged. No manifest changes.
+
+Review follow-up (same session): per UX feedback, dropped the `File:` and
+`Branch:` labels (the path and the branch indicator are self-explanatory), and
+removed `flex:1` from the file group/path so the path no longer reserves/grows
+space — it only shrinks (left-truncates) when its line is tight. The flexible
+slack now lands on the existing spacer before "Switch branch", so the download
+button and branch indicator stay on the left with an empty gap before "Switch
+branch". Verified the layout in a browser mock across widths. Orphaned
+`.differ-label` CSS rule removed.
+
+Second review follow-up (same session): moved the download button to the LEFT of
+the path (stable position by the bar edge; the path truncates after it). Made the
+branch indicator self-explanatory after dropping the "Branch:" label: the role
+word now always prefixes the label, so a plain file view shows `Original · <ref>`
+instead of a bare sha. Added a `Local` source role — "Diff with local" now shows
+`Original · <ref>` / `Local · <uploaded file name>` (BranchIndicator gained an
+`isLocalSource` flag, both differs pass `!!localFileContent`; the UI provider sends
+`file.name` as `sourceLabel` instead of the static `'local file'`). FEAT-0008
+(open the commit) deliberately left as a separate task. Tests updated/added
+(954 green), layout re-verified in the browser mock.

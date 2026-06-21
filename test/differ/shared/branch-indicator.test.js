@@ -94,11 +94,49 @@ describe('BranchIndicator — absent side (file new or deleted)', () => {
 });
 
 describe('BranchIndicator — single-version view (no source side)', () => {
-    it('omits the role prefix when there is no source side', () => {
+    it('still shows the "Original" role prefix when there is no source side', () => {
         const indicator = new BranchIndicator('master', null);
         const element = indicator.createElement();
         indicator.setShownLabel('master');
-        assert.equal(element.textContent, 'master');
+        assert.equal(element.textContent, 'Original · master');
         assert.equal(indicator.isTargetBranchShown(), true);
+    });
+
+    it('prefixes a bare commit sha so it is not shown unlabelled', () => {
+        const sha = 'a4084af3387695c4182c04522b6fa644bb033d78';
+        const indicator = new BranchIndicator(sha, null);
+        const element = indicator.createElement();
+        indicator.setShownLabel(sha);
+        assert.equal(element.textContent, `Original · ${sha}`);
+    });
+});
+
+describe('BranchIndicator — local-file diff ("Diff with local")', () => {
+    function build() {
+        const indicator = new BranchIndicator('master', 'invoice.bpmn', true);
+        const element = indicator.createElement();
+        return { indicator, element };
+    }
+
+    it('labels the source side "Local" with the uploaded file name', () => {
+        const { indicator, element } = build();
+        indicator.setShownLabel('invoice.bpmn');
+        assert.equal(element.textContent, 'Local · invoice.bpmn');
+        assert.equal(element.style.color, BranchIndicator.MR_BRANCH_COLOR);
+        assert.equal(indicator.isTargetBranchShown(), false);
+    });
+
+    it('keeps the target side as "Original"', () => {
+        const { indicator, element } = build();
+        indicator.setShownLabel('master');
+        assert.equal(element.textContent, 'Original · master');
+        assert.equal(indicator.isTargetBranchShown(), true);
+    });
+
+    it('uses the "Changed" role (not "Local") for an ordinary branch source', () => {
+        const indicator = new BranchIndicator('master', 'feature/x');
+        const element = indicator.createElement();
+        indicator.setShownLabel('feature/x');
+        assert.equal(element.textContent, 'Changed · feature/x');
     });
 });

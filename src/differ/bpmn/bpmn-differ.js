@@ -219,7 +219,8 @@ class BpmnDiffer {
         this.#params.requirePlatformInfo();
 
         this.#versions = new DiagramVersions(this.#params);
-        this.#branchIndicator = new BranchIndicator(this.#params.targetLabel, this.#params.sourceLabel);
+        this.#branchIndicator = new BranchIndicator(
+            this.#params.targetLabel, this.#params.sourceLabel, !!this.#params.localFileContent);
         this.#xmlComparator = new BpmnXmlComparator();
         // ProcessFileIndex is kept only as the fallback path of CallActivityLocator
         // (full repository tree walk); the primary path is a targeted blob-search.
@@ -366,7 +367,7 @@ class BpmnDiffer {
     #showAbsentSide(targetSide) {
         this.#bpmnJS.clear();
         this.#selectedElementId = null;
-        this.#view.setFileName(targetSide ? this.#params.targetFileName : this.#params.fileName);
+        this.#view.setShownFile(this.#shownFileFor(targetSide));
         this.#branchIndicator.setAbsentLabel(targetSide);
         this.#diffHighlighter.setDiffElementIds([]);
         if (this.#changesTableView) {
@@ -394,7 +395,7 @@ class BpmnDiffer {
             : null;
 
         await this.#showXml(branchXml);
-        this.#view.setFileName(this.#params.targetFileName);
+        this.#view.setShownFile(this.#shownFileFor(true));
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
         if (diff) {
@@ -414,7 +415,7 @@ class BpmnDiffer {
             : null;
 
         await this.#showXml(mrXml);
-        this.#view.setFileName(this.#params.fileName);
+        this.#view.setShownFile(this.#shownFileFor(false));
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
         if (diff) {
@@ -548,6 +549,17 @@ class BpmnDiffer {
         } catch (error) {
             console.warn('cannot determine changed handlers', error);
         }
+    }
+
+    // Header file descriptor for a side (FEAT-0026): its path + display name plus
+    // the GitLab blob URL built from that side's ref, so the clickable path opens
+    // the file in the exact shown version. A side with no repo ref (local file
+    // used as the source) yields url:null → an inactive, non-link path.
+    #shownFileFor(targetSide) {
+        const ref = targetSide ? this.#params.targetRef : this.#params.sourceRef;
+        const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
+        const fileName = targetSide ? this.#params.targetFileName : this.#params.fileName;
+        return { path, fileName, url: ref ? this.#params.blobFileUrl(ref, path) : null };
     }
 
     // Commit/ref of the diagram version currently shown (for opening handler code
