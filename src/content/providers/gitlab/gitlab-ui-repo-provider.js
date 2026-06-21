@@ -51,7 +51,7 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
             const button2 = document.createElement('button');
             button2.id = this.#buttonId + '-btn2';
-            button2.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+            button2.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50 gl-ml-3';
             button2.textContent = 'Diff with local';
             button2.addEventListener('mouseup', () => { fileInput.click(); });
             buttonContainer.appendChild(button2);
