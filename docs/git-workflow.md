@@ -4,6 +4,17 @@ Read before any git operations (branches, commits, push, MR, rebase).
 
 Our GitLab: **https://gitlab.example.com**. The CLI for working with MRs is `glab`.
 
+## glab setup
+
+Install on macOS and authenticate against our GitLab:
+
+```bash
+brew install glab
+glab auth login --hostname gitlab.example.com
+```
+
+For authorization you need an access token with `api`, `read_repository`, `write_repository` rights.
+
 ## Branches
 
 - The main branch is **master**, it is protected. **NEVER commit or push to master directly.**
@@ -40,6 +51,27 @@ After the human has reviewed the MR and **merged** it, on the `/cleanup` command
 3. `git branch -d <feature-branch>` (delete the local feature branch; `-d`, not `-D` — if the branch is not merged, stop and report)
 
 The remote branch is usually removed by GitLab on merge; if it remains — `git push origin --delete <branch>`. Do not do the cleanup until the MR is merged.
+
+## Releases
+
+Distribution is via **GitLab Releases** (a git tag + an attached zip asset), not via archives committed into the repo (binaries would bloat the git history forever). The Releases page (`/-/releases`) is the user-facing download list — it lists every version automatically, so there is nothing to prune.
+
+1. Bump the version on a branch via `/release` (`manifest.json` + `version.json` + a `CHANGELOG.md` entry) and merge the MR — see the `release` skill.
+2. After the MR is merged, on a fresh `master`: tag and push the tag.
+
+   ```bash
+   git checkout master && git pull
+   git tag vX.Y.Z && git push origin vX.Y.Z
+   ```
+
+3. Build the package: `npm run package` → `dist/bpmn-surf-X.Y.Z.zip` (runtime files only; `dist/` is gitignored).
+4. Create the release with the zip attached:
+
+   ```bash
+   glab release create vX.Y.Z dist/bpmn-surf-X.Y.Z.zip --notes "see CHANGELOG.md"
+   ```
+
+The automated update notifier (FEAT-0012) stays inactive until the `UPDATE_*` URLs in `src/core/config.js` are set (area B / [INFRA-0007]); pointing `UPDATE_HOME_URL` at the Releases page is a cheap later step.
 
 ## CI
 

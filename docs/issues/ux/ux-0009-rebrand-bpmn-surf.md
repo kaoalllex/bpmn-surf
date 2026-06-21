@@ -2,7 +2,7 @@
 id: UX-0009
 title: Rebrand the project to "bpmn-surf" (browsing-first identity)
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -142,6 +142,30 @@ Brand identity (folded in from the original UX-0009 scope):
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-06-21 · claude-opus-4-8 · R1 relaunch shipped — task done
+
+Finished R1 (area A) and cut the **1.0.0** relaunch. Branch `release/v1.0.0`.
+
+Done:
+- **Version 1.0.0** — bumped `manifest.json` + `version.json` (kept in sync per
+  the `release` skill); added a `## 1.0.0` section to `CHANGELOG.md` (release
+  notes / delta, feeds the FEAT-0012 "What's new"). `1.0.0` is an intentional
+  major bump for the relaunch (breaks the prior `0.MINOR` scheme).
+- **Brand sweep finished** — `FEEDBACK_URL` in `config.js` and the README channel
+  link → `https://chat.example.com/example/channels/bpmn-surf` (chat channel
+  confirmed renamed). Remaining `bpmn-diff` strings are intentional: code paths
+  (`*-differ.js`), internal ids (`gl-bpmn-diff-*`, `ALARM_NAME`), the
+  `bpmn-diff-tests` npm name, and the area-B GitHub URL examples — all deferred
+  to [INFRA-0007].
+- **README reworked to be user-facing** — dropped the dev sections (they
+  duplicated `docs/`); `glab` setup moved into `docs/git-workflow.md`. Expanded
+  `## Features` into a full grouped capability catalog and folded the two
+  how-to subsections into it. Removed "GitLab" wording in favor of neutral
+  `repository` / `merge request` (forward-looking for other providers).
+
+`npm test`: 997 pass. Not auto-update-active yet: `UPDATE_*` URLs in `config.js`
+stay empty until area B, so the bumped `version.json` is for sync only.
 
 ### 2026-06-21 · claude-opus-4-8 · R1 (area A) implemented
 
