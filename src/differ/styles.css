@@ -410,6 +410,46 @@
     background-color: #ff8888;
 }
 
+/* message-correlation code link (FEAT-0027) — same minimalist look as .handler-link */
+.correlation-overlay {
+    position: relative;
+}
+
+.correlation-link {
+    padding: 2px 5px 1px;
+    border: 1px solid hsl(0, 0%, 70%);
+    border-radius: 2px;
+    background-color: hsl(0, 0%, 92%);
+    font-family: monospace;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+}
+
+.correlation-link-loading {
+    cursor: default;
+}
+
+/* dropdown of correlation hits — anchored below the badge, styled like the
+   back-navigator menu (.differ-back-menu*) whose item/message/link classes it reuses */
+.correlation-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10001;
+    margin-top: 4px;
+    min-width: 240px;
+    max-width: 420px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
+    background-color: #ffffff;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-family: sans-serif;
+}
+
 /* changes table */
 .changes-table th,
 .changes-table td {

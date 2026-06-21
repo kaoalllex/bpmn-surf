@@ -52,6 +52,8 @@ class BpmnDiffer {
     #tabNavigator = null;
     #handlerLocator = null;
     #handlerNavigator = null;
+    #correlationLocator = null;
+    #correlationNavigator = null;
     #elementSearcher = null;
     #searchPanel = null;
 
@@ -112,6 +114,14 @@ class BpmnDiffer {
             () => this.#getShownRef(),
             (url) => window.open(url, '_blank'),
             (url) => this.#tabNavigator.navigateOpenerTab(url)
+        );
+        this.#correlationNavigator = new CorrelationNavigator(
+            bpmnJSOverlays,
+            this.#elementRegistry,
+            this.#correlationLocator,
+            () => this.#selectedElementId,
+            () => this.#getShownRef(),
+            (url) => window.open(url, '_blank')
         );
 
         this.#elementSearcher = new ElementSearcher();
@@ -244,6 +254,13 @@ class BpmnDiffer {
         // to the same diagram reuses it instead of opening a duplicate (BUG-0017).
         this.#tabNavigator.registerTab(this.#params.identityKey());
         this.#handlerLocator = new HandlerLocator(
+            this.#params.platform.projectUrl,
+            this.#params.platform.hostUrl,
+            this.#params.platform.projectId
+        );
+        // FEAT-0027: locate where a message-catching element is woken up in code,
+        // by the message name (correlateMessage / publishMessage).
+        this.#correlationLocator = new CorrelationLocator(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
             this.#params.platform.projectId
@@ -507,6 +524,7 @@ class BpmnDiffer {
         this.#callActivityNavigator.showDiveInOverlay();
         this.#decisionNavigator.showDiveInOverlay();
         this.#handlerNavigator.showOverlayForSelectedElement();
+        this.#correlationNavigator.showOverlayForSelectedElement();
     }
 
     // Loads the handlers (topic -> file) changed in this MR.

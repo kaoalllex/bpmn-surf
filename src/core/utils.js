@@ -219,6 +219,8 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/navigation/decision-caller-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/handler-locator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/handler-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/correlation-locator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/navigation/correlation-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-params.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/diagram-versions.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/branch-indicator.js', doc, getResourceUrlByNameFunc);
