@@ -89,6 +89,8 @@
                 "src/differ/navigation/decision-caller-locator.js",
                 "src/differ/navigation/handler-locator.js",
                 "src/differ/navigation/handler-navigator.js",
+                "src/differ/navigation/correlation-locator.js",
+                "src/differ/navigation/correlation-navigator.js",
                 "src/differ/shared/differ-params.js",
                 "src/differ/shared/diagram-versions.js",
                 "src/differ/shared/branch-indicator.js",
