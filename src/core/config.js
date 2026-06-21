@@ -2,6 +2,10 @@
 const MASTER_BRANCH_NAME = 'master';
 //const MASTER_BRANCH_NAME = 'main';
 
+// --- Feedback --------------------------------------------------------------
+// Channel opened by the "Leave feedback" link in the action popup.
+const FEEDBACK_URL = 'https://chat.example.com/example/channels/bpmn-diff';
+
 // --- Extension update (FEAT-0012) ------------------------------------------
 // The version source is a public version.json (see the format in the root
 // version.json and docs/architecture.md). The extension does NOT replace its

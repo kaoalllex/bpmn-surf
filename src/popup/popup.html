@@ -7,11 +7,23 @@
 </head>
 <body>
     <header class="pu-header">
+        <span class="pu-logo" aria-hidden="true">
+            <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+                <path d="M408,452 Q515,576 620,584" fill="none" stroke="currentColor" stroke-width="96" stroke-linecap="round"/>
+                <rect x="226" y="266" width="208" height="208" rx="58" fill="none" stroke="currentColor" stroke-width="96"/>
+                <rect x="590" y="556" width="208" height="208" rx="58" fill="none" stroke="currentColor" stroke-width="96"/>
+            </svg>
+        </span>
         <span class="pu-title">bpmn-surf</span>
-        <span class="pu-version" id="currentVersion">—</span>
     </header>
 
-    <section class="pu-status" id="statusBlock">
+    <main class="pu-hero">
+        <span class="pu-hero-label">Version</span>
+        <span class="pu-version" id="currentVersion">—</span>
+    </main>
+
+    <!-- Update-check UI is hidden for now (kept in markup, see SHOW_UPDATE_UI in popup.js). -->
+    <section class="pu-status hidden" id="statusBlock">
         <div class="pu-status-line" id="statusLine">Checking for updates…</div>
         <div class="pu-meta" id="checkedAt"></div>
     </section>
@@ -47,7 +59,7 @@
         </details>
     </section>
 
-    <section class="pu-actions">
+    <section class="pu-actions hidden">
         <button type="button" id="checkNowBtn" class="pu-secondary">Check now</button>
         <label class="pu-toggle">
             <input type="checkbox" id="autoCheck">
@@ -55,7 +67,11 @@
         </label>
     </section>
 
-    <footer class="pu-footer">
+    <section class="pu-feedback">
+        <a href="#" id="feedbackLink" class="pu-feedback-link">Leave feedback</a>
+    </section>
+
+    <footer class="pu-footer hidden">
         <div class="pu-transparency" id="transparency"></div>
     </footer>
 

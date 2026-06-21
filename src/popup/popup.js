@@ -4,6 +4,11 @@
 // the popup only displays state and sends it commands. The same file works
 // both as an action popup and as an open tab.
 
+// Update-check UI is hidden for now (flip to re-enable, and remove the matching
+// `hidden` classes in popup.html). The popup still talks to the service worker to
+// show the current version and the feedback link.
+const SHOW_UPDATE_UI = false;
+
 const els = {
     currentVersion: document.getElementById('currentVersion'),
     statusBlock: document.getElementById('statusBlock'),
@@ -20,7 +25,8 @@ const els = {
     reloadBtn: document.getElementById('reloadBtn'),
     checkNowBtn: document.getElementById('checkNowBtn'),
     autoCheck: document.getElementById('autoCheck'),
-    transparency: document.getElementById('transparency')
+    transparency: document.getElementById('transparency'),
+    feedbackLink: document.getElementById('feedbackLink')
 };
 
 function send(message) {
@@ -57,6 +63,10 @@ function render(state) {
     els.autoCheck.checked = !!state.enabled;
     els.checkedAt.textContent = formatCheckedAt(result.checkedAt);
 
+    if (state.feedbackUrl) {
+        els.feedbackLink.dataset.url = state.feedbackUrl;
+    }
+
     // transparency: what we check and where
     if (state.manifestUrl) {
         els.transparency.textContent =
@@ -83,7 +93,7 @@ function render(state) {
         els.statusLine.textContent = 'Updates have not been checked yet.';
     }
 
-    if (available) {
+    if (available && SHOW_UPDATE_UI) {
         els.latestVersion.textContent = `v${result.latestVersion}`;
         renderChanges(result.changes);
         els.gitPull.textContent = state.gitPullCommand || 'git pull';
@@ -136,6 +146,11 @@ els.reloadBtn.addEventListener('click', () => send({ type: 'update:reload' }));
 els.downloadLink.addEventListener('click', e => {
     e.preventDefault();
     const url = els.downloadLink.dataset.url;
+    if (url) send({ type: 'update:openUrl', url });
+});
+els.feedbackLink.addEventListener('click', e => {
+    e.preventDefault();
+    const url = els.feedbackLink.dataset.url;
     if (url) send({ type: 'update:openUrl', url });
 });
 

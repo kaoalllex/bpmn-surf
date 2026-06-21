@@ -1,13 +1,16 @@
 /* Update mechanism popup (FEAT-0012). Works both as an action popup
-   and as a standalone tab. Neutral light style, close to GitLab. */
+   and as a standalone tab. Dark theme built from the extension icon palette
+   (navy #0E2438 background, blue #4A9CEC accent), AdGuard-style centered look. */
 
 :root {
-    --pu-fg: #303030;
-    --pu-muted: #6e6e6e;
-    --pu-border: #dcdcde;
-    --pu-accent: #1f75cb;
-    --pu-bg-soft: #f5f6fa;
-    --pu-added: #1f7e34;
+    --pu-bg: #0E2438;
+    --pu-panel: #143150;
+    --pu-accent: #4A9CEC;
+    --pu-accent-dim: rgba(74, 156, 236, 0.16);
+    --pu-fg: #E6EEF7;
+    --pu-muted: #8AA0B8;
+    --pu-border: rgba(74, 156, 236, 0.20);
+    --pu-added: #5BD08A;
 }
 
 * { box-sizing: border-box; }
@@ -20,33 +23,73 @@ body {
     font-size: 13px;
     line-height: 1.45;
     color: var(--pu-fg);
-    background: #fff;
+    background: var(--pu-bg);
 }
 
 .hidden { display: none !important; }
 
+/* ---- Header: logo + wordmark ---- */
 .pu-header {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--pu-border);
+    align-items: center;
+    gap: 10px;
+    padding: 16px 18px 12px;
 }
 
-.pu-title { font-weight: 600; font-size: 14px; }
-.pu-version { color: var(--pu-muted); font-variant-numeric: tabular-nums; }
+.pu-logo {
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+    color: var(--pu-accent);
+    background: var(--pu-panel);
+    border-radius: 9px;
+}
+.pu-logo svg { width: 100%; height: 100%; display: block; }
 
-.pu-status { padding: 12px 14px; }
+.pu-title {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.2px;
+}
+
+/* ---- Hero: big version + emblem ---- */
+.pu-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 14px 18px 22px;
+}
+
+.pu-hero-label {
+    color: var(--pu-muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.pu-version {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 4px 0 2px;
+    font-variant-numeric: tabular-nums;
+    color: var(--pu-fg);
+}
+
+/* ---- Status (hidden until update UI is enabled) ---- */
+.pu-status { padding: 12px 18px; }
 .pu-status-line { font-weight: 500; }
 .pu-status.up-to-date .pu-status-line { color: var(--pu-added); }
 .pu-meta { color: var(--pu-muted); font-size: 12px; margin-top: 2px; }
 
 .pu-update {
-    margin: 0 14px 12px;
+    margin: 0 18px 12px;
     padding: 12px;
-    background: var(--pu-bg-soft);
+    background: var(--pu-panel);
     border: 1px solid var(--pu-border);
-    border-radius: 6px;
+    border-radius: 8px;
 }
 .pu-update-head { margin-bottom: 8px; }
 
@@ -57,7 +100,7 @@ body {
 }
 .pu-change-version { font-weight: 600; margin: 8px 0 2px; }
 .pu-change-version:first-child { margin-top: 0; }
-.pu-change-body { white-space: pre-wrap; color: #3a3a3a; }
+.pu-change-body { white-space: pre-wrap; color: var(--pu-muted); }
 
 .pu-guide summary { cursor: pointer; font-weight: 500; }
 .pu-steps { margin: 8px 0; padding-left: 18px; }
@@ -72,11 +115,12 @@ body {
 .pu-cmd code {
     flex: 1;
     padding: 4px 6px;
-    background: #fff;
+    background: var(--pu-bg);
     border: 1px solid var(--pu-border);
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 12px;
+    color: var(--pu-fg);
 }
 .pu-hint { color: var(--pu-muted); font-size: 12px; margin-top: 4px; }
 .pu-note { color: var(--pu-muted); font-size: 11.5px; margin: 8px 0 0; }
@@ -85,7 +129,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
+    padding: 12px 18px;
     border-top: 1px solid var(--pu-border);
 }
 .pu-toggle {
@@ -100,20 +144,37 @@ body {
 button {
     font: inherit;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
     border: 1px solid var(--pu-border);
-    background: #fff;
+    background: var(--pu-panel);
+    color: var(--pu-fg);
     padding: 5px 10px;
 }
-button:hover { background: var(--pu-bg-soft); }
+button:hover { background: var(--pu-accent-dim); }
 .pu-primary {
     background: var(--pu-accent);
     border-color: var(--pu-accent);
-    color: #fff;
+    color: #0E2438;
+    font-weight: 600;
     margin-top: 4px;
 }
-.pu-primary:hover { background: #1a64ad; }
+.pu-primary:hover { background: #6BB0F2; }
 .pu-mini { padding: 3px 7px; font-size: 11.5px; }
 
-.pu-footer { padding: 10px 14px; border-top: 1px solid var(--pu-border); }
+/* ---- Feedback link (AdGuard "How to enhance protection" slot) ---- */
+.pu-feedback {
+    padding: 14px 18px 18px;
+    text-align: center;
+    border-top: 1px solid var(--pu-border);
+}
+.pu-feedback-link {
+    color: var(--pu-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 600;
+    font-size: 14px;
+}
+.pu-feedback-link:hover { color: #6BB0F2; }
+
+.pu-footer { padding: 10px 18px; border-top: 1px solid var(--pu-border); }
 .pu-transparency { color: var(--pu-muted); font-size: 11px; word-break: break-all; }
