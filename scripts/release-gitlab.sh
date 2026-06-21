@@ -49,7 +49,7 @@ notes="$(awk -v hdr="## $version" '
     END { sub(/^\n+/, "", buf); sub(/\n+$/, "", buf); printf "%s", buf }
 ' CHANGELOG.md)"
 [ -n "$notes" ] || notes="bpmn-surf $version."
-readme_install="https://gitlab.example.com/kaoalllex/bpmn-diff/-/blob/master/README.md?ref_type=heads#installation"
+readme_install="https://gitlab.example.com/kaoalllex/bpmn-surf/-/blob/master/README.md?ref_type=heads#installation"
 notes="$notes
 
 ---
