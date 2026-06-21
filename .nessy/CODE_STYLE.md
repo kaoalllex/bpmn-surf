@@ -1,7 +1,7 @@
 # Code Style
 
 ## Description
-Code style and formatting rules for the BPMN Diff Chrome Extension project.
+Code style and formatting rules for the bpmn-surf Chrome Extension project.
 
 ## Application
 Applied **automatically** to all code changes (refactor, feature, fix, analyze).

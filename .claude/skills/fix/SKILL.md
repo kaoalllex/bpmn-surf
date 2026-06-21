@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Fix bugs in BPMN Diff — the current behavior is wrong and must become correct with a minimal change. Use for "fix", "bug", "error", "doesn't work", "crashes", "isn't found/resolved", "isn't displayed", when there is a stack trace, a 404, an error log, or a description of an incorrect result (including hotkey interception, breakage after a GitLab update, problems with commit/version resolution, the cache, or SPA navigation). Unlike feature (adds new behavior) — here the expected behavior is restored; unlike refactor (behavior stays the same) — here behavior is corrected.
+description: Fix bugs in bpmn-surf — the current behavior is wrong and must become correct with a minimal change. Use for "fix", "bug", "error", "doesn't work", "crashes", "isn't found/resolved", "isn't displayed", when there is a stack trace, a 404, an error log, or a description of an incorrect result (including hotkey interception, breakage after a GitLab update, problems with commit/version resolution, the cache, or SPA navigation). Unlike feature (adds new behavior) — here the expected behavior is restored; unlike refactor (behavior stays the same) — here behavior is corrected.
 ---
 
 # Bug fixing

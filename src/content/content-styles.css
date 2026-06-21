@@ -1,0 +1,22 @@
+/* Styles for the buttons bpmn-surf injects into GitLab's DOM (UX-0009).
+   These live in GitLab's page, NOT on the differ page, so they are a content-
+   script stylesheet, separate from src/differ/styles.css.
+
+   The accent marks our main entry-point buttons (Schema diff / Decision diff,
+   View schema / View decision) as bpmn-surf's, distinguishing them from native
+   GitLab buttons while keeping the native shape (size, rounding, placement).
+   It is applied on top of GitLab's own button classes, overriding only the
+   border/text/hover tone — no full style override (theme-conflict risk). The
+   tone is the single brand accent, mirroring .differ-update-indicator. The
+   secondary "Diff with local" button is intentionally left un-accented. */
+.bpmn-surf-btn-accent {
+    border-color: hsl(212, 73%, 46%);
+    color: hsl(212, 73%, 46%);
+    font-weight: 600;
+}
+
+.bpmn-surf-btn-accent:hover {
+    border-color: hsl(212, 73%, 40%);
+    background-color: hsl(212, 73%, 96%);
+    color: hsl(212, 73%, 40%);
+}

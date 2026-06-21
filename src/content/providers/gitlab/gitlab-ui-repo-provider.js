@@ -32,7 +32,10 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
         const button = document.createElement('button');
         button.id = this.#buttonId + '-btn';
-        button.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
+        // Main entry-point button — accented as bpmn-surf's (UX-0009). The accent
+        // class lives in the content-script stylesheet (content-styles.css) and
+        // overrides only border/text/hover on top of GitLab's native classes.
+        button.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50 bpmn-surf-btn-accent';
         button.textContent = this.#getButtonText(fileType, buttonType);
         button.addEventListener('mouseup', onButtonClickFunc);
         buttonContainer.appendChild(button);
@@ -49,7 +52,7 @@ class GitLabUIRepoProvider extends UIRepoProvider {
             const button2 = document.createElement('button');
             button2.id = this.#buttonId + '-btn2';
             button2.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
-            button2.textContent = 'Show diff with local';
+            button2.textContent = 'Diff with local';
             button2.addEventListener('mouseup', () => { fileInput.click(); });
             buttonContainer.appendChild(button2);
         }
@@ -89,10 +92,10 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
     #getButtonText(fileType, buttonType) {
         if (buttonType === UI_BUTTON_TYPE.DIFF) {
-            return fileType === FILE_TYPE_BPMN ? 'Show schema diff' : 'Show decision diff';
+            return fileType === FILE_TYPE_BPMN ? 'Schema diff' : 'Decision diff';
         }
         if (buttonType === UI_BUTTON_TYPE.BRANCH) {
-            return fileType === FILE_TYPE_BPMN ? 'Show schema' : 'Show decision';
+            return fileType === FILE_TYPE_BPMN ? 'View schema' : 'View decision';
         }
         throw new Error(`Unexpected buttonType: ${buttonType}`);
     }

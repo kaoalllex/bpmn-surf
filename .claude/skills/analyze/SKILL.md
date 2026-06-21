@@ -1,6 +1,6 @@
 ---
 name: analyze
-description: Analyze and explain the architecture, logic, and structure of the BPMN Diff code — without making changes. Use when you need to understand or explain existing code: "how does it work", "why", "what does it do", "break it down", "study", "explain", "architecture", "data flow". Also as a first step before editing unfamiliar code. Do NOT use when asked to change, add, or fix — then the relevant skill (feature/fix/refactor) will analyze the code itself if needed.
+description: Analyze and explain the architecture, logic, and structure of the bpmn-surf code — without making changes. Use when you need to understand or explain existing code: "how does it work", "why", "what does it do", "break it down", "study", "explain", "architecture", "data flow". Also as a first step before editing unfamiliar code. Do NOT use when asked to change, add, or fix — then the relevant skill (feature/fix/refactor) will analyze the code itself if needed.
 ---
 
 # Code analysis

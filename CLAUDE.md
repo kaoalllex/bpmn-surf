@@ -1,6 +1,8 @@
-# CLAUDE.md — BPMN Diff for GitLab
+# CLAUDE.md — bpmn-surf
 
-Chrome Extension (Manifest V3) for visually comparing BPMN 2.0 and DMN diagrams in GitLab merge requests and repositories. Vanilla JavaScript (ES6+), no frameworks, bundlers, or build step. Our GitLab: https://gitlab.example.com.
+Chrome Extension (Manifest V3) for browsing and comparing BPMN 2.0 and DMN diagrams in GitLab merge requests and repositories. Vanilla JavaScript (ES6+), no frameworks, bundlers, or build step. Our GitLab: https://gitlab.example.com.
+
+(The product is branded `bpmn-surf`; internal identifiers, code paths, the git repo and the project folder still use the historical `bpmn-diff` name — the repo/folder rename is deferred to area B, see [INFRA-0007].)
 
 ## Response language
 

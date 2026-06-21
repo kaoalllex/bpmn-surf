@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: Improve the structure and readability of the BPMN Diff code without changing observable behavior. Use for requests like "refactor", "simplify", "clean up the code", "improve readability", "remove duplication", "extract a class/function", "rename". Unlike fix and feature — behavior stays the same; if "improve" means fixing a bug → fix, if adding a capability → feature.
+description: Improve the structure and readability of the bpmn-surf code without changing observable behavior. Use for requests like "refactor", "simplify", "clean up the code", "improve readability", "remove duplication", "extract a class/function", "rename". Unlike fix and feature — behavior stays the same; if "improve" means fixing a bug → fix, if adding a capability → feature.
 ---
 
 # Refactoring

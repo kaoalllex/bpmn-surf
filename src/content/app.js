@@ -273,7 +273,7 @@ class App {
         // and ask the user to reload the page (a fresh content script then gets a
         // valid context).
         if (!chrome.runtime?.id) {
-            alert('BPMN Diff was updated or reloaded. Please refresh this page (F5) to continue.');
+            alert('bpmn-surf was updated or reloaded. Please refresh this page (F5) to continue.');
             return;
         }
 
