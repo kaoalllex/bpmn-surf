@@ -57,19 +57,16 @@ The remote branch is usually removed by GitLab on merge; if it remains — `git 
 Distribution is via **GitLab Releases** (a git tag + an attached zip asset), not via archives committed into the repo (binaries would bloat the git history forever). The Releases page (`/-/releases`) is the user-facing download list — it lists every version automatically, so there is nothing to prune.
 
 1. Bump the version on a branch via `/release` (`manifest.json` + `version.json` + a `CHANGELOG.md` entry) and merge the MR — see the `release` skill.
-2. After the MR is merged, on a fresh `master`: tag and push the tag.
+2. After the MR is merged, on a fresh `master`, publish the release:
 
    ```bash
    git checkout master && git pull
-   git tag vX.Y.Z && git push origin vX.Y.Z
+   npm run release:gitlab        # → scripts/release-gitlab.sh
    ```
 
-3. Build the package: `npm run package` → `dist/bpmn-surf-X.Y.Z.zip` (runtime files only; `dist/` is gitignored).
-4. Create the release with the zip attached:
+   `release-gitlab.sh` reads the version from `manifest.json`, builds the zip via `package.sh`, then creates the `vX.Y.Z` release with the zip attached as a download asset and notes taken from the matching `CHANGELOG.md` section. The git tag is created server-side from `--ref` (default `master`) via the API — no tag push into protected `master` is needed. Pass a ref to tag a different commit: `npm run release:gitlab -- <sha|branch|tag>`.
 
-   ```bash
-   glab release create vX.Y.Z dist/bpmn-surf-X.Y.Z.zip --notes "see CHANGELOG.md"
-   ```
+   Requires `glab` authenticated against the project's GitLab (`glab auth status`). The script aborts if `vX.Y.Z` already exists — bump the version first.
 
 The automated update notifier (FEAT-0012) stays inactive until the `UPDATE_*` URLs in `src/core/config.js` are set (area B / [INFRA-0007]); pointing `UPDATE_HOME_URL` at the Releases page is a cheap later step.
 
