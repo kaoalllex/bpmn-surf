@@ -126,7 +126,9 @@
    classes; the global table/th/td and .changes-table rules are left untouched. */
 .differ-toolbar {
     display: flex;
-    flex-wrap: wrap;
+    /* BUG-0022: never wrap onto a second line — squeeze the file path (the sole
+       shrinkable item) instead. The bar always stays on a single row. */
+    flex-wrap: nowrap;
     align-items: center;
     gap: 4px 8px;
     padding: 6px 10px;
@@ -137,7 +139,10 @@
 
 .differ-btn-group {
     display: flex;
-    flex-wrap: wrap;
+    /* BUG-0022: button groups are rigid (no wrap, no shrink) so the squeeze lands
+       only on the file path / branch label, never on the controls. */
+    flex-wrap: nowrap;
+    flex-shrink: 0;
     align-items: center;
     gap: 4px;
 }
@@ -160,6 +165,11 @@
    The download button and branch indicator therefore stay on the left. */
 .differ-file-group {
     min-width: 0;
+    /* BUG-0022: the ONLY element that gives up space. Overrides the rigid
+       .differ-btn-group (flex-shrink:0) so the file path is the sole item that
+       shrinks; every other group — including the branch/commit label — keeps its
+       full width and never truncates. */
+    flex-shrink: 1;
 }
 
 /* The path itself: keeps the old file-name size/weight, but truncates from the

@@ -103,6 +103,15 @@ class BpmnDifferView {
         document.body.appendChild(bpmnDiv);
 
         const table = document.createElement('table');
+        // Cap the single-column layout (and so the header cell) at the viewport so the
+        // toolbar's flex-shrink can engage and truncate the file path (BUG-0022).
+        // width:100% alone is NOT enough: with the default table-layout:auto the cell
+        // grows to the toolbar's max-content (the full unwrapped width), so the flex
+        // container is never bounded and the right-side buttons overflow off-screen.
+        // table-layout:fixed forces the column to the table's width regardless of
+        // content; cell content then overflows internally → the path truncates.
+        table.style.width = '100%';
+        table.style.tableLayout = 'fixed';
         table.style.height = '100%';
 
         const row1 = document.createElement('tr');
