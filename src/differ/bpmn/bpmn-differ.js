@@ -201,8 +201,14 @@ class BpmnDiffer {
         // Show canvas after the differ is completely rendered
         this.#view.showCanvas();
 
-        // Set max-height of the properties panel container to enable scrollbar display when needed
-        await this.#setPropertiesPanelContainerMaxHeight();
+        // Wait until the properties panel has mounted before the initial selection
+        // below. BUG-0023: this used to also set the panel's `max-height` from its
+        // offsetHeight here, but when the panel loads hidden (display:none, see
+        // [BUG-0018]) that height is 0, producing `max-height: 0` that stays on the
+        // scroll container and collapses the panel to empty when later shown.
+        // Scrolling is owned by the panel cell's inner div ([BUG-0021]), so the
+        // max-height was redundant when visible and harmful when hidden — dropped.
+        await this.#awaitPropertiesPanelMounted();
 
         // Dive-out (FEAT-0023): if opened by stepping up to a caller, select the
         // Call Activity from which it calls the diagram we came from, so the call
@@ -749,15 +755,18 @@ class BpmnDiffer {
         // rather than here — see styles.css.
     }
 
-    async #setPropertiesPanelContainerMaxHeight() {
+    // Polls until the bpmn-js properties panel has mounted its scroll container, so
+    // callers that select an element right after (the FEAT-0023 dive-out selection)
+    // render into a live panel instead of a not-yet-mounted one. The container is
+    // in the DOM even when the panel loads hidden, so this resolves regardless of
+    // the panel's visibility.
+    async #awaitPropertiesPanelMounted() {
         const panelContainer = await doWithAttempts(function () {
             return document.querySelector('.bio-properties-panel-scroll-container');
         });
         if (!panelContainer) {
             console.warn('cannot find properties panel container');
-            return;
         }
-        panelContainer.style.maxHeight = panelContainer.offsetHeight;
     }
 }
 
