@@ -4,7 +4,8 @@ const MASTER_BRANCH_NAME = 'master';
 
 // --- Feedback --------------------------------------------------------------
 // Channel opened by the "Leave feedback" link in the action popup.
-const FEEDBACK_URL = 'https://chat.example.com/example/channels/bpmn-surf';
+// "bpmn-diff" because Chat do not rename channel link
+const FEEDBACK_URL = 'https://chat.example.com/example/channels/bpmn-diff';
 
 // --- Extension update (FEAT-0012) ------------------------------------------
 // The version source is a public version.json (see the format in the root
