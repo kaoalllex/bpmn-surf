@@ -90,6 +90,10 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         return event.target.id.startsWith(this.#buttonId);
     }
 
+    isButtonPresent() {
+        return document.getElementById(this.#buttonId) !== null;
+    }
+
     #getButtonText(fileType, buttonType) {
         if (buttonType === UI_BUTTON_TYPE.DIFF) {
             return fileType === FILE_TYPE_BPMN ? 'Schema diff' : 'Decision diff';

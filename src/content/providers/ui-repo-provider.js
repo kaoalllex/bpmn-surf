@@ -31,4 +31,12 @@ class UIRepoProvider {
     isOwnButtonClick(event) {
         throw new Error('isOwnButtonClick() must be implemented');
     }
+
+    /**
+     * Checks whether the plugin's button is currently present in the page.
+     * @returns {boolean}
+     */
+    isButtonPresent() {
+        throw new Error('isButtonPresent() must be implemented');
+    }
 }
