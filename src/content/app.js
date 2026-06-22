@@ -7,7 +7,11 @@ class App {
         DMN_ID: 'msg_dmn_71e23e639965407fb9c87f100a56c898'
     };
 
+    // Debounce window (ms) for re-running after GitLab finishes rendering a diff.
+    static #DOM_RETRIGGER_DELAY_MS = 300;
+
     #isStartHandling = false;
+    #domRetriggerTimer = null;
 
     #repoProvider;
     #uiRepoProvider;
@@ -46,6 +50,42 @@ class App {
             'popstate',
             () => this.#handleStart(null, 'after popstate')
         );
+
+        this.#observeDomChanges();
+    }
+
+    /**
+     * Re-runs the flow when GitLab finishes (re)rendering the MR diff content.
+     *
+     * GitLab lazily renders the diff of the selected file: in "show one file at a
+     * time" mode, clicking a file swaps the diff DOM asynchronously. When that
+     * render takes longer than findSelectedFilePath()'s ~1.5s detection budget,
+     * the mouseup that selected the file finds no [data-path]/<diff-file> element
+     * and gives up — so the button only appears on a second manual click
+     * (BUG-0003). A debounced MutationObserver catches the late render and retries.
+     *
+     * No self-trigger loop: the button lives in the stable MR header, not inside
+     * the diff content, and we skip retries while it is already present — so our
+     * own insertions/resets never keep the observer firing.
+     * @private
+     */
+    #observeDomChanges() {
+        const observer = new MutationObserver(() => {
+            if (this.#uiRepoProvider.isButtonPresent()) {
+                return;
+            }
+            if (this.#domRetriggerTimer) {
+                clearTimeout(this.#domRetriggerTimer);
+            }
+            this.#domRetriggerTimer = setTimeout(() => {
+                this.#domRetriggerTimer = null;
+                if (this.#uiRepoProvider.isButtonPresent()) {
+                    return;
+                }
+                this.#handleStart(null, 'after dom change');
+            }, App.#DOM_RETRIGGER_DELAY_MS);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     async #handleStart(event, reason) {
