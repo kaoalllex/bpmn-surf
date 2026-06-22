@@ -157,10 +157,21 @@ class BpmnDifferView {
 
         //--- properties
         this.#propsCell = document.createElement('td');
-        this.#propsCell.id = BpmnDifferView.PROPS_ID;
         this.#propsCell.style.height = '100%';
         this.#propsCell.style.minWidth = BpmnDifferView.PROPS_MIN_WIDTH + 'px';
         this.#propsCell.style.width = BpmnDifferView.PROPS_DEFAULT_WIDTH + 'px';
+        // BUG-0021: a <td>'s height is a minimum, not a clamp, so a tall props
+        // panel would grow the cell/row/outer-table past 100vh and push the
+        // footer (changes table) off-screen. Mount the panel into an absolutely
+        // positioned inner div that scrolls within the cell — an absolute child
+        // contributes zero intrinsic height, so the layout never overflows.
+        this.#propsCell.style.position = 'relative';
+        const propsInner = document.createElement('div');
+        propsInner.id = BpmnDifferView.PROPS_ID;
+        propsInner.style.position = 'absolute';
+        propsInner.style.inset = '0';
+        propsInner.style.overflowY = 'auto';
+        this.#propsCell.appendChild(propsInner);
         tableCanvasPropsRow.appendChild(this.#propsCell);
         this.#restorePropsWidth();
         this.#restorePropsHidden();
@@ -493,7 +504,7 @@ class BpmnDifferView {
         const cellBody = document.createElement('td');
         cellBody.setAttribute("colspan", "5");
         const changesTableDiv = document.createElement('div');
-        changesTableDiv.style.maxHeight = 250;
+        changesTableDiv.style.maxHeight = '250px'; // BUG-0021: needs units, a bare Number serializes to invalid CSS and is ignored
         changesTableDiv.style.overflowY = 'auto';
         cellBody.appendChild(changesTableDiv);
         row2.appendChild(cellBody);
