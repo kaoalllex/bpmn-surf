@@ -62,7 +62,12 @@ class DmnDifferView {
         document.body.appendChild(dmnDiv);
 
         const table = document.createElement('table');
+        // table-layout:fixed (with width:100%) caps the single column at the viewport
+        // so the toolbar's flex-shrink truncates the file path instead of the header
+        // cell growing to the toolbar's max-content and pushing the right-side buttons
+        // off-screen (BUG-0022). See the matching comment in bpmn-differ-view.js#build().
         table.style.width = '100%';
+        table.style.tableLayout = 'fixed';
         table.style.height = '100%';
 
         const headerRow = document.createElement('tr');
