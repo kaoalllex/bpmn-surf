@@ -7,13 +7,14 @@ const { createScope } = require('#scope');
 const MR_URL = 'https://gitlab.example.com/group/proj/-/merge_requests/5/diffs';
 
 // Builds a base provider on an MR page whose injected loader returns the given
-// projects-search payload and records the URLs it was asked for.
-function createBase(projectsPayload, { url = MR_URL } = {}) {
+// single-project payload (or null to simulate a 404) for the project lookup and
+// records the URLs it was asked for.
+function createBase(projectPayload, { url = MR_URL } = {}) {
     const scope = createScope({ url });
     const calls = [];
     const load = async (requestedUrl) => {
         calls.push(requestedUrl);
-        return JSON.stringify(projectsPayload);
+        return projectPayload === null ? null : JSON.stringify(projectPayload);
     };
     const provider = new scope.GitLabRepoProviderBase(load);
     return { scope, provider, calls };
@@ -27,11 +28,8 @@ describe('GitLabRepoProviderBase.isAvailable', () => {
 });
 
 describe('GitLabRepoProviderBase.init — project id resolution', () => {
-    it('resolves project info and id from the projects search', async () => {
-        const { provider } = createBase([
-            { id: 7, path_with_namespace: 'other/proj' },
-            { id: 42, path_with_namespace: 'group/proj' }
-        ]);
+    it('resolves project info and id from the project lookup', async () => {
+        const { provider } = createBase({ id: 42, path_with_namespace: 'group/proj' });
         assert.equal(await provider.init(), true);
         const info = provider.getProjectInfo();
         assert.equal(info.url, 'https://gitlab.example.com/group/proj');
@@ -41,17 +39,17 @@ describe('GitLabRepoProviderBase.init — project id resolution', () => {
         assert.equal(info.id, 42);
     });
 
-    it('queries the projects API by host url and project name', async () => {
-        const { provider, calls } = createBase([{ id: 42, path_with_namespace: 'group/proj' }]);
+    it('queries the projects API by url-encoded path_with_namespace', async () => {
+        const { provider, calls } = createBase({ id: 42, path_with_namespace: 'group/proj' });
         await provider.init();
         assert.equal(
             calls[0],
-            'https://gitlab.example.com/api/v4/projects/?simple=true&per_page=100&search=proj'
+            'https://gitlab.example.com/api/v4/projects/group%2Fproj'
         );
     });
 
-    it('returns false when the project is not found by path_with_namespace', async () => {
-        const { provider } = createBase([{ id: 7, path_with_namespace: 'group/other' }]);
+    it('returns false when the project is not found (404 -> null)', async () => {
+        const { provider } = createBase(null);
         assert.equal(await provider.init(), false);
     });
 
@@ -61,7 +59,7 @@ describe('GitLabRepoProviderBase.init — project id resolution', () => {
     });
 
     it('caches the init result for the same url (single API call)', async () => {
-        const { provider, calls } = createBase([{ id: 42, path_with_namespace: 'group/proj' }]);
+        const { provider, calls } = createBase({ id: 42, path_with_namespace: 'group/proj' });
         await provider.init();
         await provider.init();
         assert.equal(calls.length, 1);
@@ -116,7 +114,7 @@ describe('GitLabRepoProviderBase.getTargetFilePath', () => {
             if (requestedUrl.includes('/changes')) {
                 return JSON.stringify(changesPayload);
             }
-            return JSON.stringify([{ id: 42, path_with_namespace: 'group/proj' }]);
+            return JSON.stringify({ id: 42, path_with_namespace: 'group/proj' });
         };
         const provider = new scope.GitLabRepoProviderBase(load);
         await provider.init();
@@ -153,7 +151,7 @@ describe('GitLabRepoProviderBase.getTargetFilePath', () => {
             if (requestedUrl.includes('/changes')) {
                 throw new Error('boom');
             }
-            return JSON.stringify([{ id: 42, path_with_namespace: 'group/proj' }]);
+            return JSON.stringify({ id: 42, path_with_namespace: 'group/proj' });
         };
         const provider = new scope.GitLabRepoProviderBase(load);
         await provider.init();
@@ -187,7 +185,7 @@ describe('GitLabRepoProviderBase.getChangeInfo', () => {
 describe('GitLabRepoProviderBase.extractBranchCommitIdAndFilePath', () => {
     it('extracts ref and file path from a blob url', async () => {
         const { provider } = createBase(
-            [{ id: 42, path_with_namespace: 'group/proj' }],
+            { id: 42, path_with_namespace: 'group/proj' },
             { url: 'https://gitlab.example.com/group/proj/-/blob/master/proj/process.bpmn' }
         );
         await provider.init();

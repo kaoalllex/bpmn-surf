@@ -178,16 +178,23 @@ class GitLabRepoProviderBase extends RepoProvider {
     }
 
     async #getProjectId() {
-        const url = this.projectInfo.hostUrl + '/api/v4/projects/?simple=true&per_page=100&search=' + this.projectInfo.name;
-        const content = await this.loadContent(url, true);
-        const protectInfoArr = JSON.parse(content);
-
-        const pathWithNs = this.projectInfo.groupName + '/' + this.projectInfo.name;
-        const protectInfo = protectInfoArr.find(i => i.path_with_namespace === pathWithNs);
-        if (!protectInfo) {
+        // Resolve the project deterministically by its path_with_namespace,
+        // GET /api/v4/projects/{url-encoded path} — the same direct form already
+        // used by buildMrApiUrl. The previous `search=<name>&per_page=100` + a
+        // client-side find was non-deterministic on a large GitLab: the search is
+        // capped at 100 instance-wide-ordered hits, so the exact project could
+        // fall outside the page and resolution flakily returned null ("cannot get
+        // project id") mid-session.
+        const pathWithNamespace = this.projectInfo.groupName + '/' + this.projectInfo.name;
+        const url = `${this.projectInfo.hostUrl}/api/v4/projects/${encodeURIComponent(pathWithNamespace)}`;
+        // throwIf404=false: a missing/inaccessible project is a graceful null
+        // (warn + init=false), not an exception; transient errors still throw.
+        const content = await this.loadContent(url, false);
+        if (!content) {
             return null;
         }
 
-        return protectInfo.id;
+        const project = JSON.parse(content);
+        return project.id || null;
     }
 }
