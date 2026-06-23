@@ -24,13 +24,15 @@ class FallbackRepoProvider extends RepoProvider {
     }
 
     isAvailable() {
-        return this.#providers.some(p => p.isAvailable());
+        const platformKind = detectPlatformKind();
+        return this.#providers.some(p => p.isAvailable(platformKind));
     }
 
     async init() {
         this.#active = null;
+        const platformKind = detectPlatformKind();
         for (const provider of this.#providers) {
-            if (!provider.isAvailable()) {
+            if (!provider.isAvailable(platformKind)) {
                 continue;
             }
             try {

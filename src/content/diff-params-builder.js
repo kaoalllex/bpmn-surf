@@ -48,7 +48,11 @@ class DiffParamsBuilder {
 
     #platform(projectInfo) {
         return {
-            kind: 'gitlab',
+            // Single source of truth (REFAC-0004 step 1.4): detection-by-URL and
+            // the active provider's identity always agree (a provider is available
+            // only on its own host), so on every gitlab page this still yields
+            // 'gitlab' and the descriptor is unchanged.
+            kind: detectPlatformKind(),
             projectUrl: projectInfo.url,
             hostUrl: projectInfo.hostUrl,
             projectId: projectInfo.id

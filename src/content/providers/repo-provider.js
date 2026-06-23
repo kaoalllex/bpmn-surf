@@ -3,10 +3,14 @@
  */
 class RepoProvider {
     /**
-     * Checks if this provider is available for the current page
+     * Checks if this provider handles the current page's platform. The detected
+     * platform kind is passed in (computed once by the caller via
+     * detectPlatformKind) so the provider only compares it to its own kind —
+     * it does not re-detect from globals.
+     * @param {string|null} platformKind the page's detected PLATFORM_KIND
      * @returns {boolean} true if the provider can work with the current page
      */
-    isAvailable() {
+    isAvailable(platformKind) {
         throw new Error('isAvailable() must be implemented');
     }
 

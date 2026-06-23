@@ -2,6 +2,10 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
     #buttonId = 'btn_77844bf3d4e842caa0d88194431197c0';
 
+    isAvailable(platformKind) {
+        return platformKind === PLATFORM_KIND.GITLAB;
+    }
+
     // Several GitLab versions render the MR header differently, so we try a list
     // of candidate selectors and use the first one that matches.
     // #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS legacy: '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';

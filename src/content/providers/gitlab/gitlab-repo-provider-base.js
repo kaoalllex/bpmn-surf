@@ -28,8 +28,12 @@ class GitLabRepoProviderBase extends RepoProvider {
         this.domScraper = new GitLabDomScraper();
     }
 
-    isAvailable() {
-        return window.location.href.includes('gitlab');
+    isAvailable(platformKind) {
+        // The caller detects the page's platform once and passes the kind in; this
+        // provider just answers whether the page is GitLab. On every gitlab URL
+        // detectPlatformKind yields 'gitlab', so this is byte-for-byte identical to
+        // the former href.includes('gitlab').
+        return platformKind === PLATFORM_KIND.GITLAB;
     }
 
     async init() {

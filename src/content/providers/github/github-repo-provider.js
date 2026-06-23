@@ -7,8 +7,10 @@
 // GitHub page. Subtask 2 will flip isAvailable() to detect github.com and
 // implement the rest; until then GitLab behaviour is unchanged.
 class GitHubRepoProvider extends RepoProvider {
-    isAvailable() {
-        // Guaranteed no-op for now — keeps the stub unreachable on every page.
+    isAvailable(/* platformKind */) {
+        // Inert: ignores the detected kind and never claims a page (the 'github'
+        // matcher stays dormant). Subtask 2 flips this to
+        // `platformKind === PLATFORM_KIND.GITHUB` with no factory change.
         return false;
     }
 
