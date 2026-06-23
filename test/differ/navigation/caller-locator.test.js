@@ -4,7 +4,15 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { CallerLocator } = createScope();
+const { CallerLocator, GitLabPlatformClient } = createScope();
+
+// A GitLab client over a fixed project, so blobSearchPageUrl asserts the real
+// URL format the locator now delegates to (REFAC-0004).
+const client = new GitLabPlatformClient({
+    projectUrl: 'https://gitlab.example/group/proj',
+    hostUrl: 'https://gitlab.example',
+    projectId: 42
+});
 
 // Objects returned by the in-context locator carry that realm's prototypes, so
 // assert.deepEqual would reject them — compare via length and field access.
@@ -63,11 +71,7 @@ describe('CallerLocator.selectCallers', () => {
 });
 
 describe('CallerLocator.blobSearchPageUrl', () => {
-    const locator = new CallerLocator(
-        'https://gitlab.example/group/proj',
-        'https://gitlab.example',
-        42
-    );
+    const locator = new CallerLocator(client);
 
     it('builds a calledElement blob search page URL', () => {
         assert.equal(
@@ -87,7 +91,7 @@ describe('CallerLocator.blobSearchPageUrl', () => {
 });
 
 describe('CallerLocator.resolveCallers (guards, no network)', () => {
-    const locator = new CallerLocator('https://gitlab.example/p', 'https://gitlab.example', 1);
+    const locator = new CallerLocator(client);
 
     it('returns [] for no process ids', async () => {
         assert.equal((await locator.resolveCallers([], 'main', 'self.bpmn')).length, 0);

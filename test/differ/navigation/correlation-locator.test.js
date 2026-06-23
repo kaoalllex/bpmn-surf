@@ -108,17 +108,17 @@ describe('CorrelationLocator.isDynamicName', () => {
 
 describe('CorrelationLocator.classifyHit', () => {
     it('marks a line with a Camunda 7 correlation keyword as a correlation point', () => {
-        const hit = { path: 'src/Listener.kt', data: 'runtimeService.correlateMessage("OrderPlaced")' };
+        const hit = { path: 'src/Listener.kt', snippet: 'runtimeService.correlateMessage("OrderPlaced")' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'correlation');
     });
 
     it('marks a line with a Zeebe publish keyword as a correlation point', () => {
-        const hit = { path: 'src/Pub.java', data: 'client.newPublishMessageCommand().messageName("OrderPlaced")' };
+        const hit = { path: 'src/Pub.java', snippet: 'client.newPublishMessageCommand().messageName("OrderPlaced")' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'correlation');
     });
 
     it('captures the constant name from a Java constant declaration', () => {
-        const hit = { path: 'src/Messages.java', data: 'static final String ORDER_PLACED = "OrderPlaced";' };
+        const hit = { path: 'src/Messages.java', snippet: 'static final String ORDER_PLACED = "OrderPlaced";' };
         assert.deepEqual(
             plain(CorrelationLocator.classifyHit(hit, 'OrderPlaced')),
             { category: 'constant', constantName: 'ORDER_PLACED' }
@@ -126,32 +126,32 @@ describe('CorrelationLocator.classifyHit', () => {
     });
 
     it('captures the constant name from a Kotlin const val declaration', () => {
-        const hit = { path: 'src/Messages.kt', data: 'const val ORDER_PLACED = "OrderPlaced"' };
+        const hit = { path: 'src/Messages.kt', snippet: 'const val ORDER_PLACED = "OrderPlaced"' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').constantName, 'ORDER_PLACED');
     });
 
     it('excludes the .bpmn file (the receiving side)', () => {
-        const hit = { path: 'diagrams/order.bpmn', data: '<message name="OrderPlaced" />' };
+        const hit = { path: 'diagrams/order.bpmn', snippet: '<message name="OrderPlaced" />' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'diagram');
     });
 
     it('excludes a .dmn file', () => {
-        const hit = { path: 'diagrams/order.dmn', data: 'OrderPlaced' };
+        const hit = { path: 'diagrams/order.dmn', snippet: 'OrderPlaced' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'diagram');
     });
 
     it('marks a .yml file as config', () => {
-        const hit = { path: 'src/main/resources/application.yml', data: 'message: OrderPlaced' };
+        const hit = { path: 'src/main/resources/application.yml', snippet: 'message: OrderPlaced' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'config');
     });
 
     it('marks a .properties file as config', () => {
-        const hit = { path: 'app.properties', data: 'msg=OrderPlaced' };
+        const hit = { path: 'app.properties', snippet: 'msg=OrderPlaced' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'config');
     });
 
     it('classifies a plain literal occurrence as other', () => {
-        const hit = { path: 'src/Notes.kt', data: 'val doc = "see OrderPlaced flow"' };
+        const hit = { path: 'src/Notes.kt', snippet: 'val doc = "see OrderPlaced flow"' };
         assert.equal(CorrelationLocator.classifyHit(hit, 'OrderPlaced').category, 'other');
     });
 });
@@ -162,7 +162,7 @@ describe('CorrelationLocator.collectHits — exact-term gate', () => {
         // correlates a DIFFERENT message; its snippet lacks the exact name.
         const items = [
             { path: 'business/car/.../CarPreOfferScreenMessageHandler.kt',
-                data: 'correlateMessage(SCREEN_CHANGED)', startline: 23 }
+                snippet: 'correlateMessage(SCREEN_CHANGED)', line: 23 }
         ];
         assert.equal(CorrelationLocator.collectHits(items, 'FINISH_VERIFICATION_API').length, 0);
     });
@@ -170,7 +170,7 @@ describe('CorrelationLocator.collectHits — exact-term gate', () => {
     it('keeps a hit whose snippet contains the exact term', () => {
         const items = [
             { path: 'business/module/.../VerificationStopUseCase.kt',
-                data: 'createMessageCorrelation(FINISH_VERIFICATION_API)', startline: 30 }
+                snippet: 'createMessageCorrelation(FINISH_VERIFICATION_API)', line: 30 }
         ];
         assert.equal(CorrelationLocator.collectHits(items, 'FINISH_VERIFICATION_API').length, 1);
     });
@@ -217,7 +217,7 @@ describe('CorrelationLocator.isTestPath', () => {
 describe('CorrelationLocator.rankHits', () => {
     it('orders correlation > other > constant > config and de-duplicates by path:line', () => {
         const make = (category, path) => CorrelationLocator.collectHits(
-            [{ path, data: dataFor(category), startline: 1 }],
+            [{ path, snippet: dataFor(category), line: 1 }],
             'OrderPlaced'
         )[0];
         const ranked = CorrelationLocator.rankHits([
@@ -231,9 +231,9 @@ describe('CorrelationLocator.rankHits', () => {
 
     it('boosts a handler-like file name above a plain correlation hit', () => {
         const plain = CorrelationLocator.collectHits(
-            [{ path: 'src/main/Service.kt', data: 'correlateMessage("OrderPlaced")', startline: 1 }], 'OrderPlaced')[0];
+            [{ path: 'src/main/Service.kt', snippet: 'correlateMessage("OrderPlaced")', line: 1 }], 'OrderPlaced')[0];
         const listener = CorrelationLocator.collectHits(
-            [{ path: 'src/main/OrderListener.kt', data: 'correlateMessage("OrderPlaced")', startline: 1 }], 'OrderPlaced')[0];
+            [{ path: 'src/main/OrderListener.kt', snippet: 'correlateMessage("OrderPlaced")', line: 1 }], 'OrderPlaced')[0];
         const ranked = CorrelationLocator.rankHits([plain, listener]);
         assert.equal(ranked[0].path, 'src/main/OrderListener.kt');
     });
@@ -258,7 +258,7 @@ describe('CorrelationLocator.resolveWith', () => {
     it('groups a literal correlation hit under correlation points', async () => {
         const search = searcher({
             OrderPlaced: [
-                { path: 'src/OrderListener.kt', data: 'correlateMessage("OrderPlaced")', startline: 10 }
+                { path: 'src/OrderListener.kt', snippet: 'correlateMessage("OrderPlaced")', line: 10 }
             ]
         });
         const result = await CorrelationLocator.resolveWith('OrderPlaced', search);
@@ -271,7 +271,7 @@ describe('CorrelationLocator.resolveWith', () => {
         // Phase 1: the literal is only declared as a constant, no correlation on this line.
         const search = searcher({
             OrderPlaced: [
-                { path: 'src/OrderUseCase.kt', data: 'const val MSG = "OrderPlaced"', startline: 20 }
+                { path: 'src/OrderUseCase.kt', snippet: 'const val MSG = "OrderPlaced"', line: 20 }
             ]
         });
         // Phase 2 fetches the declaring file and finds where the constant correlates.
@@ -298,7 +298,7 @@ describe('CorrelationLocator.resolveWith', () => {
     it('caps phase-2 file resolution at two constants', async () => {
         const search = searcher({
             Msg: ['A', 'B', 'C'].map((c, i) => ({
-                path: `Msg${c}.kt`, data: `const val MSG_${c} = "Msg"`, startline: i + 1
+                path: `Msg${c}.kt`, snippet: `const val MSG_${c} = "Msg"`, line: i + 1
             }))
         });
         const fetched = [];
@@ -316,7 +316,7 @@ describe('CorrelationLocator.resolveWith', () => {
             searched.push(term);
             if (term === 'FINISH_VERIFICATION_API') {
                 return [{ path: 'module/VerificationStopUseCase.kt',
-                    data: 'private const val CORRELATION_MESSAGE = "FINISH_VERIFICATION_API"', startline: 40 }];
+                    snippet: 'private const val CORRELATION_MESSAGE = "FINISH_VERIFICATION_API"', line: 40 }];
             }
             return [];
         };
@@ -347,7 +347,7 @@ describe('CorrelationLocator.resolveWith', () => {
     it('keeps only config hits when the name lives in config', async () => {
         const search = searcher({
             OrderPlaced: [
-                { path: 'src/main/resources/application.yml', data: 'message: OrderPlaced', startline: 7 }
+                { path: 'src/main/resources/application.yml', snippet: 'message: OrderPlaced', line: 7 }
             ]
         });
         const result = await CorrelationLocator.resolveWith('OrderPlaced', search);
@@ -358,8 +358,8 @@ describe('CorrelationLocator.resolveWith', () => {
     it('segregates a correlation hit found in a test into the tests group', async () => {
         const search = searcher({
             OrderPlaced: [
-                { path: 'src/main/OrderListener.kt', data: 'correlateMessage("OrderPlaced")', startline: 14 },
-                { path: 'src/test/OrderProcessTest.kt', data: 'correlateMessage("OrderPlaced")', startline: 36 }
+                { path: 'src/main/OrderListener.kt', snippet: 'correlateMessage("OrderPlaced")', line: 14 },
+                { path: 'src/test/OrderProcessTest.kt', snippet: 'correlateMessage("OrderPlaced")', line: 36 }
             ]
         });
         const result = await CorrelationLocator.resolveWith('OrderPlaced', search);
@@ -374,15 +374,15 @@ describe('CorrelationLocator.resolveWith', () => {
         const search = searcher({
             FINISH_VERIFICATION_API: [
                 { path: 'business/car/.../AbstractCarOfferScreenMessageHandler.kt',
-                    data: 'fun correlateMessage(screen: Screen)', startline: 15 },
+                    snippet: 'fun correlateMessage(screen: Screen)', line: 15 },
                 { path: 'business/car/.../RequestStsScreenMessageHandler.kt',
-                    data: 'correlateMessage(REQUEST_STS)', startline: 23 },
+                    snippet: 'correlateMessage(REQUEST_STS)', line: 23 },
                 { path: 'business/car/.../StsRequestScreenMessageHandler.kt',
-                    data: 'correlateMessage(STS_REQUEST)', startline: 22 },
+                    snippet: 'correlateMessage(STS_REQUEST)', line: 22 },
                 { path: 'business/car/.../CarPreOfferScreenMessageHandler.kt',
-                    data: 'correlateMessage(CAR_PRE_OFFER)', startline: 23 },
+                    snippet: 'correlateMessage(CAR_PRE_OFFER)', line: 23 },
                 { path: 'business/module-verification/.../VerificationStopUseCase.kt',
-                    data: 'runtimeService.createMessageCorrelation(FINISH_VERIFICATION_API)', startline: 30 }
+                    snippet: 'runtimeService.createMessageCorrelation(FINISH_VERIFICATION_API)', line: 30 }
             ]
         });
         const result = await CorrelationLocator.resolveWith('FINISH_VERIFICATION_API', search);
@@ -395,7 +395,7 @@ describe('CorrelationLocator.resolveWith', () => {
     it('does not fetch a declaring file for a constant only declared in a test', async () => {
         const search = searcher({
             OrderPlaced: [
-                { path: 'src/test/Fixtures.kt', data: 'const val ORDER_PLACED = "OrderPlaced"', startline: 1 }
+                { path: 'src/test/Fixtures.kt', snippet: 'const val ORDER_PLACED = "OrderPlaced"', line: 1 }
             ]
         });
         const fetched = [];

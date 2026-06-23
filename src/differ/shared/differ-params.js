@@ -2,8 +2,10 @@
 //
 // Naming is platform-neutral: the differ core works with abstract refs and a
 // `platform` descriptor (discriminated by `platform.kind`) that carries the
-// platform-specific data still needed on this page (GitLab API access, raw
-// file URLs). See diff-params-builder.js for the producing side.
+// platform-specific data still needed on this page (host/project identity). All
+// platform-specific URL/search/changes access lives behind PlatformClient, built
+// from this descriptor (see platform-client-factory.js). See diff-params-builder.js
+// for the producing side.
 class DifferParams {
     constructor(params) {
         this.platform = requireDefined(params.platform, 'platform');
@@ -62,17 +64,6 @@ class DifferParams {
 
     isSourceVersionDefined() {
         return this.sourceRef || this.localFileContent;
-    }
-
-    rawFileUrl(ref, filePath = this.filePath) {
-        return `${this.platform.projectUrl}/-/raw/${ref}/${filePath}`;
-    }
-
-    // Human-facing GitLab blob URL for opening the file in the repo UI (FEAT-0026).
-    // Built from the ref (sha), so it shows the file exactly as in the MR head /
-    // selected commit / branch — one universal construction correct in all modes.
-    blobFileUrl(ref, filePath = this.filePath) {
-        return `${this.platform.projectUrl}/-/blob/${ref}/${filePath}`;
     }
 
     // A stable string identifying WHICH diagram diff this tab shows, so a tab that

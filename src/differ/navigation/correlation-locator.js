@@ -59,17 +59,13 @@ class CorrelationLocator {
     // search returns many sub-token matches that can outrank the genuine one.
     static #SEARCH_PAGE_SIZE = 100;
 
-    #projectUrl;
-    #projectHostUrl;
-    #projectId;
+    #client;
 
     // Cache of resolveCorrelations() results, keyed by `${ref}\n${name}`.
     #cache = new Map();
 
-    constructor(projectUrl, projectHostUrl, projectId) {
-        this.#projectUrl = projectUrl;
-        this.#projectHostUrl = projectHostUrl;
-        this.#projectId = projectId;
+    constructor(client) {
+        this.#client = client;
     }
 
     /**
@@ -164,11 +160,11 @@ class CorrelationLocator {
         if (CorrelationLocator.isConfigFile(path)) {
             return { category: 'config' };
         }
-        const data = (item && item.data) || '';
-        if (CorrelationLocator.hasCorrelationKeyword(data)) {
+        const snippet = (item && item.snippet) || '';
+        if (CorrelationLocator.hasCorrelationKeyword(snippet)) {
             return { category: 'correlation' };
         }
-        const constantName = CorrelationLocator.constantNameFromDeclaration(data, name);
+        const constantName = CorrelationLocator.constantNameFromDeclaration(snippet, name);
         if (constantName) {
             return { category: 'constant', constantName };
         }
@@ -233,7 +229,7 @@ class CorrelationLocator {
             // contains the searched term, otherwise a correlation keyword on an
             // unrelated line (a handler correlating a DIFFERENT message) is
             // mistaken for our message's correlation point.
-            if (!item.data || !item.data.includes(term)) {
+            if (!item.snippet || !item.snippet.includes(term)) {
                 continue;
             }
             const classification = CorrelationLocator.classifyHit(item, term);
@@ -424,7 +420,10 @@ class CorrelationLocator {
         try {
             const result = await CorrelationLocator.resolveWith(
                 name,
-                (term) => this.#searchBlobs(term, ref),
+                // Fetch a generous page: the tokenised search (see collectHits) can
+                // rank many sub-token matches above the genuine exact match, so the
+                // real correlation site must not be paginated out of the default 20.
+                (term) => this.#client.searchCode(ref, term, { perPage: CorrelationLocator.#SEARCH_PAGE_SIZE }),
                 (path) => this.#fetchFile(path, ref)
             );
             this.#cache.set(cacheKey, result);
@@ -436,42 +435,27 @@ class CorrelationLocator {
     }
 
     /**
-     * GitLab UI URL of a source file at a ref, anchored to a line.
+     * Repository-UI URL of a source file at a ref, anchored to a line.
      */
     blobFileUrl(filePath, line, ref) {
-        const anchor = line ? `#L${line}` : '';
-        return `${this.#projectUrl}/-/blob/${ref}/${filePath}${anchor}`;
+        return this.#client.blobFileUrl(ref, filePath, line);
     }
 
     // Fetches a source file's content at a ref (for Phase-2 same-file constant
     // resolution); 404s resolve to null rather than throwing.
     async #fetchFile(path, ref) {
-        return loadFileContent(`${this.#projectUrl}/-/raw/${ref}/${path}`, false);
+        return loadFileContent(this.#client.rawFileUrl(ref, path), false);
     }
 
-    async #searchBlobs(term, ref) {
-        // Fetch a generous page: the tokenised search (see collectHits) can rank
-        // many sub-token matches above the genuine exact match, so the real
-        // correlation site must not be paginated out of the default 20 results.
-        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
-            `?scope=blobs&ref=${encodeURIComponent(ref)}` +
-            `&search=${encodeURIComponent(term)}&per_page=${CorrelationLocator.#SEARCH_PAGE_SIZE}`;
-        const content = await loadFileContent(url, false);
-        if (!content) {
-            return [];
-        }
-        return JSON.parse(content);
-    }
-
-    // Derives the 1-based line of the matching occurrence from a blob-search item.
-    // GitLab returns `startline` (first line of the `data` snippet); the exact line
-    // is that plus the offset of the matching line within the snippet.
+    // Derives the 1-based line of the matching occurrence from a normalised
+    // search hit. `line` is the first line of the snippet; the exact line is that
+    // plus the offset of the matching line within the snippet.
     static #computeMatchLine(item, term) {
-        const startLine = item.startline || 1;
-        if (!item.data) {
+        const startLine = item.line || 1;
+        if (!item.snippet) {
             return startLine;
         }
-        const lines = item.data.split('\n');
+        const lines = item.snippet.split('\n');
         const offset = lines.findIndex(line => line.includes(term));
         return offset >= 0 ? startLine + offset : startLine;
     }

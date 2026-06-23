@@ -4,7 +4,15 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { DecisionCallerLocator } = createScope();
+const { DecisionCallerLocator, GitLabPlatformClient } = createScope();
+
+// A GitLab client over a fixed project, so blobSearchPageUrl asserts the real
+// URL format the locator now delegates to (REFAC-0004).
+const client = new GitLabPlatformClient({
+    projectUrl: 'https://gitlab.example/group/proj',
+    hostUrl: 'https://gitlab.example',
+    projectId: 42
+});
 
 // Objects returned by the in-context locator carry that realm's prototypes, so
 // assert.deepEqual would reject them — compare via length and field access.
@@ -64,11 +72,7 @@ describe('DecisionCallerLocator.selectCallers', () => {
 });
 
 describe('DecisionCallerLocator.blobSearchPageUrl', () => {
-    const locator = new DecisionCallerLocator(
-        'https://gitlab.example/group/proj',
-        'https://gitlab.example',
-        42
-    );
+    const locator = new DecisionCallerLocator(client);
 
     it('builds a decisionRef blob search page URL', () => {
         assert.equal(
@@ -88,7 +92,7 @@ describe('DecisionCallerLocator.blobSearchPageUrl', () => {
 });
 
 describe('DecisionCallerLocator.resolveCallers (guards, no network)', () => {
-    const locator = new DecisionCallerLocator('https://gitlab.example/p', 'https://gitlab.example', 1);
+    const locator = new DecisionCallerLocator(client);
 
     it('returns [] for no decision ids', async () => {
         assert.equal((await locator.resolveCallers([], 'main', 'self.dmn')).length, 0);

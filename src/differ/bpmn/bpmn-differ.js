@@ -28,6 +28,7 @@ class BpmnDiffer {
 
     #rawParams;
     #params = null;
+    #platformClient = null;
     #versions = null;
     #branchIndicator = null;
     #view = null;
@@ -225,55 +226,40 @@ class BpmnDiffer {
     #init() {
         this.#params = new DifferParams(this.#rawParams);
         this.#params.requirePlatformInfo();
+        // The differ-scope seam (REFAC-0004): all platform-specific URL/search/
+        // changes access goes through this client, chosen by platform.kind.
+        this.#platformClient = createPlatformClient(this.#params.platform);
 
-        this.#versions = new DiagramVersions(this.#params);
+        this.#versions = new DiagramVersions(this.#params, this.#platformClient);
         this.#branchIndicator = new BranchIndicator(
             this.#params.targetLabel, this.#params.sourceLabel, !!this.#params.localFileContent);
         this.#xmlComparator = new BpmnXmlComparator();
         // ProcessFileIndex is kept only as the fallback path of CallActivityLocator
-        // (full repository tree walk); the primary path is a targeted blob-search.
+        // (full repository tree walk); the primary path is a targeted code search.
+        // It stays GitLab-specific by design — the "doomed" fallback is not ported
+        // to other platforms (REFAC-0004 / REFAC-0007), so it still reads the
+        // platform descriptor's GitLab fields directly rather than the client.
         this.#processFileIndex = new ProcessFileIndex(
             this.#params.platform.projectUrl,
             this.#params.platform.hostUrl,
             this.#params.platform.projectId,
             this.#params.targetRef
         );
-        this.#callActivityLocator = new CallActivityLocator(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId,
-            this.#processFileIndex
-        );
+        this.#callActivityLocator = new CallActivityLocator(this.#platformClient, this.#processFileIndex);
         // FEAT-0005: resolve the DMN file called from a Business Rule Task
-        // (decisionRef → defining .dmn) by a targeted blob-search; no fallback.
-        this.#decisionLocator = new DecisionLocator(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId
-        );
-        this.#callerLocator = new CallerLocator(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId
-        );
+        // (decisionRef → defining .dmn) by a targeted code search; no fallback.
+        this.#decisionLocator = new DecisionLocator(this.#platformClient);
+        this.#callerLocator = new CallerLocator(this.#platformClient);
         // Shared opener-tab navigation (open a nested differ, step back to the
         // opener) used by both the dive-in and dive-out paths (FEAT-0005).
         this.#tabNavigator = new DifferTabNavigator();
         // Register this tab in the cross-tab registry so any other tab navigating
         // to the same diagram reuses it instead of opening a duplicate (BUG-0017).
         this.#tabNavigator.registerTab(this.#params.identityKey());
-        this.#handlerLocator = new HandlerLocator(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId
-        );
+        this.#handlerLocator = new HandlerLocator(this.#platformClient);
         // FEAT-0027: locate where a message-catching element is woken up in code,
         // by the message name (correlateMessage / publishMessage).
-        this.#correlationLocator = new CorrelationLocator(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId
-        );
+        this.#correlationLocator = new CorrelationLocator(this.#platformClient);
         this.#propertiesPanelHighlighter = new PropertiesPanelHighlighter(
             new ConditionFormatter(),
             () => this.#branchIndicator.isTargetBranchShown()
@@ -338,8 +324,8 @@ class BpmnDiffer {
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
             console.error(
                 'bpmn file is unavailable in both versions;',
-                `target branch url: ${this.#params.rawFileUrl(this.#params.targetRef)};`,
-                `mr url: ${this.#params.sourceRef ? this.#params.rawFileUrl(this.#params.sourceRef) : '<no sourceRef>'}`
+                `target branch url: ${this.#platformClient.rawFileUrl(this.#params.targetRef, this.#params.filePath)};`,
+                `mr url: ${this.#params.sourceRef ? this.#platformClient.rawFileUrl(this.#params.sourceRef, this.#params.filePath) : '<no sourceRef>'}`
             );
         }
     }
@@ -573,7 +559,7 @@ class BpmnDiffer {
         const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
         const fileName = targetSide ? this.#params.targetFileName : this.#params.fileName;
         const exists = targetSide ? this.#versions.branchXml : this.#versions.mrXml;
-        return { path, fileName, url: ref && exists ? this.#params.blobFileUrl(ref, path) : null };
+        return { path, fileName, url: ref && exists ? this.#platformClient.blobFileUrl(ref, path) : null };
     }
 
     // Commit/ref of the diagram version currently shown (for opening handler code

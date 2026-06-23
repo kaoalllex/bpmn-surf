@@ -58,17 +58,13 @@ class HandlerLocator {
     // expression (${a.b}, ${svc.run()}) deliberately does not match.
     static #DELEGATE_BEAN_REGEX = /^\s*[#$]\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\s*$/;
 
-    #projectUrl;
-    #projectHostUrl;
-    #projectId;
+    #client;
 
     // Cache of resolveLocation() results, keyed by `${ref}\n${key}`.
     #locationCache = new Map();
 
-    constructor(projectUrl, projectHostUrl, projectId) {
-        this.#projectUrl = projectUrl;
-        this.#projectHostUrl = projectHostUrl;
-        this.#projectId = projectId;
+    constructor(client) {
+        this.#client = client;
     }
 
     /**
@@ -280,8 +276,8 @@ class HandlerLocator {
             return handlers;
         }
 
-        const changes = await this.#fetchMrChanges(mrIid);
-        const handlerChanges = HandlerLocator.extractHandlerFileChanges(changes);
+        const changedFiles = await this.#client.prChangedFiles(mrIid);
+        const handlerChanges = HandlerLocator.extractHandlerFileChanges(changedFiles);
         console.debug(`changed handler files (${handlerChanges.length}):`, handlerChanges);
 
         // Fetch all touched handler files in parallel (the sequential version was
@@ -292,7 +288,7 @@ class HandlerLocator {
             if (!scanRef) {
                 return null;
             }
-            return loadFileContent(`${this.#projectUrl}/-/raw/${scanRef}/${scanPath}`, false);
+            return loadFileContent(this.#client.rawFileUrl(scanRef, scanPath), false);
         }));
 
         handlerChanges.forEach(({ filePath, diffType }, i) => {
@@ -334,73 +330,48 @@ class HandlerLocator {
     }
 
     /**
-     * GitLab UI URL of a source file at a ref, optionally anchored to a line.
+     * Repository-UI URL of a source file at a ref, optionally anchored to a line.
      */
     blobFileUrl(filePath, line, ref) {
-        const anchor = line ? `#L${line}` : '';
-        return `${this.#projectUrl}/-/blob/${ref}/${filePath}${anchor}`;
+        return this.#client.blobFileUrl(ref, filePath, line);
     }
 
     /**
-     * GitLab UI URL of the MR diffs tab anchored to a given file, so a handler
-     * changed in this MR opens showing exactly what changed (as if the file was
-     * clicked in the MR changes list). The anchor is the SHA-1 of the file path,
-     * matching GitLab's diff-file element id.
+     * Repository-UI URL of the MR/PR diffs tab anchored to a given file, so a
+     * handler changed in this MR opens showing exactly what changed (as if the
+     * file was clicked in the changes list). The anchor is the SHA-1 of the file
+     * path, matching GitLab's diff-file element id.
      * @returns {Promise<string>}
      */
     async mrFileDiffUrl(filePath, mrIid) {
-        const base = `${this.#projectUrl}/-/merge_requests/${mrIid}/diffs`;
+        const base = this.#client.prDiffsUrl(mrIid);
         const anchor = await this.#sha1Hex(filePath);
         return anchor ? `${base}#${anchor}` : base;
     }
 
     /**
-     * Blob-search GitLab URL for a free-text term within the project at a ref.
-     * Exposed so the UI can offer a "search in GitLab" fallback when resolution
-     * fails (e.g. blob search disabled on the instance).
+     * Human-facing code-search page URL for a free-text term within the project
+     * at a ref. Exposed so the UI can offer a "search in the repo" fallback when
+     * resolution fails (e.g. search disabled on the instance).
      */
     blobSearchPageUrl(topic, ref) {
-        return `${this.#projectUrl}/-/search?search=${encodeURIComponent(topic)}` +
-            `&scope=blobs&ref=${encodeURIComponent(ref)}`;
-    }
-
-    async #fetchMrChanges(mrIid) {
-        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/merge_requests/${mrIid}/changes`;
-        const content = await loadFileContent(url, false);
-        if (!content) {
-            console.warn('cannot load MR changes: ' + url);
-            return null;
-        }
-        return JSON.parse(content);
+        return this.#client.searchPageUrl(topic, ref);
     }
 
     /**
-     * Selects the handler files touched by an MR from its `changes` API response
-     * and classifies each as 'added' / 'changed' / 'removed'. For each entry:
+     * Selects the handler files among the change set (normalised PlatformClient
+     * `prChangedFiles` entries) and keeps each one's status. For each entry:
      *  - filePath: the path used for the badge link / MR-diff anchor
      *  - scanPath: the path whose content carries the subscription topics
-     *  - diffType: 'added' (new_file), 'removed' (deleted_file) or 'changed'
-     * For added/modified files new_path holds the path; for deleted files the
-     * path lives in old_path (new_path equals it); renames are treated as changes.
+     *  - diffType: 'added' / 'changed' / 'removed' (the entry's status)
      * @returns {{filePath: string, scanPath: string, diffType: string}[]}
      */
-    static extractHandlerFileChanges(changesResponse) {
-        const changes = (changesResponse && changesResponse.changes) || [];
+    static extractHandlerFileChanges(changedFiles) {
         const result = [];
-        for (const change of changes) {
-            let diffType, path;
-            if (change.new_file) {
-                diffType = 'added';
-                path = change.new_path;
-            } else if (change.deleted_file) {
-                diffType = 'removed';
-                path = change.old_path;
-            } else {
-                diffType = 'changed';
-                path = change.new_path || change.old_path;
-            }
+        for (const change of (changedFiles || [])) {
+            const path = change.path;
             if (path && HandlerLocator.isHandlerFile(path)) {
-                result.push({ filePath: path, scanPath: path, diffType });
+                result.push({ filePath: path, scanPath: path, diffType: change.status });
             }
         }
         return result;
@@ -438,7 +409,7 @@ class HandlerLocator {
         // (git grep) finds both forms. The topic is a unique identifier, so a bare
         // search is precise enough; the results are still narrowed to handler files
         // declaring the subscription below.
-        const items = await this.#searchBlobs(topic, ref);
+        const items = await this.#client.searchCode(ref, topic);
 
         const handlerItems = items.filter(i => i.path && HandlerLocator.isHandlerFile(i.path));
         if (handlerItems.length === 0) {
@@ -447,7 +418,7 @@ class HandlerLocator {
 
         // Prefer a hit whose snippet actually contains the subscription annotation
         // (avoids matching test files that merely reference the topic string).
-        const annotated = handlerItems.find(i => i.data && i.data.includes('ExternalTaskSubscription'));
+        const annotated = handlerItems.find(i => i.snippet && i.snippet.includes('ExternalTaskSubscription'));
         const item = annotated || handlerItems[0];
 
         return {
@@ -476,7 +447,7 @@ class HandlerLocator {
     // over a same-named class elsewhere; otherwise the first handler-file hit.
     async #searchClassLocation(className, ref, preferAnnotation) {
         const term = `class ${className}`;
-        const items = await this.#searchBlobs(term, ref);
+        const items = await this.#client.searchCode(ref, term);
 
         const handlerItems = items.filter(i => i.path && HandlerLocator.isHandlerFile(i.path));
         if (handlerItems.length === 0) {
@@ -484,7 +455,7 @@ class HandlerLocator {
         }
 
         const preferred = preferAnnotation
-            && handlerItems.find(i => i.data && i.data.includes(preferAnnotation));
+            && handlerItems.find(i => i.snippet && i.snippet.includes(preferAnnotation));
         const item = preferred || handlerItems[0];
 
         return {
@@ -493,25 +464,15 @@ class HandlerLocator {
         };
     }
 
-    async #searchBlobs(term, ref) {
-        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
-            `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}`;
-        const content = await loadFileContent(url, false);
-        if (!content) {
-            return [];
-        }
-        return JSON.parse(content);
-    }
-
-    // Derives the 1-based line of the matching annotation from a blob-search item.
-    // GitLab returns `startline` (first line of the `data` snippet); the exact
-    // line is that plus the offset of the matching line within the snippet.
+    // Derives the 1-based line of the matching annotation from a normalised
+    // search hit. `line` is the first line of the snippet; the exact line is
+    // that plus the offset of the matching line within the snippet.
     #computeMatchLine(item, topic) {
-        const startLine = item.startline || 1;
-        if (!item.data) {
+        const startLine = item.line || 1;
+        if (!item.snippet) {
             return startLine;
         }
-        const lines = item.data.split('\n');
+        const lines = item.snippet.split('\n');
         const offset = lines.findIndex(line => line.includes(topic));
         return offset >= 0 ? startLine + offset : startLine;
     }

@@ -49,55 +49,8 @@ describe('DifferParams', () => {
         assert.throws(() => new DifferParams(params), /platform.projectUrl is undefined/);
     });
 
-    it('builds raw file url', () => {
-        const p = new DifferParams(validParams);
-        assert.equal(
-            p.rawFileUrl('abc123'),
-            'https://gitlab.example.com/group/project/-/raw/abc123/src/process.bpmn'
-        );
-    });
-
-    it('rawFileUrl uses an explicit path argument when given', () => {
-        const p = new DifferParams(validParams);
-        assert.equal(
-            p.rawFileUrl('base000', 'src/old-name.bpmn'),
-            'https://gitlab.example.com/group/project/-/raw/base000/src/old-name.bpmn'
-        );
-    });
-
-    // FEAT-0026: human-facing blob URL for opening the file in the GitLab UI.
-    it('builds a blob file url for the default (source) path', () => {
-        const p = new DifferParams(validParams);
-        assert.equal(
-            p.blobFileUrl('abc123'),
-            'https://gitlab.example.com/group/project/-/blob/abc123/src/process.bpmn'
-        );
-    });
-
-    it('blobFileUrl uses an explicit path argument when given', () => {
-        const p = new DifferParams(validParams);
-        assert.equal(
-            p.blobFileUrl('base000', 'src/old-name.bpmn'),
-            'https://gitlab.example.com/group/project/-/blob/base000/src/old-name.bpmn'
-        );
-    });
-
-    it('blobFileUrl keeps a deeply nested path intact', () => {
-        const p = new DifferParams(validParams);
-        assert.equal(
-            p.blobFileUrl('deadbeef', 'a/b/c/d/decision.dmn'),
-            'https://gitlab.example.com/group/project/-/blob/deadbeef/a/b/c/d/decision.dmn'
-        );
-    });
-
-    it('blobFileUrl builds the URL from the given ref (sha), not a branch name', () => {
-        const p = new DifferParams(validParams);
-        const sha = '0123456789abcdef0123456789abcdef01234567';
-        assert.equal(
-            p.blobFileUrl(sha),
-            `https://gitlab.example.com/group/project/-/blob/${sha}/src/process.bpmn`
-        );
-    });
+    // The raw/blob URL builders moved to PlatformClient (REFAC-0004); their
+    // construction is now covered by gitlab-platform-client.test.js.
 
     it('targetFilePath defaults to filePath when not provided', () => {
         const p = new DifferParams(validParams);
