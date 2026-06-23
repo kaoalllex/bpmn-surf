@@ -24,6 +24,7 @@
                 "src/core/utils.js",
                 "src/content/providers/repo-provider.js",
                 "src/content/providers/ui-repo-provider.js",
+                "src/content/providers/platform-detection.js",
                 "src/content/providers/gitlab/single-entry-cache.js",
                 "src/content/providers/gitlab/gitlab-url-parser.js",
                 "src/content/providers/gitlab/gitlab-dom-scraper.js",

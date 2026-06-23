@@ -4,7 +4,9 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { DiffParamsBuilder } = createScope();
+// The builder runs on a gitlab page; #platform() now reads detectPlatformKind()
+// off window.location, so the scope is created on a gitlab URL (kind: 'gitlab').
+const { DiffParamsBuilder } = createScope({ url: 'https://gitlab.example.com/group/project/-/merge_requests/1/diffs' });
 
 const projectInfo = {
     url: 'https://gitlab.example.com/group/project',

@@ -59,6 +59,16 @@ function diffButton(document) {
         .find(b => b.textContent === 'Schema diff' || b.textContent === 'Decision diff');
 }
 
+describe('GitLabUIRepoProvider.isAvailable', () => {
+    it('handles the gitlab platform kind and nothing else', () => {
+        const scope = createScope();
+        const provider = new scope.GitLabUIRepoProvider();
+        assert.equal(provider.isAvailable(scope.PLATFORM_KIND.GITLAB), true);
+        assert.equal(provider.isAvailable(scope.PLATFORM_KIND.GITHUB), false);
+        assert.equal(provider.isAvailable(null), false);
+    });
+});
+
 describe('GitLabUIRepoProvider.addButton — DIFF', () => {
     it('inserts the button into the gitlab.com header (wrapped sticky header)', () => {
         const scope = createScope();

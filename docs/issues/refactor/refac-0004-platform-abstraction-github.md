@@ -203,6 +203,70 @@ the doc note — keep it tiny.)
 **Acceptance 1.3:** `npm test` green; loading the extension and browsing GitLab is unchanged;
 browsing github.com does nothing (no buttons, no errors).
 
+### Step 1.4 — Centralize platform detection (`detectPlatformKind`) — pure refactor (NO behaviour change) — ✅ DONE (2026-06-23, MR !137)
+
+Follow-up that generalizes the host selection introduced in 1.3. Today "which platform is this
+page?" is answered in **four** inconsistent places in the content scope — an exact host match, a
+URL substring, a stub `false`, and a literal — which makes enabling GitHub (subtask 2) a four-site
+change instead of the one-line change the factory header promises (*"Adding a new platform … is a
+change here only"*). This step collapses them to one source of truth, keyed on the **same**
+`platform.kind` vocabulary the differ scope already uses.
+
+Scattered today:
+- `repo-provider-factory.js` `createUIRepoProvider` — `window.location.hostname === 'github.com'`.
+- `gitlab-repo-provider-base.js:32` `isAvailable()` — `window.location.href.includes('gitlab')`
+  (loose substring on purpose, for self-hosted `gitlab.example.com`).
+- `github-repo-provider.js` / `github-ui-repo-provider.js` — stub `return false` (subtask-2 territory).
+- `diff-params-builder.js:51` `#platform()` — literal `kind: 'gitlab'`.
+
+Steps:
+
+1. Create **`src/content/providers/platform-detection.js`** — a pure, dependency-free module:
+   ```js
+   // Ordered most-specific first: github.com wins before the loose gitlab substring.
+   const PLATFORM_MATCHERS = [
+       { kind: 'github', matches: (loc) => loc.hostname === 'github.com' },
+       { kind: 'gitlab', matches: (loc) => loc.href.includes('gitlab') }
+   ];
+   function detectPlatformKind(location = window.location) {
+       const matcher = PLATFORM_MATCHERS.find((m) => m.matches(location));
+       return matcher ? matcher.kind : null;
+   }
+   ```
+   The `location` param (defaulting to `window.location`) keeps it unit-testable without globals.
+2. `repo-provider-factory.js` — `createUIRepoProvider()` becomes
+   `return detectPlatformKind() === 'github' ? new GitHubUIRepoProvider() : new GitLabUIRepoProvider();`
+   (GitLab stays the explicit default, so behaviour off github.com is byte-for-byte identical).
+3. `gitlab-repo-provider-base.js` — `isAvailable()` becomes `return detectPlatformKind() === 'gitlab';`.
+   On every gitlab URL the matcher returns `'gitlab'` (github test fails, gitlab substring matches),
+   so this is identical to today's `includes('gitlab')`.
+4. `diff-params-builder.js` — `#platform()` sets `kind: detectPlatformKind()` instead of the literal.
+   This is the **single source of truth** for `kind`: it supersedes the subtask-2 idea of a
+   `ProjectInfo.platformKind` field (removed from subtask 2 below). Detection-by-URL and the active
+   provider's identity always agree (a provider is available only on its own host), so re-detecting
+   here is safe and avoids threading the kind through `ProjectInfo`. On every gitlab page this still
+   yields `'gitlab'` → the descriptor is unchanged.
+5. **GitHub providers stay inert** — `github-repo-provider.js` / `github-ui-repo-provider.js` keep
+   `return false`; they are **not** wired to `detectPlatformKind` yet. The `'github'` matcher entry
+   is dormant until subtask 2 flips the providers on (then it activates with no further factory
+   edits). This preserves 1.3's guarantee: github.com does nothing.
+6. **Registries** (content scope only — the differ gets `kind` from the descriptor, it does not detect
+   from a URL): add `platform-detection.js` to `manifest.json#content_scripts` (order: **before**
+   `gitlab-repo-provider-base.js`, `repo-provider-factory.js`, and `diff-params-builder.js` — it has
+   no dependencies, so it loads early) and `test/support/scope.js#SCOPE_FILES`.
+   `registries.test.js` enforces sync. **Not** in `web_accessible_resources` / `utils.js#loadScripts`
+   (those are differ scope).
+7. **Tests:** add `test/content/providers/platform-detection.test.js` (pure, thorough): `github.com`
+   → `'github'`; `gitlab.example.com`, `gitlab.com`, any URL containing `gitlab` → `'gitlab'`;
+   ordering (a `github.com` URL with `gitlab` in the path → `'github'`, not `'gitlab'`); unknown host
+   → `null`. Existing `gitlab-repo-provider-base` / `diff-params-builder` tests stay green unchanged
+   (behaviour identical). `platform-detection.js` has logic, so it is **not** added to
+   `source-layout.test.js#UNTESTED_BY_DESIGN`.
+
+**Acceptance 1.4:** `npm test` green; GitLab behaviour byte-for-byte unchanged (same `isAvailable`,
+same `platform.kind`, same UI provider on every gitlab page); github.com still does nothing. Enabling
+GitHub in subtask 2 is now a one-line matcher entry already in place + flipping the providers.
+
 ---
 
 ## Subtask 2 — Minimal GitHub support for PUBLIC repos (basic diff + render)
@@ -228,7 +292,8 @@ the 60 req/hr unauthenticated rate limit, acceptable for the few requests the ba
    - `isChangeViewActive`: PR "Files changed" tab active.
    - branch/sha reads as needed.
 4. **`github-repo-provider.js`** (replace the stub; extends `RepoProvider`):
-   - `isAvailable()` → host is github.com.
+   - `isAvailable()` → `detectPlatformKind() === 'github'` (the matcher entry added in step 1.4 —
+     no new host string here).
    - `init()` → parse owner/repo/PR number; resolve project info; fetch PR metadata once (cached):
      `GET /repos/{o}/{r}/pulls/{n}` → store `head.sha`, `base.sha`, `head.ref`, `base.ref`, `title`.
    - `getProjectInfo()` → `{url: https://github.com/{o}/{r}, hostUrl: https://github.com, groupName: owner, name: repo, id: "{o}/{r}"}`.
@@ -246,10 +311,10 @@ the 60 req/hr unauthenticated rate limit, acceptable for the few requests the ba
      candidate selectors (mirror `gitlab-ui-repo-provider.js` resilience). Reuse
      `content/content-styles.css` `.bpmn-surf-btn-accent` (drop/adjust GitLab-only native classes).
    - `isOwnButtonClick`, `isButtonPresent`, `reset`.
-6. **`diff-params-builder.js`**: `#platform()` already keys off `projectInfo`; it must emit
-   `kind: 'github'` when the active provider is GitHub. Cleanest: have `getProjectInfo()` carry a
-   `platformKind` (or pass the provider's kind through). Add a `platformKind` field to `ProjectInfo`
-   (default `'gitlab'`) so the builder sets `kind` from it — keeps GitLab output identical.
+6. **`diff-params-builder.js`**: nothing to do — `#platform()` already sets `kind: detectPlatformKind()`
+   (step 1.4), so on github.com it emits `kind: 'github'` automatically. Just verify the descriptor on
+   a GitHub PR page carries `kind: 'github'`. (Step 1.4 deliberately dropped the earlier idea of a
+   `ProjectInfo.platformKind` field — `detectPlatformKind` is the single source of truth for `kind`.)
 7. **`github-platform-client.js`** (basic methods only for MVP):
    - `rawFileUrl(ref, path)` → `https://raw.githubusercontent.com/{o}/{r}/{ref}/{path}` (derive o/r
      from `projectUrl`).
@@ -339,13 +404,73 @@ degrades gracefully; GitLab unchanged.
 
 - PAT stored in `chrome.storage.local`, entered via popup/options, passed into the differ through
   params — acceptable for a local dev extension (token visible in differ JS).
-- `ProjectInfo` gains a `platformKind` field (default `'gitlab'`) so `diff-params-builder.js` can set
-  `platform.kind` without changing the descriptor shape.
 
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-06-23 · claude-opus-4-8[1m] · step 1.4 (centralize platform detection)
+
+Implemented **step 1.4** — pure refactor, no behaviour change. New file
+`src/content/providers/platform-detection.js`: a pure, dependency-free
+`detectPlatformKind(location = window.location)` driven by an ordered matcher table
+(`github.com` exact host first, then the loose `gitlab` substring) returning the same
+`platform.kind` vocabulary the differ scope uses. Switched the three content-scope consumers to it:
+`repo-provider-factory.js#createUIRepoProvider` (`detectPlatformKind() === 'github' ? GitHub : GitLab`,
+replacing the `window.location.hostname === 'github.com'` hardcode), `GitLabRepoProviderBase.isAvailable()`
+(`=== 'gitlab'`, byte-for-byte identical to the former `href.includes('gitlab')` on every gitlab URL),
+and `diff-params-builder.js#platform()` (`kind: detectPlatformKind()` instead of the literal `'gitlab'`).
+
+**GitHub providers stay inert** — `github-repo-provider.js`/`github-ui-repo-provider.js` keep their
+stub `return false`; the `'github'` matcher entry is dormant until subtask 2 flips them on (no further
+factory edits needed then). github.com still does nothing.
+
+Registries: `platform-detection.js` added to `manifest#content_scripts` (after `ui-repo-provider.js`,
+before the gitlab providers / factory / `diff-params-builder.js` — it has no deps, loads early) and
+`scope.js#SCOPE_FILES` (same relative position) + `EXPORTED_NAMES` (`detectPlatformKind`). **Not** in
+`web_accessible_resources` / `utils.js#loadScripts` (those are differ scope). The module has logic, so
+it is **not** in `source-layout.test.js#UNTESTED_BY_DESIGN`.
+
+Tests: added `test/content/providers/platform-detection.test.js` (github.com → github; self-managed
+gitlab / gitlab.com / loose `gitlab` substring → gitlab; ordering — a github.com URL with `gitlab` in
+the path → github; unknown host → null). The `gitlab-repo-provider-base` test stays unchanged (its
+scope already runs on a gitlab URL). `diff-params-builder.test.js` updated minimally to create its
+scope on a gitlab URL (the builder now reads `detectPlatformKind()` off `window.location`); the
+`kind: 'gitlab'` assertions are unchanged. `docs/architecture.md` updated (directory tree, key-files
+row, factory row). `npm test` green (1058/1058). **Subtask 1 fully complete** (1.1–1.4); subtasks 2–3
+not started.
+
+**Review follow-up (same MR, new commit):** addressed two review notes. (1) Extracted the kind
+vocabulary into a `PLATFORM_KIND` constant (`GITLAB`/`GITHUB`) in `platform-detection.js` — the
+matchers and all content-scope consumers use it instead of raw `'gitlab'`/`'github'` strings (differ
+scope keeps its own literals, separate scope, out of step 1.4). (2) Made the provider-selection sites
+"ask the provider" instead of comparing the detected kind themselves: `RepoProvider.isAvailable` and
+`UIRepoProvider.isAvailable` now take a `platformKind` argument; `FallbackRepoProvider` and
+`createUIRepoProvider` compute `detectPlatformKind()` once and pass it in; `GitLabRepoProviderBase`/
+`GitLabUIRepoProvider` answer `platformKind === PLATFORM_KIND.GITLAB`, while the GitHub stubs stay
+inert (`return false`, kind ignored). `createUIRepoProvider` returns the
+first UI provider whose `isAvailable(kind)` is true and **throws** if none matches (no hardcoded
+host→provider mapping, no guessed default — a mismatched provider could not inject buttons anyway; on
+matched hosts detection always resolves, so it never fires in practice). Subtask 2 enables GitHub by
+flipping its `isAvailable()` with no factory edit. GitLab behaviour still byte-for-byte. Tests updated (base/UI `isAvailable` cases take the kind;
+`PLATFORM_KIND` exported from the harness). `npm test` green (1060/1060).
+
+### 2026-06-23 · claude-opus-4-8[1m] · (no commit — planning only) added step 1.4
+
+Authored **Step 1.4 — Centralize platform detection (`detectPlatformKind`)** into Subtask 1, prompted
+by review of the `window.location.hostname === 'github.com'` hardcode that step 1.3 introduced in
+`createUIRepoProvider`. Found host→platform knowledge scattered across four content-scope sites with
+three inconsistent forms (exact host, `includes('gitlab')` substring, stub `false`, literal
+`kind: 'gitlab'`). Plan: one pure `src/content/providers/platform-detection.js` with an ordered
+matcher table feeding `createUIRepoProvider`, `GitLabRepoProviderBase.isAvailable()`, and
+`diff-params-builder#platform().kind` — keyed on the same `platform.kind` vocabulary the differ scope
+already uses. No behaviour change (GitLab byte-for-byte identical; GitHub providers stay inert, the
+`'github'` matcher dormant until subtask 2). Sequencing decision: land 1.4 **before** subtask 2.
+Updated subtask 2 accordingly — step 4 `isAvailable()` now reads `detectPlatformKind() === 'github'`,
+step 6 drops the proposed `ProjectInfo.platformKind` field (the detector is the single source of
+truth for `kind`), and the matching "Open assumptions" bullet was removed. No code changed this
+session.
 
 ### 2026-06-23 · claude-opus-4-8[1m] · step 1.3 (inert GitHub stubs)
 

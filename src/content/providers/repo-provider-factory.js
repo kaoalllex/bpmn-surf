@@ -29,12 +29,18 @@ function createRepoProvider() {
  * @returns {UIRepoProvider} a provider that injects the plugin's buttons
  */
 function createUIRepoProvider() {
-    // Host-based selection (REFAC-0004): GitHub pages get the GitHub UI provider,
-    // everything else keeps GitLab as the default — so nothing changes off
-    // github.com. The GitHub branch is inert until subtask 2 (the GitHub UI
-    // provider is a safe no-op, and github.com is not yet in content_scripts).
-    if (window.location.hostname === 'github.com') {
-        return new GitHubUIRepoProvider();
+    // Detect the page's platform once and let each UI provider decide whether it
+    // handles it (REFAC-0004): the factory no longer hardcodes the host->provider
+    // mapping. The GitHub UI provider is inert (isAvailable() === false) until
+    // subtask 2 flips it on — at which point it gets selected here with no factory
+    // edit. If nothing matches we throw rather than guessing a provider: a
+    // mismatched one could not inject buttons correctly anyway (the content script
+    // only runs on matched hosts, so this never fires in practice).
+    const platformKind = detectPlatformKind();
+    const uiProviders = [new GitHubUIRepoProvider(), new GitLabUIRepoProvider()];
+    const uiProvider = uiProviders.find(p => p.isAvailable(platformKind));
+    if (!uiProvider) {
+        throw new Error(`no UI repo provider for platform kind: ${platformKind}`);
     }
-    return new GitLabUIRepoProvider();
+    return uiProvider;
 }

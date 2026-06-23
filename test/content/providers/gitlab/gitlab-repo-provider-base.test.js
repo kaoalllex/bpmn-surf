@@ -21,9 +21,15 @@ function createBase(projectPayload, { url = MR_URL } = {}) {
 }
 
 describe('GitLabRepoProviderBase.isAvailable', () => {
-    it('is true on a gitlab url', () => {
-        const { provider } = createBase([]);
-        assert.equal(provider.isAvailable(), true);
+    it('is true when the detected platform kind is gitlab', () => {
+        const { scope, provider } = createBase([]);
+        assert.equal(provider.isAvailable(scope.PLATFORM_KIND.GITLAB), true);
+    });
+
+    it('is false for any other (or absent) platform kind', () => {
+        const { scope, provider } = createBase([]);
+        assert.equal(provider.isAvailable(scope.PLATFORM_KIND.GITHUB), false);
+        assert.equal(provider.isAvailable(null), false);
     });
 });
 

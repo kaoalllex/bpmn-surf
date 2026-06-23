@@ -5,6 +5,18 @@ const UI_BUTTON_TYPE = {
 
 class UIRepoProvider {
     /**
+     * Checks if this UI provider handles the current page's platform. Mirror of
+     * RepoProvider.isAvailable: the detected platform kind is passed in (computed
+     * once by createUIRepoProvider via detectPlatformKind) and the provider
+     * compares it to its own kind.
+     * @param {string|null} platformKind the page's detected PLATFORM_KIND
+     * @returns {boolean}
+     */
+    isAvailable(platformKind) {
+        throw new Error('isAvailable() must be implemented');
+    }
+
+    /**
      * Adds a button to the page.
      * @param {Object} options button parameters
      * @param {FileType} options.fileType file type (bpmn or dmn)
