@@ -230,6 +230,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/bpmn/properties-group-expander.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/platform/platform-client.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/platform/gitlab-platform-client.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/platform/github-platform-client.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/platform/platform-client-factory.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/process-file-index.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/call-activity-locator.js', doc, getResourceUrlByNameFunc);

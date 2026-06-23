@@ -2,7 +2,7 @@
 id: REFAC-0004
 title: Code-hosting platform abstraction → GitHub support
 priority: low
-status: open
+status: in-progress
 ---
 
 ## Statement
@@ -120,7 +120,7 @@ src/content/providers/github/
 Goal: after subtask 1, GitLab works **byte-for-byte** as before, GitHub does nothing yet, all tests
 green. Three independent, separately-committable steps.
 
-### Step 1.1 — Differ-scope `PlatformClient` abstraction (pure refactor)
+### Step 1.1 — Differ-scope `PlatformClient` abstraction (pure refactor) — ✅ DONE (2026-06-23, MR !135)
 
 The heaviest step. Pure move of GitLab specifics behind the interface.
 
@@ -164,7 +164,7 @@ The heaviest step. Pure move of GitLab specifics behind the interface.
 verify render, dive-in to a Call Activity, handler badge navigation, correlation lookup, "open in
 GitLab" header link, single-commit diff labels.
 
-### Step 1.2 — File restructure by provider (mechanical, isolated commit)
+### Step 1.2 — File restructure by provider (mechanical, isolated commit) — ✅ DONE (2026-06-23)
 
 Content-scope GitLab files are already grouped under `src/content/providers/gitlab/`. This step:
 
@@ -181,7 +181,7 @@ Content-scope GitLab files are already grouped under `src/content/providers/gitl
 analysis shows nothing actually needs moving, this step is just creating the two new folders +
 the doc note — keep it tiny.)
 
-### Step 1.3 — Inert GitHub stubs (no behaviour change)
+### Step 1.3 — Inert GitHub stubs (no behaviour change) — ✅ DONE (2026-06-23)
 
 1. `src/content/providers/github/github-repo-provider.js` extends `RepoProvider`:
    `isAvailable()` returns `false` for now (or `host === 'github.com'` but `init()` returns `false`)
@@ -346,6 +346,52 @@ degrades gracefully; GitLab unchanged.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-06-23 · claude-opus-4-8[1m] · step 1.3 (inert GitHub stubs)
+
+Implemented **step 1.3** — inert GitHub stubs, no behaviour change, bundled into the same MR !136 as
+step 1.2 (per the user's request — a single new commit, not amend/force-push). New files:
+`src/content/providers/github/github-repo-provider.js` (`extends RepoProvider`; `isAvailable()`
+returns `false`, every other method throws "not implemented yet"), `github-ui-repo-provider.js`
+(`extends UIRepoProvider`; `addButton`/`reset` no-ops, `isOwnButtonClick`/`isButtonPresent` return
+`false` — safe because `App` calls them unconditionally on the mouseup/popstate hot path),
+`src/differ/platform/github-platform-client.js` (`extends PlatformClient`; all methods throw).
+
+Wiring: `repo-provider-factory.js` — `createRepoProvider` appends `new GitHubRepoProvider()` to the
+`FallbackRepoProvider` chain (guaranteed-skipped: `init()` only initializes available providers, and
+`isAvailable()` is `false`), and `createUIRepoProvider` now selects by host (`github.com` →
+`GitHubUIRepoProvider`, else the GitLab default — so nothing changes off github.com).
+`platform-client-factory.js` — added `case 'github'` → `GitHubPlatformClient`.
+
+**Deliberately NOT done** (kept the stubs unreachable, per the plan): `https://github.com/*` is not
+added to `manifest#content_scripts.matches`, so the content script never even loads on GitHub.
+
+Registries: github content files added to `manifest#content_scripts` (after the GitLab providers,
+before fallback/factory — base interfaces still load first) and `scope.js#SCOPE_FILES`;
+`github-platform-client.js` added to `manifest#web_accessible_resources`, `utils.js#loadScripts`, and
+`scope.js#SCOPE_FILES` (same relative order in all three). The three stubs listed in
+`source-layout.test.js#UNTESTED_BY_DESIGN` (no logic to test yet; subtask 2 fills them in + adds
+tests). Added a `createPlatformClient(kind:'github')` factory-test case. `docs/architecture.md`
+updated (tree, structure diagram, key-files rows). `CLAUDE.md` left unchanged — GitHub is not yet
+user-visible (that note lands in subtask 2). `npm test` green (1046/1046). **Subtask 1 (1.1 + 1.2 +
+1.3) complete** — GitLab unchanged, GitHub inert. Subtasks 2–3 not started.
+
+### 2026-06-23 · claude-opus-4-8[1m] · step 1.2 (file restructure)
+
+Implemented **step 1.2** — the "nothing actually needs moving" case. Analysis confirmed the layout
+is already correct: content-scope neutral files (`repo-provider.js`, `ui-repo-provider.js`,
+`repo-provider-factory.js`, `fallback-repo-provider.js`) stay at `src/content/providers/`, all GitLab
+specifics are under `src/content/providers/gitlab/`, and `src/differ/platform/` already exists with
+its three files registered in all four registries (done in 1.1). So **no `git mv` and no registry
+changes** were needed — `registries.test.js` was already green.
+
+Work delivered: (1) the directory-tree + key-files doc update that 1.1 deferred — added the
+`platform/` subfolder to the differ tree, three key-files rows (`platform-client.js`,
+`gitlab-platform-client.js`, `platform-client-factory.js`), and a "Differ-scope platform seam"
+paragraph in `docs/architecture.md`; (2) created `src/content/providers/github/` on disk for 1.3
+(empty → not committed, git can't track empty dirs; 1.3 populates it) and recorded it in the tree as
+the forthcoming GitHub provider folder. `npm test` green (1027/1027). No behaviour change. Steps
+1.3 / subtasks 2–3 not started.
 
 ### 2026-06-23 · claude-opus-4-8[1m] · step 1.1 (uncommitted, master working tree)
 

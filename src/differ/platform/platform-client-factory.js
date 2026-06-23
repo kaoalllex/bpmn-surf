@@ -5,6 +5,9 @@ function createPlatformClient(platform) {
     switch (platform && platform.kind) {
         case 'gitlab':
             return new GitLabPlatformClient(platform);
+        case 'github':
+            // REFAC-0004: inert until subtask 2 — its methods throw for now.
+            return new GitHubPlatformClient(platform);
         default:
             throw new Error(`unsupported platform kind: ${platform && platform.kind}`);
     }
