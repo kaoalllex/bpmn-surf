@@ -8,6 +8,7 @@ class DmnDiffer {
 
     #rawParams;
     #params = null;
+    #platformClient = null;
     #versions = null;
     #branchIndicator = null;
     #viewport = null;
@@ -63,8 +64,11 @@ class DmnDiffer {
         this.#params = new DifferParams(this.#rawParams);
         // The back navigation (FEAT-0005) calls the platform API to find callers.
         this.#params.requirePlatformInfo();
+        // The differ-scope seam (REFAC-0004): all platform-specific URL/search/
+        // changes access goes through this client, chosen by platform.kind.
+        this.#platformClient = createPlatformClient(this.#params.platform);
 
-        this.#versions = new DiagramVersions(this.#params);
+        this.#versions = new DiagramVersions(this.#params, this.#platformClient);
         this.#branchIndicator = new BranchIndicator(
             this.#params.targetLabel, this.#params.sourceLabel, !!this.#params.localFileContent);
         this.#viewport = new DmnTableViewport();
@@ -72,11 +76,7 @@ class DmnDiffer {
         this.#diffPainter = new DmnDiffPainter();
         // FEAT-0005: reverse search for the BPMN files whose Business Rule Task
         // calls this decision (decisionRef="<id>"), for the back navigation.
-        this.#decisionCallerLocator = new DecisionCallerLocator(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId
-        );
+        this.#decisionCallerLocator = new DecisionCallerLocator(this.#platformClient);
         // Shared opener-tab navigation (open a nested differ, step back up).
         this.#tabNavigator = new DifferTabNavigator();
         // Register this tab in the cross-tab registry so any other tab navigating
@@ -125,8 +125,8 @@ class DmnDiffer {
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
             console.error(
                 'dmn file is unavailable in both versions;',
-                `target branch url: ${this.#params.rawFileUrl(this.#params.targetRef)};`,
-                `mr url: ${this.#params.sourceRef ? this.#params.rawFileUrl(this.#params.sourceRef) : '<no sourceRef>'}`
+                `target branch url: ${this.#platformClient.rawFileUrl(this.#params.targetRef, this.#params.filePath)};`,
+                `mr url: ${this.#params.sourceRef ? this.#platformClient.rawFileUrl(this.#params.sourceRef, this.#params.filePath) : '<no sourceRef>'}`
             );
         }
     }
@@ -237,7 +237,7 @@ class DmnDiffer {
         const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
         const fileName = targetSide ? this.#params.targetFileName : this.#params.fileName;
         const exists = targetSide ? this.#versions.branchXml : this.#versions.mrXml;
-        return { path, fileName, url: ref && exists ? this.#params.blobFileUrl(ref, path) : null };
+        return { path, fileName, url: ref && exists ? this.#platformClient.blobFileUrl(ref, path) : null };
     }
 
     // Commit/ref of the decision version currently shown (for resolving the BPMN

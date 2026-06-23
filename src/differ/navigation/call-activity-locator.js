@@ -2,9 +2,9 @@
 // "dive in" navigation.
 //
 // A Call Activity references its called process by id (calledElement). The file
-// defining that process is found by a targeted GitLab blob-search for the
-// `<bpmn:process id="...">` declaration, so only the matching file is fetched —
-// no project-wide repository walk. Resolution is cached per ref+processId.
+// defining that process is found by a targeted code search (PlatformClient) for
+// the `<bpmn:process id="...">` declaration, so only the matching file is
+// fetched — no project-wide repository walk. Resolution is cached per ref+processId.
 //
 // If blob-search is unavailable or finds nothing, resolution falls back to the
 // legacy ProcessFileIndex (full repository tree listing + filename heuristics +
@@ -14,18 +14,14 @@
 class CallActivityLocator {
     static #BPMN_FILE_EXTENSION = '.bpmn';
 
-    #projectUrl;
-    #projectHostUrl;
-    #projectId;
+    #client;
     #fallbackIndex;
 
     // Cache of resolveProcessFile() results, keyed by `${ref}\n${processId}`.
     #cache = new Map();
 
-    constructor(projectUrl, projectHostUrl, projectId, fallbackIndex) {
-        this.#projectUrl = projectUrl;
-        this.#projectHostUrl = projectHostUrl;
-        this.#projectId = projectId;
+    constructor(client, fallbackIndex) {
+        this.#client = client;
         this.#fallbackIndex = fallbackIndex;
     }
 
@@ -37,8 +33,8 @@ class CallActivityLocator {
     }
 
     /**
-     * Picks the BPMN file that defines the given process from a list of GitLab
-     * blob-search items. Prefers a hit whose snippet shows the actual
+     * Picks the BPMN file that defines the given process from a list of
+     * normalised search hits. Prefers a hit whose snippet shows the actual
      * `process id="<processId>"` declaration (so a file that merely references
      * the process via calledElement="<processId>" is not chosen by mistake);
      * otherwise falls back to the first BPMN hit.
@@ -54,7 +50,7 @@ class CallActivityLocator {
         }
 
         const declaration = `process id="${processId}"`;
-        const declaring = bpmnItems.find(i => i.data && i.data.includes(declaration));
+        const declaring = bpmnItems.find(i => i.snippet && i.snippet.includes(declaration));
         const item = declaring || bpmnItems[0];
 
         return {
@@ -99,13 +95,12 @@ class CallActivityLocator {
     }
 
     /**
-     * Blob-search GitLab URL for the process id within the project at a ref.
-     * Exposed so the UI can offer a "search in GitLab" fallback when resolution
-     * fails (e.g. blob search disabled on the instance).
+     * Human-facing code-search page URL for the process id within the project at
+     * a ref. Exposed so the UI can offer a "search in the repo" fallback when
+     * resolution fails (e.g. search disabled on the instance).
      */
     blobSearchPageUrl(processId, ref) {
-        return `${this.#projectUrl}/-/search?search=${encodeURIComponent(processId)}` +
-            `&scope=blobs&ref=${encodeURIComponent(ref)}`;
+        return this.#client.searchPageUrl(processId, ref);
     }
 
     async #searchProcessFile(processId, ref) {
@@ -113,17 +108,7 @@ class CallActivityLocator {
             return null;
         }
         const term = `process id="${processId}"`;
-        const items = await this.#searchBlobs(term, ref);
+        const items = await this.#client.searchCode(ref, term);
         return CallActivityLocator.selectProcessFile(items, processId);
-    }
-
-    async #searchBlobs(term, ref) {
-        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
-            `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}`;
-        const content = await loadFileContent(url, false);
-        if (!content) {
-            return [];
-        }
-        return JSON.parse(content);
     }
 }

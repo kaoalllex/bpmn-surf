@@ -4,7 +4,15 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { CallActivityLocator } = createScope();
+const { CallActivityLocator, GitLabPlatformClient } = createScope();
+
+// A GitLab client over a fixed project, so blobSearchPageUrl asserts the real
+// URL format the locator now delegates to (REFAC-0004).
+const client = new GitLabPlatformClient({
+    projectUrl: 'https://gitlab.example/group/proj',
+    hostUrl: 'https://gitlab.example',
+    projectId: 42
+});
 
 describe('CallActivityLocator.isBpmnFile', () => {
     it('accepts BPMN files', () => {
@@ -35,28 +43,28 @@ describe('CallActivityLocator.selectProcessFile', () => {
 
     it('returns null when no item is a BPMN file', () => {
         const items = [
-            { path: 'src/Foo.kt', data: 'process id="Foo"' },
-            { path: 'README.md', data: 'process id="Foo"' }
+            { path: 'src/Foo.kt', snippet: 'process id="Foo"' },
+            { path: 'README.md', snippet: 'process id="Foo"' }
         ];
         assert.equal(CallActivityLocator.selectProcessFile(items, 'Foo'), null);
     });
 
     it('selects the only BPMN hit', () => {
-        const items = [{ path: 'bpmn/Foo.bpmn', data: '<bpmn:process id="Foo">' }];
+        const items = [{ path: 'bpmn/Foo.bpmn', snippet: '<bpmn:process id="Foo">' }];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.filePath, 'bpmn/Foo.bpmn');
     });
 
     it('returns the file name as the path basename', () => {
-        const items = [{ path: 'a/b/c/Foo.bpmn', data: '<bpmn:process id="Foo">' }];
+        const items = [{ path: 'a/b/c/Foo.bpmn', snippet: '<bpmn:process id="Foo">' }];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.fileName, 'Foo.bpmn');
     });
 
     it('ignores non-BPMN hits and keeps the BPMN one', () => {
         const items = [
-            { path: 'src/Foo.kt', data: 'process id="Foo"' },
-            { path: 'bpmn/Foo.bpmn', data: '<bpmn:process id="Foo">' }
+            { path: 'src/Foo.kt', snippet: 'process id="Foo"' },
+            { path: 'bpmn/Foo.bpmn', snippet: '<bpmn:process id="Foo">' }
         ];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.filePath, 'bpmn/Foo.bpmn');
@@ -65,9 +73,9 @@ describe('CallActivityLocator.selectProcessFile', () => {
     it('prefers the file declaring the process over one merely referencing it', () => {
         const items = [
             // Caller schema: references the process via calledElement, not a declaration.
-            { path: 'bpmn/Caller.bpmn', data: '<bpmn:callActivity calledElement="Foo" />' },
+            { path: 'bpmn/Caller.bpmn', snippet: '<bpmn:callActivity calledElement="Foo" />' },
             // Callee schema: actually declares the process.
-            { path: 'bpmn/Foo.bpmn', data: '  <bpmn:process id="Foo" isExecutable="true">' }
+            { path: 'bpmn/Foo.bpmn', snippet: '  <bpmn:process id="Foo" isExecutable="true">' }
         ];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.filePath, 'bpmn/Foo.bpmn');
@@ -75,8 +83,8 @@ describe('CallActivityLocator.selectProcessFile', () => {
 
     it('matches a declaration without a namespace prefix', () => {
         const items = [
-            { path: 'bpmn/Other.bpmn', data: '<callActivity calledElement="Foo" />' },
-            { path: 'bpmn/Foo.bpmn', data: '<process id="Foo">' }
+            { path: 'bpmn/Other.bpmn', snippet: '<callActivity calledElement="Foo" />' },
+            { path: 'bpmn/Foo.bpmn', snippet: '<process id="Foo">' }
         ];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.filePath, 'bpmn/Foo.bpmn');
@@ -84,8 +92,8 @@ describe('CallActivityLocator.selectProcessFile', () => {
 
     it('does not confuse a different process id that shares a prefix', () => {
         const items = [
-            { path: 'bpmn/FooBar.bpmn', data: '<bpmn:process id="FooBar">' },
-            { path: 'bpmn/Foo.bpmn', data: '<bpmn:process id="Foo">' }
+            { path: 'bpmn/FooBar.bpmn', snippet: '<bpmn:process id="FooBar">' },
+            { path: 'bpmn/Foo.bpmn', snippet: '<bpmn:process id="Foo">' }
         ];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.filePath, 'bpmn/Foo.bpmn');
@@ -93,8 +101,8 @@ describe('CallActivityLocator.selectProcessFile', () => {
 
     it('falls back to the first BPMN hit when no snippet shows the declaration', () => {
         const items = [
-            { path: 'bpmn/First.bpmn', data: 'no declaration here' },
-            { path: 'bpmn/Second.bpmn', data: 'nor here' }
+            { path: 'bpmn/First.bpmn', snippet: 'no declaration here' },
+            { path: 'bpmn/Second.bpmn', snippet: 'nor here' }
         ];
         const res = CallActivityLocator.selectProcessFile(items, 'Foo');
         assert.equal(res.filePath, 'bpmn/First.bpmn');
@@ -108,12 +116,7 @@ describe('CallActivityLocator.selectProcessFile', () => {
 });
 
 describe('CallActivityLocator.blobSearchPageUrl', () => {
-    const locator = new CallActivityLocator(
-        'https://gitlab.example/group/proj',
-        'https://gitlab.example',
-        42,
-        null
-    );
+    const locator = new CallActivityLocator(client, null);
 
     it('builds a blob search page URL for the process id', () => {
         assert.equal(

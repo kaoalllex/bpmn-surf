@@ -4,7 +4,15 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { DecisionLocator } = createScope();
+const { DecisionLocator, GitLabPlatformClient } = createScope();
+
+// A GitLab client over a fixed project, so blobSearchPageUrl asserts the real
+// URL format the locator now delegates to (REFAC-0004).
+const client = new GitLabPlatformClient({
+    projectUrl: 'https://gitlab.example/group/proj',
+    hostUrl: 'https://gitlab.example',
+    projectId: 42
+});
 
 describe('DecisionLocator.isDmnFile', () => {
     it('accepts DMN files', () => {
@@ -35,28 +43,28 @@ describe('DecisionLocator.selectDecisionFile', () => {
 
     it('returns null when no item is a DMN file', () => {
         const items = [
-            { path: 'src/Foo.kt', data: 'decision id="Foo"' },
-            { path: 'README.md', data: 'decision id="Foo"' }
+            { path: 'src/Foo.kt', snippet: 'decision id="Foo"' },
+            { path: 'README.md', snippet: 'decision id="Foo"' }
         ];
         assert.equal(DecisionLocator.selectDecisionFile(items, 'Foo'), null);
     });
 
     it('selects the only DMN hit', () => {
-        const items = [{ path: 'dmn/Foo.dmn', data: '<decision id="Foo">' }];
+        const items = [{ path: 'dmn/Foo.dmn', snippet: '<decision id="Foo">' }];
         const res = DecisionLocator.selectDecisionFile(items, 'Foo');
         assert.equal(res.filePath, 'dmn/Foo.dmn');
     });
 
     it('returns the file name as the path basename', () => {
-        const items = [{ path: 'a/b/c/Foo.dmn', data: '<decision id="Foo">' }];
+        const items = [{ path: 'a/b/c/Foo.dmn', snippet: '<decision id="Foo">' }];
         const res = DecisionLocator.selectDecisionFile(items, 'Foo');
         assert.equal(res.fileName, 'Foo.dmn');
     });
 
     it('ignores non-DMN hits and keeps the DMN one', () => {
         const items = [
-            { path: 'src/Foo.kt', data: 'decision id="Foo"' },
-            { path: 'dmn/Foo.dmn', data: '<decision id="Foo">' }
+            { path: 'src/Foo.kt', snippet: 'decision id="Foo"' },
+            { path: 'dmn/Foo.dmn', snippet: '<decision id="Foo">' }
         ];
         const res = DecisionLocator.selectDecisionFile(items, 'Foo');
         assert.equal(res.filePath, 'dmn/Foo.dmn');
@@ -65,9 +73,9 @@ describe('DecisionLocator.selectDecisionFile', () => {
     it('prefers the file declaring the decision over one merely referencing it', () => {
         const items = [
             // A DMN that references the decision elsewhere (no declaration snippet).
-            { path: 'dmn/Other.dmn', data: 'requiredDecision href="#Foo"' },
+            { path: 'dmn/Other.dmn', snippet: 'requiredDecision href="#Foo"' },
             // The file that actually declares the decision.
-            { path: 'dmn/Foo.dmn', data: '  <decision id="Foo" name="Score">' }
+            { path: 'dmn/Foo.dmn', snippet: '  <decision id="Foo" name="Score">' }
         ];
         const res = DecisionLocator.selectDecisionFile(items, 'Foo');
         assert.equal(res.filePath, 'dmn/Foo.dmn');
@@ -75,8 +83,8 @@ describe('DecisionLocator.selectDecisionFile', () => {
 
     it('does not confuse a different decision id that shares a prefix', () => {
         const items = [
-            { path: 'dmn/FooBar.dmn', data: '<decision id="FooBar">' },
-            { path: 'dmn/Foo.dmn', data: '<decision id="Foo">' }
+            { path: 'dmn/FooBar.dmn', snippet: '<decision id="FooBar">' },
+            { path: 'dmn/Foo.dmn', snippet: '<decision id="Foo">' }
         ];
         const res = DecisionLocator.selectDecisionFile(items, 'Foo');
         assert.equal(res.filePath, 'dmn/Foo.dmn');
@@ -84,8 +92,8 @@ describe('DecisionLocator.selectDecisionFile', () => {
 
     it('falls back to the first DMN hit when no snippet shows the declaration', () => {
         const items = [
-            { path: 'dmn/First.dmn', data: 'no declaration here' },
-            { path: 'dmn/Second.dmn', data: 'nor here' }
+            { path: 'dmn/First.dmn', snippet: 'no declaration here' },
+            { path: 'dmn/Second.dmn', snippet: 'nor here' }
         ];
         const res = DecisionLocator.selectDecisionFile(items, 'Foo');
         assert.equal(res.filePath, 'dmn/First.dmn');
@@ -99,11 +107,7 @@ describe('DecisionLocator.selectDecisionFile', () => {
 });
 
 describe('DecisionLocator.blobSearchPageUrl', () => {
-    const locator = new DecisionLocator(
-        'https://gitlab.example/group/proj',
-        'https://gitlab.example',
-        42
-    );
+    const locator = new DecisionLocator(client);
 
     it('builds a blob search page URL for the decision id', () => {
         assert.equal(
@@ -121,7 +125,7 @@ describe('DecisionLocator.blobSearchPageUrl', () => {
 });
 
 describe('DecisionLocator.resolveDecisionFile (guards, no network)', () => {
-    const locator = new DecisionLocator('https://gitlab.example/p', 'https://gitlab.example', 1);
+    const locator = new DecisionLocator(client);
 
     it('returns null for an empty decision id', async () => {
         assert.equal(await locator.resolveDecisionFile('', 'main'), null);

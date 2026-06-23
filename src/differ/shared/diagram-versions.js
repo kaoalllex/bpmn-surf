@@ -2,11 +2,13 @@
 // target branch version and MR branch version (or local file content)
 class DiagramVersions {
     #params;
+    #client;
     #branchXml = null;
     #mrXml = null;
 
-    constructor(params) {
+    constructor(params, client) {
         this.#params = params;
+        this.#client = client;
     }
 
     get branchXml() {
@@ -31,8 +33,8 @@ class DiagramVersions {
         this.#mrXml = this.#params.localFileContent;
     }
 
-    async #loadXml(commitId, filePath) {
-        return await loadFileContent(this.#params.rawFileUrl(commitId, filePath), false);
+    async #loadXml(commitId, filePath = this.#params.filePath) {
+        return await loadFileContent(this.#client.rawFileUrl(commitId, filePath), false);
     }
 
     download(fileContent, branchName, fileName = this.#params.fileName) {

@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { HandlerLocator } = createScope();
+const { HandlerLocator, GitLabPlatformClient } = createScope();
 
 describe('HandlerLocator.extractSubscriptionTopics', () => {
     it('extracts a single topic from a Kotlin handler', () => {
@@ -186,81 +186,67 @@ describe('HandlerLocator.isHandlerFile', () => {
     });
 });
 
+// extractHandlerFileChanges now operates on the normalised PlatformClient
+// `prChangedFiles` shape ({ path, oldPath, status }); the GitLab response→
+// normalised parsing (new_file/deleted_file/renamed) is tested in
+// gitlab-platform-client.test.js.
 describe('HandlerLocator.extractHandlerFileChanges', () => {
-    it('classifies an added handler file as "added", scanned at its own path', () => {
-        const response = {
-            changes: [
-                { old_path: 'src/NewTask.kt', new_path: 'src/NewTask.kt', new_file: true }
-            ]
-        };
+    it('keeps an added handler file, scanned at its own path', () => {
+        const changed = [{ path: 'src/NewTask.kt', oldPath: 'src/NewTask.kt', status: 'added' }];
         assert.deepEqual(
-            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(response))),
+            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(changed))),
             [{ filePath: 'src/NewTask.kt', scanPath: 'src/NewTask.kt', diffType: 'added' }]
         );
     });
 
-    it('classifies a modified handler file as "changed"', () => {
-        const response = {
-            changes: [
-                { old_path: 'src/ScoreCarTask.kt', new_path: 'src/ScoreCarTask.kt' }
-            ]
-        };
+    it('keeps a changed handler file', () => {
+        const changed = [{ path: 'src/ScoreCarTask.kt', oldPath: 'src/ScoreCarTask.kt', status: 'changed' }];
         assert.deepEqual(
-            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(response))),
+            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(changed))),
             [{ filePath: 'src/ScoreCarTask.kt', scanPath: 'src/ScoreCarTask.kt', diffType: 'changed' }]
         );
     });
 
-    it('classifies a renamed file as "changed" using the new path', () => {
-        const response = {
-            changes: [
-                { old_path: 'src/OldName.kt', new_path: 'src/NewName.kt', renamed_file: true }
-            ]
-        };
+    it('uses the (post-rename) path for a renamed handler file', () => {
+        const changed = [{ path: 'src/NewName.kt', oldPath: 'src/OldName.kt', status: 'changed' }];
         assert.deepEqual(
-            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(response))),
+            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(changed))),
             [{ filePath: 'src/NewName.kt', scanPath: 'src/NewName.kt', diffType: 'changed' }]
         );
     });
 
-    it('classifies a deleted handler file as "removed" using the old path', () => {
-        const response = {
-            changes: [
-                { old_path: 'src/Gone.kt', new_path: 'src/Gone.kt', deleted_file: true }
-            ]
-        };
+    it('keeps a removed handler file', () => {
+        const changed = [{ path: 'src/Gone.kt', oldPath: 'src/Gone.kt', status: 'removed' }];
         assert.deepEqual(
-            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(response))),
+            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(changed))),
             [{ filePath: 'src/Gone.kt', scanPath: 'src/Gone.kt', diffType: 'removed' }]
         );
     });
 
     it('ignores non-handler files', () => {
-        const response = {
-            changes: [
-                { old_path: 'src/Flow.bpmn', new_path: 'src/Flow.bpmn' },
-                { old_path: 'README.md', new_path: 'README.md', new_file: true },
-                { old_path: 'src/Task.kt', new_path: 'src/Task.kt' }
-            ]
-        };
+        const changed = [
+            { path: 'src/Flow.bpmn', oldPath: 'src/Flow.bpmn', status: 'changed' },
+            { path: 'README.md', oldPath: 'README.md', status: 'added' },
+            { path: 'src/Task.kt', oldPath: 'src/Task.kt', status: 'changed' }
+        ];
         assert.deepEqual(
-            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(response))),
+            JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(changed))),
             [{ filePath: 'src/Task.kt', scanPath: 'src/Task.kt', diffType: 'changed' }]
         );
     });
 
-    it('returns empty for missing changes', () => {
-        assert.deepEqual(JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges({}))), []);
+    it('returns empty for an empty or missing change set', () => {
+        assert.deepEqual(JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges([]))), []);
         assert.deepEqual(JSON.parse(JSON.stringify(HandlerLocator.extractHandlerFileChanges(null))), []);
     });
 });
 
 describe('HandlerLocator URL builders', () => {
-    const locator = new HandlerLocator(
-        'https://gitlab.example/group/proj',
-        'https://gitlab.example',
-        42
-    );
+    const locator = new HandlerLocator(new GitLabPlatformClient({
+        projectUrl: 'https://gitlab.example/group/proj',
+        hostUrl: 'https://gitlab.example',
+        projectId: 42
+    }));
 
     it('builds a blob file URL anchored to a line', () => {
         assert.equal(

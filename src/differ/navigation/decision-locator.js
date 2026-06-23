@@ -10,17 +10,13 @@
 class DecisionLocator {
     static #DMN_FILE_EXTENSION = '.dmn';
 
-    #projectUrl;
-    #projectHostUrl;
-    #projectId;
+    #client;
 
     // Cache of resolveDecisionFile() results, keyed by `${ref}\n${decisionId}`.
     #cache = new Map();
 
-    constructor(projectUrl, projectHostUrl, projectId) {
-        this.#projectUrl = projectUrl;
-        this.#projectHostUrl = projectHostUrl;
-        this.#projectId = projectId;
+    constructor(client) {
+        this.#client = client;
     }
 
     /**
@@ -31,8 +27,8 @@ class DecisionLocator {
     }
 
     /**
-     * Picks the DMN file that defines the given decision from a list of GitLab
-     * blob-search items. Prefers a hit whose snippet shows the actual
+     * Picks the DMN file that defines the given decision from a list of
+     * normalised search hits. Prefers a hit whose snippet shows the actual
      * `decision id="<decisionId>"` declaration (so a file that merely references
      * the decision via decisionRef="<decisionId>" is not chosen by mistake);
      * otherwise falls back to the first DMN hit.
@@ -48,7 +44,7 @@ class DecisionLocator {
         }
 
         const declaration = `decision id="${decisionId}"`;
-        const declaring = dmnItems.find(i => i.data && i.data.includes(declaration));
+        const declaring = dmnItems.find(i => i.snippet && i.snippet.includes(declaration));
         const item = declaring || dmnItems[0];
 
         return {
@@ -84,14 +80,13 @@ class DecisionLocator {
     }
 
     /**
-     * Blob-search GitLab URL for the decision id within the project at a ref.
-     * Exposed so the UI can offer a "search in GitLab" fallback when resolution
-     * fails (e.g. blob search disabled on the instance, or a decisionRef
-     * expression `${…}` that is not blob-searchable).
+     * Human-facing code-search page URL for the decision id within the project
+     * at a ref. Exposed so the UI can offer a "search in the repo" fallback when
+     * resolution fails (e.g. search disabled on the instance, or a decisionRef
+     * expression `${…}` that is not searchable).
      */
     blobSearchPageUrl(decisionId, ref) {
-        return `${this.#projectUrl}/-/search?search=${encodeURIComponent(decisionId)}` +
-            `&scope=blobs&ref=${encodeURIComponent(ref)}`;
+        return this.#client.searchPageUrl(decisionId, ref);
     }
 
     async #searchDecisionFile(decisionId, ref) {
@@ -99,17 +94,7 @@ class DecisionLocator {
             return null;
         }
         const term = `decision id="${decisionId}"`;
-        const items = await this.#searchBlobs(term, ref);
+        const items = await this.#client.searchCode(ref, term);
         return DecisionLocator.selectDecisionFile(items, decisionId);
-    }
-
-    async #searchBlobs(term, ref) {
-        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
-            `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}`;
-        const content = await loadFileContent(url, false);
-        if (!content) {
-            return [];
-        }
-        return JSON.parse(content);
     }
 }

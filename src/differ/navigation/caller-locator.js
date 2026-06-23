@@ -14,21 +14,17 @@
 // "no callers" (an empty array — a root diagram) from "could not check"
 // (a thrown error — search disabled/unreachable), which read very differently.
 class CallerLocator {
-    #projectUrl;
-    #projectHostUrl;
-    #projectId;
+    #client;
 
     // Cache of resolveCallers() results, keyed by `${ref}\n${sorted ids}`.
     #cache = new Map();
 
-    constructor(projectUrl, projectHostUrl, projectId) {
-        this.#projectUrl = projectUrl;
-        this.#projectHostUrl = projectHostUrl;
-        this.#projectId = projectId;
+    constructor(client) {
+        this.#client = client;
     }
 
     /**
-     * Picks the calling BPMN files from a list of GitLab blob-search items:
+     * Picks the calling BPMN files from a list of normalised search hits:
      * keeps BPMN files, drops the current file itself (a diagram may both
      * define and reference a process), and de-duplicates by path.
      * @returns {{filePath: string, fileName: string}[]}
@@ -71,7 +67,7 @@ class CallerLocator {
 
         const byPath = new Map();
         for (const id of ids) {
-            const items = await this.#searchBlobs(`calledElement="${id}"`, ref);
+            const items = await this.#client.searchCode(ref, `calledElement="${id}"`);
             for (const caller of CallerLocator.selectCallers(items, selfFilePath)) {
                 byPath.set(caller.filePath, caller);
             }
@@ -82,23 +78,11 @@ class CallerLocator {
     }
 
     /**
-     * Blob-search GitLab URL for the callers of a process id within the project
-     * at a ref. Exposed so the UI can offer a "search in GitLab" link when the
-     * lookup fails (e.g. blob search disabled on the instance).
+     * Human-facing code-search page URL for the callers of a process id within
+     * the project at a ref. Exposed so the UI can offer a "search in the repo"
+     * link when the lookup fails (e.g. search disabled on the instance).
      */
     blobSearchPageUrl(processId, ref) {
-        const term = `calledElement="${processId}"`;
-        return `${this.#projectUrl}/-/search?search=${encodeURIComponent(term)}` +
-            `&scope=blobs&ref=${encodeURIComponent(ref)}`;
-    }
-
-    async #searchBlobs(term, ref) {
-        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
-            `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}`;
-        const content = await loadFileContent(url, false);
-        if (!content) {
-            return [];
-        }
-        return JSON.parse(content);
+        return this.#client.searchPageUrl(`calledElement="${processId}"`, ref);
     }
 }
