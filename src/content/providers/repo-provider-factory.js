@@ -18,7 +18,10 @@ function createRepoProvider() {
         // otherwise its init() returns false and the chain falls back below.
         new GitLabApiRepoProvider(),
         // Fallback: the existing DOM- and URL-heuristic based provider.
-        new GitLabRepoProvider()
+        new GitLabRepoProvider(),
+        // GitHub (REFAC-0004): inert until subtask 2 — isAvailable() returns
+        // false, so the chain always skips it and GitLab behaviour is unchanged.
+        new GitHubRepoProvider()
     ]);
 }
 
@@ -26,5 +29,12 @@ function createRepoProvider() {
  * @returns {UIRepoProvider} a provider that injects the plugin's buttons
  */
 function createUIRepoProvider() {
+    // Host-based selection (REFAC-0004): GitHub pages get the GitHub UI provider,
+    // everything else keeps GitLab as the default — so nothing changes off
+    // github.com. The GitHub branch is inert until subtask 2 (the GitHub UI
+    // provider is a safe no-op, and github.com is not yet in content_scripts).
+    if (window.location.hostname === 'github.com') {
+        return new GitHubUIRepoProvider();
+    }
     return new GitLabUIRepoProvider();
 }
