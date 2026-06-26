@@ -21,8 +21,12 @@ class DmnDiffer {
     #backNavigator = null;
     #tabNavigator = null;
 
-    constructor(rawParams) {
+    // platformClient (the differ-scope PlatformClient seam, REFAC-0004) is built
+    // by the bootstrap main() and injected here — the orchestrator no longer
+    // chooses the client, mirroring content-scope App + repo-provider-factory.
+    constructor(rawParams, platformClient) {
         this.#rawParams = rawParams;
+        this.#platformClient = platformClient;
     }
 
     async show() {
@@ -64,9 +68,6 @@ class DmnDiffer {
         this.#params = new DifferParams(this.#rawParams);
         // The back navigation (FEAT-0005) calls the platform API to find callers.
         this.#params.requirePlatformInfo();
-        // The differ-scope seam (REFAC-0004): all platform-specific URL/search/
-        // changes access goes through this client, chosen by platform.kind.
-        this.#platformClient = createPlatformClient(this.#params.platform);
 
         this.#versions = new DiagramVersions(this.#params, this.#platformClient);
         this.#branchIndicator = new BranchIndicator(
@@ -345,7 +346,9 @@ function main() {
             return;
         }
         console.debug('showing dmn differ...');
-        await new DmnDiffer(msg.data.params).show();
+        const rawParams = msg.data.params;
+        const platformClient = createPlatformClient(rawParams.platform);
+        await new DmnDiffer(rawParams, platformClient).show();
     });
 }
 
