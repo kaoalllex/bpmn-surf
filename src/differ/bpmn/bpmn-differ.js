@@ -59,8 +59,12 @@ class BpmnDiffer {
     #elementSearcher = null;
     #searchPanel = null;
 
-    constructor(rawParams) {
+    // platformClient (the differ-scope PlatformClient seam, REFAC-0004) is built
+    // by the bootstrap main() and injected here — the orchestrator no longer
+    // chooses the client, mirroring content-scope App + repo-provider-factory.
+    constructor(rawParams, platformClient) {
         this.#rawParams = rawParams;
+        this.#platformClient = platformClient;
     }
 
     async show() {
@@ -226,9 +230,6 @@ class BpmnDiffer {
     #init() {
         this.#params = new DifferParams(this.#rawParams);
         this.#params.requirePlatformInfo();
-        // The differ-scope seam (REFAC-0004): all platform-specific URL/search/
-        // changes access goes through this client, chosen by platform.kind.
-        this.#platformClient = createPlatformClient(this.#params.platform);
 
         this.#versions = new DiagramVersions(this.#params, this.#platformClient);
         this.#branchIndicator = new BranchIndicator(
@@ -766,7 +767,9 @@ function main() {
             return;
         }
         console.debug('showing bpmn differ...');
-        await new BpmnDiffer(msg.data.params).show();
+        const rawParams = msg.data.params;
+        const platformClient = createPlatformClient(rawParams.platform);
+        await new BpmnDiffer(rawParams, platformClient).show();
     });
 }
 

@@ -27,6 +27,16 @@ Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlCompa
 
 The GitLab DOM markup in the provider tests (`gitlab-repo-provider.test.js`, `gitlab-ui-repo-provider.test.js`) we build right in the test with small helpers — it is trivial and parameterizable; we keep fixture files only for complex third-party DOM (`dmn-table.html`, `properties-panel.html`).
 
+## E2E tests (Layer 2 — differ component)
+
+A separate suite drives the **real** differ in a real Chromium via `@playwright/test` (a dev-only test runner, not a build step). Run: **`npm run test:e2e`** (`:e2e:ui` / `:e2e:headed` variants for debugging). It is **not** part of `npm test` — the unit suite stays unit-only and fast.
+
+- Layout (`test/e2e/`): `*.spec.js` files (the `node:test` glob `test/**/*.test.js` ignores them — never name an e2e file `*.test.js`); `support/` — the static server (`static-server.js`, serves the repo over http so the differ scripts load with correct MIME types) and `FakePlatformClient` (`fake-platform-client.js`, an in-memory `PlatformClient` — diagram XML via `data:` URLs, search/changes via canned arrays — so the differ runs fully offline, no network interception); `harness/differ-harness.html` — a blank page the test boots the differ into; `fixtures/` — **diagrammed** BPMN (with a `bpmndi:BPMNDiagram` DI section, which bpmn-js needs to render — the `test/fixtures/` comparator fixtures are semantic-only and render "no diagram to display").
+- How a test boots: load `utils.js` once, then run the **production** `loadScripts` (neutralizing its `utils.js` re-include — a second load throws "`const fileCache` already declared"), then `new BpmnDiffer(params, new FakePlatformClient(fixtures)).show()`. The differ orchestrators take the client as a required constructor parameter (REFAC-0004 DI seam), so the test injects the fake directly.
+- Config (`playwright.config.js`): `trace: retain-on-failure`, `screenshot: only-on-failure`, HTML report in `playwright-report/` — AI-friendly failure artifacts. Both `test-results/` and `playwright-report/` are gitignored. On failure, inspect the trace/screenshot and the `[pageerror]`/`[console.error]` lines the spec mirrors into the run log — **do not guess** the cause.
+
+Scope so far is Phase 1 (the harness + a BPMN boot/render smoke test). Layer-2 feature tests and a DMN boot test reuse this harness; full Layer-3 e2e (loaded extension + synthetic platform pages) is deferred — see the spec under `docs/superpowers/specs/`.
+
 ## CI
 
 There is no CI pipeline yet (see docs/git-workflow.md, the "CI" section) — the only protection against red tests in master is the local run before push.
