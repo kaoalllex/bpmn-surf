@@ -13,11 +13,18 @@ const read = (relPath) => fs.readFileSync(path.join(ROOT, relPath), 'utf8');
 // semantic test/fixtures/ pair omits it. See test/e2e/fixtures/.
 const BASE_BPMN = read('test/e2e/fixtures/base.bpmn');
 const ADDED_TASK_BPMN = read('test/e2e/fixtures/added-task.bpmn');
+const CALL_ACTIVITY_BPMN = read('test/e2e/fixtures/call-activity.bpmn');
 const camundaModdle = require(path.join(ROOT, 'libs/camunda-bpmn-moddle/resources/camunda.json'));
 
 // Default scenario: the MR (mr-sha) adds Task_2 'Notify' serviceTask + Flow_3
 // over base (base-sha). show() renders the MR side first.
 const BPMN_FIXTURES = { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': ADDED_TASK_BPMN } };
+
+// DMN fixtures — semantic-only (no DI); dmn-js renders the decision table from
+// semantics directly. base.dmn has 2 rules; added-rule.dmn adds a third.
+const BASE_DMN = read('test/fixtures/base.dmn');
+const ADDED_RULE_DMN = read('test/fixtures/added-rule.dmn');
+const DMN_FIXTURES = { xmlByRef: { 'base-sha': BASE_DMN, 'mr-sha': ADDED_RULE_DMN } };
 
 function defaultBpmnParams(overrides = {}) {
     return {
@@ -42,6 +49,19 @@ function wireDiagnostics(page) {
     });
 }
 
+function defaultDmnParams(overrides = {}) {
+    return {
+        platform: { kind: 'fake', projectUrl: 'http://localhost/p', hostUrl: 'http://localhost', projectId: '1' },
+        sourceRef: 'mr-sha',
+        sourceLabel: 'feature',
+        targetRef: 'base-sha',
+        targetLabel: 'master',
+        filePath: 'decision.dmn',
+        fileName: 'decision.dmn',
+        ...overrides
+    };
+}
+
 async function bootBpmnDiffer(page, { params = defaultBpmnParams(), fixtures = BPMN_FIXTURES } = {}) {
     await page.goto('/test/e2e/harness/differ-harness.html');
 
@@ -63,8 +83,28 @@ async function bootBpmnDiffer(page, { params = defaultBpmnParams(), fixtures = B
     }, { params, fixtures });
 }
 
+async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN_FIXTURES } = {}) {
+    await page.goto('/test/e2e/harness/differ-harness.html');
+
+    // Load utils.js ONCE (see bootBpmnDiffer for why the re-include is neutralized).
+    await page.addScriptTag({ url: '/src/core/utils.js' });
+    await page.evaluate(async () => {
+        const getLocalUrl = (name) =>
+            name === 'src/core/utils.js' ? 'data:application/javascript,' : '/' + name;
+        await loadScripts(document, getLocalUrl);
+    });
+
+    await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
+    await page.evaluate(async ({ params, fixtures }) => {
+        const client = new FakePlatformClient(fixtures);
+        await new DmnDiffer(params, client).show();
+    }, { params, fixtures });
+}
+
 module.exports = {
     ROOT, read, camundaModdle,
-    BASE_BPMN, ADDED_TASK_BPMN, BPMN_FIXTURES,
-    defaultBpmnParams, wireDiagnostics, bootBpmnDiffer
+    BASE_BPMN, ADDED_TASK_BPMN, CALL_ACTIVITY_BPMN, BPMN_FIXTURES,
+    BASE_DMN, ADDED_RULE_DMN, DMN_FIXTURES,
+    defaultBpmnParams, defaultDmnParams,
+    wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
 };
