@@ -423,9 +423,11 @@ class BpmnDiffer {
     }
 
     async #showXml(bpmnXml) {
-        // This side has a diagram/file — re-enable the Highlight and Download
-        // buttons (disabled while an absent side is shown, see #showAbsentSide).
-        this.#view.setHighlightButtonEnabled(true);
+        // This side has a diagram/file — re-enable Download, and re-enable the
+        // Highlight button only when there is a source version to diff against
+        // (BUG-0025: in branch-only mode there is no diff, so ☼ stays disabled —
+        // matching how the view constructs it, which #showXml used to override).
+        this.#view.setHighlightButtonEnabled(this.#params.isSourceVersionDefined());
         this.#view.setDownloadButtonEnabled(true);
 
         const currentSelectedElemId = this.#getCurrentSelectedElementId();
