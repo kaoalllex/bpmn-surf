@@ -14,6 +14,12 @@ const read = (relPath) => fs.readFileSync(path.join(ROOT, relPath), 'utf8');
 const BASE_BPMN = read('test/e2e/fixtures/base.bpmn');
 const ADDED_TASK_BPMN = read('test/e2e/fixtures/added-task.bpmn');
 const CALL_ACTIVITY_BPMN = read('test/e2e/fixtures/call-activity.bpmn');
+const CHANGED_TASK_NAME_BPMN = read('test/e2e/fixtures/changed-task-name.bpmn');
+const SUBPROCESS_BASE_BPMN = read('test/e2e/fixtures/subprocess-base.bpmn');
+const SUBPROCESS_CHANGED_CHILD_BPMN = read('test/e2e/fixtures/subprocess-changed-child.bpmn');
+const CHANGED_FLOW_CONDITION_BPMN = read('test/e2e/fixtures/changed-flow-condition.bpmn');
+const CALL_ACTIVITY_IN_BASE_BPMN = read('test/e2e/fixtures/call-activity-in-base.bpmn');
+const CALL_ACTIVITY_IN_CHANGED_BPMN = read('test/e2e/fixtures/call-activity-in-changed.bpmn');
 const camundaModdle = require(path.join(ROOT, 'libs/camunda-bpmn-moddle/resources/camunda.json'));
 
 // Default scenario: the MR (mr-sha) adds Task_2 'Notify' serviceTask + Flow_3
@@ -105,7 +111,9 @@ async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN
 
 module.exports = {
     ROOT, read, camundaModdle,
-    BASE_BPMN, ADDED_TASK_BPMN, CALL_ACTIVITY_BPMN, BPMN_FIXTURES,
+    BASE_BPMN, ADDED_TASK_BPMN, CALL_ACTIVITY_BPMN, CHANGED_TASK_NAME_BPMN,
+    SUBPROCESS_BASE_BPMN, SUBPROCESS_CHANGED_CHILD_BPMN, CHANGED_FLOW_CONDITION_BPMN,
+    CALL_ACTIVITY_IN_BASE_BPMN, CALL_ACTIVITY_IN_CHANGED_BPMN, BPMN_FIXTURES,
     BASE_DMN, ADDED_RULE_DMN, CHANGED_CELL_DMN, CHANGED_HEADER_DMN, DMN_FIXTURES,
     defaultBpmnParams, defaultDmnParams,
     wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
