@@ -24,6 +24,8 @@ const BPMN_FIXTURES = { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': ADDED_TASK_
 // semantics directly. base.dmn has 2 rules; added-rule.dmn adds a third.
 const BASE_DMN = read('test/fixtures/base.dmn');
 const ADDED_RULE_DMN = read('test/fixtures/added-rule.dmn');
+const CHANGED_CELL_DMN = read('test/fixtures/dmn-cell-changed.dmn');
+const CHANGED_HEADER_DMN = read('test/fixtures/changed-header.dmn');
 const DMN_FIXTURES = { xmlByRef: { 'base-sha': BASE_DMN, 'mr-sha': ADDED_RULE_DMN } };
 
 function defaultBpmnParams(overrides = {}) {
@@ -104,7 +106,7 @@ async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN
 module.exports = {
     ROOT, read, camundaModdle,
     BASE_BPMN, ADDED_TASK_BPMN, CALL_ACTIVITY_BPMN, BPMN_FIXTURES,
-    BASE_DMN, ADDED_RULE_DMN, DMN_FIXTURES,
+    BASE_DMN, ADDED_RULE_DMN, CHANGED_CELL_DMN, CHANGED_HEADER_DMN, DMN_FIXTURES,
     defaultBpmnParams, defaultDmnParams,
     wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
 };
