@@ -75,7 +75,12 @@
 /* floating search panel (FEAT-0006) */
 .search-panel {
     position: fixed;
-    top: 12px;
+    /* BUG-0026: sit just below the toolbar row (≈47px: .differ-btn min-height 34
+       + 12 padding + 1 border) so the panel floats over the canvas and never
+       overlaps the toolbar controls. Centered at top:12px it used to cover the
+       right-pinned "Switch branch" button at common widths, blocking the click
+       while search was open. Kept non-modal: search stays usable across a switch. */
+    top: 52px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10001;
