@@ -24,13 +24,18 @@
 
 ## Reference — verified facts (from `bpmn-differ-view.js`, `bpmn-differ.js`, `branch-indicator.js`, `update-indicator.js`, `diagram-versions.js`, `differ-params.js`, `fake-platform-client.js`)
 
+> **Errata (corrected post-execution, 2026-06-29 — these facts were wrong as originally written; the shipped specs and this doc now reflect reality):**
+> 1. **FEAT-0012 `popupUrl` must target the harness origin `http://localhost:4173`** (the static server runs only on 4173 per `playwright.config.js` `baseURL`). A port-80 URL is unreachable → the popup lands on `chrome-error://` and `popup.url()` is non-deterministic.
+> 2. **The toolbar Close control must be located with `getByTitle('Close', { exact: true })`** — since 4c1 the search panel adds a `title="Close (Esc)"` button, so the default substring match collides (Playwright strict-mode error).
+> 3. **The single-row toolbar guarantee (BUG-0022) must compare vertical CENTERS (`y + height/2`), not bounding-box tops.** `.differ-toolbar` is `flex-wrap:nowrap; align-items:center`, so controls of differing heights (file-path `<a>` ~22px vs buttons ~34px) have tops ~6px apart on a single row; a tops-based `<= 4` is factually wrong. Centers coincide (~1px) on one row while a wrapped row's center is ~34px off, so a tight `<= 4` on centers both passes and still guards wrap.
+
 **IDs / classes / titles (stable selectors):**
 - Props panel inner div id: `bpmnProps_12345bf3d4e842caa0d88194431197c0` (`BpmnDifferView.PROPS_ID`). Canvas cell id: `bpmnCanvas_12345bf3d4e842caa0d88194431197c0`.
 - File path: `<a class="differ-file-path" target="_blank" rel="noopener noreferrer">`; inactive state adds class `differ-file-path-inactive` and removes the `href`.
 - Download button: title `Download the file as shown for the current branch`, text `↓`.
 - Switch: `<button>` text `Switch branch` (`getByRole('button', { name: 'Switch branch' })`).
 - Highlight: title `Turn diff highlight on` / `Turn diff highlight off`, text `☼`/`☀`.
-- Zoom/fit: titles `Zoom in` / `Zoom out` / `Fit view`. Close: title `Close`, text `✕`.
+- Zoom/fit: titles `Zoom in` / `Zoom out` / `Fit view`. Close: title `Close`, text `✕` (⚠️ since 4c1 the search panel adds a `Close (Esc)` button → `getByTitle('Close')` substring-matches both; use `{ exact: true }`).
 - Hide-properties button: text `Hide properties` ⇄ `Show properties`.
 - Update indicator: `<button class="differ-btn differ-update-indicator">`, text `🔔 v${latestVersion}`, title `Update available for bpmn-surf — open the update window`.
 - Splitter: `<td class="differ-splitter" title="Drag to resize the properties panel">`.
@@ -289,7 +294,9 @@ test('shows the update indicator and opens the popup on click', async ({ page })
     wireDiagnostics(page);
     await bootBpmnDiffer(page, {
         params: defaultBpmnParams({
-            updateInfo: { updateAvailable: true, latestVersion: '1.2.3', popupUrl: 'http://localhost/popup.html' }
+            // Port 4173 = harness origin (playwright.config.js baseURL); without it
+            // Chromium lands on chrome-error:// and popup.url() is non-deterministic.
+            updateInfo: { updateAvailable: true, latestVersion: '1.2.3', popupUrl: 'http://localhost:4173/popup.html' }
         })
     });
 
@@ -474,26 +481,36 @@ const { test, expect } = require('@playwright/test');
 const { bootBpmnDiffer, wireDiagnostics } = require('./support/boot-differ');
 
 // BUG-0022: the spec asked for a geometric guarantee that the toolbar is a single
-// row — every control shares the same top. With styles.css loaded (Phase 4a) the
-// flex layout is real, so boundingBox().y is meaningful. We assert the tops of the
-// download, file path, Switch, Fit and Close controls agree within a few px.
-test('lays the toolbar controls out on a single row (equal tops)', async ({ page }) => {
+// row. The toolbar is `display:flex; flex-wrap:nowrap; align-items:center`
+// (styles.css `.differ-toolbar`), so controls of different heights (file-path <a>
+// height ~22, buttons height ~34) are vertically CENTER-aligned — their tops
+// legitimately differ by ~6px (=(34-22)/2) even in a single row. Tops are the
+// wrong metric; vertical centers are the right one. We assert that the centers of
+// the download, file path, Switch, Fit and Close controls share a single center
+// line within a tight tolerance. A wrapped second row's center would be ~34px off —
+// far outside 4px — so this guard still catches BUG-0022 regressions.
+test('lays the toolbar controls out on a single row (equal centers)', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page);
 
-    const tops = [];
+    const centers = [];
     for (const locator of [
         page.getByTitle('Download the file as shown for the current branch'),
         page.locator('a.differ-file-path'),
         page.getByRole('button', { name: 'Switch branch' }),
         page.getByTitle('Fit view'),
-        page.getByTitle('Close')
+        page.getByTitle('Close', { exact: true }) // exact: true — 4c1 added search panel's 'Close (Esc)' button; substring would match both
     ]) {
         const box = await locator.boundingBox();
-        tops.push(box.y);
+        centers.push(box.y + box.height / 2);
     }
-    const min = Math.min(...tops);
-    const max = Math.max(...tops);
+    const min = Math.min(...centers);
+    const max = Math.max(...centers);
+    // With align-items:center + flex-wrap:nowrap, every control shares one vertical
+    // center line, so centers coincide within ~1px on a single row. If the bar ever
+    // wrapped to a second row, that row's center would be ~34px+ off — far outside
+    // 4px. Tight center-based tolerance is both robust to height differences AND
+    // still catches wrapping (the BUG-0022 guard).
     expect(max - min).toBeLessThanOrEqual(4);
 });
 
