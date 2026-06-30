@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" id="Definitions_1" name="discount" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="Decision_1" name="Discount">
+    <decisionTable id="DecisionTable_1" hitPolicy="FIRST">
+      <input id="Input_1" label="Amount">
+        <inputExpression id="InputExpression_1" typeRef="integer">
+          <text>amount</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Discount" name="discount" typeRef="double" />
+      <output id="Output_2" label="Status" name="status" typeRef="string" />
+      <rule id="Rule_1">
+        <description>small order</description>
+        <inputEntry id="UnaryTests_1">
+          <text>&lt; 100</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1">
+          <text>0</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1b">
+          <text>"regular"</text>
+        </outputEntry>
+      </rule>
+      <rule id="Rule_2">
+        <description>big order</description>
+        <inputEntry id="UnaryTests_2">
+          <text>&gt;= 100</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_2">
+          <text>0.1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_2b">
+          <text>"vip"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>
