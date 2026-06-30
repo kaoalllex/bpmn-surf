@@ -34,6 +34,10 @@ const BASE_DMN = read('test/fixtures/base.dmn');
 const ADDED_RULE_DMN = read('test/fixtures/added-rule.dmn');
 const CHANGED_CELL_DMN = read('test/fixtures/dmn-cell-changed.dmn');
 const CHANGED_HEADER_DMN = read('test/fixtures/changed-header.dmn');
+const CHANGED_INPUT_DMN = read('test/fixtures/changed-input.dmn');
+const CHANGED_OUTPUT_LABEL_DMN = read('test/fixtures/changed-output-label.dmn');
+const ADDED_INPUT_COLUMN_DMN = read('test/fixtures/added-input-column.dmn');
+const ADDED_OUTPUT_COLUMN_DMN = read('test/fixtures/added-output-column.dmn');
 const DMN_FIXTURES = { xmlByRef: { 'base-sha': BASE_DMN, 'mr-sha': ADDED_RULE_DMN } };
 
 function defaultBpmnParams(overrides = {}) {
@@ -116,7 +120,8 @@ module.exports = {
     BASE_BPMN, ADDED_TASK_BPMN, CALL_ACTIVITY_BPMN, CHANGED_TASK_NAME_BPMN,
     SUBPROCESS_BASE_BPMN, SUBPROCESS_CHANGED_CHILD_BPMN, CHANGED_FLOW_CONDITION_BPMN,
     CALL_ACTIVITY_IN_BASE_BPMN, CALL_ACTIVITY_IN_CHANGED_BPMN, SEARCH_MULTI_BPMN, BUSINESS_RULE_TASK_BPMN, BPMN_FIXTURES,
-    BASE_DMN, ADDED_RULE_DMN, CHANGED_CELL_DMN, CHANGED_HEADER_DMN, DMN_FIXTURES,
+    BASE_DMN, ADDED_RULE_DMN, CHANGED_CELL_DMN, CHANGED_HEADER_DMN,
+    CHANGED_INPUT_DMN, CHANGED_OUTPUT_LABEL_DMN, ADDED_INPUT_COLUMN_DMN, ADDED_OUTPUT_COLUMN_DMN, DMN_FIXTURES,
     defaultBpmnParams, defaultDmnParams,
     wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
 };
