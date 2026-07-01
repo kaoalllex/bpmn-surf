@@ -1,78 +1,23 @@
 ---
 name: feature
-description: Implement new functions for the Chrome Extension. Use for requests like "add", "new feature", "implement", "create"
+description: Add new behavior that did not exist before. Use for "add", "new feature", "implement", "create", "support a new case". Not for repairing existing behavior (use fix) or cleanup (use refactor).
 ---
 
 # Skill: feature
 
-## When to use
-- The user asks to "add", "new feature", "implement", "create"
-- The extension's functionality needs to be extended
-- A new UI element or behavior must be added
-- Integration with new APIs is required
+Add new behavior while keeping the existing architecture and UX intact.
 
 ## Workflow
 
-### 1. Clarifying requirements
-- Make sure the requirements are clear and complete
-- If critical information is missing — ask clarifying questions
-- Propose implementation options when there is a choice
-
-### 2. Implementation plan
-- Describe the implementation steps
-- State which files will be affected
-- Propose the solution architecture
-
-### 3. Confirmation
-- Get the user's confirmation of the plan
-- **Do NOT start** the implementation without confirmation for complex changes
-
-### 4. Implementation
-- Follow the plan
-- Adhere to the [code style](../../CODE_STYLE.md)
-- Write tests when appropriate
-
-### 5. Verification
-- Check that the new feature works
-- Make sure existing behavior is not broken
+1. **Clarify first.** If the request is ambiguous or large, ask before coding. If you must invent anything (names, structure, format) — propose it and wait for confirmation (a hard project rule).
+2. **Sketch a mini-plan.** Before writing code, list the 2–4 steps and the files each touches. Read `docs/architecture.md` for where things go; reuse existing providers/utilities, do not duplicate.
+3. **Implement** in small steps, following `docs/conventions.md` (style) and existing patterns.
+4. **Add tests** for the new behavior — use the `tests` skill.
+5. **Verify** — use the `verify` skill (`npm test` green).
+6. **Commit** to the current feature branch. Do NOT push or open an MR — the human does that (see the AGENT.md git contract).
 
 ## Rules
 
-### When developing:
-1. **Follow the architecture** — do not violate the existing structure
-2. **Preserve compatibility** — do not break existing functionality
-3. **Minimal changes** — do not make unnecessary changes
-4. **Clean code** — follow the [style rules](../../CODE_STYLE.md)
-
-### Integration points
-- New components must integrate with the existing architecture
-- Use existing providers and utilities where possible
-- Avoid logic duplication
-
-## Examples
-
-### Good trigger phrases
-- "add an export button"
-- "new feature: comparison with a local file"
-- "implement syntax highlighting"
-- "create a setting for the highlighting color"
-- "implement dark mode toggle"
-
-### Plan example
-```
-## Implementation plan
-
-### Files
-- `gitlab-ui-repo-provider.js` — add a button
-- `app.js` — event handler
-- `styles.css` — button styles
-
-### Steps
-1. Add the button to the UI
-2. Add a click handler
-3. Implement the export logic
-4. Add styles
-
-### Risks
-- May require a manifest.json change for permissions
-```
+- Follow the existing architecture; no frameworks, bundlers, or new runtime dependencies.
+- A new differ-page JS file must be added to BOTH `utils.js#loadScripts` and `manifest.json#web_accessible_resources` (see `docs/architecture.md`).
+- Preserve backward compatibility and existing UX.

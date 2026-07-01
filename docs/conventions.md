@@ -12,7 +12,7 @@
 - ⚠️ If the user asks you to **come up with/propose something yourself** (names, codes, schema, structure, format) — first show the proposal and wait for confirmation, and only then do the work that depends on it (so as not to do it in vain)
 - ⚠️ In the GitLab-page content scripts, global variables hold critical state — do not refactor them without careful analysis; on the differ page there must be no global mutable state
 - ⚠️ Small, incremental, reviewable changes; do not mix refactoring with features/fixes
-- ⚠️ After changes that affect the architecture, key files, flows, or processes, — **update the instructions**: CLAUDE.md, the files in `docs/` (architecture.md, git-workflow.md, testing.md, conventions.md) and the prompts/skills in `.claude/agents/` and `.claude/skills/`. Verification: Grep across `.claude/`, `docs/` and CLAUDE.md for mentions of the changed names/concepts
+- ⚠️ After changes that affect the architecture, key files, flows, or processes, — **update the instructions**: CLAUDE.md, the files in `docs/` (architecture.md, git-workflow.md, testing.md, conventions.md) and the prompts/skills in `.claude/agents/` and `.claude/skills/` and, if the way-of-working changed, `AGENT.md` / `.agent/`. Verification: Grep across `.claude/`, `docs/` and CLAUDE.md for mentions of the changed names/concepts
 
 If a change risks **unexpected or out-of-scope** behavior changes: stop, explain the risk, request confirmation. Behavior changes within the task itself (fix/feature) are a normal part of the work and do not require separate confirmation.
 
