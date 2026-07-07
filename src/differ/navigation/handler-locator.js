@@ -416,10 +416,22 @@ class HandlerLocator {
             return null;
         }
 
-        // Prefer a hit whose snippet actually contains the subscription annotation
-        // (avoids matching test files that merely reference the topic string).
-        const annotated = handlerItems.find(i => i.snippet && i.snippet.includes('ExternalTaskSubscription'));
-        const item = annotated || handlerItems[0];
+        // Filter to ALL hits whose snippet contains the subscription annotation
+        // (not just the first one). This is critical: .find() would return the
+        // first annotated file, which may be wrong (BUG-0027).
+        const annotatedItems = handlerItems.filter(i => i.snippet && i.snippet.includes('ExternalTaskSubscription'));
+
+        // Among the annotated candidates (or all if none annotated), find one
+        // whose snippet declares the exact topic (not a longer name containing it).
+        // BUG-0027: searching for `FindItems` also matches
+        // `FindItemsInCatalog` — we need an exact match.
+        const candidates = annotatedItems.length > 0 ? annotatedItems : handlerItems;
+        const exactMatch = candidates.find(i =>
+            i.snippet && HandlerLocator.matchesExactTopic(i.snippet, topic)
+        );
+
+        // Fallback: first annotated item, or first handler item
+        const item = exactMatch || (annotatedItems.length > 0 ? annotatedItems[0] : handlerItems[0]);
 
         return {
             filePath: item.path,
@@ -443,8 +455,8 @@ class HandlerLocator {
     }
 
     // Locates the handler file declaring `class <className>`. When
-    // preferAnnotation is given, a hit whose snippet shows that annotation wins
-    // over a same-named class elsewhere; otherwise the first handler-file hit.
+    // preferAnnotation is given, hits whose snippet shows that annotation win
+    // over other classes; otherwise the first handler-file hit.
     async #searchClassLocation(className, ref, preferAnnotation) {
         const term = `class ${className}`;
         const items = await this.#client.searchCode(ref, term);
@@ -454,9 +466,25 @@ class HandlerLocator {
             return null;
         }
 
-        const preferred = preferAnnotation
-            && handlerItems.find(i => i.snippet && i.snippet.includes(preferAnnotation));
-        const item = preferred || handlerItems[0];
+        // Filter to ALL hits whose snippet shows the preferred annotation
+        // (e.g. @ExternalTaskBean). Using .filter() instead of .find() is
+        // critical: .find() would return only the first annotated file, which
+        // may be wrong if multiple classes have the same annotation (BUG-0027).
+        const preferredItems = preferAnnotation
+            ? handlerItems.filter(i => i.snippet && i.snippet.includes(preferAnnotation))
+            : [];
+
+        // Among the preferred candidates (or all if none preferred), find one
+        // whose snippet declares the exact class name (not a longer name containing it).
+        // BUG-0027: searching for `class FindItems` also matches
+        // `class FindItemsInCatalog` — we need an exact match.
+        const candidates = preferredItems.length > 0 ? preferredItems : handlerItems;
+        const exactMatch = candidates.find(i =>
+            i.snippet && HandlerLocator.matchesExactClassName(i.snippet, className)
+        );
+
+        // Fallback: first preferred item, or first handler item
+        const item = exactMatch || (preferredItems.length > 0 ? preferredItems[0] : handlerItems[0]);
 
         return {
             filePath: item.path,
@@ -475,5 +503,19 @@ class HandlerLocator {
         const lines = item.snippet.split('\n');
         const offset = lines.findIndex(line => line.includes(topic));
         return offset >= 0 ? startLine + offset : startLine;
+    }
+
+    static escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    static matchesExactClassName(snippet, className) {
+        const c = this.escapeRegExp(className);
+        return new RegExp(`\\bclass\\s+${c}(?![A-Za-z0-9_])`).test(snippet);
+    }
+
+    static matchesExactTopic(snippet, topic) {
+        const t = this.escapeRegExp(topic);
+        return new RegExp(`(["'])${t}\\1|\\b${t}\\b`).test(snippet);
     }
 }
