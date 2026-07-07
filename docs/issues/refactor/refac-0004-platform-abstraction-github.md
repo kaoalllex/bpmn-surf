@@ -269,6 +269,17 @@ GitHub in subtask 2 is now a one-line matcher entry already in place + flipping 
 
 ---
 
+## Open questions to clarify before Subtask 2
+
+- **Public fixture repo:** Identify a public GitHub repo with `.bpmn`/`.dmn` files and an open PR with changes. Record in `docs/testing.md`.
+- **DOM selectors:** Confirm current GitHub selectors for file path (`[data-tagsearch-path]`, `clipboard-copy[value]`) and button container (PR file header / blob header). Document fallback chain.
+- **Rate limit handling:** Unauthenticated API = 60 req/hr. Decide: basic 403 handling in MVP, or fail visibly?
+- **Error UX:** What to show on 404 (PR/file not found), API down, or `.bpmn` missing in one version? Alert, toast, or silent degrade?
+- **DMN specifics:** Confirm button label ("Decision diff" / "View decision") and `.dmn` extension detection in DOM scraper.
+- **MVP method coverage:** Explicitly confirm which `PlatformClient` methods are *not* called in the basic diff path (`searchCode`, `prChangedFiles`, `searchPageUrl`, `prDiffsUrl`) — these can throw "not supported".
+
+---
+
 ## Subtask 2 — Minimal GitHub support for PUBLIC repos (basic diff + render)
 
 Scope: detect GitHub PR "Files changed" and blob file-view pages, load both versions of a
