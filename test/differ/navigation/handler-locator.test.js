@@ -868,4 +868,42 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
         assert.notEqual(firstPreferred.path, expectedHandlerPath,
             'Sanity check: the first preferred item should NOT be the correct one');
     });
+
+    // The two tests above re-implement the selection inline, so they stay green
+    // even if the production method regresses. These two drive the real path
+    // (resolveLocation -> #searchSubscriptionLocation) through a fake client.
+    const clientReturning = (items) => ({
+        // Mimics the GitLab blob search: a substring match over file content.
+        searchCode: async (ref, term) => items.filter(i => i.data.includes(term))
+    });
+    const topicKey = 'topic:Order_PrepareItem_FindItems';
+    const correctPath = 'order/item/src/main/kotlin/prepare/FindItemsTask.kt';
+
+    it('resolveLocation picks the exact topic match in either search-result order', async () => {
+        // The pre-fix code took the first annotated hit, so it depended on the
+        // order the API happened to return (BUG-0027).
+        for (const items of [gitLabSearchResponse, [...gitLabSearchResponse].reverse()]) {
+            const location = await new HandlerLocator(clientReturning(items)).resolveLocation(topicKey, 'master');
+            assert.equal(location.filePath, correctPath);
+        }
+    });
+
+    it('resolveLocation resolves to nothing (and warns) when no hit matches the topic exactly', async () => {
+        // BUG-0028: hits exist, but none declares this topic — the declaring file
+        // never came back. Returning the closest hit would be a coin flip on the
+        // search order, so nothing is returned and HandlerNavigator falls back to
+        // the code-search page.
+        const { window, HandlerLocator: ScopedHandlerLocator } = createScope();
+        const warnings = [];
+        window.console.warn = (...args) => warnings.push(args.join(' '));
+        const withoutDeclaringFile = gitLabSearchResponse.filter(
+            i => i.path.includes('InCatalog') && HandlerLocator.isHandlerFile(i.path));
+
+        const location = await new ScopedHandlerLocator(clientReturning(withoutDeclaringFile))
+            .resolveLocation(topicKey, 'master');
+
+        assert.equal(location, null);
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0], /no exact match for topic/);
+    });
 });

@@ -430,12 +430,20 @@ class HandlerLocator {
             i.snippet && HandlerLocator.matchesExactTopic(i.snippet, topic)
         );
 
-        // Fallback: first annotated item, or first handler item
-        const item = exactMatch || (annotatedItems.length > 0 ? annotatedItems[0] : handlerItems[0]);
+        if (!exactMatch) {
+            // Nothing declares this exact topic: either the closest hit is a longer
+            // name containing it (BUG-0027) or the declaring file never came back.
+            // Picking one anyway would be a coin flip on the order the search API
+            // returned (BUG-0028), so resolve to nothing — the caller then opens the
+            // code-search page, which is honest about what we actually know.
+            console.warn(`no exact match for topic '${topic}' among ${handlerItems.length} handler hit(s); ` +
+                'opening the code-search page instead');
+            return null;
+        }
 
         return {
-            filePath: item.path,
-            line: this.#computeMatchLine(item, topic)
+            filePath: exactMatch.path,
+            line: this.#computeMatchLine(exactMatch, topic)
         };
     }
 
@@ -483,12 +491,16 @@ class HandlerLocator {
             i.snippet && HandlerLocator.matchesExactClassName(i.snippet, className)
         );
 
-        // Fallback: first preferred item, or first handler item
-        const item = exactMatch || (preferredItems.length > 0 ? preferredItems[0] : handlerItems[0]);
+        if (!exactMatch) {
+            // No positional guess — see #searchSubscriptionLocation for the reasoning.
+            console.warn(`no exact match for class '${className}' among ${handlerItems.length} handler hit(s); ` +
+                'opening the code-search page instead');
+            return null;
+        }
 
         return {
-            filePath: item.path,
-            line: this.#computeMatchLine(item, className)
+            filePath: exactMatch.path,
+            line: this.#computeMatchLine(exactMatch, className)
         };
     }
 
