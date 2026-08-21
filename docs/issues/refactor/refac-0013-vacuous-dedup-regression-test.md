@@ -50,8 +50,9 @@ The same `#openDifferForFile` shape now exists in `src/differ/dmn/dmn-differ.js`
 DMN has no edit mode, so it cannot exhibit the defect today, but the two should
 stay in step.
 
-**Wider point worth keeping.** Seven tests written during FEAT-0031 turned out to
-name a behaviour they never exercised: a defensive fallback asserted with a
+**Wider point worth keeping**, tracked as its own task in [REFAC-0014] (audit the
+existing suite for the same shapes). Seven tests written during FEAT-0031 turned
+out to name a behaviour they never exercised: a defensive fallback asserted with a
 truthy value, an absence assertion for a string the fixture never contained, a
 stale hardcoded constant that stayed red for five tasks, an unused test-double
 parameter, a guard that passed when its own subject went missing, and this one.
