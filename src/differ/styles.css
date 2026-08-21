@@ -540,8 +540,13 @@ th, td {
    bits below cover the DOM controls that JS cannot conveniently reach. */
 
 /* Hide the edit-only context-pad. It is created lazily on first selection, so a
-   one-time JS hide at init is unreliable — keep it hidden via CSS. */
-.djs-context-pad {
+   one-time JS hide at init is unreliable — keep it hidden via CSS.
+   FEAT-0031: edit mode is the one place the modeler's own editing UI is wanted
+   back. Scoped to :not(.differ-edit-mode) (rather than a body.differ-edit-mode
+   override re-showing it) so diagram-js's own visibility logic — the `.open`
+   class from ContextPad#show()/#hide() — is left intact in edit mode instead of
+   being fought by a same-specificity `!important` rule. */
+body:not(.differ-edit-mode) .djs-context-pad {
     display: none !important;
 }
 
@@ -552,27 +557,90 @@ th, td {
    so blocking <input> alone is not enough — target the clickable wrappers too.
    NB (BUG-0014): plain text <input>/<textarea> are NOT listed here — pointer-events:
    none on them also killed click/select/copy. Their edits are blocked instead by a
-   `beforeinput` veto in JS (BpmnDiffer), which leaves selection and copy working. */
-.bio-properties-panel select,
-.bio-properties-panel [contenteditable],
-.bio-properties-panel .bio-properties-panel-feel-editor,
+   `beforeinput` veto in JS (BpmnDiffer), which leaves selection and copy working.
+   FEAT-0031: scoped to :not(.differ-edit-mode) (rather than a separate mute list
+   duplicated with pointer-events: auto for edit mode) so a control added here can
+   never silently stay muted in edit mode. */
+body:not(.differ-edit-mode) .bio-properties-panel select,
+body:not(.differ-edit-mode) .bio-properties-panel [contenteditable],
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-editor,
 /* toggle switches: the slider/switcher overlays the hidden checkbox */
-.bio-properties-panel .bio-properties-panel-toggle-switch__switcher,
-.bio-properties-panel .bio-properties-panel-feel-toggle-switch,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-toggle-switch__switcher,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-toggle-switch,
 /* checkboxes: clicking the label also toggles the input */
-.bio-properties-panel .bio-properties-panel-checkbox,
-.bio-properties-panel .bio-properties-panel-feel-checkbox,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-checkbox,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-checkbox,
 /* add / remove list entries and group-header add buttons */
-.bio-properties-panel .bio-properties-panel-add-entry,
-.bio-properties-panel .bio-properties-panel-remove-entry,
-.bio-properties-panel .bio-properties-panel-remove-list-entry,
-.bio-properties-panel .bio-properties-panel-group-header-button,
-.bio-properties-panel .bio-properties-panel-dropdown-button,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-add-entry,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-remove-entry,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-remove-list-entry,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-group-header-button,
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-dropdown-button,
 /* FEEL mode popup toggle (switches the value's expression mode) */
-.bio-properties-panel .bio-properties-panel-open-feel-popup {
+body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-open-feel-popup {
     pointer-events: none;
 }
 
 th {
     background: #eee;
+}
+
+/* FEAT-0031 edit mode: the display-only diff colours. Deliberately CSS and not
+   modeling.setColor — nothing here reaches the model or the command stack, which
+   is what keeps Ctrl+Z the user's own and the dirty flag honest.
+   Distinct from .highlight-diff* above: that is the ☼ button's attention outline.
+   Shapes take the fill, connections take the stroke — mirroring DiffType's
+   shapeColor / rowColor split. An element that already carries its own colour
+   gets the dashed outline instead, so its colour survives (.edit-diff-outline).
+   NB: the six hex values below duplicate src/differ/shared/diff-type.js's palette
+   (no build step to share a single source) — keep them in sync by hand. */
+.djs-shape.edit-diff-added:not(.edit-diff-outline) .djs-visual > :first-child {
+    fill: #88ff88 !important;
+}
+.djs-shape.edit-diff-changed:not(.edit-diff-outline) .djs-visual > :first-child {
+    fill: #8888ff !important;
+}
+.djs-shape.edit-diff-removed:not(.edit-diff-outline) .djs-visual > :first-child {
+    fill: #ff8888 !important;
+}
+
+.djs-connection.edit-diff-added:not(.edit-diff-outline) .djs-visual > :first-child {
+    stroke: #00aa00 !important;
+}
+.djs-connection.edit-diff-changed:not(.edit-diff-outline) .djs-visual > :first-child {
+    stroke: #0000aa !important;
+}
+.djs-connection.edit-diff-removed:not(.edit-diff-outline) .djs-visual > :first-child {
+    stroke: #aa0000 !important;
+}
+
+.djs-element.edit-diff-outline .djs-outline {
+    visibility: visible;
+    stroke-width: 2px;
+    stroke-dasharray: 4 3;
+}
+.djs-element.edit-diff-outline.edit-diff-added .djs-outline { stroke: #00aa00; }
+.djs-element.edit-diff-outline.edit-diff-changed .djs-outline { stroke: #0000aa; }
+.djs-element.edit-diff-outline.edit-diff-removed .djs-outline { stroke: #aa0000; }
+
+/* FEAT-0031: the manual colour swatches in the edit toolbar (UX-0007 sizing). */
+.edit-color-swatches {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px;
+}
+.edit-color-swatch {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 2px solid #999;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #fff;
+}
+.edit-color-swatch-clear {
+    background:
+        linear-gradient(to top right,
+            transparent calc(50% - 1px), #c62828 50%, transparent calc(50% + 1px));
 }

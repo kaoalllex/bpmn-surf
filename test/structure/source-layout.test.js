@@ -46,6 +46,7 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/differ/bpmn/canvas-viewport.js',
     'src/differ/bpmn/changes-table-view.js',
     'src/differ/bpmn/search-panel.js',
+    'src/differ/bpmn/edit/edit-color-control.js',
     'src/differ/dmn/dmn-differ.js',
     'src/differ/dmn/dmn-differ-view.js',
     'src/differ/dmn/dmn-table-viewport.js',

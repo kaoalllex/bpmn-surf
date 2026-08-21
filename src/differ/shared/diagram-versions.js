@@ -43,16 +43,6 @@ class DiagramVersions {
             alert(`File does not exist in the ${branchName} branch`);
             return;
         }
-        const blob = new Blob([fileContent], { type: 'application/octet-stream' });
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `${branchName}-${fileName}`;
-        document.body.appendChild(link);
-
-        link.click();
-
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        downloadTextFile(fileContent, `${branchName}-${fileName}`);
     }
 }

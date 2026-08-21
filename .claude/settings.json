@@ -1,12 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Edit(./**)",
-      "Write(./**)"
+      "Edit(./**)"
     ],
     "ask": [
-      "Edit(./libs/**)",
-      "Write(./libs/**)"
+      "Edit(./libs/**)"
     ]
   },
   "enabledPlugins": {

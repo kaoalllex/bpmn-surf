@@ -282,11 +282,16 @@ class DmnDiffer {
     // diagram is already open in any tab, reuse it instead of opening a duplicate
     // (BUG-0017).
     async #openDifferForFile(filePath, fileName, extra) {
-        const identityKey = DifferParams.identityKeyFor(this.#params, filePath);
-        if (await this.#tabNavigator.focusExistingDifferTab(identityKey)) {
+        // Same shape as BpmnDiffer#openDifferForFile (FEAT-0031 whole-branch
+        // review): the key must come from the params the nested tab will publish,
+        // not from this tab's own. The DMN differ has no edit mode, so this.#params
+        // never carries `mode` and the two forms are behaviourally identical here —
+        // kept in sync anyway so the two orchestrators do not diverge for no reason.
+        const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
+        if (await this.#tabNavigator.focusExistingDifferTab(
+                DifferParams.identityKeyFor(params, filePath))) {
             return;
         }
-        const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
         await this.#tabNavigator.openNestedDiffer(params, fileName);
     }
 

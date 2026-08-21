@@ -58,6 +58,7 @@ class BpmnDiffer {
     #correlationNavigator = null;
     #elementSearcher = null;
     #searchPanel = null;
+    #editSession = null;
 
     // platformClient (the differ-scope PlatformClient seam, REFAC-0004) is built
     // by the bootstrap main() and injected here — the orchestrator no longer
@@ -140,36 +141,45 @@ class BpmnDiffer {
         );
         this.#searchPanel.attach();
 
-        // BUG-0011: veto edit interactions on the canvas. High priority so the
-        // veto fires before the default editing handlers; returning false aborts
-        // the action so no command is created.
-        bpmnJSEventBus.on(BpmnDiffer.EDIT_EVENTS, 2000, () => false);
+        if (this.#isEditMode()) {
+            // No keyboard.bind() call: diagram-js binds Keyboard implicitly on
+            // canvas.init (to the canvas SVG, which carries tabindex), so undo/redo,
+            // Delete and copy/paste are live as soon as the canvas has focus. Passing
+            // an explicit node is unsupported since diagram-js 15 and only logs an
+            // error. Focus-scoped is what we want anyway: keystrokes in the
+            // properties panel never reach the canvas bindings.
+            // Mute 4 (palette + context pad) is CSS — see the body class below.
+            document.body.classList.add('differ-edit-mode');
+        } else {
+            // BUG-0011: veto edit interactions on the canvas. High priority so the
+            // veto fires before the default editing handlers; returning false aborts
+            // the action so no command is created.
+            bpmnJSEventBus.on(BpmnDiffer.EDIT_EVENTS, 2000, () => false);
 
-        // BUG-0014: keep the panel's text fields (input/textarea) selectable and
-        // copyable while still blocking edits. BUG-0011 disabled them via CSS
-        // `pointer-events: none`, which also killed click/select/copy. Instead veto
-        // value mutations with a delegated capture-phase `beforeinput` listener:
-        // it cancels typing, delete, paste and drop, while Ctrl/Cmd+C and selection
-        // never fire `beforeinput`, so copying keeps working. Delegating on the
-        // stable panel container (preact re-renders `.bio-properties-panel` inside
-        // it) survives re-renders without re-binding. Non-text controls (toggles,
-        // buttons, select, contenteditable/FEEL) stay disabled via CSS — see styles.css.
-        const propsContainer = document.getElementById(BpmnDifferView.PROPS_ID);
-        if (propsContainer) {
-            propsContainer.addEventListener('beforeinput', (event) => event.preventDefault(), true);
-        }
-
-        // BUG-0015: keep canvas label/comment text selectable and copyable while
-        // blocking edits. Double-click opens bpmn-js' contenteditable overlay
-        // (.djs-direct-editing-content) — the only way to copy SVG label text — but
-        // it must stay read-only. Same trick as the panel above: a delegated
-        // capture-phase `beforeinput` veto cancels typing, delete, paste and drop,
-        // while Ctrl/Cmd+C and selection never fire `beforeinput`, so copying keeps
-        // working. Delegating on the stable canvas container survives the lazy
-        // re-creation of the overlay without polling/MutationObserver.
-        const canvasContainer = document.getElementById(BpmnDifferView.CANVAS_ID);
-        if (canvasContainer) {
-            canvasContainer.addEventListener('beforeinput', (event) => event.preventDefault(), true);
+            // BUG-0014: keep the panel's text fields (input/textarea) selectable and
+            // copyable while still blocking edits. BUG-0011 disabled them via CSS
+            // `pointer-events: none`, which also killed click/select/copy. Instead veto
+            // value mutations with a delegated capture-phase `beforeinput` listener:
+            // it cancels typing, delete, paste and drop, while Ctrl/Cmd+C and selection
+            // never fire `beforeinput`, so copying keeps working. Delegating on the
+            // stable panel container (preact re-renders `.bio-properties-panel` inside
+            // it) survives re-renders without re-binding. Non-text controls (toggles,
+            // buttons, select, contenteditable/FEEL) stay disabled via CSS — see styles.css.
+            //
+            // BUG-0015: keep canvas label/comment text selectable and copyable while
+            // blocking edits. Double-click opens bpmn-js' contenteditable overlay
+            // (.djs-direct-editing-content) — the only way to copy SVG label text — but
+            // it must stay read-only. Same trick as the panel above: a delegated
+            // capture-phase `beforeinput` veto cancels typing, delete, paste and drop,
+            // while Ctrl/Cmd+C and selection never fire `beforeinput`, so copying keeps
+            // working. Delegating on the stable canvas container survives the lazy
+            // re-creation of the overlay without polling/MutationObserver.
+            for (const containerId of [BpmnDifferView.PROPS_ID, BpmnDifferView.CANVAS_ID]) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.addEventListener('beforeinput', (event) => event.preventDefault(), true);
+                }
+            }
         }
 
         bpmnJSEventBus.on('selection.changed', (event) => {
@@ -180,6 +190,22 @@ class BpmnDiffer {
         });
 
         this.#hideModelerPalleteAndPoweredByLabel();
+
+        if (this.#isEditMode()) {
+            this.#editSession = new EditSession({
+                modeler: this.#bpmnJS,
+                comparator: this.#xmlComparator,
+                painter: new EditDiffPainter(bpmnJSCanvas, this.#elementRegistry),
+                propertiesPanelHighlighter: this.#propertiesPanelHighlighter,
+                onColoringPaused: (paused) => this.#view.setEditColoringPaused(paused)
+            });
+
+            // A manual colour changes which elements count as "explicitly coloured",
+            // so the diff layer must be re-resolved — setColor is a command, so the
+            // session's own commandStack.changed listener already does it.
+            const colorControl = new EditColorControl(bpmnJSModeling, this.#selection);
+            this.#view.editGroup.appendChild(colorControl.createElement());
+        }
 
         await this.#loadVersions();
 
@@ -197,10 +223,24 @@ class BpmnDiffer {
         // refreshes the badges once it completes (see #loadChangedHandlers).
         this.#loadChangedHandlers();
 
-        if (this.#versions.mrXml) {
+        if (this.#isEditMode()) {
+            // Only the edited side is imported; the other one still feeds colour
+            // layer 3 (the MR diff) through #paintDiffs.
+            if (this.#params.editSide === DifferParams.EDIT_SIDE_TARGET) {
+                await this.#showBranch();
+            } else {
+                await this.#showMr();
+            }
+        } else if (this.#versions.mrXml) {
             await this.#showMr();
         } else {
             await this.#showBranch();
+        }
+
+        if (this.#editSession) {
+            // The baseline must be taken from the freshly imported model, before the
+            // user can touch anything.
+            await this.#editSession.start();
         }
 
         // Show canvas after the differ is completely rendered
@@ -223,6 +263,12 @@ class BpmnDiffer {
         // events it receives once subscribed, so selecting earlier — before its
         // async first mount — leaves the panel blank until the user clicks again.
         this.#applyInitialCallActivitySelection();
+
+        if (this.#isEditMode()) {
+            // Test seam (FEAT-0031): the e2e suite asserts the command stack is
+            // untouched by our own painting. Edit mode only.
+            window.__bpmnDifferModeler = this.#bpmnJS;
+        }
 
         console.debug('ready!');
     }
@@ -268,9 +314,16 @@ class BpmnDiffer {
         // FEAT-0029: auto-expand the property groups relevant to the selected element.
         this.#propertiesGroupExpander = new PropertiesGroupExpander();
         this.#view = new BpmnDifferView(this.#params, this.#branchIndicator, {
-            onDownload: () => this.#downloadShownBranchFile(),
+            onDownload: () => this.#isEditMode()
+                ? this.#downloadEditedFile()
+                : this.#downloadShownBranchFile(),
             onSwitchBranch: () => this.#switchBranch(),
-            onToggleHighlight: () => this.#toggleHighlight()
+            onToggleHighlight: () => this.#toggleHighlight(),
+            onOpenEditor: () => this.#openEditor(),
+            onUndo: () => this.#bpmnJS.get('commandStack').undo(),
+            onRedo: () => this.#bpmnJS.get('commandStack').redo(),
+            onToggleEditColoring: () => this.#editSession.setColoringEnabled(
+                !this.#editSession.coloringEnabled)
         });
         // Update notification (FEAT-0012): info comes raw in params from the
         // content script (which read it from the service worker's state).
@@ -339,6 +392,21 @@ class BpmnDiffer {
         }
     }
 
+    // FEAT-0031: export the edited model and re-apply the diff colours onto the
+    // XML string. They are not in the model on purpose (see EditDiffPainter), so
+    // this is where they enter the file — and where the "colour the edits" toggle
+    // decides whether they do, since it governs the very map used here.
+    async #downloadEditedFile() {
+        const xml = await this.#editSession.currentXml();
+        const colored = EditXmlColorizer.apply(xml, this.#editSession.currentColorMap());
+        // The edited side names the download: target keeps its own (possibly
+        // renamed, BUG-0002) name, mirroring #downloadShownBranchFile.
+        const editedFileName = this.#params.editSide === DifferParams.EDIT_SIDE_TARGET
+            ? this.#params.targetFileName
+            : this.#params.fileName;
+        downloadTextFile(colored, EditSession.editedFileName(editedFileName));
+    }
+
     #switchBranch() {
         if (this.#branchIndicator.isTargetBranchShown()) { // Current branch - switch to MR
             if (this.#versions.mrXml) {
@@ -372,6 +440,7 @@ class BpmnDiffer {
         }
         this.#view.setHighlightButtonEnabled(false);
         this.#view.setDownloadButtonEnabled(false);
+        this.#view.setEditButtonEnabled(false);
     }
 
     #toggleHighlight() {
@@ -429,6 +498,7 @@ class BpmnDiffer {
         // matching how the view constructs it, which #showXml used to override).
         this.#view.setHighlightButtonEnabled(this.#params.isSourceVersionDefined());
         this.#view.setDownloadButtonEnabled(true);
+        this.#view.setEditButtonEnabled(true);
 
         const currentSelectedElemId = this.#getCurrentSelectedElementId();
 
@@ -495,6 +565,14 @@ class BpmnDiffer {
 
     // Paints the diff onto the (already imported) canvas and fills the changes table.
     #paintDiffs(diff, diffTypeForMissing) {
+        if (this.#editSession) {
+            // FEAT-0031: in edit mode the MR diff becomes colour layer 3, painted as
+            // markers. Nothing below may run here: DiffHighlighter.paint is
+            // modeling.setColor (it would poison the undo stack and the dirty flag)
+            // and there is no changes table to fill.
+            this.#editSession.setMrDiff(diff, diffTypeForMissing);
+            return;
+        }
         this.#diffHighlighter.setDiffElementIds([
             ...diff.missingShapeIds, ...diff.missingRowIds,
             ...diff.changedShapeIds, ...diff.changedRowIds
@@ -503,14 +581,18 @@ class BpmnDiffer {
         this.#diffHighlighter.paint(diffTypeForMissing, diff.missingShapeIds, diff.missingRowIds);
         this.#diffHighlighter.paint(DiffType.CHANGE, diff.changedShapeIds, diff.changedRowIds);
 
-        this.#changesTableView.fill(
-            diff.processNode,
-            diffTypeForMissing,
-            diff.missingShapeIds,
-            diff.missingRowIds,
-            diff.changedShapeIds,
-            diff.changedRowIds
-        );
+        // FEAT-0031: edit mode renders no changes table (see BpmnDifferView#build),
+        // but the canvas colouring above must still run — it is colour layer 3.
+        if (this.#changesTableView) {
+            this.#changesTableView.fill(
+                diff.processNode,
+                diffTypeForMissing,
+                diff.missingShapeIds,
+                diff.missingRowIds,
+                diff.changedShapeIds,
+                diff.changedRowIds
+            );
+        }
 
         this.#diffHighlighter.applyIfEnabled();
     }
@@ -573,6 +655,25 @@ class BpmnDiffer {
             : this.#params.sourceRef;
     }
 
+    // FEAT-0031: edit mode lifts the BUG-0011/0014/0015 mutes for THIS tab only.
+    #isEditMode() {
+        return this.#params.mode === DifferParams.MODE_EDIT;
+    }
+
+    // FEAT-0031: open THIS diagram, in the version currently on screen, in an edit
+    // tab. A second press focuses the editor that is already open (BUG-0017
+    // machinery) rather than starting a second session over the same baseline.
+    async #openEditor() {
+        const editSide = this.#branchIndicator.isTargetBranchShown()
+            ? DifferParams.EDIT_SIDE_TARGET
+            : DifferParams.EDIT_SIDE_SOURCE;
+        if (await this.#tabNavigator.focusExistingDifferTab(this.#params.editIdentityKey(editSide))) {
+            return;
+        }
+        await this.#tabNavigator.openNestedDiffer(
+            this.#params.toEditDifferParams(editSide), this.#params.fileName);
+    }
+
     // Opens another diagram's differ in a new tab, carrying the platform/refs
     // plus the FEAT-0023 navigation hints in `extra` (direction-specific). The
     // differ kind (BPMN vs DMN) is chosen by extension, so diving into a called
@@ -582,11 +683,17 @@ class BpmnDiffer {
     // there (diving in, stepping up to a caller, or a sibling tab). Only when no
     // such tab exists do we open a fresh one.
     async #openDifferForFile(filePath, fileName, extra) {
-        const identityKey = DifferParams.identityKeyFor(this.#params, filePath);
-        if (await this.#tabNavigator.focusExistingDifferTab(identityKey)) {
+        // The key must be computed from the params the nested tab will actually
+        // publish, not from this tab's own params: in edit mode this.#params
+        // carries mode/editSide, but toNestedDifferParams() deliberately drops
+        // them (the nested tab is a view tab) — computing from this.#params would
+        // defeat the dedup for every dive-in/out and caller step taken from an
+        // editor.
+        const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
+        if (await this.#tabNavigator.focusExistingDifferTab(
+                DifferParams.identityKeyFor(params, filePath))) {
             return;
         }
-        const params = this.#params.toNestedDifferParams(filePath, fileName, extra);
         await this.#tabNavigator.openNestedDiffer(params, fileName);
     }
 
@@ -729,10 +836,12 @@ class BpmnDiffer {
     }
 
     #hideModelerPalleteAndPoweredByLabel() {
-        try {
-            document.getElementsByClassName('djs-palette')[0].style.display = 'none';
-        } catch (error) {
-            console.warn('modeler pallete not found', error);
+        if (!this.#isEditMode()) {
+            try {
+                document.getElementsByClassName('djs-palette')[0].style.display = 'none';
+            } catch (error) {
+                console.warn('modeler pallete not found', error);
+            }
         }
         try {
             document.querySelector('.bjs-powered-by').style.display = 'none';
@@ -741,7 +850,8 @@ class BpmnDiffer {
         }
         // BUG-0011: the context-pad (edit-only actions, vetoed via EDIT_EVENTS) is
         // created lazily on first selection, so it is hidden via CSS (.djs-context-pad)
-        // rather than here — see styles.css.
+        // rather than here — see styles.css. FEAT-0031 re-shows it via the
+        // .differ-edit-mode body class.
     }
 
     // Polls until the bpmn-js properties panel has mounted its scroll container, so

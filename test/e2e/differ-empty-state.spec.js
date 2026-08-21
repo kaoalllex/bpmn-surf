@@ -38,3 +38,19 @@ test('clears the canvas when switching to a side without the file', async ({ pag
     await expect(page.locator(`${CANVAS} svg .djs-element`)).toHaveCount(0);
     await expect(download).toBeDisabled();
 });
+
+// FEAT-0031 whole-branch review: opening an editor for a side that has no
+// diagram would give the edit session a null baseline (show() would throw
+// inside requireDefined with no catch, leaving a blank tab). The ✎ button must
+// be disabled on that side, mirroring Download/Highlight (UX-0003).
+test('disables the edit button when switching to a side without the file', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { fixtures: { xmlByRef: { 'mr-sha': ADDED_TASK_BPMN } } });
+
+    const editButton = page.getByTitle('Edit this diagram in a new tab');
+    await expect(editButton).toBeEnabled();
+
+    await page.getByRole('button', { name: 'Switch branch' }).click();
+
+    await expect(editButton).toBeDisabled();
+});
