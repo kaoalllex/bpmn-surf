@@ -35,13 +35,19 @@ class BpmnDifferView {
     #changesTableView = null;
     #downloadButton = null;
     #highlightButton = null;
+    #editButton = null;
     #filePathElement = null;
     #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
     #updateInfo = null;
     #backNavigator = null;
+    #editGroup = null;
+    #coloringButton = null;
+    #editColoringEnabled = true;
+    #editColoringPaused = false;
 
-    // callbacks: { onDownload, onSwitchBranch, onToggleHighlight }
+    // callbacks: { onDownload, onSwitchBranch, onToggleHighlight, onOpenEditor,
+    //   onUndo, onRedo, onToggleEditColoring }
     constructor(params, branchIndicator, callbacks) {
         this.#params = params;
         this.#branchIndicator = branchIndicator;
@@ -65,6 +71,35 @@ class BpmnDifferView {
 
     get changesTableView() {
         return this.#changesTableView;
+    }
+
+    // The edit-mode toolbar group, so the colour control can append its swatches
+    // after construction (FEAT-0031). null in view mode.
+    get editGroup() {
+        return this.#editGroup;
+    }
+
+    // BUG-0029: the recompute cannot always compare (a diagram with no executable
+    // process). The colouring then freezes at its last good state, which can be
+    // permanent — so say so on the toggle rather than leaving a silently stale diff.
+    setEditColoringPaused(paused) {
+        this.#editColoringPaused = paused;
+        this.#refreshColoringButton();
+    }
+
+    #refreshColoringButton() {
+        if (!this.#coloringButton) {
+            return;
+        }
+        if (this.#editColoringPaused) {
+            this.#coloringButton.textContent = '⚠';
+            this.#coloringButton.title =
+                'Colour the edits — paused: the diagram has no executable process';
+            return;
+        }
+        this.#coloringButton.textContent = this.#editColoringEnabled ? '☑' : '☐';
+        this.#coloringButton.title =
+            `Colour the edits — ${this.#editColoringEnabled ? 'on' : 'off'}`;
     }
 
     // Upper bound for the properties panel width, relative to the window.
@@ -177,7 +212,10 @@ class BpmnDifferView {
         this.#restorePropsHidden();
 
         //--- footer
-        if (this.#params.isSourceVersionDefined()) {
+        // The changes table earns its place in MR review, where somebody else made
+        // the changes. In an editor the user just made them and sees them on the
+        // canvas, so edit mode renders no table (FEAT-0031).
+        if (this.#params.isSourceVersionDefined() && !this.#isEditMode()) {
             const footerCell = document.createElement('td');
             footerCell.setAttribute('align', 'right');
             row3.appendChild(footerCell);
@@ -203,6 +241,15 @@ class BpmnDifferView {
     setHighlightButtonEnabled(enabled) {
         if (this.#highlightButton) {
             this.#highlightButton.disabled = !enabled;
+        }
+    }
+
+    // Enables/disables the ✎ (open editor) button — disabled on a side that has no
+    // diagram to edit (new/deleted schema in the MR): opening an edit tab for it
+    // would produce a session with a null baseline (UX-0003 / whole-branch review).
+    setEditButtonEnabled(enabled) {
+        if (this.#editButton) {
+            this.#editButton.disabled = !enabled;
         }
     }
 
@@ -321,6 +368,10 @@ class BpmnDifferView {
         return button;
     }
 
+    #isEditMode() {
+        return this.#params.mode === DifferParams.MODE_EDIT;
+    }
+
     #createHeader(parentElem) {
         const toolbar = document.createElement('div');
         toolbar.className = 'differ-toolbar';
@@ -336,7 +387,10 @@ class BpmnDifferView {
         // Download stays first (left), at a stable position by the bar's edge, so it
         // does not drift with the path length; the path is truncated after it.
         this.#downloadButton = this.#button({
-            icon: '↓', title: 'Download the file as shown for the current branch',
+            icon: '↓',
+            title: this.#isEditMode()
+                ? 'Download the edited .bpmn'
+                : 'Download the file as shown for the current branch',
             onClick: () => this.#callbacks.onDownload()
         });
         fileGroup.appendChild(this.#downloadButton);
@@ -358,19 +412,26 @@ class BpmnDifferView {
         toolbar.appendChild(branchGroup);
 
         //--- switch branch — own group, pinned to the right edge so it stays
-        //    put regardless of the branch name length (the primary action)
-        const switchGroup = this.#group();
-        switchGroup.classList.add('differ-toolbar-spacer');
-        switchGroup.appendChild(this.#button({
-            text: 'Switch branch',
-            strong: true,
-            disabled: !this.#params.isSourceVersionDefined(),
-            onClick: () => this.#callbacks.onSwitchBranch()
-        }));
-        toolbar.appendChild(switchGroup);
+        //    put regardless of the branch name length (the primary action).
+        //    Meaningless in edit mode: the editor owns exactly one side, so the
+        //    spacer moves to the view group instead (FEAT-0031).
+        if (!this.#isEditMode()) {
+            const switchGroup = this.#group();
+            switchGroup.classList.add('differ-toolbar-spacer');
+            switchGroup.appendChild(this.#button({
+                text: 'Switch branch',
+                strong: true,
+                disabled: !this.#params.isSourceVersionDefined(),
+                onClick: () => this.#callbacks.onSwitchBranch()
+            }));
+            toolbar.appendChild(switchGroup);
+        }
 
         //--- view group
         const viewGroup = this.#group();
+        if (this.#isEditMode()) {
+            viewGroup.classList.add('differ-toolbar-spacer');
+        }
         viewGroup.appendChild(this.#button({
             icon: '+', title: 'Zoom in',
             onClick: () => this.#viewport.zoomIn()
@@ -384,20 +445,53 @@ class BpmnDifferView {
             onClick: () => this.#viewport.fit(true)
         }));
 
-        const highlightButton = this.#button({
-            icon: '☼',
-            title: 'Turn diff highlight on',
-            disabled: !this.#params.isSourceVersionDefined(),
-            onClick: () => {
-                const enabled = this.#callbacks.onToggleHighlight();
-                highlightButton.textContent = enabled ? '☀' : '☼';
-                highlightButton.title = enabled ? 'Turn diff highlight off' : 'Turn diff highlight on';
-            }
-        });
-        this.#highlightButton = highlightButton;
-        viewGroup.appendChild(highlightButton);
+        if (this.#isEditMode()) {
+            // The "colour the edits" toggle replaces ☼ — it governs the same idea
+            // (show the diff) but also governs the export (FEAT-0031).
+            this.#coloringButton = this.#button({
+                icon: '☑', title: 'Colour the edits — on',
+                onClick: () => {
+                    this.#editColoringEnabled = this.#callbacks.onToggleEditColoring();
+                    this.#refreshColoringButton();
+                }
+            });
+            viewGroup.appendChild(this.#coloringButton);
+        } else {
+            const highlightButton = this.#button({
+                icon: '☼',
+                title: 'Turn diff highlight on',
+                disabled: !this.#params.isSourceVersionDefined(),
+                onClick: () => {
+                    const enabled = this.#callbacks.onToggleHighlight();
+                    highlightButton.textContent = enabled ? '☀' : '☼';
+                    highlightButton.title = enabled ? 'Turn diff highlight off' : 'Turn diff highlight on';
+                }
+            });
+            this.#highlightButton = highlightButton;
+            viewGroup.appendChild(highlightButton);
+
+            this.#editButton = this.#button({
+                icon: '✎', title: 'Edit this diagram in a new tab',
+                onClick: () => this.#callbacks.onOpenEditor()
+            });
+            viewGroup.appendChild(this.#editButton);
+        }
         viewGroup.appendChild(this.#createHidePropsButton());
         toolbar.appendChild(viewGroup);
+
+        //--- edit group (FEAT-0031): undo/redo, plus the colour swatches (EditColorControl)
+        if (this.#isEditMode()) {
+            this.#editGroup = this.#group();
+            this.#editGroup.appendChild(this.#button({
+                icon: '↶', title: 'Undo (Ctrl+Z)',
+                onClick: () => this.#callbacks.onUndo()
+            }));
+            this.#editGroup.appendChild(this.#button({
+                icon: '↷', title: 'Redo (Ctrl+Y)',
+                onClick: () => this.#callbacks.onRedo()
+            }));
+            toolbar.appendChild(this.#editGroup);
+        }
 
         //--- update indicator (FEAT-0012), only when an update is available
         this.#appendUpdateIndicator(toolbar);

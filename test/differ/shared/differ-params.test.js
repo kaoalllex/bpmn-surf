@@ -147,5 +147,80 @@ describe('DifferParams', () => {
             const nested = new DifferParams(nestedRaw);
             assert.equal(nested.identityKey(), targetKey);
         });
+
+        it('matches the key a nested differ will publish, even from an edit-mode parent', () => {
+            // BUG found in the whole-branch review: an edit-mode tab's OWN
+            // identityKey() carries mode/editSide, but the nested tab it dives into
+            // is a view tab (toNestedDifferParams drops mode). So the key used to
+            // open/focus the dive-in target must be computed from the NESTED
+            // params, not from the parent's own params — this is what
+            // BpmnDiffer#openDifferForFile now does.
+            const parent = new DifferParams({ ...validParams, mode: 'edit', editSide: 'target' });
+            const nestedRaw = parent.toNestedDifferParams('src/sub.bpmn', 'sub.bpmn');
+            const targetKey = DifferParams.identityKeyFor(nestedRaw, 'src/sub.bpmn');
+
+            const nested = new DifferParams(nestedRaw);
+            assert.equal(nested.identityKey(), targetKey);
+        });
+    });
+
+    it('defaults mode to view and editSide to null', () => {
+        const p = new DifferParams(validParams);
+        assert.equal(p.mode, 'view');
+        assert.equal(p.editSide, null);
+    });
+
+    it('accepts edit mode with a side', () => {
+        const p = new DifferParams({ ...validParams, mode: 'edit', editSide: 'target' });
+        assert.equal(p.mode, 'edit');
+        assert.equal(p.editSide, 'target');
+    });
+
+    it('rejects an unknown mode', () => {
+        assert.throws(() => new DifferParams({ ...validParams, mode: 'nonsense' }), /mode/);
+    });
+
+    it('appends a mode suffix to the view identity key', () => {
+        // The dive-in path precomputes the key the TARGET tab will publish, so the
+        // view-mode key must stay stable across this change (BUG-0017).
+        const p = new DifferParams(validParams);
+        assert.equal(
+            p.identityKey(),
+            [validParams.platform.projectUrl, '', 'abc123', 'master', 'src/process.bpmn', 'view'].join('\n'));
+    });
+
+    it('gives the edit tab a different identity key than the view tab', () => {
+        const p = new DifferParams(validParams);
+        assert.notEqual(p.editIdentityKey('target'), p.identityKey());
+        assert.ok(p.editIdentityKey('target').endsWith('edit'));
+    });
+
+    it('gives each edited side its own identity key', () => {
+        const p = new DifferParams(validParams);
+        assert.notEqual(p.editIdentityKey('target'), p.editIdentityKey('source'));
+    });
+
+    it('carries the rename and local-file fields into the edit params', () => {
+        // toNestedDifferParams drops these (it targets a DIFFERENT file); the edit
+        // tab shows the SAME file, so losing them would load the wrong base path.
+        const p = new DifferParams({
+            ...validParams,
+            targetFilePath: 'src/old-name.bpmn',
+            targetLabel: 'master'
+        });
+        const edit = p.toEditDifferParams('target');
+        assert.equal(edit.mode, 'edit');
+        assert.equal(edit.editSide, 'target');
+        assert.equal(edit.filePath, 'src/process.bpmn');
+        assert.equal(edit.targetFilePath, 'src/old-name.bpmn');
+        assert.equal(edit.targetLabel, 'master');
+        assert.equal(edit.camundaBpmnModdle, p.camundaBpmnModdle);
+    });
+
+    it('carries localFileContent into the edit params', () => {
+        const localParams = { ...validParams };
+        delete localParams.sourceRef;
+        const p = new DifferParams({ ...localParams, localFileContent: '<xml/>' });
+        assert.equal(p.toEditDifferParams('source').localFileContent, '<xml/>');
     });
 });

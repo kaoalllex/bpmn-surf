@@ -167,6 +167,20 @@ function getTitle(fileName) {
     return fileName.replace(/(.{31})/g, "$1 ");
 }
 
+// Hands the user a text file to save. Extracted from DiagramVersions.download so
+// the FEAT-0031 edit download can supply a verbatim file name (the version
+// download always prefixes the branch label).
+function downloadTextFile(content, fileName) {
+    const blob = new Blob([content], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+}
+
 async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc) {
     console.debug('opening differ...');
     const newWindow = window.open('about:blank');
@@ -228,6 +242,11 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/bpmn/search-panel.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/properties-panel-highlighter.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/properties-group-expander.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/edit/edit-color-resolver.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/edit/edit-xml-colorizer.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/edit/edit-diff-painter.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/edit/edit-session.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/bpmn/edit/edit-color-control.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/platform/platform-client.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/platform/gitlab-platform-client.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/platform/github-platform-client.js', doc, getResourceUrlByNameFunc);

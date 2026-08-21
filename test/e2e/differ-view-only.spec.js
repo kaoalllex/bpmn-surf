@@ -54,3 +54,36 @@ test('properties-panel field is selectable but read-only (BUG-0014)', async ({ p
     await page.keyboard.type('ZZZ');
     await expect(nameInput).toHaveValue('Review request');
 });
+
+// BUG-0011: a high-priority EDIT_EVENTS listener returns false on shape.move.start,
+// aborting the move before the default editing handlers create a command — so a
+// real drag leaves the shape exactly where it was. Contrast: differ-edit-boot.spec.js
+// "edit mode lets a shape be dragged" runs the identical drag with the veto gated off.
+test('dragging a shape does not move it (BUG-0011)', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page);
+
+    const shape = page.locator('svg .djs-element[data-element-id="Task_1"]');
+    const before = await shape.boundingBox();
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before.x + before.width / 2 + 120, before.y + before.height / 2 + 60, { steps: 10 });
+    await page.mouse.up();
+
+    const after = await shape.boundingBox();
+    expect(after).toEqual(before);
+});
+
+// BUG-0011: the modeler's palette and context-pad are edit-only UI, hidden via CSS
+// (palette also gets an inline display:none). Contrast: differ-edit-boot.spec.js
+// "edit mode shows the palette and the context pad" shows both back with the same
+// diagram once mode === 'edit'.
+test('palette and context pad stay hidden (BUG-0011)', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page);
+
+    await expect(page.locator('.djs-palette')).toBeHidden();
+
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+    await expect(page.locator('.djs-context-pad')).toBeHidden();
+});

@@ -7,6 +7,11 @@
 // from this descriptor (see platform-client-factory.js). See diff-params-builder.js
 // for the producing side.
 class DifferParams {
+    static MODE_VIEW = 'view';
+    static MODE_EDIT = 'edit';
+    static EDIT_SIDE_TARGET = 'target';
+    static EDIT_SIDE_SOURCE = 'source';
+
     constructor(params) {
         this.platform = requireDefined(params.platform, 'platform');
         requireDefined(this.platform.projectUrl, 'platform.projectUrl');
@@ -53,6 +58,19 @@ class DifferParams {
         // Call Activity's calledElement (FEAT-0023) or decision ids for a Business
         // Rule Task's decisionRef (FEAT-0005). null/empty = no auto-select.
         this.selectCalledProcessIds = params.selectCalledProcessIds || null;
+
+        // FEAT-0031: 'edit' turns this tab into an editor for ONE side of the diff.
+        // It is a postMessage param like every other field here — a differ tab has
+        // no URL of its own.
+        this.mode = params.mode || DifferParams.MODE_VIEW;
+        if (this.mode !== DifferParams.MODE_VIEW && this.mode !== DifferParams.MODE_EDIT) {
+            throw new Error(`unknown mode: ${this.mode}`);
+        }
+        // Which version is being edited (and so is the diff baseline): the side that
+        // was on screen when the user pressed the edit button. null in view mode.
+        this.editSide = this.mode === DifferParams.MODE_EDIT
+            ? (params.editSide || DifferParams.EDIT_SIDE_SOURCE)
+            : null;
     }
 
     // Required by the BPMN-only features (Call Activity / handler navigation)
@@ -79,13 +97,22 @@ class DifferParams {
     }
 
     static identityKeyFor(params, filePath) {
-        return [
+        const parts = [
             params.platform.projectUrl,
             params.changeRequestId || '',
             params.sourceRef || '',
             params.targetRef,
             filePath
-        ].join('\n');
+        ];
+
+        // FEAT-0031: edit tabs need both editSide differentiation AND a mode suffix.
+        // editSide comes before mode so the key ends with the mode ('view' or 'edit').
+        if (params.mode === DifferParams.MODE_EDIT) {
+            parts.push(params.editSide || DifferParams.EDIT_SIDE_SOURCE);
+        }
+
+        parts.push(params.mode || DifferParams.MODE_VIEW);
+        return parts.join('\n');
     }
 
     // Wire params for a nested differ (e.g. diving into a Call Activity's called
@@ -107,6 +134,36 @@ class DifferParams {
             fileName: fileName,
             camundaBpmnModdle: this.camundaBpmnModdle,
             ...extra
+        };
+    }
+
+    // The key the edit tab for the given side will publish — computed BEFORE
+    // opening it, so a second press of the edit button focuses the open editor
+    // instead of starting a second session (BUG-0017 machinery).
+    editIdentityKey(editSide) {
+        return DifferParams.identityKeyFor(
+            { ...this, mode: DifferParams.MODE_EDIT, editSide }, this.filePath);
+    }
+
+    // Wire params for an edit tab on the SAME file. Deliberately not
+    // toNestedDifferParams(): that one targets a DIFFERENT file and drops
+    // targetFilePath (BUG-0002 rename) and localFileContent, both of which the
+    // edit tab still needs to load the same two versions this tab loaded.
+    toEditDifferParams(editSide) {
+        return {
+            platform: this.platform,
+            sourceRef: this.sourceRef,
+            sourceLabel: this.sourceLabel,
+            localFileContent: this.localFileContent,
+            changeRequestId: this.changeRequestId,
+            targetRef: this.targetRef,
+            targetLabel: this.targetLabel,
+            filePath: this.filePath,
+            targetFilePath: this.targetFilePath,
+            fileName: this.fileName,
+            camundaBpmnModdle: this.camundaBpmnModdle,
+            mode: DifferParams.MODE_EDIT,
+            editSide: editSide
         };
     }
 }

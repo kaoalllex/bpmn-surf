@@ -1,0 +1,134 @@
+'use strict';
+
+const { test, expect } = require('@playwright/test');
+const { bootBpmnDiffer, wireDiagnostics, defaultBpmnParams } = require('./support/boot-differ');
+
+const editParams = (overrides = {}) =>
+    defaultBpmnParams({ mode: 'edit', editSide: 'source', ...overrides });
+
+// FEAT-0031: in edit mode the four BUG-0011/0014/0015 mutes are lifted, so the
+// modeler's own editing UI is back.
+test('edit mode shows the palette and the context pad', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    await expect(page.locator('.djs-palette')).toBeVisible();
+
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+    await expect(page.locator('.djs-context-pad')).toBeVisible();
+});
+
+// The EDIT_EVENTS veto is gated by the mode, so a drag really moves the shape.
+test('edit mode lets a shape be dragged', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    const shape = page.locator('svg .djs-element[data-element-id="Task_1"]');
+    const before = await shape.boundingBox();
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before.x + before.width / 2 + 120, before.y + before.height / 2 + 60, { steps: 10 });
+    await page.mouse.up();
+
+    const after = await shape.boundingBox();
+    expect(Math.abs(after.x - before.x)).toBeGreaterThan(50);
+});
+
+// The properties-panel beforeinput veto is gated too, so the Name field accepts text.
+test('edit mode lets the properties panel be typed into', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    await expect(page.locator('.bio-properties-panel-scroll-container')).toBeVisible();
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+
+    const generalHeader = page.locator('.bio-properties-panel-group-header', { hasText: 'General' });
+    await expect(generalHeader).toBeVisible();
+    if (!await generalHeader.evaluate((el) => el.classList.contains('open'))) {
+        await generalHeader.click();
+    }
+
+    const nameInput = page.locator('#bio-properties-panel-name');
+    await expect(nameInput).toHaveValue('Review request');
+    await nameInput.click();
+    await page.keyboard.type('ZZZ');
+    await expect(nameInput).toHaveValue('Review requestZZZ');
+});
+
+// The changes table belongs to review, not to an editor (FEAT-0031).
+test('edit mode renders no changes table and no Switch branch', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    await expect(page.locator('.changes-table')).toHaveCount(0);
+    await expect(page.getByText('Switch branch')).toHaveCount(0);
+});
+
+// View mode offers the entry point; edit mode does not offer it again.
+test('the edit button is present in view mode and absent in edit mode', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page);
+    await expect(page.getByTitle('Edit this diagram in a new tab')).toBeVisible();
+
+    await bootBpmnDiffer(page, { params: editParams() });
+    await expect(page.getByTitle('Edit this diagram in a new tab')).toHaveCount(0);
+});
+
+// No test on the branch exercised undo/redo at all — the toolbar buttons (↶/↷)
+// are the contract that matters (Ctrl+Z is skipped: focus handling in headless
+// makes it flaky and it is not the toolbar contract).
+test('undo (↶) reverts a drag and redo (↷) reapplies it', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    const shape = page.locator('svg .djs-element[data-element-id="Task_1"]');
+    const before = await shape.boundingBox();
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before.x + before.width / 2 + 120, before.y + before.height / 2 + 60, { steps: 10 });
+    await page.mouse.up();
+
+    const afterDrag = await shape.boundingBox();
+    expect(Math.abs(afterDrag.x - before.x)).toBeGreaterThan(50);
+
+    await page.getByTitle('Undo (Ctrl+Z)').click();
+    const afterUndo = await shape.boundingBox();
+    expect(Math.abs(afterUndo.x - before.x)).toBeLessThan(5);
+
+    await page.getByTitle('Redo (Ctrl+Y)').click();
+    const afterRedo = await shape.boundingBox();
+    expect(Math.abs(afterRedo.x - before.x)).toBeGreaterThan(50);
+});
+
+// onUndo/onRedo call commandStack.undo()/.redo() directly rather than
+// editorActions.trigger('undo'/'redo'), which would tear down an open direct-edit
+// overlay first. Probing the risky case directly: make an undoable change, THEN
+// open the canvas label editor (double-click — not vetoed in edit mode, BUG-0015)
+// and leave it open, then undo. If the direct call misbehaves it should surface as
+// a page error or a stuck editor that blocks further interaction.
+test('undo while a label editor is still open does not misbehave', async ({ page }) => {
+    wireDiagnostics(page);
+    const errors = [];
+    page.on('pageerror', (err) => errors.push(err.message));
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    const shape = page.locator('svg .djs-element[data-element-id="Task_1"]');
+    const before = await shape.boundingBox();
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before.x + before.width / 2 + 100, before.y + before.height / 2 + 50, { steps: 10 });
+    await page.mouse.up();
+
+    await shape.dblclick();
+    await expect(page.locator('.djs-direct-editing-content')).toBeVisible();
+
+    await page.getByTitle('Undo (Ctrl+Z)').click();
+
+    expect(errors).toEqual([]);
+    const afterUndo = await shape.boundingBox();
+    expect(Math.abs(afterUndo.x - before.x)).toBeLessThan(5);
+
+    // The page must stay interactive afterwards (nothing left stuck).
+    await page.locator('svg .djs-element[data-element-id="Task_2"]').click();
+    await expect(page.locator('.bio-properties-panel-scroll-container')).toBeVisible();
+});

@@ -15,8 +15,10 @@ const CALLED_PATH = 'processes/sub-process.bpmn';
 const CALLED_HIT = { path: CALLED_PATH, line: 1, snippet: '<bpmn:process id="Sub_Process">' };
 const DIVER_FIXTURES = { xmlByRef: { 'mr-sha': CALL_ACTIVITY_BPMN, 'base-sha': CALL_ACTIVITY_BPMN }, searchHits: [CALLED_HIT] };
 
-// identityKeyFor(defaultBpmnParams, CALLED_PATH): refs joined with the file path.
-const IDENTITY_KEY = ['http://localhost/p', '', 'mr-sha', 'base-sha', CALLED_PATH].join('\n');
+// identityKeyFor(defaultBpmnParams, CALLED_PATH): refs joined with the file path,
+// then the mode — an edit tab must not be deduplicated against the view tab of the
+// same diagram (FEAT-0031), so 'view' is part of every view-mode tab's key.
+const IDENTITY_KEY = ['http://localhost/p', '', 'mr-sha', 'base-sha', CALLED_PATH, 'view'].join('\n');
 const TAB_NAME = 'gl-bpmn-diff-tab:' + IDENTITY_KEY;
 
 async function bootCalleeTab(context) {
