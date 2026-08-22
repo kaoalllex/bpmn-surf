@@ -346,10 +346,24 @@ deleting it leaves `<camunda:inputOutput/>` in the model — the properties pane
 creates the container and never removes it — so the element stayed blue with no
 group highlighted (`#nodeToDiffs` unwraps the container into its entries, of which
 there are none, and logged `not text child not found`). `#significantChildren()`
-now drops an attribute-less entry container that holds nothing, recursively, so an
-empty container compares equal to no container at all. The container still reaches
-the downloaded file: that is bpmn-js writing what is in the model, not a colouring
-bug.
+now drops an attribute-less, childless, textless element of the camunda extension
+namespace (plus the `bpmn:extensionElements` wrapper), recursively. The same rule
+covers a field whose value was cleared — `<camunda:failedJobRetryTimeCycle/>` kept
+the Job execution group blue — which is why it is a namespace rule rather than a
+list of container tags. The bpmn namespace is deliberately excluded: there bare
+presence IS the value (`bpmn:terminateEventDefinition`). The empty element still
+reaches the downloaded file: that is bpmn-js writing what is in the model, not a
+colouring bug.
+
+Fifth: the Extension properties list had no `#LIST_GROUP_CONFIG` entry, so its
+entries were never coloured individually — only the group header went blue. Added
+(`camunda:property` under `camunda:properties`, labelled by `name`, which is what
+the panel renders as the entry title), together with the missing
+`camunda:property` / `camunda:property/name` / `camunda:property/value` rows in
+`#DIFF_TO_PROPERTY_GROUP_MAP` — without them a change *inside* an existing list
+was reported as an unmapped diff and highlighted nothing at all. Caveat: a
+`camunda:property` under a form field now maps to Extension properties too; the
+diff name carries only one level of parent, and before this it mapped to nothing.
 
 Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
 bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry

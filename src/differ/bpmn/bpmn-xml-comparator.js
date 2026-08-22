@@ -27,16 +27,6 @@ class BpmnXmlComparator {
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
 
-    // Elements that only wrap a list of entries. The properties panel creates one when
-    // a group gets its first entry and leaves it behind when the last entry is deleted,
-    // so an empty one must compare equal to no container at all — otherwise adding and
-    // then removing an input parameter leaves the element marked as changed for good.
-    static #ENTRY_CONTAINER_TAG_NAMES = [
-        'bpmn:extensionElements',
-        'camunda:inputOutput',
-        'camunda:properties',
-        'camunda:formData'
-    ];
 
     /**
      * List-based property groups whose changed entries are highlighted
@@ -62,6 +52,9 @@ class BpmnXmlComparator {
         }],
         ['Outputs', {
             tag: 'camunda:outputParameter', keyAttr: 'name', parentTag: 'camunda:inputOutput'
+        }],
+        ['Extension properties', {
+            tag: 'camunda:property', keyAttr: 'name', parentTag: 'camunda:properties'
         }]
     ]);
 
@@ -127,6 +120,9 @@ class BpmnXmlComparator {
         ['camunda:failedJobRetryTimeCycle', 'Job execution'],
 
         ['camunda:properties', 'Extension properties'],
+        ['camunda:property', 'Extension properties'],
+        ['camunda:property/name', 'Extension properties'],
+        ['camunda:property/value', 'Extension properties'],
 
         ['camunda:formField', 'Form fields'],
         ['camunda:formField/label', 'Form fields'],
@@ -466,13 +462,19 @@ class BpmnXmlComparator {
     #significantChildren(node) {
         return Array.from(node.childNodes).filter(child => child.nodeType === Node.TEXT_NODE
             ? child.nodeValue.trim() !== ''
-            : !this.#isEmptyEntryContainer(child));
+            : !this.#isEmptyExtension(child));
     }
 
-    // Recurses through #significantChildren, so a container holding nothing but other
-    // empty containers is empty too.
-    #isEmptyEntryContainer(node) {
-        return BpmnXmlComparator.#ENTRY_CONTAINER_TAG_NAMES.includes(node.tagName)
+    // An extension element with no attributes, no text and no significant children
+    // carries no value, and the properties panel leaves exactly those behind: the
+    // container of a list group survives the deletion of its last entry, and a field's
+    // element survives its value being cleared. Restricted to the camunda namespace
+    // (plus the extensionElements wrapper) because in the bpmn namespace bare presence
+    // IS the value — bpmn:terminateEventDefinition and the other event definitions.
+    // Recurses through #significantChildren, so a container holding nothing but empty
+    // extensions is empty too.
+    #isEmptyExtension(node) {
+        return (node.tagName.startsWith('camunda:') || node.tagName === 'bpmn:extensionElements')
             && node.attributes.length === 0
             && this.#significantChildren(node).length === 0;
     }
