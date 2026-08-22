@@ -213,13 +213,15 @@ class BpmnXmlComparator {
                     if (this.#isNodeRow(myNode)) {
                         result.changedRowIds.push(id);
 
-                        if (myNode.tagName === 'bpmn:sequenceFlow' &&
-                            myNode.childNodes.length > 1 &&
-                            otherNode.childNodes.length > 1) {
-                            result.nodeIdToConditions.set(
-                                id,
-                                [myNode.childNodes[1].textContent, otherNode.childNodes[1].textContent]
-                            );
+                        if (myNode.tagName === 'bpmn:sequenceFlow') {
+                            const myCondition = this.#findChildNodeByTagName(myNode, 'bpmn:conditionExpression');
+                            const otherCondition = this.#findChildNodeByTagName(otherNode, 'bpmn:conditionExpression');
+                            if (myCondition && otherCondition) {
+                                result.nodeIdToConditions.set(
+                                    id,
+                                    [myCondition.textContent, otherCondition.textContent]
+                                );
+                            }
                         }
                     } else {
                         result.changedShapeIds.push(id);
@@ -287,7 +289,7 @@ class BpmnXmlComparator {
             const sameKey = otherEntries.filter(e => e.getAttribute(config.keyAttr) === label);
             if (sameKey.length === 0) {
                 descriptors.push({ label, changed: false });
-            } else if (!sameKey.some(e => e.outerHTML === myEntry.outerHTML)) {
+            } else if (!sameKey.some(e => markupOf(e) === markupOf(myEntry))) {
                 descriptors.push({ label, changed: true });
             }
         }
@@ -406,14 +408,14 @@ class BpmnXmlComparator {
             return this.#concatDiffs(diffs, childrenDiffs);
         }
 
-        if (nodeA.childNodes.length !== nodeB.childNodes.length) {
+        const childrenA = this.#significantChildren(nodeA);
+        const childrenB = this.#significantChildren(nodeB);
+        if (childrenA.length !== childrenB.length) {
             const childrenDiffs = this.#findChildrenDiffs(nodeA, nodeB);
             diffs = this.#concatDiffs(diffs, childrenDiffs);
         } else {
-            for (let i = 0; i < nodeA.childNodes.length; i++) {
-                const childA = nodeA.childNodes[i];
-                const childB = nodeB.childNodes[i];
-                const nodeDiffs = this.#compareNodes(nodeA, childA, childB);
+            for (let i = 0; i < childrenA.length; i++) {
+                const nodeDiffs = this.#compareNodes(nodeA, childrenA[i], childrenB[i]);
                 diffs = this.#concatDiffs(diffs, nodeDiffs);
             }
         }
@@ -424,15 +426,27 @@ class BpmnXmlComparator {
     // True when nodes have the same number of children but the tags
     // at some position differ, so positional comparison would pair unrelated nodes
     #hasPositionalTagMismatch(nodeA, nodeB) {
-        if (nodeA.childNodes.length !== nodeB.childNodes.length) {
+        const childrenA = this.#significantChildren(nodeA);
+        const childrenB = this.#significantChildren(nodeB);
+        if (childrenA.length !== childrenB.length) {
             return false;
         }
-        for (let i = 0; i < nodeA.childNodes.length; i++) {
-            if (nodeA.childNodes[i].tagName !== nodeB.childNodes[i].tagName) {
+        for (let i = 0; i < childrenA.length; i++) {
+            if (childrenA[i].tagName !== childrenB[i].tagName) {
                 return true;
             }
         }
         return false;
+    }
+
+    // Indentation is not a change: the walk pairs children by position and the
+    // set-based fallback matches subtrees by their markup, so a document that is
+    // only formatted differently would otherwise read as changed on every element
+    // that has children (bpmn-js writes both forms — saveXML() with and without
+    // `format`). Text that is not pure whitespace is left alone.
+    #significantChildren(node) {
+        return Array.from(node.childNodes)
+            .filter(child => child.nodeType !== Node.TEXT_NODE || child.nodeValue.trim() !== '');
     }
 
     #isTextContentEqual(parentNode, nodeA, nodeB) {
@@ -587,10 +601,13 @@ class BpmnXmlComparator {
             if (findForNode.nodeType === Node.TEXT_NODE || this.#isNodeConnector(findForNode)) {
                 continue;
             }
-            const findForNodeText = findForNode.outerHTML;
+            const findForNodeText = markupOf(findForNode);
             let found = false;
             for (const findWhereNode of findWhereNodes) {
-                const findWhereNodeText = findWhereNode.outerHTML;
+                if (findWhereNode.nodeType === Node.TEXT_NODE) {
+                    continue; // text has no markup to match against
+                }
+                const findWhereNodeText = markupOf(findWhereNode);
                 if (findForNodeText === findWhereNodeText) {
                     found = true;
                     break;

@@ -315,6 +315,27 @@ E2E (Playwright, on top of `test/e2e/support/boot-differ.js`):
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
 
+### 2026-08-22 · claude-opus-5[1m] · branch `feature/feat-0031-bpmn-edit-mode`
+
+Review/manual-testing round. Fixed the phantom colouring found by hand: the
+baseline was taken from `saveXML()` (compact) while every recompute exports
+`saveXML({ format: true })`, so the comparator read the added indentation inside
+`extensionElements` as a change on every element that has such children. The
+baseline now goes through `currentXml()`; pinned by a new case in
+`differ-edit-markers.spec.js`.
+
+The same round removed the underlying sensitivity in `BpmnXmlComparator`, which
+also affected view mode (a file reindented in an MR read as changed everywhere):
+`#significantChildren()` drops whitespace-only text nodes from the positional
+walk, `#markupOf()` collapses whitespace between tags before matching subtrees,
+and the sequence-flow condition texts are located by tag instead of by the child
+index `1`. Not addressed there: reflowed text *content*
+(`<camunda:inputParameter>\n  1\n</…>` vs `<…>1</…>`) still counts as a change.
+Pinned by five unit cases, each verified to fail with the fix removed.
+`DmnXmlComparator` had the same exposure (inputs, outputs and rule entries matched
+as raw markup) and got the same treatment; the whitespace-collapsing helper lives
+in `utils.js#markupOf` and is shared by both comparators.
+
 ### 2026-08-21 · claude-sonnet-5 · branch `feature/feat-0031-bpmn-edit-mode`
 
 Implemented edit mode end to end: mode/editSide params and the edit identity key,
