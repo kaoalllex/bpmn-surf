@@ -56,6 +56,36 @@ describe('BpmnXmlComparator.compare', () => {
     // The properties panel creates camunda:inputOutput when a list group gets its first
     // entry and leaves the empty container behind when the last entry is deleted, so an
     // add-then-delete round trip would otherwise keep the element painted as changed.
+    // Clearing a field's value leaves its element behind, empty, exactly as deleting the
+    // last list entry leaves the container behind.
+    it('ignores an extension element whose value was cleared', () => {
+        const withEmptyField = base.replace(
+            '<bpmn:incoming>Flow_1</bpmn:incoming>',
+            '<bpmn:extensionElements><camunda:failedJobRetryTimeCycle /></bpmn:extensionElements>'
+                + '<bpmn:incoming>Flow_1</bpmn:incoming>');
+        assert.deepEqual(Array.from(compare(withEmptyField, base).changedShapeIds), []);
+    });
+
+    it('still reports an extension element that has a value', () => {
+        const withField = base.replace(
+            '<bpmn:incoming>Flow_1</bpmn:incoming>',
+            '<bpmn:extensionElements><camunda:failedJobRetryTimeCycle>R3/PT10M'
+                + '</camunda:failedJobRetryTimeCycle></bpmn:extensionElements>'
+                + '<bpmn:incoming>Flow_1</bpmn:incoming>');
+        const result = compare(withField, base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['Job execution']);
+    });
+
+    // An event definition is the value of an element, not a container of one: dropping
+    // empty bpmn: elements would hide a start event becoming a terminate end event.
+    it('does not ignore an empty bpmn event definition', () => {
+        const terminating = base.replace(
+            '<bpmn:incoming>Flow_2</bpmn:incoming>',
+            '<bpmn:incoming>Flow_2</bpmn:incoming><bpmn:terminateEventDefinition />');
+        assert.deepEqual(Array.from(compare(terminating, base).changedShapeIds), ['EndEvent_1']);
+    });
+
     it('ignores an extension container left empty', () => {
         const withEmptyContainer = base.replace(
             '<bpmn:incoming>Flow_1</bpmn:incoming>',
@@ -75,6 +105,25 @@ describe('BpmnXmlComparator.compare', () => {
         const result = compare(withInput, base);
         assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
         assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['Inputs']);
+    });
+
+    // The Extension properties group is a list like the mappings: the panel labels each
+    // entry by its name, so the changed and added entries can be pointed at individually.
+    it('reports the changed entries of the Extension properties list', () => {
+        const withProps = (entries) => base.replace(
+            '<bpmn:incoming>Flow_1</bpmn:incoming>',
+            `<bpmn:extensionElements><camunda:properties>${entries}</camunda:properties>`
+                + '</bpmn:extensionElements><bpmn:incoming>Flow_1</bpmn:incoming>');
+        const mine = withProps('<camunda:property name="kept" value="1" />'
+            + '<camunda:property name="edited" value="2" />'
+            + '<camunda:property name="added" value="3" />');
+        const other = withProps('<camunda:property name="kept" value="1" />'
+            + '<camunda:property name="edited" value="OLD" />');
+
+        const changes = compare(mine, other).nodeIdToMappingChanges.get('Task_1');
+        assert.deepEqual(
+            Array.from(changes.get('Extension properties'), (d) => `${d.label}:${d.changed}`),
+            ['edited:true', 'added:false']);
     });
 
     it('returns the executable process node', () => {

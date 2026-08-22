@@ -95,3 +95,42 @@ test('replacing the element type paints the type in the panel header', async ({ 
     await expect(headerType).toHaveText('Service Task');
     await expect(headerType).toHaveCSS('background-color', 'rgb(136, 136, 255)', { timeout: 5000 });
 });
+
+// Extension properties is a list group like the mappings: the panel labels each entry by
+// its name, so an added entry gets its own colour and not only the group header.
+test('added extension properties are painted individually', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams(), fixtures: SAME_ON_BOTH_SIDES });
+
+    await page.locator('svg .djs-element[data-element-id="CallActivity_1"]').click();
+    // Open the group first: the highlighter can only paint entries that are rendered,
+    // and in edit mode nothing auto-expands the groups the user is editing.
+    const groupHeader = page.locator('.bio-properties-panel-group-header',
+        { hasText: 'Extension properties' });
+    await groupHeader.click();
+
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        const moddle = modeler.get('moddle');
+        const element = modeler.get('elementRegistry').get('CallActivity_1');
+        const extensionElements = element.businessObject.extensionElements;
+        const container = moddle.create('camunda:Properties', {
+            values: [
+                moddle.create('camunda:Property', { name: 'propA', value: '1' }),
+                moddle.create('camunda:Property', { name: 'propB', value: '2' })
+            ]
+        });
+        container.$parent = extensionElements;
+        modeler.get('modeling').updateModdleProperties(element, extensionElements, {
+            values: [...extensionElements.values, container]
+        });
+    });
+
+    await expect(groupHeader).toHaveCSS('background-color', 'rgb(136, 136, 255)', { timeout: 5000 });
+    for (const name of ['propA', 'propB']) {
+        const item = page.locator('.bio-properties-panel-collapsible-entry-header', {
+            has: page.getByText(name, { exact: true })
+        });
+        await expect(item).toHaveCSS('background-color', 'rgb(136, 255, 136)', { timeout: 5000 });
+    }
+});
