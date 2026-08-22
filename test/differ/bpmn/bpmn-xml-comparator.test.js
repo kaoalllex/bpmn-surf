@@ -53,6 +53,30 @@ describe('BpmnXmlComparator.compare', () => {
         assert.deepEqual(Array.from(compare(base, base).typeChangedIds), []);
     });
 
+    // The properties panel creates camunda:inputOutput when a list group gets its first
+    // entry and leaves the empty container behind when the last entry is deleted, so an
+    // add-then-delete round trip would otherwise keep the element painted as changed.
+    it('ignores an extension container left empty', () => {
+        const withEmptyContainer = base.replace(
+            '<bpmn:incoming>Flow_1</bpmn:incoming>',
+            '<bpmn:extensionElements><camunda:inputOutput /></bpmn:extensionElements>'
+                + '<bpmn:incoming>Flow_1</bpmn:incoming>');
+        assert.deepEqual(Array.from(compare(withEmptyContainer, base).changedShapeIds), []);
+        assert.deepEqual(Array.from(compare(base, withEmptyContainer).changedShapeIds), []);
+    });
+
+    it('still reports a container that holds an entry', () => {
+        const withInput = base.replace(
+            '<bpmn:incoming>Flow_1</bpmn:incoming>',
+            '<bpmn:extensionElements><camunda:inputOutput>'
+                + '<camunda:inputParameter name="in1">1</camunda:inputParameter>'
+                + '</camunda:inputOutput></bpmn:extensionElements>'
+                + '<bpmn:incoming>Flow_1</bpmn:incoming>');
+        const result = compare(withInput, base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['Inputs']);
+    });
+
     it('returns the executable process node', () => {
         const result = compare(base, base);
         assert.equal(result.processNode.getAttribute('id'), 'Process_1');

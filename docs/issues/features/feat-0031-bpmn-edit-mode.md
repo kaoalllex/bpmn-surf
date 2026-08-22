@@ -341,6 +341,16 @@ reports `typeChangedIds`, and the panel paints the element type in its own heade
 (`.bio-properties-panel-header-type`) with the 'changed' colour. Chosen over
 injecting an "old → new" line: the header is where the type already lives.
 
+Fourth defect, also pre-existing in view mode: adding an input parameter and then
+deleting it leaves `<camunda:inputOutput/>` in the model — the properties panel
+creates the container and never removes it — so the element stayed blue with no
+group highlighted (`#nodeToDiffs` unwraps the container into its entries, of which
+there are none, and logged `not text child not found`). `#significantChildren()`
+now drops an attribute-less entry container that holds nothing, recursively, so an
+empty container compares equal to no container at all. The container still reaches
+the downloaded file: that is bpmn-js writing what is in the model, not a colouring
+bug.
+
 Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
 bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry
 calls the deprecated diagram-js API); no call of ours is involved.

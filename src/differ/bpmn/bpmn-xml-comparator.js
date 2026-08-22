@@ -27,6 +27,17 @@ class BpmnXmlComparator {
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
 
+    // Elements that only wrap a list of entries. The properties panel creates one when
+    // a group gets its first entry and leaves it behind when the last entry is deleted,
+    // so an empty one must compare equal to no container at all — otherwise adding and
+    // then removing an input parameter leaves the element marked as changed for good.
+    static #ENTRY_CONTAINER_TAG_NAMES = [
+        'bpmn:extensionElements',
+        'camunda:inputOutput',
+        'camunda:properties',
+        'camunda:formData'
+    ];
+
     /**
      * List-based property groups whose changed entries are highlighted
      * individually in the panel (not only as a whole group). For each group:
@@ -453,8 +464,17 @@ class BpmnXmlComparator {
     // that has children (bpmn-js writes both forms — saveXML() with and without
     // `format`). Text that is not pure whitespace is left alone.
     #significantChildren(node) {
-        return Array.from(node.childNodes)
-            .filter(child => child.nodeType !== Node.TEXT_NODE || child.nodeValue.trim() !== '');
+        return Array.from(node.childNodes).filter(child => child.nodeType === Node.TEXT_NODE
+            ? child.nodeValue.trim() !== ''
+            : !this.#isEmptyEntryContainer(child));
+    }
+
+    // Recurses through #significantChildren, so a container holding nothing but other
+    // empty containers is empty too.
+    #isEmptyEntryContainer(node) {
+        return BpmnXmlComparator.#ENTRY_CONTAINER_TAG_NAMES.includes(node.tagName)
+            && node.attributes.length === 0
+            && this.#significantChildren(node).length === 0;
     }
 
     #isTextContentEqual(parentNode, nodeA, nodeB) {

@@ -98,3 +98,33 @@ test('an edit marks only the edited element, not every element carrying extensio
         // CallActivity_1 carries three camunda:in entries and was not touched
         await expect(page.locator('.edit-diff-changed')).toHaveCount(1);
     });
+
+// Adding an input parameter and deleting it again leaves `<camunda:inputOutput/>` in the
+// model — the properties panel creates the container and does not remove it. The element
+// must not stay marked as changed for a container that holds nothing.
+test('an emptied extension container is not an edit', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: editParams({ sourceRef: 'mr-sha', targetRef: 'mr-sha' }),
+        fixtures: { xmlByRef: { 'mr-sha': CALL_ACTIVITY_IN_BASE_BPMN, 'base-sha': CALL_ACTIVITY_IN_BASE_BPMN } }
+    });
+
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        const registry = modeler.get('elementRegistry');
+        const modeling = modeler.get('modeling');
+        const callActivity = registry.get('CallActivity_1');
+        const extensionElements = callActivity.businessObject.extensionElements;
+        const container = modeler.get('moddle').create('camunda:InputOutput', { inputParameters: [] });
+        container.$parent = extensionElements;
+        modeling.updateModdleProperties(callActivity, extensionElements, {
+            values: [...extensionElements.values, container]
+        });
+        // A real edit elsewhere, so the assertion below waits on a recompute that ran.
+        modeling.updateProperties(registry.get('StartEvent_1'), { name: 'Begin' });
+    });
+
+    await expect(page.locator('svg .djs-element[data-element-id="StartEvent_1"]'))
+        .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
+    await expect(page.locator('.edit-diff-changed')).toHaveCount(1);
+});
