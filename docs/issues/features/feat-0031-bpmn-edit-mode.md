@@ -381,6 +381,19 @@ element by the existing after-the-slash fallback) and `camunda:in|out/variables`
 for propagate-all, with the two propagation groups added to the map. An older test
 that pinned propagate-all to In mappings was pinning the defect and was updated.
 
+Eighth: connections were never coloured in edit mode — not the added ones, not the
+MR layer either. The marker class landed on the connection, but the colour rule
+targeted `.djs-visual > :first-child`, which for a connection is the `<defs>` of its
+own arrowhead marker, not the line. Shapes were unaffected, which is why it read as
+"only the arrows". The rules now select `.djs-visual path` for the stroke and
+`.djs-visual marker path` for the arrowhead's fill.
+
+Ninth: the sequence-flow condition could not be edited. `showConditionExpression()`
+hides the native field and injects the read-only formatted block next to it — right
+in view mode, fatal in edit mode, where that field is the only way to change the
+condition. It is now skipped in edit mode; the Condition group header still turns
+blue on a change, so the diff signal survives.
+
 Decided against, not a gap to fix later: per-entry colouring for Execution
 listeners. The panel labels an entry with a composed string (`Start: Java class`),
 which no attribute of the model carries, so the entry cannot be located by text the

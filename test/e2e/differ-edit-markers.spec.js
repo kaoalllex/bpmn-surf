@@ -128,3 +128,19 @@ test('an emptied extension container is not an edit', async ({ page }) => {
         .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
     await expect(page.locator('.edit-diff-changed')).toHaveCount(1);
 });
+
+// The marker class on a connection is not enough: every connection's visual opens with
+// a <defs> holding its arrowhead marker, so the colour rules must target the path — and
+// the arrowhead separately, or the line changes colour while its head stays black.
+test('an added connection is coloured along its whole length', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    const flow = page.locator('svg .djs-connection[data-element-id="Flow_3"]');
+    await expect(flow).toHaveClass(/edit-diff-added/, { timeout: 5000 });
+
+    await expect(flow.locator('.djs-visual > path'))
+        .toHaveCSS('stroke', 'rgb(0, 170, 0)');
+    await expect(flow.locator('.djs-visual marker path'))
+        .toHaveCSS('fill', 'rgb(0, 170, 0)');
+});

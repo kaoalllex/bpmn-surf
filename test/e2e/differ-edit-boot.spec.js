@@ -132,3 +132,33 @@ test('undo while a label editor is still open does not misbehave', async ({ page
     await page.locator('svg .djs-element[data-element-id="Task_2"]').click();
     await expect(page.locator('.bio-properties-panel-scroll-container')).toBeVisible();
 });
+
+// View mode replaces the native condition field with a read-only formatted block
+// (PropertiesPanelHighlighter#showConditionExpression). In edit mode that block would
+// hide the only control the user can change the condition in.
+test('edit mode keeps the sequence flow condition editable', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams({ sourceRef: 'mr-sha', targetRef: 'mr-sha' }) });
+
+    await expect(page.locator('.bio-properties-panel-scroll-container')).toBeVisible();
+    await page.locator('svg .djs-element[data-element-id="Flow_2"] .djs-hit').click({ force: true });
+
+    const conditionHeader = page.locator('.bio-properties-panel-group-header', { hasText: 'Condition' });
+    await expect(conditionHeader).toBeVisible();
+    if (!await conditionHeader.evaluate((el) => el.classList.contains('open'))) {
+        await conditionHeader.click();
+    }
+
+    await expect(page.locator('div.properties-condition')).toHaveCount(0);
+    const input = page.locator('#bio-properties-panel-conditionExpression');
+    await expect(input).toBeVisible();
+
+    // A trailing space would be normalised away by the comparator, so type a real token.
+    await input.click();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' && ok');
+    await input.blur();
+
+    await expect(page.locator('svg .djs-element[data-element-id="Flow_2"]'))
+        .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
+});
