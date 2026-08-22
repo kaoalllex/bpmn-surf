@@ -373,6 +373,14 @@ a cleared `camunda:failedJobRetryTimeCycle` re-lit the Job execution group when 
 extension property was added. Both now go through `#significantChildren()`; one
 unit case per path, each verified to fail with its own half removed.
 
+Seventh: `camunda:in` carries three unrelated panel groups — a variable mapping,
+the business key of Called element, and the propagate-all switch — but
+`#nodeToDiffs()` reported the tag name alone, so unchecking Business key lit up In
+mappings. It now names the diff `camunda:in/businessKey` (resolved to Called
+element by the existing after-the-slash fallback) and `camunda:in|out/variables`
+for propagate-all, with the two propagation groups added to the map. An older test
+that pinned propagate-all to In mappings was pinning the defect and was updated.
+
 Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
 bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry
 calls the deprecated diagram-js API); no call of ours is involved.

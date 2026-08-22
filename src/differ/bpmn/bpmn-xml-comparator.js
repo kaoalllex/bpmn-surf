@@ -93,7 +93,10 @@ class BpmnXmlComparator {
         ['camunda:in/target', 'In mappings'],
         ['camunda:in/sourceExpression', 'In mappings'],
 
+        ['camunda:in/variables', 'In mapping propagation'],
+
         ['camunda:out', 'Out mappings'],
+        ['camunda:out/variables', 'Out mapping propagation'],
         ['camunda:out/source', 'Out mappings'],
         ['camunda:out/target', 'Out mappings'],
         ['camunda:out/sourceExpression', 'Out mappings'],
@@ -598,6 +601,16 @@ class BpmnXmlComparator {
                 res = res.concat(this.#nodeToDiffs(child));
             }
             return res;
+        }
+        // camunda:in/out is a variable mapping only when it is neither the business key
+        // nor the "all variables" propagation — the panel shows those in their own
+        // groups, which is also why #LIST_GROUP_CONFIG skips them as list entries.
+        if (node.tagName === 'camunda:in' && node.hasAttribute('businessKey')) {
+            return ['camunda:in/businessKey'];
+        }
+        if ((node.tagName === 'camunda:in' || node.tagName === 'camunda:out')
+                && node.getAttribute('variables') === 'all') {
+            return [node.tagName + '/variables'];
         }
         return [node.tagName];
     }
