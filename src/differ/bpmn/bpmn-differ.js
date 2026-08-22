@@ -563,7 +563,8 @@ class BpmnDiffer {
         // console.debug('diff result', diff);
 
         this.#propertiesPanelHighlighter.setDiffData(
-            diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges);
+            diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges,
+            diff.typeChangedIds);
         this.#propertiesGroupExpander.setDiffData(diff.nodeIdToDiffsMap);
         return diff;
     }

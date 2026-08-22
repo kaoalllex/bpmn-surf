@@ -39,6 +39,20 @@ describe('BpmnXmlComparator.compare', () => {
         assert.equal(result.nodeIdToConditions.size, 0);
     });
 
+    // Replacing an element's type stops the node walk at the tag mismatch, so it names
+    // no property: without typeChangedIds the element is blue and nothing says why.
+    it('reports an element whose type was replaced', () => {
+        const asServiceTask = base.replace(/bpmn:userTask/g, 'bpmn:serviceTask');
+        const result = compare(asServiceTask, base);
+        assert.deepEqual(Array.from(result.typeChangedIds), ['Task_1']);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
+    });
+
+    it('reports no type change when only a property differs', () => {
+        assert.deepEqual(Array.from(compare(changedName, base).typeChangedIds), []);
+        assert.deepEqual(Array.from(compare(base, base).typeChangedIds), []);
+    });
+
     it('returns the executable process node', () => {
         const result = compare(base, base);
         assert.equal(result.processNode.getAttribute('id'), 'Process_1');

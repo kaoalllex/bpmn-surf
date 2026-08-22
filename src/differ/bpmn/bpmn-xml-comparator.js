@@ -146,7 +146,8 @@ class BpmnXmlComparator {
      *   changedShapeIds, changedRowIds,
      *   nodeIdToDiffsMap (id -> [property group names]),
      *   nodeIdToConditions (id -> [my condition, other condition]),
-     *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}]))
+     *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}])),
+     *   typeChangedIds (ids whose element type differs between the versions)
      * }
      */
     compare(myXml, otherXml) {
@@ -170,7 +171,8 @@ class BpmnXmlComparator {
             changedRowIds: [],
             nodeIdToDiffsMap: new Map(),
             nodeIdToConditions: new Map(),
-            nodeIdToMappingChanges: new Map()
+            nodeIdToMappingChanges: new Map(),
+            typeChangedIds: []
         };
 
         for (const myNode of myNodesWithIdAttr) {
@@ -188,6 +190,12 @@ class BpmnXmlComparator {
                     result.missingShapeIds.push(id);
                 }
             } else {
+                if (myNode.tagName !== otherNode.tagName) {
+                    // The element was replaced by another type. #compareNodes stops at
+                    // the tag mismatch and names no properties, so the element would go
+                    // blue with nothing in the panel saying what changed.
+                    result.typeChangedIds.push(id);
+                }
                 const diffs = this.#compareNodes(null, myNode, otherNode);
                 if (diffs) {
                     // console.debug(`nodes with id '${id}' have diffs: `, diffs);

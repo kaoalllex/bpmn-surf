@@ -156,7 +156,8 @@ class EditSession {
         // PropertiesGroupExpander is deliberately NOT refreshed: re-opening groups
         // after every keystroke would move the panel under the user's hands.
         this.#propertiesPanelHighlighter.setDiffData(
-            diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges);
+            diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges,
+            diff.typeChangedIds);
         // The panel repaints itself only on selection.changed, so without this the
         // colouring of the selected element freezes at the previous diff until the
         // user clicks elsewhere — most visibly on undo/redo, which changes the model
