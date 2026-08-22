@@ -609,7 +609,12 @@ class BpmnDiffer {
             return;
         }
         this.#propertiesPanelHighlighter.highlightDiffPropGroups(this.#selectedElementId);
-        this.#propertiesPanelHighlighter.showConditionExpression(this.#selectedElementId);
+        if (!this.#isEditMode()) {
+            // The formatted block replaces the native condition field, which in edit
+            // mode is the only place the condition can be changed. The Condition group
+            // header still turns blue when the user edits it.
+            this.#propertiesPanelHighlighter.showConditionExpression(this.#selectedElementId);
+        }
         this.#propertiesGroupExpander.expandRelevantGroups(this.#selectedElementId);
         this.#callActivityNavigator.showDiveInOverlay();
         this.#decisionNavigator.showDiveInOverlay();

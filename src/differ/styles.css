@@ -604,14 +604,26 @@ th {
     fill: #ff8888 !important;
 }
 
-.djs-connection.edit-diff-added:not(.edit-diff-outline) .djs-visual > :first-child {
+/* A connection's visual opens with the <defs> of its own arrowhead marker, so
+   :first-child (which works for shapes) never reaches the line. Both the line and the
+   marker's path are selected, and the arrowhead is filled as well as stroked. */
+.djs-connection.edit-diff-added:not(.edit-diff-outline) .djs-visual path {
     stroke: #00aa00 !important;
 }
-.djs-connection.edit-diff-changed:not(.edit-diff-outline) .djs-visual > :first-child {
+.djs-connection.edit-diff-added:not(.edit-diff-outline) .djs-visual marker path {
+    fill: #00aa00 !important;
+}
+.djs-connection.edit-diff-changed:not(.edit-diff-outline) .djs-visual path {
     stroke: #0000aa !important;
 }
-.djs-connection.edit-diff-removed:not(.edit-diff-outline) .djs-visual > :first-child {
+.djs-connection.edit-diff-changed:not(.edit-diff-outline) .djs-visual marker path {
+    fill: #0000aa !important;
+}
+.djs-connection.edit-diff-removed:not(.edit-diff-outline) .djs-visual path {
     stroke: #aa0000 !important;
+}
+.djs-connection.edit-diff-removed:not(.edit-diff-outline) .djs-visual marker path {
+    fill: #aa0000 !important;
 }
 
 .djs-element.edit-diff-outline .djs-outline {
