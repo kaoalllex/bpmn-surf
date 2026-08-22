@@ -339,8 +339,10 @@ describe('BpmnXmlComparator per-entry list group changes (nodeIdToMappingChanges
             '        <camunda:in source="varIn" target="varIn" />\n' +
             '        <camunda:in variables="all" />\n');
         const result = compare(changed, base);
-        // The group is still detected (whole-group highlight), but no per-entry descriptor
-        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['In mappings'] });
+        // The panel shows propagate-all in its own group, not among the mappings, and it
+        // is not a list entry there — so a whole-group highlight and no descriptor
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap),
+            { CallActivity_1: ['In mapping propagation'] });
         assert.equal(result.nodeIdToMappingChanges.size, 0);
     });
 });

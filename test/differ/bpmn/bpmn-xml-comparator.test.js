@@ -97,6 +97,31 @@ describe('BpmnXmlComparator.compare', () => {
     const ADDED_PROPERTY = '<camunda:properties>'
         + '<camunda:property name="propA" value="1" /></camunda:properties>';
 
+    // camunda:in carries three unrelated panel groups: a variable mapping, the business
+    // key of Called element, and the "all variables" propagation. Reporting the tag name
+    // alone sent every one of them to In mappings.
+    it('maps a removed business key to the Called element group', () => {
+        const result = compare(
+            withExtensions('<camunda:in source="a" target="b" />'),
+            withExtensions('<camunda:in source="a" target="b" />'
+                + '<camunda:in businessKey="#{execution.processBusinessKey}" />'));
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['Called element']);
+    });
+
+    it('maps an added variable propagation to its own group', () => {
+        const added = (tag) => compare(
+            withExtensions(`<camunda:${tag} variables="all" />`), base)
+            .nodeIdToDiffsMap.get('Task_1');
+        assert.deepEqual(Array.from(added('in')), ['In mapping propagation']);
+        assert.deepEqual(Array.from(added('out')), ['Out mapping propagation']);
+    });
+
+    it('still maps a plain mapping entry to In mappings', () => {
+        const result = compare(
+            withExtensions('<camunda:in source="a" target="b" />'), base);
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['In mappings']);
+    });
+
     it('ignores an emptied element next to a real change in existing extension elements', () => {
         const result = compare(
             withExtensions('<camunda:in source="a" target="b" />' + EMPTY_FIELD + ADDED_PROPERTY),
