@@ -1,7 +1,8 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
-const { bootBpmnDiffer, wireDiagnostics, defaultBpmnParams } = require('./support/boot-differ');
+const { bootBpmnDiffer, wireDiagnostics, defaultBpmnParams,
+        CALL_ACTIVITY_IN_BASE_BPMN } = require('./support/boot-differ');
 
 const editParams = (overrides = {}) =>
     defaultBpmnParams({ mode: 'edit', editSide: 'source', ...overrides });
@@ -73,3 +74,27 @@ test('the MR diff is painted as markers, not through setColor', async ({ page })
         ? window.__bpmnDifferModeler.get('commandStack').canUndo() : null);
     expect(canUndo).toBe(false);
 });
+
+// The baseline and every recompute must go through the SAME serialisation: the
+// comparator walks child nodes positionally, so a pretty-printed export differs
+// from a compact one on every element whose extensionElements have children —
+// which used to colour untouched call activities and events on the first edit.
+test('an edit marks only the edited element, not every element carrying extension elements',
+    async ({ page }) => {
+        wireDiagnostics(page);
+        await bootBpmnDiffer(page, {
+            params: editParams({ sourceRef: 'mr-sha', targetRef: 'mr-sha' }),
+            fixtures: { xmlByRef: { 'mr-sha': CALL_ACTIVITY_IN_BASE_BPMN, 'base-sha': CALL_ACTIVITY_IN_BASE_BPMN } }
+        });
+
+        await page.evaluate(() => {
+            const modeler = window.__bpmnDifferModeler;
+            const startEvent = modeler.get('elementRegistry').get('StartEvent_1');
+            modeler.get('modeling').updateProperties(startEvent, { name: 'Begin' });
+        });
+
+        await expect(page.locator('svg .djs-element[data-element-id="StartEvent_1"]'))
+            .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
+        // CallActivity_1 carries three camunda:in entries and was not touched
+        await expect(page.locator('.edit-diff-changed')).toHaveCount(1);
+    });

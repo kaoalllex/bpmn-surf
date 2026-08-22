@@ -156,6 +156,13 @@ function parseXml(xml) {
     return parser.parseFromString(xml, 'text/xml');
 }
 
+// Serialised markup of an XML node with the whitespace between tags collapsed:
+// indentation carries no meaning, but comparing subtrees as raw markup would
+// report a differently formatted document as changed everywhere.
+function markupOf(node) {
+    return node.outerHTML.replace(/>\s+</g, '><');
+}
+
 function capitalizeFirstLetter(string) {
     if (string.length === 0) {
         return string;

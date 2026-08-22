@@ -1,9 +1,13 @@
 // FEAT-0031: the lifecycle of one edit session.
 //
-// The baseline is the XML as saveXML() returns it IMMEDIATELY after the import,
-// not the XML that was fetched: bpmn-js normalises attribute order, indentation
-// and defaults on the round trip, and comparing against the fetched text would
-// show that normalisation as phantom edits on an untouched diagram.
+// The baseline is the XML as currentXml() returns it IMMEDIATELY after the
+// import, not the XML that was fetched: bpmn-js normalises attribute order,
+// indentation and defaults on the round trip, and comparing against the fetched
+// text would show that normalisation as phantom edits on an untouched diagram.
+// It goes through currentXml() rather than saveXML() directly so the baseline
+// and every recompute share ONE serialisation: the comparator walks child nodes
+// positionally, so the whitespace a formatted export adds inside
+// extensionElements reads as a change on every element that has such children.
 //
 // From then on every command triggers a debounced recompute of
 // compare(current, baseline) — added + changed — whose result becomes colour
@@ -43,8 +47,7 @@ class EditSession {
 
     // Call after the edited side has been imported.
     async start() {
-        const { xml } = await this.#modeler.saveXML();
-        this.#baselineXml = xml;
+        this.#baselineXml = await this.currentXml();
         this.#modeler.get('eventBus').on('commandStack.changed', () => {
             // A manual colour click (modeling.setColor) needs no diff recompute, only
             // the outlineOnly bookkeeping — and that is cheap and synchronous

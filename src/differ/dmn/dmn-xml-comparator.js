@@ -42,7 +42,7 @@ class DmnXmlComparator {
                 missingInputIds.push(id);
             }
             else {
-                if (myInputNode.outerHTML !== otherInputNode.outerHTML) {
+                if (markupOf(myInputNode) !== markupOf(otherInputNode)) {
                     changedInputIds.push(id);
                 }
             }
@@ -63,7 +63,7 @@ class DmnXmlComparator {
                 missingOutputLabels.push(label);
             }
             else {
-                if (myOutputNode.outerHTML !== otherOutputNode.outerHTML) {
+                if (markupOf(myOutputNode) !== markupOf(otherOutputNode)) {
                     changedOutputLabels.push(label);
                 }
             }
@@ -107,7 +107,7 @@ class DmnXmlComparator {
             } else if (tagChildA === 'inputEntry' || tagChildA === 'outputEntry') {
                 const entryId = childA.getAttribute('id');
                 const entryB = ruleNodeB.querySelector(`[id="${entryId}"]`);
-                if (entryB && childA.outerHTML !== entryB.outerHTML) {
+                if (entryB && markupOf(childA) !== markupOf(entryB)) {
                     diffs.push(entryId);
                 }
             }

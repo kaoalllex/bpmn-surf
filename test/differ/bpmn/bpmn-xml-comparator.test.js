@@ -84,6 +84,35 @@ describe('BpmnXmlComparator.compare', () => {
     });
 });
 
+// bpmn-js writes both forms — saveXML() compact, saveXML({format:true}) indented —
+// and a repository file can be reindented by any editor. Indentation is not a change.
+const compact = (xml) => xml.replace(/>\s+</g, '><');
+
+describe('BpmnXmlComparator document indentation', () => {
+    it('finds no diffs between a compact document and its indented twin', () => {
+        const result = compare(compact(base), base);
+        assert.deepEqual(Array.from(result.missingShapeIds), []);
+        assert.deepEqual(Array.from(result.missingRowIds), []);
+        assert.deepEqual(Array.from(result.changedShapeIds), []);
+        assert.deepEqual(Array.from(result.changedRowIds), []);
+        assert.equal(result.nodeIdToDiffsMap.size, 0);
+    });
+
+    it('still detects a real change between differently indented documents', () => {
+        const result = compare(compact(changedName), base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Task_1: ['General'] });
+    });
+
+    it('records both condition texts in compact documents', () => {
+        const result = compare(compact(changedCondition), compact(base));
+        assert.deepEqual(Array.from(result.changedRowIds), ['Flow_2']);
+        assert.deepEqual(mapToObject(result.nodeIdToConditions), {
+            Flow_2: ['${approved == false}', '${approved == true}']
+        });
+    });
+});
+
 describe('BpmnXmlComparator condition whitespace normalization', () => {
     it('ignores whitespace-only reformatting of a sequence flow condition', () => {
         const result = compare(reformattedCondition, base);

@@ -7,8 +7,9 @@ status: open
 
 ## Statement
 
-Seven tests written during [FEAT-0031] turned out to name a behaviour they never
-exercised. Every one was caught by review, none by the suite. The rest of the
+Eight tests written during [FEAT-0031] turned out to name a behaviour they never
+exercised. Seven were caught by review, one by manual testing after the branch was
+declared green — none by the suite. The rest of the
 suite was written the same way — by AI agents, across earlier sessions — so the
 same shapes may already be present in it.
 
@@ -22,7 +23,7 @@ small set of known shapes, each of which is greppable.
 
 ### The evidence
 
-The seven cases from FEAT-0031, by shape:
+The eight cases from FEAT-0031, by shape:
 
 1. a defensive fallback (`layer.ids || []`) asserted with `{ ids: [] }` — an
    empty array is truthy, so the branch was never reached;
@@ -41,6 +42,13 @@ The seven cases from FEAT-0031, by shape:
 7. a dive-in dedup test whose two sides both derive from the same object, so the
    equality holds by construction for any input — it would pass against the very
    bug it was written to guard (tracked separately as [REFAC-0013]).
+8. `differ-edit-markers.spec.js` — `'a freshly opened editor shows no edit
+   markers'`, the named guard for the baseline being captured correctly, asserts
+   `toHaveCount(0)` at boot, when no recompute has run yet and no marker can exist
+   whatever the baseline is. The defect it was written to catch — the baseline
+   captured with a different serialisation than the recompute — sat under it until
+   a user moved a shape by hand. A guard for "X does not appear"
+   has to run after the step that would make X appear.
 
 The recurring signature: **the name and the comment are accurate, the assertion
 is not.** That is what makes these survive review — they read as coverage.

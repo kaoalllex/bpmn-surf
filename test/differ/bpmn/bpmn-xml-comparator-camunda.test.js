@@ -55,6 +55,26 @@ describe('BpmnXmlComparator camunda fixture sanity', () => {
     });
 });
 
+// The nested children of extensionElements are where indentation used to leak into
+// the diff: the walk pairs children by position, so the whitespace an indented
+// document adds inside them made every such element read as changed (FEAT-0031 —
+// the edit baseline is compact, the recompute indented).
+const compact = (xml) => xml.replace(/>\s+</g, '><');
+
+describe('BpmnXmlComparator indentation of extension elements', () => {
+    it('finds no diffs between a compact document and its indented twin', () => {
+        assertNoDiffs(compare(compact(base), base));
+    });
+
+    it('still detects a changed extension element between the two forms', () => {
+        const changed = variant('<camunda:in source="varIn" target="varIn" />',
+                                '<camunda:in source="varIn" target="varRenamed" />');
+        const result = compare(compact(changed), base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['CallActivity_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { CallActivity_1: ['In mappings'] });
+    });
+});
+
 describe('BpmnXmlComparator property group: Asynchronous continuations', () => {
     it('detects removed camunda:asyncBefore on a service task', () => {
         const changed = variant(

@@ -70,3 +70,31 @@ describe('DmnXmlComparator.compare', () => {
         });
     });
 });
+
+// Inputs, outputs and rule entries are matched as serialised markup, so a file
+// that is only indented differently would otherwise read as changed everywhere.
+const compact = (xml) => xml.replace(/>\s+</g, '><');
+
+describe('DmnXmlComparator document indentation', () => {
+    it('finds no diffs between a compact document and its indented twin', () => {
+        const result = compare(compact(base), base);
+        assert.deepEqual(Array.from(result.headerDiffSelectors), []);
+        assert.deepEqual(Array.from(result.changedInputIds), []);
+        assert.deepEqual(Array.from(result.changedOutputLabels), []);
+        assert.deepEqual(Array.from(result.missingRuleIds), []);
+        assert.equal(result.changedRuleIdToDiffsMap.size, 0);
+    });
+
+    it('still detects a real change between differently indented documents', () => {
+        const result = compare(compact(changedRule), base);
+        assert.deepEqual(mapToObject(result.changedRuleIdToDiffsMap), {
+            Rule_1: ['UnaryTests_1'],
+            Rule_2: ['description']
+        });
+    });
+
+    it('still detects a changed input expression between the two forms', () => {
+        const result = compare(compact(changedInput), base);
+        assert.deepEqual(Array.from(result.changedInputIds), ['Input_1']);
+    });
+});
