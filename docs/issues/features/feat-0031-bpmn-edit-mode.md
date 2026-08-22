@@ -381,6 +381,13 @@ element by the existing after-the-slash fallback) and `camunda:in|out/variables`
 for propagate-all, with the two propagation groups added to the map. An older test
 that pinned propagate-all to In mappings was pinning the defect and was updated.
 
+Decided against, not a gap to fix later: per-entry colouring for Execution
+listeners. The panel labels an entry with a composed string (`Start: Java class`),
+which no attribute of the model carries, so the entry cannot be located by text the
+way the mapping and property lists are; matching by list position would paint an
+edited listener green rather than blue, since a listener has no key that survives
+an edit. The group header still highlights, as it does for Form fields.
+
 Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
 bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry
 calls the deprecated diagram-js API); no call of ours is involved.
