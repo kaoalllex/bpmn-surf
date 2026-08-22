@@ -23,6 +23,7 @@ class EditSession {
     #painter;
     #propertiesPanelHighlighter;
     #onColoringPaused;
+    #onDiffUpdated;
 
     #baselineXml = null;
     #coloringEnabled = true;
@@ -37,12 +38,13 @@ class EditSession {
     #recomputeToken = 0;
 
     constructor({ modeler, comparator, painter, propertiesPanelHighlighter,
-                  onColoringPaused }) {
+                  onColoringPaused, onDiffUpdated }) {
         this.#modeler = modeler;
         this.#comparator = comparator;
         this.#painter = painter;
         this.#propertiesPanelHighlighter = propertiesPanelHighlighter;
         this.#onColoringPaused = onColoringPaused;
+        this.#onDiffUpdated = onDiffUpdated;
     }
 
     // Call after the edited side has been imported.
@@ -155,6 +157,13 @@ class EditSession {
         // after every keystroke would move the panel under the user's hands.
         this.#propertiesPanelHighlighter.setDiffData(
             diff.nodeIdToDiffsMap, diff.nodeIdToConditions, diff.nodeIdToMappingChanges);
+        // The panel repaints itself only on selection.changed, so without this the
+        // colouring of the selected element freezes at the previous diff until the
+        // user clicks elsewhere — most visibly on undo/redo, which changes the model
+        // without changing the selection.
+        if (this.#onDiffUpdated) {
+            this.#onDiffUpdated();
+        }
         this.#repaint();
     }
 
