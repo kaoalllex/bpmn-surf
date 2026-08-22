@@ -86,6 +86,29 @@ describe('BpmnXmlComparator.compare', () => {
         assert.deepEqual(Array.from(compare(terminating, base).changedShapeIds), ['EndEvent_1']);
     });
 
+    // Both paths that report a differing child walked the raw child nodes, so an element
+    // left empty by clearing its field came back as a diff of its own group as soon as a
+    // real edit landed next to it.
+    const withExtensions = (entries) => base.replace(
+        '<bpmn:incoming>Flow_1</bpmn:incoming>',
+        `<bpmn:extensionElements>${entries}</bpmn:extensionElements>`
+            + '<bpmn:incoming>Flow_1</bpmn:incoming>');
+    const EMPTY_FIELD = '<camunda:failedJobRetryTimeCycle />';
+    const ADDED_PROPERTY = '<camunda:properties>'
+        + '<camunda:property name="propA" value="1" /></camunda:properties>';
+
+    it('ignores an emptied element next to a real change in existing extension elements', () => {
+        const result = compare(
+            withExtensions('<camunda:in source="a" target="b" />' + EMPTY_FIELD + ADDED_PROPERTY),
+            withExtensions('<camunda:in source="a" target="b" />'));
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['Extension properties']);
+    });
+
+    it('ignores an emptied element inside newly added extension elements', () => {
+        const result = compare(withExtensions(EMPTY_FIELD + ADDED_PROPERTY), base);
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('Task_1')), ['Extension properties']);
+    });
+
     it('ignores an extension container left empty', () => {
         const withEmptyContainer = base.replace(
             '<bpmn:incoming>Flow_1</bpmn:incoming>',

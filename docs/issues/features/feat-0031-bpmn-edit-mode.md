@@ -365,6 +365,14 @@ was reported as an unmapped diff and highlighted nothing at all. Caveat: a
 `camunda:property` under a form field now maps to Extension properties too; the
 diff name carries only one level of parent, and before this it mapped to nothing.
 
+Sixth: the same leftover came back as soon as another edit landed next to it. The
+emptiness filter lived in `#significantChildren()`, but both paths that report a
+differing child — `#findChildrenDiffs()` and the `#nodeToDiffs()` unwrapping of
+`bpmn:extensionElements` / `camunda:inputOutput` — walked the raw child nodes, so
+a cleared `camunda:failedJobRetryTimeCycle` re-lit the Job execution group when an
+extension property was added. Both now go through `#significantChildren()`; one
+unit case per path, each verified to fail with its own half removed.
+
 Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
 bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry
 calls the deprecated diagram-js API); no call of ours is involved.
