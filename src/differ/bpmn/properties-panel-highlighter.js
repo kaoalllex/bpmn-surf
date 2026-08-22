@@ -9,7 +9,7 @@ class PropertiesPanelHighlighter {
     static #REMOVE_COLOR = '#ff8888';
 
     #conditionFormatter;
-    #isTargetBranchShownFunc;
+    #isBaseSideShownFunc;
     #elementRegistry = null;
     #nodeIdToDiffsMap = new Map();
     // Map: element id -> [current branch condition, other branch condition]
@@ -18,9 +18,11 @@ class PropertiesPanelHighlighter {
     #nodeIdToMappingChanges = new Map();
     #highlightedElems = null;
 
-    constructor(conditionFormatter, isTargetBranchShownFunc) {
+    // isBaseSideShownFunc: true when what the panel shows is the OLDER of the two
+    // versions, so an entry that exists only here was removed rather than added.
+    constructor(conditionFormatter, isBaseSideShownFunc) {
         this.#conditionFormatter = conditionFormatter;
-        this.#isTargetBranchShownFunc = isTargetBranchShownFunc;
+        this.#isBaseSideShownFunc = isBaseSideShownFunc;
     }
 
     init(elementRegistry) {
@@ -77,7 +79,7 @@ class PropertiesPanelHighlighter {
             }
             const color = descriptor.changed
                 ? PropertiesPanelHighlighter.#CHANGE_COLOR
-                : (this.#isTargetBranchShownFunc()
+                : (this.#isBaseSideShownFunc()
                     ? PropertiesPanelHighlighter.#REMOVE_COLOR
                     : PropertiesPanelHighlighter.#ADD_COLOR);
             for (const itemHeader of itemHeaders) {
@@ -163,7 +165,7 @@ class PropertiesPanelHighlighter {
         elem.textContent = part;
         if (!exists) {
             let color = null;
-            if (this.#isTargetBranchShownFunc()) {
+            if (this.#isBaseSideShownFunc()) {
                 color = '#ff8888'; // The 'remove' color for branch
             } else {
                 color = '#88ff88'; // The 'add' color for mr

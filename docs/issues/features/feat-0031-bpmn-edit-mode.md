@@ -317,6 +317,29 @@ E2E (Playwright, on top of `test/e2e/support/boot-differ.js`):
 
 ### 2026-08-22 · claude-opus-5[1m] · branch `feature/feat-0031-bpmn-edit-mode`
 
+Second manual-testing round, two panel-colouring defects fixed.
+
+`PropertiesPanelHighlighter` picked the add/remove colour of a list entry (and of
+a condition part) from *which branch is shown* — the right question in view mode,
+the wrong one in edit mode, where the shown diagram is always the newer side and
+the baseline is the other. Editing the target side therefore painted an entry the
+user had just added RED. The predicate is now `isBaseSideShownFunc` and the differ
+passes `false` for it in edit mode.
+
+The panel repainted only on `selection.changed`, so a diff recompute could not
+reach the currently selected element: undo/redo changed the model and the canvas
+while the group headers kept the colour of the previous state until the user
+clicked the canvas again. `EditSession` now calls back into the differ after
+`setDiffData`, and the differ re-runs `highlightDiffPropGroups` for the current
+selection. Both pinned by `differ-edit-prop-group.spec.js`, each case verified to
+fail with its own fix removed.
+
+Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
+bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry
+calls the deprecated diagram-js API); no call of ours is involved.
+
+### 2026-08-22 · claude-opus-5[1m] · branch `feature/feat-0031-bpmn-edit-mode`
+
 Review/manual-testing round. Fixed the phantom colouring found by hand: the
 baseline was taken from `saveXML()` (compact) while every recompute exports
 `saveXML({ format: true })`, so the comparator read the added indentation inside

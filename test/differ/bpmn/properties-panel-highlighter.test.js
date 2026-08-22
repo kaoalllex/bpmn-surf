@@ -24,10 +24,10 @@ const HIGHLIGHT_COLOR = '#8888ff';
 const BRANCH_REMOVE_COLOR = '#ff8888';
 const MR_ADD_COLOR = '#88ff88';
 
-function createHighlighter(scope, { isTargetBranchShown = () => false } = {}) {
+function createHighlighter(scope, { isBaseSideShown = () => false } = {}) {
     const highlighter = new scope.PropertiesPanelHighlighter(
         new scope.ConditionFormatter(),
-        isTargetBranchShown
+        isBaseSideShown
     );
     return highlighter;
 }
@@ -131,7 +131,7 @@ describe('PropertiesPanelHighlighter.highlightDiffPropGroups list group entries'
 
     it('paints an added entry (only in the shown version) with the add color when the MR branch is shown', async () => {
         const scope = createPanelScope();
-        const highlighter = createHighlighter(scope, { isTargetBranchShown: () => false });
+        const highlighter = createHighlighter(scope, { isBaseSideShown: () => false });
         highlighter.setDiffData(
             new Map([['Task_1', ['In mappings']]]),
             new Map(),
@@ -148,7 +148,7 @@ describe('PropertiesPanelHighlighter.highlightDiffPropGroups list group entries'
 
     it('paints a removed entry (only in the shown version) with the remove color when the target branch is shown', async () => {
         const scope = createPanelScope();
-        const highlighter = createHighlighter(scope, { isTargetBranchShown: () => true });
+        const highlighter = createHighlighter(scope, { isBaseSideShown: () => true });
         highlighter.setDiffData(
             new Map([['Task_1', ['In mappings']]]),
             new Map(),
@@ -258,7 +258,7 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
 
     it('marks parts missing in the other branch with the add color when the MR branch is shown', async () => {
         const scope = createPanelScope();
-        const highlighter = createHighlighter(scope, { isTargetBranchShown: () => false });
+        const highlighter = createHighlighter(scope, { isBaseSideShown: () => false });
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
 
@@ -273,7 +273,7 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
 
     it('marks parts missing in the other branch with the remove color when the target branch is shown', async () => {
         const scope = createPanelScope();
-        const highlighter = createHighlighter(scope, { isTargetBranchShown: () => true });
+        const highlighter = createHighlighter(scope, { isBaseSideShown: () => true });
         highlighter.init(sequenceFlowRegistry);
         highlighter.setDiffData(new Map(), new Map([['Flow_1', ['${a && b}', '${a}']]]));
 

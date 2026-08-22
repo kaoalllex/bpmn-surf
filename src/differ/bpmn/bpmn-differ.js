@@ -197,7 +197,9 @@ class BpmnDiffer {
                 comparator: this.#xmlComparator,
                 painter: new EditDiffPainter(bpmnJSCanvas, this.#elementRegistry),
                 propertiesPanelHighlighter: this.#propertiesPanelHighlighter,
-                onColoringPaused: (paused) => this.#view.setEditColoringPaused(paused)
+                onColoringPaused: (paused) => this.#view.setEditColoringPaused(paused),
+                onDiffUpdated: () => this.#propertiesPanelHighlighter
+                    .highlightDiffPropGroups(this.#selectedElementId)
             });
 
             // A manual colour changes which elements count as "explicitly coloured",
@@ -309,7 +311,10 @@ class BpmnDiffer {
         this.#correlationLocator = new CorrelationLocator(this.#platformClient);
         this.#propertiesPanelHighlighter = new PropertiesPanelHighlighter(
             new ConditionFormatter(),
-            () => this.#branchIndicator.isTargetBranchShown()
+            // In edit mode the panel always shows the newer version: the diff is the
+            // user's own edits against the baseline taken at import, so an entry that
+            // exists only here was added, whichever side is being edited.
+            () => !this.#isEditMode() && this.#branchIndicator.isTargetBranchShown()
         );
         // FEAT-0029: auto-expand the property groups relevant to the selected element.
         this.#propertiesGroupExpander = new PropertiesGroupExpander();
