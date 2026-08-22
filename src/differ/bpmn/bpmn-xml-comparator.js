@@ -574,7 +574,8 @@ class BpmnXmlComparator {
     }
 
     #findChildrenDiffs(nodeA, nodeB) {
-        const diffChildren = this.#findDifferentChilder(nodeA.childNodes, nodeB.childNodes);
+        const diffChildren = this.#findDifferentChilder(
+            this.#significantChildren(nodeA), this.#significantChildren(nodeB));
         if (!diffChildren) {
             return null;
         }
@@ -602,12 +603,7 @@ class BpmnXmlComparator {
     }
 
     #getAllNotTextChildren(node) {
-        const res = [];
-        for (const child of node.childNodes) {
-            if (child.nodeType !== Node.TEXT_NODE) {
-                res.push(child);
-            }
-        }
+        const res = this.#significantChildren(node).filter(child => child.nodeType !== Node.TEXT_NODE);
         if (res.length > 0) {
             return res;
         }
