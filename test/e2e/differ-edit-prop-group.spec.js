@@ -2,7 +2,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { bootBpmnDiffer, wireDiagnostics, defaultBpmnParams,
-        CALL_ACTIVITY_IN_BASE_BPMN } = require('./support/boot-differ');
+        BASE_BPMN, CALL_ACTIVITY_IN_BASE_BPMN } = require('./support/boot-differ');
 
 const SAME_ON_BOTH_SIDES = {
     xmlByRef: { 'base-sha': CALL_ACTIVITY_IN_BASE_BPMN, 'mr-sha': CALL_ACTIVITY_IN_BASE_BPMN }
@@ -65,4 +65,33 @@ test('undo clears the group highlight without re-selecting the element', async (
 
     await page.evaluate(() => window.__bpmnDifferModeler.get('commandStack').undo());
     await expect(groupHeader).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)', { timeout: 5000 });
+});
+
+// Replacing an element's type names no property group, so the panel used to say
+// nothing while the canvas went blue. The panel shows the type in its header —
+// that is what carries the 'changed' colour.
+test('replacing the element type paints the type in the panel header', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({ mode: 'edit', editSide: 'source', targetRef: 'mr-sha' }),
+        fixtures: { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': BASE_BPMN } }
+    });
+
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        const element = modeler.get('elementRegistry').get('Task_1');
+        modeler.get('bpmnReplace').replaceElement(element, { type: 'bpmn:ServiceTask' });
+    });
+    await expect(page.locator('svg .djs-element[data-element-id="Task_1"]'))
+        .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
+    // Select through the selection service: replaceElement swaps the shape's DOM node,
+    // so a click can land on the canvas instead of the freshly rendered element.
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        modeler.get('selection').select(modeler.get('elementRegistry').get('Task_1'));
+    });
+
+    const headerType = page.locator('.bio-properties-panel-header-type');
+    await expect(headerType).toHaveText('Service Task');
+    await expect(headerType).toHaveCSS('background-color', 'rgb(136, 136, 255)', { timeout: 5000 });
 });

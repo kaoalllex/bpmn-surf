@@ -50,6 +50,30 @@ function listItemHeader(document, label) {
 const sequenceFlowRegistry = { get: () => ({ type: 'bpmn:SequenceFlow' }) };
 
 describe('PropertiesPanelHighlighter.highlightDiffPropGroups', () => {
+    // A replaced element type names no property group, so without this the element
+    // would go blue on the canvas with nothing in the panel saying what changed.
+    it('paints the header type when the element type changed', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(new Map(), new Map(), new Map(), ['Task_1']);
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        const typeElem = scope.document.querySelector('.bio-properties-panel-header-type');
+        assert.equal(typeElem.style.backgroundColor, colorOf(scope.document, HIGHLIGHT_COLOR));
+    });
+
+    it('leaves the header type alone for an element whose type did not change', async () => {
+        const scope = createPanelScope();
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(new Map([['Task_1', ['General']]]), new Map(), new Map(), ['Other_1']);
+
+        await highlighter.highlightDiffPropGroups('Task_1');
+
+        const typeElem = scope.document.querySelector('.bio-properties-panel-header-type');
+        assert.equal(typeElem.style.backgroundColor, '');
+    });
+
     it('paints exactly the groups listed for the element', async () => {
         const scope = createPanelScope();
         const highlighter = createHighlighter(scope);

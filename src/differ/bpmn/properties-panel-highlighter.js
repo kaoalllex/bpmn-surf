@@ -16,6 +16,7 @@ class PropertiesPanelHighlighter {
     #nodeIdToConditions = new Map();
     // Map: element id -> Map(list group name -> [{label, changed}])
     #nodeIdToMappingChanges = new Map();
+    #typeChangedIds = [];
     #highlightedElems = null;
 
     // isBaseSideShownFunc: true when what the panel shows is the OLDER of the two
@@ -29,20 +30,26 @@ class PropertiesPanelHighlighter {
         this.#elementRegistry = elementRegistry;
     }
 
-    setDiffData(nodeIdToDiffsMap, nodeIdToConditions, nodeIdToMappingChanges = new Map()) {
+    setDiffData(nodeIdToDiffsMap, nodeIdToConditions, nodeIdToMappingChanges = new Map(),
+                typeChangedIds = []) {
         this.#nodeIdToDiffsMap = nodeIdToDiffsMap;
         this.#nodeIdToConditions = nodeIdToConditions;
         this.#nodeIdToMappingChanges = nodeIdToMappingChanges;
+        this.#typeChangedIds = typeChangedIds;
     }
 
     async highlightDiffPropGroups(elementId) {
         this.#resetHighlightedPropGroups();
+        this.#highlightedElems = [];
+
+        if (this.#typeChangedIds.includes(elementId)) {
+            await this.#highlightElementType(elementId);
+        }
 
         const diffPropGroups = this.#nodeIdToDiffsMap.get(elementId);
         if (!diffPropGroups) {
             return;
         }
-        this.#highlightedElems = [];
         const mappingChanges = this.#nodeIdToMappingChanges.get(elementId);
 
         for (const diffPropGroup of diffPropGroups) {
@@ -60,6 +67,18 @@ class PropertiesPanelHighlighter {
                 await this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
             }
         }
+    }
+
+    // A replaced element type has no property group of its own: the panel shows the
+    // type in its header, so that is what gets the 'changed' colour.
+    async #highlightElementType(elementId) {
+        const typeElem = await doWithAttempts(() =>
+            document.querySelector('.bio-properties-panel-header-type'));
+        if (!typeElem) {
+            console.warn(`properties panel header not found, cannot highlight the element type (element ${elementId})`);
+            return;
+        }
+        this.#paint(typeElem, PropertiesPanelHighlighter.#GROUP_COLOR);
     }
 
     async #highlightListItems(groupContainer, descriptors, elementId, groupName) {

@@ -334,6 +334,13 @@ clicked the canvas again. `EditSession` now calls back into the differ after
 selection. Both pinned by `differ-edit-prop-group.spec.js`, each case verified to
 fail with its own fix removed.
 
+Third defect of the round, pre-existing in view mode too: replacing an element's
+type made it blue with nothing saying why — `#compareNodes` stops at the tag
+mismatch and names no property, so no group is highlighted. The comparator now
+reports `typeChangedIds`, and the panel paints the element type in its own header
+(`.bio-properties-panel-header-type`) with the 'changed' colour. Chosen over
+injecting an "old → new" line: the header is where the type already lives.
+
 Not a defect of ours: the `ContextPad#getPad is deprecated` console line comes from
 bpmn-js 18.18.0 itself (`_getMenuPosition` of the align-elements context-pad entry
 calls the deprecated diagram-js API); no call of ours is involved.
