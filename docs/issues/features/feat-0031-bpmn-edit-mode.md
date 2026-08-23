@@ -315,6 +315,24 @@ E2E (Playwright, on top of `test/e2e/support/boot-differ.js`):
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
 
+### 2026-08-23 · claude-opus-5[1m] · branch `feature/feat-0031-bpmn-edit-mode`
+
+Third manual-testing round, toolbar layout.
+
+The edit toolbar put the colouring toggle inside the zoom group and undo/redo
+*after* "Hide properties", so the bar read zoom+colour | history | panel while
+the swatches (appended into the undo/redo group) sat two groups away from the
+toggle they belong to. It is now one group per job — zoom | colouring (toggle +
+swatches) | history | Hide properties — with "Hide properties" last again, only
+the back/close exits to its right. The `editGroup` getter now names the colouring
+group, which is why the swatches land next to the toggle for free.
+
+The toggle's ☑/☐ pair read as a checkbox, not as a colouring switch: it is a
+paintbrush (U+1F58C, default text presentation) with the state carried by the
+button instead of the glyph — pressed when on, grey and dimmed when off, since
+the brush renders in colour and a border alone was too weak a signal. The paused
+⚠ state (BUG-0029) is unchanged.
+
 ### 2026-08-22 · claude-opus-5[1m] · branch `feature/feat-0031-bpmn-edit-mode`
 
 Second manual-testing round, two panel-colouring defects fixed.
