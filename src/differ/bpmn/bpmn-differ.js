@@ -207,6 +207,14 @@ class BpmnDiffer {
             // session's own commandStack.changed listener already does it.
             const colorControl = new EditColorControl(bpmnJSModeling, this.#selection);
             this.#view.editGroup.appendChild(colorControl.createElement());
+            bpmnJSEventBus.on('selection.changed', (event) =>
+                colorControl.setEnabled(event.newSelection.length > 0));
+
+            // ↶/↷ mirror the stack, so they are honest about what they will do and
+            // together they show whether the session has unsaved work.
+            const commandStack = this.#bpmnJS.get('commandStack');
+            bpmnJSEventBus.on('commandStack.changed', () =>
+                this.#view.setHistoryEnabled(commandStack.canUndo(), commandStack.canRedo()));
         }
 
         await this.#loadVersions();

@@ -22,6 +22,7 @@ class EditColorControl {
 
     #modeling;
     #selection;
+    #buttons = [];
 
     // No onChanged callback: setColor is a command, so the EditSession's own
     // commandStack.changed listener already schedules the repaint.
@@ -39,6 +40,15 @@ class EditColorControl {
         return row;
     }
 
+    // A swatch does nothing without a selection, so it says so rather than
+    // swallowing the click. The initial state comes from the empty
+    // selection.changed bpmn-js emits on boot (BpmnDiffer wires it).
+    setEnabled(enabled) {
+        for (const button of this.#buttons) {
+            button.disabled = !enabled;
+        }
+    }
+
     #createSwatch(swatch) {
         const button = document.createElement('button');
         button.className = 'edit-color-swatch'
@@ -51,6 +61,7 @@ class EditColorControl {
             button.style.borderColor = swatch.stroke;
         }
         button.addEventListener('click', () => this.#apply(swatch));
+        this.#buttons.push(button);
         return button;
     }
 

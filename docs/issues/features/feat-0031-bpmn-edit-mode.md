@@ -327,6 +327,16 @@ swatches) | history | Hide properties — with "Hide properties" last again, onl
 the back/close exits to its right. The `editGroup` getter now names the colouring
 group, which is why the swatches land next to the toggle for free.
 
+Two follow-ups from the same review: ↶/↷ were always enabled, so they promised
+an action they could not perform and said nothing about whether the session had
+unsaved work — they now mirror `commandStack.canUndo()/canRedo()`. The swatches
+colour the *selection*, so with nothing selected a click was silently swallowed;
+they now follow `selection.changed` and grey out. The initial state of the
+swatches is not set in the control: bpmn-js emits an empty `selection.changed` on
+boot, which the same wiring handles (asserted by the e2e case, so a library change
+turns it red rather than silent). Both pinned in `differ-edit-boot.spec.js` and
+verified to fail with their own wiring removed.
+
 The toggle's ☑/☐ pair read as a checkbox, not as a colouring switch: it is a
 paintbrush (U+1F58C, default text presentation) with the state carried by the
 button instead of the glyph — pressed when on, grey and dimmed when off, since
