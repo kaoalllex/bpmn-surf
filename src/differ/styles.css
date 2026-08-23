@@ -662,7 +662,7 @@ th {
     height: 20px;
     padding: 0;
     border: 2px solid #999;
-    border-radius: 4px;
+    border-radius: 50%;
     cursor: pointer;
     background: #fff;
 }
@@ -674,4 +674,27 @@ th {
     background:
         linear-gradient(to top right,
             transparent calc(50% - 1px), #c62828 50%, transparent calc(50% + 1px));
+}
+
+/* The same swatches hung off the context pad's colour entry (FEAT-0031). Fixed
+   positioning keeps the popup out of the canvas transform; it is anchored to the
+   entry in JS. */
+.edit-color-popup {
+    position: fixed;
+    /* Above the canvas and the panel — the page's own overlays sit at 10000+. */
+    z-index: 10001;
+    display: flex;
+    gap: 6px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid hsl(0, 0%, 85%);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px hsla(0, 0%, 0%, 0.2);
+}
+
+/* bpmn-font has no palette glyph, so the pad entry draws its own. */
+.djs-context-pad .entry.edit-color-pad-entry::before {
+    content: '\1F3A8';
+    font-size: 15px;
+    line-height: 20px;
 }

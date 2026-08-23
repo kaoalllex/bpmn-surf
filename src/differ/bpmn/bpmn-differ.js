@@ -207,6 +207,7 @@ class BpmnDiffer {
             // session's own commandStack.changed listener already does it.
             const colorControl = new EditColorControl(bpmnJSModeling, this.#selection);
             this.#view.editGroup.appendChild(colorControl.createElement());
+            colorControl.registerContextPad(this.#bpmnJS.get('contextPad'));
             bpmnJSEventBus.on('selection.changed', (event) =>
                 colorControl.setEnabled(event.newSelection.length > 0));
 
