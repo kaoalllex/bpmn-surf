@@ -133,15 +133,48 @@ test('the colour swatches are disabled until something is selected', async ({ pa
     await bootBpmnDiffer(page, { params: editParams() });
 
     const swatches = page.locator('.edit-color-swatch');
-    await expect(swatches).toHaveCount(4);
-    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(4);
+    await expect(swatches).toHaveCount(6);
+    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(6);
 
     await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
     await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(0);
 
     // Clicking the empty canvas clears the selection, and the swatches follow.
     await page.locator('svg[data-element-id="Process_1"]').click({ position: { x: 5, y: 5 } });
-    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(4);
+    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(6);
+});
+
+// FEAT-0031: the colour swatches are also on the context pad, where anyone coming
+// from Camunda Modeler looks for them. A colour set there goes into the MODEL.
+test('the context pad colours the element it belongs to', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+    await page.locator('.djs-context-pad .entry.edit-color-pad-entry').click();
+
+    const popup = page.locator('.edit-color-popup');
+    await expect(popup.locator('.edit-color-swatch')).toHaveCount(6);
+    await popup.getByTitle('Colour the selection blue').click();
+
+    // Choosing a colour closes the popup and repaints the element from the model.
+    await expect(popup).toHaveCount(0);
+    const rect = page.locator('svg .djs-element[data-element-id="Task_1"] .djs-visual > :first-child');
+    await expect(rect).toHaveCSS('fill', 'rgb(187, 222, 251)');
+    await expect(rect).toHaveCSS('stroke', 'rgb(13, 67, 114)');
+});
+
+// The popup is a plain DOM layer over the canvas, so it needs its own dismissal.
+test('the context pad colour popup closes on Escape', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+    await page.locator('.djs-context-pad .entry.edit-color-pad-entry').click();
+    await expect(page.locator('.edit-color-popup')).toHaveCount(1);
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.edit-color-popup')).toHaveCount(0);
 });
 
 // onUndo/onRedo call commandStack.undo()/.redo() directly rather than

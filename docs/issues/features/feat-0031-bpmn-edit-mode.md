@@ -204,7 +204,7 @@ New — `src/differ/bpmn/edit/`:
 |---|---|
 | `edit-session.js` | edit-mode lifecycle: baseline, debounced recompute, wiring, dirty/`beforeunload` |
 | `edit-diff-painter.js` | the display-only marker layer (fill markers, dashed outline for explicitly coloured elements) |
-| `edit-color-control.js` | the toolbar swatches → `modeling.setColor`; "Default" clears |
+| `edit-color-control.js` | the swatches (toolbar + context-pad popup) → `modeling.setColor`; "Default" clears |
 | `edit-color-resolver.js` | pure: the layer table → `Map<elementId, {diffType, outlineOnly}>` |
 | `edit-xml-colorizer.js` | pure: apply that map onto the exported XML string |
 
@@ -326,6 +326,17 @@ toggle they belong to. It is now one group per job — zoom | colouring (toggle 
 swatches) | history | Hide properties — with "Hide properties" last again, only
 the back/close exits to its right. The `editGroup` getter now names the colouring
 group, which is why the swatches land next to the toggle for free.
+
+On the reporter's request the manual palette now matches `bpmn-js-color-picker`
+(the one Camunda Modeler ships): blue / orange / green / red / purple / Default,
+round swatches, and the same six offered from a context-pad entry (🎨) — where a
+bpmn-js user looks for them first. The picker library itself is NOT vendored (no
+new dependency): the entry is our own context-pad provider and the popup is the
+existing swatch row in a fixed-position layer. Blue and green now overlap the diff
+hues; what tells them apart is that a manual colour is in the MODEL, so the
+resolver marks the element `outlineOnly` and its diff shows as a dashed outline
+rather than a fill. Two e2e cases (colour from the pad reaches the model, Escape
+closes the popup), both verified to fail with the provider unregistered.
 
 The downloaded file from the third round carried TWO `<?xml ?>` declarations, so
 it was not well-formed. `EditXmlColorizer` re-prepended the captured prolog on the
