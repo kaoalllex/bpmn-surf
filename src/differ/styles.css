@@ -244,6 +244,21 @@
     color: hsl(0, 70%, 45%);
 }
 
+/* pressed state of a toolbar toggle (FEAT-0031): the colouring button keeps one
+   glyph and shows its state by looking held down, the way a toolbar toggle does. */
+.differ-btn-active {
+    background-color: hsl(212, 73%, 92%);
+    border-color: hsl(212, 73%, 46%);
+    box-shadow: inset 0 1px 2px hsla(212, 73%, 20%, 0.25);
+}
+
+/* The brush is a colour emoji, so the pressed border alone is a weak signal:
+   the off state also drains the glyph. Colouring off = a grey, dimmed brush. */
+.differ-coloring-btn:not(.differ-btn-active) {
+    filter: grayscale(1);
+    opacity: 0.45;
+}
+
 /* update-available indicator (FEAT-0012) — accented, draws the eye without
    shouting; only shown when a newer version is published */
 .differ-update-indicator {

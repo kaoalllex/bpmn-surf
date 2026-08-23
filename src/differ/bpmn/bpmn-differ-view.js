@@ -22,6 +22,11 @@ class BpmnDifferView {
     // freshly opened differ tab (BUG-0018). Stored globally, like the width.
     static PROPS_HIDDEN_KEY = 'bpmnDiffer.propsHidden';
 
+    // U+1F58C LOWER LEFT PAINTBRUSH — default text presentation, so it stays
+    // monochrome next to the other toolbar glyphs. The on/off state is the
+    // pressed look, not a second glyph (FEAT-0031).
+    static COLORING_ICON = '\u{1F58C}';
+
     #params;
     #branchIndicator;
     #callbacks;
@@ -73,8 +78,8 @@ class BpmnDifferView {
         return this.#changesTableView;
     }
 
-    // The edit-mode toolbar group, so the colour control can append its swatches
-    // after construction (FEAT-0031). null in view mode.
+    // The colouring group of the edit toolbar, so the colour control can append
+    // its swatches right after the toggle (FEAT-0031). null in view mode.
     get editGroup() {
         return this.#editGroup;
     }
@@ -93,11 +98,13 @@ class BpmnDifferView {
         }
         if (this.#editColoringPaused) {
             this.#coloringButton.textContent = '⚠';
+            this.#coloringButton.classList.remove('differ-btn-active');
             this.#coloringButton.title =
                 'Colour the edits — paused: the diagram has no executable process';
             return;
         }
-        this.#coloringButton.textContent = this.#editColoringEnabled ? '☑' : '☐';
+        this.#coloringButton.textContent = BpmnDifferView.COLORING_ICON;
+        this.#coloringButton.classList.toggle('differ-btn-active', this.#editColoringEnabled);
         this.#coloringButton.title =
             `Colour the edits — ${this.#editColoringEnabled ? 'on' : 'off'}`;
     }
@@ -446,16 +453,42 @@ class BpmnDifferView {
         }));
 
         if (this.#isEditMode()) {
+            // Edit mode splits the right half into one group per job, so the bar
+            // reads left to right as zoom | colour | history | panel: the zoom group
+            // closes here, the colouring group carries the toggle AND the swatches
+            // the colour control appends into it, and "Hide properties" keeps its
+            // place last, with only the exits to its right (FEAT-0031).
+            toolbar.appendChild(viewGroup);
+
             // The "colour the edits" toggle replaces ☼ — it governs the same idea
             // (show the diff) but also governs the export (FEAT-0031).
             this.#coloringButton = this.#button({
-                icon: '☑', title: 'Colour the edits — on',
+                icon: BpmnDifferView.COLORING_ICON, title: 'Colour the edits — on',
                 onClick: () => {
                     this.#editColoringEnabled = this.#callbacks.onToggleEditColoring();
                     this.#refreshColoringButton();
                 }
             });
-            viewGroup.appendChild(this.#coloringButton);
+            this.#coloringButton.classList.add('differ-coloring-btn');
+            this.#refreshColoringButton();
+            this.#editGroup = this.#group();
+            this.#editGroup.appendChild(this.#coloringButton);
+            toolbar.appendChild(this.#editGroup);
+
+            const historyGroup = this.#group();
+            historyGroup.appendChild(this.#button({
+                icon: '↶', title: 'Undo (Ctrl+Z)',
+                onClick: () => this.#callbacks.onUndo()
+            }));
+            historyGroup.appendChild(this.#button({
+                icon: '↷', title: 'Redo (Ctrl+Y)',
+                onClick: () => this.#callbacks.onRedo()
+            }));
+            toolbar.appendChild(historyGroup);
+
+            const propsGroup = this.#group();
+            propsGroup.appendChild(this.#createHidePropsButton());
+            toolbar.appendChild(propsGroup);
         } else {
             const highlightButton = this.#button({
                 icon: '☼',
@@ -475,22 +508,8 @@ class BpmnDifferView {
                 onClick: () => this.#callbacks.onOpenEditor()
             });
             viewGroup.appendChild(this.#editButton);
-        }
-        viewGroup.appendChild(this.#createHidePropsButton());
-        toolbar.appendChild(viewGroup);
-
-        //--- edit group (FEAT-0031): undo/redo, plus the colour swatches (EditColorControl)
-        if (this.#isEditMode()) {
-            this.#editGroup = this.#group();
-            this.#editGroup.appendChild(this.#button({
-                icon: '↶', title: 'Undo (Ctrl+Z)',
-                onClick: () => this.#callbacks.onUndo()
-            }));
-            this.#editGroup.appendChild(this.#button({
-                icon: '↷', title: 'Redo (Ctrl+Y)',
-                onClick: () => this.#callbacks.onRedo()
-            }));
-            toolbar.appendChild(this.#editGroup);
+            viewGroup.appendChild(this.#createHidePropsButton());
+            toolbar.appendChild(viewGroup);
         }
 
         //--- update indicator (FEAT-0012), only when an update is available
