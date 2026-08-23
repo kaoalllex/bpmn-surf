@@ -327,6 +327,27 @@ swatches) | history | Hide properties — with "Hide properties" last again, onl
 the back/close exits to its right. The `editGroup` getter now names the colouring
 group, which is why the swatches land next to the toggle for free.
 
+The repeated `property group header not found in panel, cannot highlight: "Inputs"
+(element Call1)` on the extension's error page turned out to be the visible half of a
+worse defect. `#selectedElementId` was never cleared when the selection stopped being
+a single element, so after a deselect (the panel then shows the ROOT) every recompute
+still highlighted the PREVIOUS element's groups in whatever panel was on screen:
+groups the root does not have only warned, but a shared name — `General` — was
+actually painted blue in the root panel. Reproduced headlessly: rename a call
+activity, add an in-mapping, deselect, undo+redo, and the root panel comes back with
+a blue `General` plus one warning per missing group. The selection handler now clears
+the id and calls the new `PropertiesPanelHighlighter#resetHighlighting()` (the panel
+reuses its group-header nodes across elements, so the paint has to be dropped
+explicitly — nothing else would repaint over it). Both halves are pinned by
+`differ-edit-prop-group.spec.js` and each was verified to fail on its own. The same
+staleness also fed the navigators and the post-import re-select, which would restore
+a selection the user had cleared.
+
+Not ours, and not fixable without touching `libs/`: the `ContextPad#getPad is
+deprecated` line on the same page comes from bpmn-js 18.18.0 itself (the
+align-elements pad entry calls the deprecated diagram-js API); it appears once per
+context-pad open.
+
 On the reporter's request the manual palette now matches `bpmn-js-color-picker`
 (the one Camunda Modeler ships): blue / orange / green / red / purple / Default,
 round swatches, and the same six offered from a context-pad entry (🎨) — where a

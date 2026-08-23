@@ -194,6 +194,14 @@ class PropertiesPanelHighlighter {
         parentElem.appendChild(elem);
     }
 
+    // The panel switched to an element we have no diff data for (a deselect shows the
+    // root): drop the paint, since nothing else will repaint over it. The panel reuses
+    // its group-header nodes across elements, so a leftover colour would show up on
+    // the next element's panel.
+    resetHighlighting() {
+        this.#resetHighlightedPropGroups();
+    }
+
     #resetHighlightedPropGroups() {
         if (this.#highlightedElems) {
             for (const elem of this.#highlightedElems) {
