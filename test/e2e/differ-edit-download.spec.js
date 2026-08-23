@@ -37,6 +37,9 @@ test('the downloaded XML carries the edit and the diff colours', async ({ page }
         .toHaveClass(/edit-diff-added/, { timeout: 5000 });
 
     const { xml } = await downloadedText(page);
+    // Exactly one prolog: the browser's XMLSerializer keeps the one it parsed
+    // (jsdom drops it), so re-prepending it blindly produced an invalid file.
+    expect(xml.match(/<\?xml/g)).toHaveLength(1);
     expect(xml).toMatch(/xmlns:color="http:\/\/www\.omg\.org\/spec\/BPMN\/non-normative\/color\/1\.0"/);
     expect(xml).toMatch(/bpmnElement="Task_2"[^>]*color:background-color="#88ff88"/);
 });

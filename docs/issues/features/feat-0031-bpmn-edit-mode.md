@@ -327,6 +327,24 @@ swatches) | history | Hide properties — with "Hide properties" last again, onl
 the back/close exits to its right. The `editGroup` getter now names the colouring
 group, which is why the swatches land next to the toggle for free.
 
+The downloaded file from the third round carried TWO `<?xml ?>` declarations, so
+it was not well-formed. `EditXmlColorizer` re-prepended the captured prolog on the
+strength of a jsdom check ("XMLSerializer never re-emits the declaration") — true
+in jsdom, false in Chrome, which keeps the prolog it parsed. It is now prepended
+only when the serialized output has none. The e2e download spec asserts exactly one
+declaration; it fails on the old code with `["<?xml", "<?xml"]`.
+
+Reported in the same round and NOT reproduced: with the colouring toggled off, a
+sequence flow whose condition had been edited stayed blue (the reporter could not
+repeat it either). Eight scenarios were driven headlessly against both the local
+fixtures and the real sandbox diagram — toggle after blur, toggle inside the 300 ms
+debounce, off/on/off, undo first, delete-then-add, and the real collaboration
+diagram — and every one cleared the marker and returned the stroke to the default.
+The code has no path that keeps a marker either: `EditDiffPainter#paint` clears the
+whole previous record first, and diagram-js does not re-apply `element.markers` when
+a graphic is recreated. Leading hypothesis for what was seen: the flow was still
+SELECTED, and bpmn-js draws its own blue selection outline on a selected connection.
+
 Two follow-ups from the same review: ↶/↷ were always enabled, so they promised
 an action they could not perform and said nothing about whether the session had
 unsaved work — they now mirror `commandStack.canUndo()/canRedo()`. The swatches

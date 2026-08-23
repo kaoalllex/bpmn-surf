@@ -51,12 +51,14 @@ class EditXmlColorizer {
         }
         root.setAttribute('xmlns:color', EditXmlColorizer.COLOR_NS);
         root.setAttribute('xmlns:bioc', EditXmlColorizer.BIOC_NS);
-        // XMLSerializer never re-emits the XML declaration, but bpmn-js always
-        // writes one — dropping it would make the downloaded file differ from every
-        // other .bpmn in the repo on its very first line, and show up as a spurious
-        // deletion if anyone commits it. Carry the original prolog over verbatim.
+        // bpmn-js always writes an XML declaration, and losing it would make the
+        // downloaded file differ from every other .bpmn in the repo on its very
+        // first line. Whether the serializer keeps it depends on the implementation
+        // — Chrome re-emits the parsed prolog, jsdom drops it — so carry the
+        // original over only when it is actually missing; prepending it blindly
+        // produced a file with two declarations, which is not well-formed XML.
         const prolog = xml.match(/^\s*<\?xml[^>]*\?>\s*/);
         const serialized = new XMLSerializer().serializeToString(doc);
-        return prolog ? prolog[0] + serialized : serialized;
+        return prolog && !/^\s*<\?xml/.test(serialized) ? prolog[0] + serialized : serialized;
     }
 }
