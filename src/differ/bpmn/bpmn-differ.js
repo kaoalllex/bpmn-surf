@@ -184,6 +184,13 @@ class BpmnDiffer {
 
         bpmnJSEventBus.on('selection.changed', (event) => {
             if (event.newSelection.length !== 1) {
+                // The panel now shows the root (or a multi-selection), so the id must
+                // follow it: anything that later reads it — the edit recompute's
+                // repaint, the navigators, the post-import re-select — would otherwise
+                // act on an element the user no longer has selected, and paint the
+                // previous element's groups into whatever panel is on screen.
+                this.#selectedElementId = null;
+                this.#propertiesPanelHighlighter.resetHighlighting();
                 return;
             }
             this.#onSelectedElementChanged(event.newSelection[0].id);

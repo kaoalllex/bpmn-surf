@@ -26,6 +26,21 @@ async function addInMapping(page, target) {
     }, target);
 }
 
+// Renames CallActivity_1 through the modeler: the diff lands in "General", a group
+// the ROOT panel has as well — which is what makes a misdirected highlight visible.
+async function rename(page, name) {
+    await page.evaluate((value) => {
+        const modeler = window.__bpmnDifferModeler;
+        const element = modeler.get('elementRegistry').get('CallActivity_1');
+        modeler.get('modeling').updateProperties(element, { name: value });
+    }, name);
+}
+
+const paintedHeaders = (page) => page.locator('.bio-properties-panel-group-header')
+    .evaluateAll((els) => els
+        .filter((el) => el.style.backgroundColor)
+        .map((el) => el.querySelector('.bio-properties-panel-group-header-title').textContent.trim()));
+
 // An entry the user ADDED is an addition whichever side is being edited: in edit mode
 // the shown diagram is always the newer one, so the "which branch is shown" rule that
 // picks add/remove colours in view mode must not apply here.
@@ -133,4 +148,43 @@ test('added extension properties are painted individually', async ({ page }) => 
         });
         await expect(item).toHaveCSS('background-color', 'rgb(136, 255, 136)', { timeout: 5000 });
     }
+});
+
+// The recompute repaints the panel for the selected element (see the undo case
+// above), so the id it uses must follow the panel: after a deselect the panel shows
+// the ROOT, and highlighting the previous element's groups there paints the wrong
+// panel (and warns for every group the root does not have).
+test('a recompute after deselecting paints nothing in the root panel', async ({ page }) => {
+    wireDiagnostics(page);
+    const warnings = [];
+    page.on('console', (message) => {
+        if (message.text().includes('cannot highlight')) {
+            warnings.push(message.text());
+        }
+    });
+    await bootBpmnDiffer(page, { params: editParams(), fixtures: SAME_ON_BOTH_SIDES });
+
+    await page.locator('svg .djs-element[data-element-id="CallActivity_1"]').click();
+    // Two groups on purpose: "General" the root panel also has (a misdirected paint
+    // lands there) and "In mappings" it has not (that one only warns).
+    await rename(page, 'ZZZ');
+    await addInMapping(page, 'newVar');
+    await expect.poll(() => paintedHeaders(page)).toEqual(['General', 'In mappings']);
+
+    await page.evaluate(() => window.__bpmnDifferModeler.get('selection').select(null));
+    await expect(page.locator('.bio-properties-panel-group-header', { hasText: 'Tasklist' }))
+        .toBeVisible(); // the root panel is on screen now
+
+    // undo + redo: a recompute that does not touch the selection
+    await page.getByTitle('Undo (Ctrl+Z)').click();
+    await page.getByTitle('Redo (Ctrl+Y)').click();
+    await expect(page.locator('svg .djs-element[data-element-id="CallActivity_1"]'))
+        .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
+    // The canvas marker says the recompute landed; the panel work it also triggers is
+    // async on top of that, and "nothing was painted" has nothing to poll for — so
+    // give that tail room to run before asserting it produced nothing.
+    await page.waitForTimeout(800);
+
+    expect(warnings).toEqual([]);
+    expect(await paintedHeaders(page)).toEqual([]);
 });
