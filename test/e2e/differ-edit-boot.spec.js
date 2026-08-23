@@ -100,6 +100,50 @@ test('undo (↶) reverts a drag and redo (↷) reapplies it', async ({ page }) =
     expect(Math.abs(afterRedo.x - before.x)).toBeGreaterThan(50);
 });
 
+// FEAT-0031: the pair mirrors the command stack, so it is honest about what a
+// click will do and doubles as the "there is unsaved work" signal.
+test('undo/redo follow the command stack', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    const undo = page.getByTitle('Undo (Ctrl+Z)');
+    const redo = page.getByTitle('Redo (Ctrl+Y)');
+    await expect(undo).toBeDisabled();
+    await expect(redo).toBeDisabled();
+
+    const shape = page.locator('svg .djs-element[data-element-id="Task_1"]');
+    const before = await shape.boundingBox();
+    await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(before.x + before.width / 2 + 120, before.y + before.height / 2 + 60, { steps: 10 });
+    await page.mouse.up();
+
+    await expect(undo).toBeEnabled();
+    await expect(redo).toBeDisabled();
+
+    await undo.click();
+    await expect(undo).toBeDisabled();
+    await expect(redo).toBeEnabled();
+});
+
+// A swatch colours the SELECTION, so with nothing selected it would swallow the
+// click silently (FEAT-0031).
+test('the colour swatches are disabled until something is selected', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    const swatches = page.locator('.edit-color-swatch');
+    await expect(swatches).toHaveCount(4);
+    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(4);
+
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(0);
+
+    // Clicking the empty canvas clears the selection, and the swatches follow.
+    await page.locator('svg[data-element-id="Process_1"]').click({ position: { x: 5, y: 5 } });
+    await expect(page.locator('.edit-color-swatch:disabled')).toHaveCount(4);
+});
+
 // onUndo/onRedo call commandStack.undo()/.redo() directly rather than
 // editorActions.trigger('undo'/'redo'), which would tear down an open direct-edit
 // overlay first. Probing the risky case directly: make an undoable change, THEN

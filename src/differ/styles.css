@@ -666,6 +666,10 @@ th {
     cursor: pointer;
     background: #fff;
 }
+.edit-color-swatch:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
 .edit-color-swatch-clear {
     background:
         linear-gradient(to top right,

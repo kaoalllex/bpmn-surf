@@ -48,6 +48,8 @@ class BpmnDifferView {
     #backNavigator = null;
     #editGroup = null;
     #coloringButton = null;
+    #undoButton = null;
+    #redoButton = null;
     #editColoringEnabled = true;
     #editColoringPaused = false;
 
@@ -82,6 +84,16 @@ class BpmnDifferView {
     // its swatches right after the toggle (FEAT-0031). null in view mode.
     get editGroup() {
         return this.#editGroup;
+    }
+
+    // Keeps ↶/↷ in step with the command stack (FEAT-0031).
+    setHistoryEnabled(canUndo, canRedo) {
+        if (this.#undoButton) {
+            this.#undoButton.disabled = !canUndo;
+        }
+        if (this.#redoButton) {
+            this.#redoButton.disabled = !canRedo;
+        }
     }
 
     // BUG-0029: the recompute cannot always compare (a diagram with no executable
@@ -476,14 +488,19 @@ class BpmnDifferView {
             toolbar.appendChild(this.#editGroup);
 
             const historyGroup = this.#group();
-            historyGroup.appendChild(this.#button({
-                icon: '↶', title: 'Undo (Ctrl+Z)',
+            // Both start disabled: an untouched session has nothing to undo, and the
+            // pair doubles as the "there is unsaved work" signal (BpmnDiffer keeps
+            // them in step with the command stack).
+            this.#undoButton = this.#button({
+                icon: '↶', title: 'Undo (Ctrl+Z)', disabled: true,
                 onClick: () => this.#callbacks.onUndo()
-            }));
-            historyGroup.appendChild(this.#button({
-                icon: '↷', title: 'Redo (Ctrl+Y)',
+            });
+            this.#redoButton = this.#button({
+                icon: '↷', title: 'Redo (Ctrl+Y)', disabled: true,
                 onClick: () => this.#callbacks.onRedo()
-            }));
+            });
+            historyGroup.appendChild(this.#undoButton);
+            historyGroup.appendChild(this.#redoButton);
             toolbar.appendChild(historyGroup);
 
             const propsGroup = this.#group();
