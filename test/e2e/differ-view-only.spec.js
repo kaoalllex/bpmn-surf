@@ -82,8 +82,15 @@ test('palette and context pad stay hidden (BUG-0011)', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page);
 
-    await expect(page.locator('.djs-palette')).toBeHidden();
+    // toBeHidden() also holds for an element that is not there at all, so assert
+    // each one EXISTS first — otherwise a bpmn-js selector rename would turn both
+    // of these guards into no-ops without a single test going red (REFAC-0014).
+    const palette = page.locator('.djs-palette');
+    await expect(palette).toHaveCount(1);
+    await expect(palette).toBeHidden();
 
     await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
-    await expect(page.locator('.djs-context-pad')).toBeHidden();
+    const contextPad = page.locator('.djs-context-pad');
+    await expect(contextPad).toHaveCount(1);
+    await expect(contextPad).toBeHidden();
 });
