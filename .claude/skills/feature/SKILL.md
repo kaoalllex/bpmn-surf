@@ -10,7 +10,7 @@ description: Implement new functionality for the bpmn-surf Chrome Extension — 
 2. **Plan** — steps, affected files, solution architecture, risks (including a possible `manifest.json` edit for permissions)
 3. **Confirmation** — for complex changes, do not start without confirming the plan
 4. **Implementation** — per the plan, minimal changes, style from `docs/conventions.md`
-5. **Verification** — the feature works, existing behavior is not broken; run `npm test`; cover new isolated differ-page logic with unit tests (harness `test/support/scope.js`, see `docs/testing.md`)
+5. **Verification** — the feature works, existing behavior is not broken; `node --check` on every changed js file (the vm harness parses only the files in `SCOPE_FILES` — a syntax error in `bpmn-differ.js`, `dmn-differ.js`, `app.js` or `main.js` leaves `npm test` green and surfaces only in the browser), then run `npm test`; cover new isolated differ-page logic with unit tests (harness `test/support/scope.js`, see `docs/testing.md`)
 6. **Task tracking** — if the work relates to a task in `docs/issues/` (or it is a new task): update its file per `docs/issues/README.md` — add an entry to the "Work log" (model · date · commit/branch + what was done) and set `status` (`done`/`partial`/`in-progress`); when `done` — move the file to `docs/issues/archive/features/` (`git mv`). No file, but the feature is worth a separate task — create a new file in `docs/issues/features/`
 
 ## Rules
