@@ -1,5 +1,5 @@
 /*!
- * dmn-js - dmn-viewer v17.8.1
+ * dmn-js - dmn-viewer v17.10.1
  *
  * Copyright (c) 2014-present, camunda Services GmbH
  *
@@ -8,7 +8,7 @@
  *
  * Source Code: https://github.com/bpmn-io/dmn-js
  *
- * Date: 2026-05-06
+ * Date: 2026-07-29
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -305,8 +305,9 @@
   }
 
   /**
+   * @template {(...args: any[]) => any} T
    * @typedef { {
-   *   (...args: any[]): any;
+   *   (...args: Parameters<T>): void;
    *   flush: () => void;
    *   cancel: () => void;
    * } } DebouncedFunction
@@ -319,10 +320,12 @@
    * Lodash-style the function exposes methods to `#clear`
    * and `#flush` to control internal behavior.
    *
-   * @param  {Function} fn
-   * @param  {Number} timeout
+   * @template {(...args: any[]) => any} T
    *
-   * @return {DebouncedFunction} debounced function
+   * @param  {T} fn
+   * @param  {number} timeout
+   *
+   * @return {DebouncedFunction<T>} debounced function
    */
   function debounce(fn, timeout) {
     let timer;
@@ -355,7 +358,7 @@
     }
 
     /**
-     * @type { DebouncedFunction }
+     * @type {DebouncedFunction<T>}
      */
     function callback(...args) {
       lastNow = Date.now();
@@ -376,10 +379,12 @@
    * Throttle fn, calling at most once
    * in the given interval.
    *
-   * @param  {Function} fn
-   * @param  {Number} interval
+   * @template {(...args: any[]) => any} T
    *
-   * @return {Function} throttled function
+   * @param  {T} fn
+   * @param  {number} interval
+   *
+   * @return {(...args: Parameters<T>) => void} throttled function
    */
   function throttle(fn, interval) {
     let throttling = false;
@@ -622,11 +627,11 @@
    *
    * Returning anything but `undefined` from a listener will stop the listener propagation.
    *
-   * @template T
+   * @template {keyof EventMap} EventName
    *
-   * @param {string|string[]} events to subscribe to
+   * @param {EventName} events to subscribe to
    * @param {number} [priority=1000] listen priority
-   * @param {EventBusEventCallback<T>} callback
+   * @param {EventBusEventCallback<EventMap[EventName]>} callback
    * @param {any} [that] callback context
    */
   /**
@@ -641,11 +646,11 @@
    *
    * Returning anything but `undefined` from a listener will stop the listener propagation.
    *
-   * @template {keyof EventMap} EventName
+   * @template T
    *
-   * @param {EventName} events to subscribe to
+   * @param {string|string[]} events to subscribe to
    * @param {number} [priority=1000] listen priority
-   * @param {EventBusEventCallback<EventMap[EventName]>} callback
+   * @param {EventBusEventCallback<T>} callback
    * @param {any} [that] callback context
    */
   EventBus.prototype.on = function (events, priority, callback, that) {
@@ -682,21 +687,21 @@
    *
    * Register an event listener that is called only once.
    *
-   * @template T
-   *
-   * @param {string|string[]} events to subscribe to
-   * @param {number} [priority=1000] the listen priority
-   * @param {EventBusEventCallback<T>} callback
-   * @param {any} [that] callback context
-   */
-  /**
-   * Register an event listener that is called only once.
-   *
    * @template {keyof EventMap} EventName
    *
    * @param {EventName} events to subscribe to
    * @param {number} [priority=1000] listen priority
    * @param {EventBusEventCallback<EventMap[EventName]>} callback
+   * @param {any} [that] callback context
+   */
+  /**
+   * Register an event listener that is called only once.
+   *
+   * @template T
+   *
+   * @param {string|string[]} events to subscribe to
+   * @param {number} [priority=1000] the listen priority
+   * @param {EventBusEventCallback<T>} callback
    * @param {any} [that] callback context
    */
   EventBus.prototype.once = function (events, priority, callback, that) {
@@ -7116,11 +7121,11 @@
   var DEFAULT_RENDER_PRIORITY$1 = 1000;
 
   /**
-   * @typedef {import('../core/Types').ElementLike} Element
-   * @typedef {import('../core/Types').ConnectionLike} Connection
-   * @typedef {import('../core/Types').ShapeLike} Shape
+   * @typedef {import('../core/Types.js').ElementLike} Element
+   * @typedef {import('../core/Types.js').ConnectionLike} Connection
+   * @typedef {import('../core/Types.js').ShapeLike} Shape
    *
-   * @typedef {import('../core/EventBus').default} EventBus
+   * @typedef {import('../core/EventBus.js').default} EventBus
    */
 
   /**
@@ -7745,7 +7750,7 @@
   /**
    * @typedef {(string|number)[]} Component
    *
-   * @typedef {import('../util/Types').Point} Point
+   * @typedef {import('./Types.js').Point} Point
    */
 
   /**
@@ -7939,8 +7944,8 @@
   }
 
   /**
-   * @typedef {import('../core/EventBus').default} EventBus
-   * @typedef {import('./Styles').default} Styles
+   * @typedef {import('../core/EventBus.js').default} EventBus
+   * @typedef {import('./Styles.js').default} Styles
    */
 
   // apply default renderer with lowest possible priority
@@ -8195,10 +8200,12 @@
   }
 
   /**
-   * @typedef {import('./Types').ConnectionLike} ConnectionLike
-   * @typedef {import('./Types').RootLike} RootLike
-   * @typedef {import('./Types').ParentLike } ParentLike
-   * @typedef {import('./Types').ShapeLike} ShapeLike
+   * @typedef {import('./Types.js').ConnectionLike} ConnectionLike
+   * @typedef {import('./Types.js').RootLike} RootLike
+   * @typedef {import('./Types.js').ParentLike } ParentLike
+   * @typedef {import('./Types.js').ShapeLike} ShapeLike
+   *
+   * @typedef {ShapeLike|ConnectionLike|RootLike|string} ElementOrIdentifier
    *
    * @typedef { {
    *   container?: HTMLElement;
@@ -8225,15 +8232,15 @@
    *   outer: Dimensions;
    * } & Rect } CanvasViewbox
    *
-   * @typedef {import('./ElementRegistry').default} ElementRegistry
-   * @typedef {import('./EventBus').default} EventBus
-   * @typedef {import('./GraphicsFactory').default} GraphicsFactory
+   * @typedef {import('./ElementRegistry.js').default} ElementRegistry
+   * @typedef {import('./EventBus.js').default} EventBus
+   * @typedef {import('./GraphicsFactory.js').default} GraphicsFactory
    *
-   * @typedef {import('../util/Types').Dimensions} Dimensions
-   * @typedef {import('../util/Types').Point} Point
-   * @typedef {import('../util/Types').Rect} Rect
-   * @typedef {import('../util/Types').RectTRBL} RectTRBL
-   * @typedef {import('../util/Types').ScrollDelta} ScrollDelta
+   * @typedef {import('../util/Types.js').Dimensions} Dimensions
+   * @typedef {import('../util/Types.js').Point} Point
+   * @typedef {import('../util/Types.js').Rect} Rect
+   * @typedef {import('../util/Types.js').RectTRBL} RectTRBL
+   * @typedef {import('../util/Types.js').ScrollDelta} ScrollDelta
    */
 
   function round(number, resolution) {
@@ -8394,8 +8401,15 @@
     // debounce canvas.viewbox.changed events when deferUpdate is set
     // to help with potential performance issues
     if (config.deferUpdate) {
-      this._viewboxChanged = debounce(bind$1(this._viewboxChanged, this), 300);
+      this._viewboxChanged = debounce(this._viewboxChanged, 300);
     }
+
+    /**
+     * Schedule focus restoration.
+     *
+     * @type {import('min-dash').DebouncedFunction<typeof this.restoreFocus>}
+     */
+    this._restoreFocus = debounce(this._restoreFocus, 0);
     eventBus.on('diagram.init', () => {
       /**
        * An event indicating that the canvas is ready to be drawn on.
@@ -8423,6 +8437,7 @@
     eventBus.on('diagram.clear', 500, this._clear, this);
   };
   Canvas.prototype._destroy = function () {
+    this._restoreFocus.cancel();
     this._eventBus.fire('canvas.destroy', {
       svg: this._svg,
       viewport: this._viewport
@@ -8479,9 +8494,16 @@
   };
 
   /**
-  * Sets focus on the canvas SVG element if `document.body` is currently focused.
-  */
+   * Restores focus on the canvas SVG element if `document.body` is
+   * currently focused.
+   *
+   * Safely executes on the next render cycle - never prevents pending
+   * (in flight) user clicks.
+   */
   Canvas.prototype.restoreFocus = function () {
+    this._restoreFocus();
+  };
+  Canvas.prototype._restoreFocus = function () {
     if (document.activeElement === document.body) {
       this.focus();
     }
@@ -8649,21 +8671,30 @@
   };
 
   /**
-   * Returns the plane which contains the given element.
+   * Returns the plane which contains the given element(s).
    *
-   * @param {ShapeLike|ConnectionLike|string} element The element or its ID.
+   * If multiple elements are passed, the shared plane is returned
+   * (or undefined if no shared plane exists).
+   *
+   * @param {ElementOrIdentifier|ElementOrIdentifier[]} element
    *
    * @return {RootLike|undefined} The root of the element.
    */
   Canvas.prototype.findRoot = function (element) {
-    if (typeof element === 'string') {
-      element = this._elementRegistry.get(element);
+    const elements = this._resolveElements(element);
+    let root;
+    for (const element of elements) {
+      const plane = this._findPlaneForRoot(findRoot(element));
+      if (!plane) {
+        return;
+      }
+      if (root && plane.rootElement !== root) {
+        // no shared root
+        return undefined;
+      }
+      root = plane.rootElement;
     }
-    if (!element) {
-      return;
-    }
-    const plane = this._findPlaneForRoot(findRoot(element)) || {};
-    return plane.rootElement;
+    return root;
   };
 
   /**
@@ -8683,6 +8714,30 @@
   };
 
   /**
+   * @param {ElementOrIdentifier} element
+   *
+   * @return {ShapeLike|ConnectionLike|RootLike|undefined}
+   */
+  Canvas.prototype._resolveElement = function (element) {
+    if (typeof element === 'string') {
+      return this._elementRegistry.get(element);
+    }
+    return element;
+  };
+
+  /**
+   * @param {ElementOrIdentifier|ElementOrIdentifier[]} elements
+   *
+   * @return {Array<ShapeLike|ConnectionLike|RootLike>}
+   */
+  Canvas.prototype._resolveElements = function (elements) {
+    if (!isArray$2(elements)) {
+      elements = [elements];
+    }
+    return elements.map(element => this._resolveElement(element)).filter(Boolean);
+  };
+
+  /**
    * Returns the html element that encloses the
    * drawing canvas.
    *
@@ -8696,9 +8751,7 @@
 
   Canvas.prototype._updateMarker = function (element, marker, add) {
     let container;
-    if (!element.id) {
-      element = this._elementRegistry.get(element);
-    }
+    element = this._resolveElement(element);
     element.markers = element.markers || new Set();
 
     // we need to access all
@@ -8780,9 +8833,7 @@
    * @param {string} marker The marker.
    */
   Canvas.prototype.hasMarker = function (element, marker) {
-    if (!element.id) {
-      element = this._elementRegistry.get(element);
-    }
+    element = this._resolveElement(element);
     if (!element.markers) {
       return false;
     }
@@ -8867,9 +8918,7 @@
    * @return {RootLike|undefined} removed element
    */
   Canvas.prototype.removeRootElement = function (rootElement) {
-    if (typeof rootElement === 'string') {
-      rootElement = this._elementRegistry.get(rootElement);
-    }
+    rootElement = this._resolveElement(rootElement);
     const plane = this._findPlaneForRoot(rootElement);
     if (!plane) {
       return;
@@ -9310,26 +9359,30 @@
   };
 
   /**
-   * Scrolls the viewbox to contain the given element.
+   * Scrolls the viewbox to contain the given element or elements.
    * Optionally specify a padding to be applied to the edges.
    *
-   * @param {ShapeLike|ConnectionLike|string} element The element to scroll to or its ID.
+   * The canvas navigates to the shared root of the element(s). If no shared
+   * root can be found, no navigation is performed.
+   *
+   * @param {ElementOrIdentifier|ElementOrIdentifier[]} element The element(s) to scroll to or their ID(s).
    * @param {RectTRBL|number} [padding=100] The padding to be applied. Can also specify top, bottom, left and right.
    */
   Canvas.prototype.scrollToElement = function (element, padding) {
     let defaultPadding = 100;
-    if (typeof element === 'string') {
-      element = this._elementRegistry.get(element);
+    const elements = this._resolveElements(element);
+    if (!elements.length) {
+      return;
     }
-
-    // set to correct rootElement
-    const rootElement = this.findRoot(element);
+    const rootElement = this.findRoot(elements);
+    if (!rootElement) {
+      return;
+    }
     if (rootElement !== this.getRootElement()) {
       this.setRootElement(rootElement);
     }
-
-    // element is rootElement, do not change viewport
-    if (rootElement === element) {
+    const visibleElements = elements.filter(e => e != rootElement);
+    if (!visibleElements.length) {
       return;
     }
     if (!padding) {
@@ -9344,7 +9397,7 @@
       bottom: padding.bottom || defaultPadding,
       left: padding.left || defaultPadding
     };
-    const elementBounds = getBBox(element),
+    const elementBounds = getBBox(visibleElements),
       elementTrbl = asTRBL(elementBounds),
       viewboxBounds = this.viewbox(),
       zoom = this.zoom();
@@ -9530,9 +9583,9 @@
   var ELEMENT_ID = 'data-element-id';
 
   /**
-   * @typedef {import('./Types').ElementLike} ElementLike
+   * @typedef {import('./Types.js').ElementLike} ElementLike
    *
-   * @typedef {import('./EventBus').default} EventBus
+   * @typedef {import('./EventBus.js').default} EventBus
    *
    * @typedef { (element: ElementLike, gfx: SVGElement) => boolean|any } ElementRegistryFilterCallback
    * @typedef { (element: ElementLike, gfx: SVGElement) => any } ElementRegistryForEachCallback
@@ -10069,11 +10122,11 @@
     });
 
   /**
-   * @typedef {import('./Types').Element} Element
-   * @typedef {import('./Types').Shape} Shape
-   * @typedef {import('./Types').Root} Root
-   * @typedef {import('./Types').Label} Label
-   * @typedef {import('./Types').Connection} Connection
+   * @typedef {import('./Types.js').Element} Element
+   * @typedef {import('./Types.js').Shape} Shape
+   * @typedef {import('./Types.js').Root} Root
+   * @typedef {import('./Types.js').Label} Label
+   * @typedef {import('./Types.js').Connection} Connection
    */
 
   /**
@@ -10367,11 +10420,11 @@
   }
 
   /**
-   * @typedef {import('../model/Types').Element} Element
-   * @typedef {import('../model/Types').Connection} Connection
-   * @typedef {import('../model/Types').Label} Label
-   * @typedef {import('../model/Types').Root} Root
-   * @typedef {import('../model/Types').Shape} Shape
+   * @typedef {import('../model/Types.js').Element} Element
+   * @typedef {import('../model/Types.js').Connection} Connection
+   * @typedef {import('../model/Types.js').Label} Label
+   * @typedef {import('../model/Types.js').Root} Root
+   * @typedef {import('../model/Types.js').Shape} Shape
    */
 
   /**
@@ -10509,12 +10562,12 @@
   }
 
   /**
-   * @typedef {import('./Types').ConnectionLike} ConnectionLike
-   * @typedef {import('./Types').ElementLike} ElementLike
-   * @typedef {import('./Types').ShapeLike} ShapeLike
+   * @typedef {import('./Types.js').ConnectionLike} ConnectionLike
+   * @typedef {import('./Types.js').ElementLike} ElementLike
+   * @typedef {import('./Types.js').ShapeLike} ShapeLike
    *
-   * @typedef {import('./ElementRegistry').default} ElementRegistry
-   * @typedef {import('./EventBus').default} EventBus
+   * @typedef {import('./ElementRegistry.js').default} ElementRegistry
+   * @typedef {import('./EventBus.js').default} EventBus
    */
 
   /**
@@ -10651,9 +10704,20 @@
         return;
       }
       var childrenGfx = self._getChildrenContainer(parent);
-      forEach(children.slice().reverse(), function (child) {
-        var childGfx = elementRegistry.getGraphics(child);
-        prependTo(childGfx.parentNode, childrenGfx);
+
+      // only (re-)insert children that are not already in their expected
+      // position; needlessly detaching and re-attaching siblings that did
+      // not move breaks in-progress pointer interactions (the browser drops
+      // the native `click` when the moused-down node is momentarily removed)
+      // and causes unnecessary DOM churn
+      var expected = childrenGfx.firstChild;
+      forEach(children, function (child) {
+        var childGfx = elementRegistry.getGraphics(child).parentNode;
+        if (childGfx === expected) {
+          expected = expected.nextSibling;
+        } else {
+          childrenGfx.insertBefore(childGfx, expected);
+        }
       });
     });
   };
@@ -10926,11 +10990,11 @@
    *
    * Resolves a diagram service.
    *
-   * @template T
+   * @template {keyof ServiceMap} Name
    *
-   * @param {string} name The name of the service to get.
+   * @param {Name} name The name of the service to get.
    *
-   * @return {T}
+   * @return {ServiceMap[Name]}
    */
   /**
    * @overlord
@@ -10959,11 +11023,11 @@
   /**
    * Resolves a diagram service.
    *
-   * @template {keyof ServiceMap} Name
+   * @template T
    *
-   * @param {Name} name The name of the service to get.
+   * @param {string} name The name of the service to get.
    *
-   * @return {ServiceMap[Name]}
+   * @return {T}
    */
   Diagram.prototype.get = function (name, strict) {
     return this._injector.get(name, strict);
@@ -14114,7 +14178,7 @@
   }
 
   /**
-   * @typedef {import('../util/Types').Dimensions} Dimensions
+   * @typedef {import('./Types.js').Dimensions} Dimensions
    *
    * @typedef { {
    *   top: number;
@@ -14255,7 +14319,7 @@
    * @param {string} text
    * @param {Record<string, number | string>} style
    *
-   * @return {import('../util/Types').Dimensions}
+   * @return {import('./Types.js').Dimensions}
    */
   function getTextBBox(text, style) {
     var ctx = getCanvasContext();
@@ -14963,12 +15027,12 @@
   };
 
   /**
-   * @typedef {import('../util/Types').Point} Point
+   * @typedef {import('./Types.js').Point} Point
    */
 
 
   /**
-   * @param {import('../core/EventBus').Event} event
+   * @param {import('../core/EventBus.js').Event} event
    *
    * @return {Event}
    */
@@ -15017,13 +15081,13 @@
   }
 
   /**
-   * @typedef {import('../../model/Types').Element} Element
+   * @typedef {import('../../model/Types.js').Element} Element
    *
-   * @typedef {import('../../core/ElementRegistry').default} ElementRegistry
-   * @typedef {import('../../core/EventBus').default} EventBus
-   * @typedef {import('../../draw/Styles').default} Styles
+   * @typedef {import('../../core/ElementRegistry.js').default} ElementRegistry
+   * @typedef {import('../../core/EventBus.js').default} EventBus
+   * @typedef {import('../../draw/Styles.js').default} Styles
    *
-   * @typedef {import('../../util/Types').Point} Point
+   * @typedef {import('../../util/Types.js').Point} Point
    */
 
   function allowAll(event) {
@@ -15438,8 +15502,8 @@
   };
 
   /**
-   * @typedef {import('../../core/Canvas').default} Canvas
-   * @typedef {import('../../core/EventBus').default} EventBus
+   * @typedef {import('../../core/Canvas.js').default} Canvas
+   * @typedef {import('../../core/EventBus.js').default} EventBus
    */
 
   /**
@@ -15454,9 +15518,9 @@
     this._canvas = canvas;
 
     /**
-     * @type {Object[]}
+     * @type {Set<Object>}
      */
-    this._selectedElements = [];
+    this._selectedElements = new Set();
     var self = this;
     eventBus.on(['shape.remove', 'connection.remove'], function (e) {
       var element = e.element;
@@ -15474,16 +15538,15 @@
    * @param {Object} element The element to deselect.
    */
   Selection.prototype.deselect = function (element) {
-    var selectedElements = this._selectedElements;
-    var idx = selectedElements.indexOf(element);
-    if (idx !== -1) {
-      var oldSelection = selectedElements.slice();
-      selectedElements.splice(idx, 1);
-      this._eventBus.fire('selection.changed', {
-        oldSelection: oldSelection,
-        newSelection: selectedElements
-      });
+    if (!this._selectedElements.has(element)) {
+      return;
     }
+    var oldSelection = this.get();
+    this._selectedElements.delete(element);
+    this._eventBus.fire('selection.changed', {
+      oldSelection: oldSelection,
+      newSelection: this.get()
+    });
   };
 
   /**
@@ -15492,7 +15555,7 @@
    * @return {Object[]} The selected elements.
    */
   Selection.prototype.get = function () {
-    return this._selectedElements;
+    return Array.from(this._selectedElements);
   };
 
   /**
@@ -15503,7 +15566,7 @@
    * @return {boolean} Whether the element is selected.
    */
   Selection.prototype.isSelected = function (element) {
-    return this._selectedElements.indexOf(element) !== -1;
+    return this._selectedElements.has(element);
   };
 
   /**
@@ -15514,8 +15577,7 @@
    * Defaults to `false`.
    */
   Selection.prototype.select = function (elements, add) {
-    var selectedElements = this._selectedElements,
-      oldSelection = selectedElements.slice();
+    var oldSelection = this.get();
     if (!isArray$2(elements)) {
       elements = elements ? [elements] : [];
     }
@@ -15529,26 +15591,21 @@
     // selection may be cleared by passing an empty array or null
     // to the method
     if (add) {
-      forEach(elements, function (element) {
-        if (selectedElements.indexOf(element) !== -1) {
-          // already selected
-          return;
-        } else {
-          selectedElements.push(element);
-        }
+      forEach(elements, element => {
+        this._selectedElements.add(element);
       });
     } else {
-      this._selectedElements = selectedElements = elements.slice();
+      this._selectedElements = new Set(elements);
     }
     this._eventBus.fire('selection.changed', {
       oldSelection: oldSelection,
-      newSelection: selectedElements
+      newSelection: this.get()
     });
   };
 
   /**
-   * @typedef {import('../../core/Canvas').default} Canvas
-   * @typedef {import('../../core/EventBus').default} EventBus
+   * @typedef {import('../../core/Canvas.js').default} Canvas
+   * @typedef {import('../../core/EventBus.js').default} EventBus
    */
 
   var MARKER_HOVER = 'hover',
@@ -15586,27 +15643,27 @@
       function select(s) {
         addMarker(s, MARKER_SELECTED);
       }
-      var oldSelection = event.oldSelection,
-        newSelection = event.newSelection;
-      forEach(oldSelection, function (e) {
-        if (newSelection.indexOf(e) === -1) {
+      var oldSelection = new Set(event.oldSelection),
+        newSelection = new Set(event.newSelection);
+      for (let e of oldSelection) {
+        if (!newSelection.has(e)) {
           deselect(e);
         }
-      });
-      forEach(newSelection, function (e) {
-        if (oldSelection.indexOf(e) === -1) {
+      }
+      for (let e of newSelection) {
+        if (!oldSelection.has(e)) {
           select(e);
         }
-      });
+      }
     });
   }
   SelectionVisuals.$inject = ['canvas', 'eventBus'];
 
   /**
-   * @typedef {import('../../core/Canvas').default} Canvas
-   * @typedef {import('../../core/ElementRegistry').default} ElementRegistry
-   * @typedef {import('../../core/EventBus').default} EventBus
-   * @typedef {import('./Selection').default} Selection
+   * @typedef {import('../../core/Canvas.js').default} Canvas
+   * @typedef {import('../../core/ElementRegistry.js').default} ElementRegistry
+   * @typedef {import('../../core/EventBus.js').default} EventBus
+   * @typedef {import('./Selection.js').default} Selection
    */
 
   /**
@@ -15736,11 +15793,11 @@
   var LOW_PRIORITY$2 = 500;
 
   /**
-   * @typedef {import('../../core/Canvas').default} Canvas
-   * @typedef {import('../../core/ElementRegistry').default} ElementRegistry
-   * @typedef {import('../../core/EventBus').default} EventBus
+   * @typedef {import('../../core/Canvas.js').default} Canvas
+   * @typedef {import('../../core/ElementRegistry.js').default} ElementRegistry
+   * @typedef {import('../../core/EventBus.js').default} EventBus
    *
-   * @typedef {import('../../model/Types').Element} Element
+   * @typedef {import('../../model/Types.js').Element} Element
    *
    * @typedef { {
    *   minZoom?: number,
@@ -16534,6 +16591,23 @@
 
 
   /**
+   * Padding added around the diagram bounds on SVG export.
+   *
+   * `getBBox` returns the geometry bounds only, excluding element strokes, so
+   * without padding strokes at the diagram edges get clipped. Historically this
+   * padding was provided implicitly by element outlines, which diagram-js now
+   * creates lazily (diagram-js@15.19, bpmn-io/diagram-js#1064).
+   */
+  const EXPORT_PADDING = 5;
+
+  /**
+   * Class set on the canvas container to hide element outlines, which diagram-js
+   * excludes from rendering while present. Applied when measuring the export
+   * bounds so lazily created outlines do not skew them.
+   */
+  const OUTLINE_HIDDEN_CLS = 'djs-outline-hidden';
+
+  /**
    * @typedef {import('dmn-js-shared/lib/base/View).OpenResult} OpenResult
    */
 
@@ -16625,8 +16699,21 @@
         defsNode = query('defs', canvas._svg);
       var contents = innerSVG(contentNode),
         defs = defsNode && defsNode.outerHTML || '';
-      var bbox = contentNode.getBBox();
-      var svg = '<?xml version="1.0" encoding="utf-8"?>\n' + '<!-- created with dmn-js / http://bpmn.io -->\n' + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ' + 'width="' + bbox.width + '" height="' + bbox.height + '" ' + 'viewBox="' + bbox.x + ' ' + bbox.y + ' ' + bbox.width + ' ' + bbox.height + '" version="1.1">' + defs + contents + '</svg>';
+
+      // hide outlines so they do not skew the measured bounds
+      var container = canvas.getContainer();
+      classes$1(container).add(OUTLINE_HIDDEN_CLS);
+      var bbox;
+      try {
+        bbox = contentNode.getBBox();
+      } finally {
+        classes$1(container).remove(OUTLINE_HIDDEN_CLS);
+      }
+      var x = bbox.x - EXPORT_PADDING,
+        y = bbox.y - EXPORT_PADDING,
+        width = bbox.width + EXPORT_PADDING * 2,
+        height = bbox.height + EXPORT_PADDING * 2;
+      var svg = '<?xml version="1.0" encoding="utf-8"?>\n' + '<!-- created with dmn-js / http://bpmn.io -->\n' + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ' + 'width="' + width + '" height="' + height + '" ' + 'viewBox="' + x + ' ' + y + ' ' + width + ' ' + height + '" version="1.1">' + defs + contents + '</svg>';
       resolve({
         svg
       });
@@ -22009,10 +22096,10 @@
     /**
     Extend this range to cover at least `from` to `to`.
     */
-    extend(from, to = from) {
-      if (from <= this.anchor && to >= this.anchor) return EditorSelection.range(from, to);
+    extend(from, to = from, assoc = 0) {
+      if (from <= this.anchor && to >= this.anchor) return EditorSelection.range(from, to, undefined, undefined, assoc);
       let head = Math.abs(from - this.anchor) > Math.abs(to - this.anchor) ? from : to;
-      return EditorSelection.range(this.anchor, head);
+      return EditorSelection.range(this.anchor, head, undefined, undefined, assoc);
     }
     /**
     Compare this range to another range.
@@ -22157,9 +22244,10 @@
     /**
     Create a selection range.
     */
-    static range(anchor, head, goalColumn, bidiLevel) {
+    static range(anchor, head, goalColumn, bidiLevel, assoc) {
       let flags = (goalColumn !== null && goalColumn !== void 0 ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */ | (bidiLevel == null ? 7 : Math.min(6, bidiLevel));
-      return head < anchor ? SelectionRange.create(head, anchor, 32 /* RangeFlag.Inverted */ | 16 /* RangeFlag.AssocAfter */ | flags) : SelectionRange.create(anchor, head, (head > anchor ? 8 /* RangeFlag.AssocBefore */ : 0) | flags);
+      if (!assoc && anchor != head) assoc = head < anchor ? 1 : -1;
+      return head < anchor ? SelectionRange.create(head, anchor, 32 /* RangeFlag.Inverted */ | 16 /* RangeFlag.AssocAfter */ | flags) : SelectionRange.create(anchor, head, (!assoc ? 0 : assoc < 0 ? 8 /* RangeFlag.AssocBefore */ : 16 /* RangeFlag.AssocAfter */) | flags);
     }
     /**
     @internal
@@ -24853,7 +24941,7 @@
     couldn't (in which case the widget will be redrawn). The default
     implementation just returns false.
     */
-    updateDOM(dom, view) {
+    updateDOM(dom, view, from) {
       return false;
     }
     /**
@@ -25132,10 +25220,23 @@
   directly at `from` but not including `to`.
   */
   class BlockWrapper extends RangeValue {
-    constructor(tagName, attributes) {
+    constructor(
+    /**
+    @internal
+    */
+    tagName,
+    /**
+    @internal
+    */
+    attributes,
+    /**
+    @internal
+    */
+    rank) {
       super();
       this.tagName = tagName;
       this.attributes = attributes;
+      this.rank = rank;
     }
     eq(other) {
       return other == this || other instanceof BlockWrapper && this.tagName == other.tagName && attrsEq(this.attributes, other.attributes);
@@ -25145,7 +25246,7 @@
     attributes.
     */
     static create(spec) {
-      return new BlockWrapper(spec.tagName, spec.attributes || noAttrs);
+      return new BlockWrapper(spec.tagName, spec.attributes || noAttrs, spec.rank == null ? 50 : Math.max(0, Math.min(spec.rank, 100)));
     }
     /**
     Create a range set from the given block wrapper ranges.
@@ -25289,10 +25390,10 @@
         let moveX = 0,
           moveY = 0;
         if (y == "nearest") {
-          if (rect.top < bounding.top) {
+          if (rect.top < bounding.top + yMargin) {
             moveY = rect.top - (bounding.top + yMargin);
             if (side > 0 && rect.bottom > bounding.bottom + moveY) moveY = rect.bottom - bounding.bottom + yMargin;
-          } else if (rect.bottom > bounding.bottom) {
+          } else if (rect.bottom > bounding.bottom - yMargin) {
             moveY = rect.bottom - bounding.bottom + yMargin;
             if (side < 0 && rect.top - moveY < bounding.top) moveY = rect.top - (bounding.top + yMargin);
           }
@@ -25303,10 +25404,10 @@
           moveY = targetTop - bounding.top;
         }
         if (x == "nearest") {
-          if (rect.left < bounding.left) {
+          if (rect.left < bounding.left + xMargin) {
             moveX = rect.left - (bounding.left + xMargin);
             if (side > 0 && rect.right > bounding.right + moveX) moveX = rect.right - bounding.right + xMargin;
-          } else if (rect.right > bounding.right) {
+          } else if (rect.right > bounding.right - xMargin) {
             moveX = rect.right - bounding.right + xMargin;
             if (side < 0 && rect.left < bounding.left + moveX) moveX = rect.left - (bounding.left + xMargin);
           }
@@ -25356,16 +25457,16 @@
       }
     }
   }
-  function scrollableParents(dom) {
+  function scrollableParents(dom, getX = true) {
     let doc = dom.ownerDocument,
-      x,
-      y;
+      x = null,
+      y = null;
     for (let cur = dom.parentNode; cur;) {
-      if (cur == doc.body || x && y) {
+      if (cur == doc.body || (!getX || x) && y) {
         break;
       } else if (cur.nodeType == 1) {
         if (!y && cur.scrollHeight > cur.clientHeight) y = cur;
-        if (!x && cur.scrollWidth > cur.clientWidth) x = cur;
+        if (getX && !x && cur.scrollWidth > cur.clientWidth) x = cur;
         cur = cur.assignedSlot || cur.parentNode;
       } else if (cur.nodeType == 11) {
         cur = cur.host;
@@ -25494,6 +25595,7 @@
     }
   }
   function isScrolledToBottom(elt) {
+    if (elt instanceof Window) return elt.pageYOffset > Math.max(0, elt.document.documentElement.scrollHeight - elt.innerHeight - 4);
     return elt.scrollTop > Math.max(1, elt.scrollHeight - elt.clientHeight - 4);
   }
   function textNodeBefore(startNode, startOffset) {
@@ -25991,7 +26093,7 @@
   });
   const scrollHandler = /*@__PURE__*/Facet.define();
   class ScrollTarget {
-    constructor(range, y = "nearest", x = "nearest", yMargin = 5, xMargin = 5,
+    constructor(range, y, x, yMargin, xMargin,
     // This data structure is abused to also store precise scroll
     // snapshots, instead of a `scrollIntoView` request. When this
     // flag is `true`, `range` points at a position in the reference
@@ -27024,6 +27126,7 @@
       if (oldTile) this.cache.reused.set(oldTile, 2 /* Reused.DOM */);
       let text = new TextTile(composition.text, composition.text.nodeValue);
       text.flags |= 8 /* TileFlag.Composition */;
+      this.pos = composition.range.toB;
       head.append(text);
     }
     addInlineWidget(widget, marks, openStart) {
@@ -27110,7 +27213,8 @@
       }
       for (let i = this.wrappers.length - 1; i >= 0; i--) if (this.wrappers[i].to < this.pos) this.wrappers.splice(i, 1);
       for (let cur = this.blockWrappers; cur.value && cur.from <= this.pos; cur.next()) if (cur.to >= this.pos) {
-        let wrap = new OpenWrapper(cur.from, cur.to, cur.value, cur.rank),
+        let rank = cur.rank * 102 + cur.value.rank;
+        let wrap = new OpenWrapper(cur.from, cur.to, cur.value, rank),
           i = this.wrappers.length;
         while (i > 0 && (this.wrappers[i - 1].rank - wrap.rank || this.wrappers[i - 1].to - wrap.to) < 0) i--;
         this.wrappers.splice(i, 0, wrap);
@@ -27234,7 +27338,7 @@
           i = 0;
         }
         let tile = widgets[i];
-        if (!this.reused.has(tile) && (pass == 0 ? tile.widget.compare(widget) : tile.widget.constructor == widget.constructor && widget.updateDOM(tile.dom, this.view))) {
+        if (!this.reused.has(tile) && (pass == 0 ? tile.widget.compare(widget) : tile.widget.constructor == widget.constructor && widget.updateDOM(tile.dom, this.view, tile.widget))) {
           widgets.splice(i, 1);
           if (i < this.index[0]) this.index[0]--;
           if (tile.widget == widget && tile.length == length && (tile.flags & (496 /* TileFlag.Widget */ | 1 /* TileFlag.BreakAfter */)) == flags) {
@@ -27305,6 +27409,7 @@
         if (composition && next.fromA <= composition.range.fromA && next.toA >= composition.range.toA) {
           this.forward(next.fromA, composition.range.fromA, composition.range.fromA < composition.range.toA ? 1 : -1);
           this.emit(posB, composition.range.fromB);
+          this.builder.flushBuffer();
           this.cache.clear(); // Must not reuse DOM across composition
           this.builder.addComposition(composition, compositionContext);
           this.text.skip(composition.range.toB - composition.range.fromB);
@@ -27341,7 +27446,7 @@
             }
           } else if (tile.isText()) {
             this.builder.ensureLine(null);
-            if (!from && to == tile.length) {
+            if (!from && to == tile.length && !this.cache.reused.has(tile)) {
               this.builder.addText(tile.text, activeMarks, openMarks, this.cache.reuse(tile));
             } else {
               this.cache.add(tile);
@@ -27456,7 +27561,8 @@
       for (let parent = text.parentNode;; parent = parent.parentNode) {
         let tile = Tile.get(parent);
         if (parent == this.view.contentDOM) break;
-        if (tile instanceof MarkTile) marks.push(tile);else if (tile === null || tile === void 0 ? void 0 : tile.isLine()) line = tile;else if (parent.nodeName == "DIV" && !line && parent != this.view.contentDOM) line = new LineTile(parent, lineBaseAttrs);else marks.push(MarkTile.of(new MarkDecoration({
+        if (tile instanceof MarkTile) marks.push(tile);else if (tile === null || tile === void 0 ? void 0 : tile.isLine()) line = tile;else if (tile instanceof BlockWrapperTile) ; // Ignore
+        else if (parent.nodeName == "DIV" && !line && parent != this.view.contentDOM) line = new LineTile(parent, lineBaseAttrs);else if (!line) marks.push(MarkTile.of(new MarkDecoration({
           tagName: parent.nodeName.toLowerCase(),
           attributes: getAttrs(parent)
         }), parent));
@@ -27635,6 +27741,7 @@
         if (composition || changes.length) {
           let oldTile = this.tile;
           let builder = new TileUpdate(this.view, oldTile, this.blockWrappers, this.decorations, this.dynamicDecorationMap);
+          if (composition && Tile.get(composition.text)) builder.cache.reused.set(Tile.get(composition.text), 2 /* Reused.DOM */);
           this.tile = builder.run(changes, composition);
           destroyDropped(oldTile, builder.cache.reused);
         }
@@ -28042,6 +28149,7 @@
       this.blockWrappers = this.view.state.facet(blockWrappers).map(v => typeof v == "function" ? v(this.view) : v);
     }
     scrollIntoView(target) {
+      var _a;
       if (target.isSnapshot) {
         let ref = this.view.viewState.lineBlockAt(target.range.head);
         this.view.scrollDOM.scrollTop = ref.top - target.yMargin;
@@ -28058,7 +28166,7 @@
       let {
         range
       } = target;
-      let rect = this.coordsAt(range.head, range.empty ? range.assoc : range.head > range.anchor ? -1 : 1),
+      let rect = this.coordsAt(range.head, (_a = range.assoc) !== null && _a !== void 0 ? _a : range.empty ? 0 : range.head > range.anchor ? -1 : 1),
         other;
       if (!rect) return;
       if (!range.empty && (other = this.coordsAt(range.anchor, range.anchor > range.head ? -1 : 1))) rect = {
@@ -28079,6 +28187,18 @@
         offsetHeight
       } = this.view.scrollDOM;
       scrollRectIntoView(this.view.scrollDOM, targetRect, range.head < range.anchor ? -1 : 1, target.x, target.y, Math.max(Math.min(target.xMargin, offsetWidth), -offsetWidth), Math.max(Math.min(target.yMargin, offsetHeight), -offsetHeight), this.view.textDirection == Direction.LTR);
+      // On mobile browsers, the visual viewport may be smaller than the
+      // actual reported viewport, causing scrollRectIntoView to fail to
+      // scroll properly. Unfortunately, this visual viewport cannot be
+      // updated directly, and scrollIntoView is the only way a script
+      // can affect it. So this tries to kludge around the problem by
+      // calling scrollIntoView on the scroll target's line.
+      if (window.visualViewport && window.innerHeight - window.visualViewport.height > 1 && (rect.top > window.pageYOffset + window.visualViewport.offsetTop + window.visualViewport.height || rect.bottom < window.pageYOffset + window.visualViewport.offsetTop)) {
+        let line = this.view.docView.lineAt(range.head, 1);
+        if (line) line.dom.scrollIntoView({
+          block: "nearest"
+        });
+      }
     }
     lineHasWidget(pos) {
       let scan = child => child.isWidget() || child.children.some(scan);
@@ -28322,8 +28442,8 @@
     let goal = start.goalColumn,
       startY;
     let rect = view.contentDOM.getBoundingClientRect();
-    let startCoords = view.coordsAtPos(startPos, (start.empty ? start.assoc : 0) || (forward ? 1 : -1)),
-      docTop = view.documentTop;
+    let startCoords = view.coordsAtPos(startPos, start.assoc || ((start.empty ? forward : start.head == start.from) ? 1 : -1));
+    let docTop = view.documentTop;
     if (startCoords) {
       if (goal == null) goal = startCoords.left - rect.left;
       startY = dir < 0 ? startCoords.top : startCoords.bottom;
@@ -28333,12 +28453,19 @@
       startY = (dir < 0 ? line.top : line.bottom) + docTop;
     }
     let resolvedGoal = rect.left + goal;
-    let dist = distance !== null && distance !== void 0 ? distance : view.viewState.heightOracle.textHeight >> 1;
-    let pos = posAtCoords(view, {
-      x: resolvedGoal,
-      y: startY + dist * dir
-    }, false, dir);
-    return EditorSelection.cursor(pos.pos, pos.assoc, undefined, goal);
+    let halfText = view.viewState.heightOracle.textHeight >> 1,
+      dist = distance !== null && distance !== void 0 ? distance : halfText;
+    for (let scan = 0;; scan += halfText) {
+      let y = startY + (dist + scan) * dir;
+      let pos = posAtCoords(view, {
+        x: resolvedGoal,
+        y
+      }, false, dir);
+      if (forward ? y > rect.bottom : y < rect.top) return EditorSelection.cursor(pos.pos, pos.assoc);
+      let posCoords = view.coordsAtPos(pos.pos, pos.assoc),
+        mid = posCoords ? (posCoords.top + posCoords.bottom) / 2 : 0;
+      if (!posCoords || (forward ? mid > startY : mid < startY)) return EditorSelection.cursor(pos.pos, pos.assoc, undefined, goal);
+    }
   }
   function skipAtomicRanges(atoms, pos, bias) {
     for (;;) {
@@ -28468,13 +28595,12 @@
     }
     // Scan through the rectangles for the content of a tile with inline
     // content, looking for one that overlaps the queried position
-    // vertically andis
-    // closest horizontally. The caller is responsible for dividing its
-    // content into N pieces, and pass an array with N+1 positions
-    // (including the position after the last piece). For a text tile,
-    // these will be character clusters, for a composite tile, these
-    // will be child tiles.
-    scan(positions, getRects) {
+    // vertically and is closest horizontally. The caller is responsible
+    // for dividing its content into N pieces, and pass an array with
+    // N+1 positions (including the position after the last piece). For
+    // a text tile, these will be character clusters, for a composite
+    // tile, these will be child tiles.
+    scan(positions, getRects, recursed = false) {
       let lo = 0,
         hi = positions.length - 1,
         seen = new Set();
@@ -28515,6 +28641,8 @@
         if (rects) for (let i = 0; i < rects.length; i++) {
           let rect = rects[i],
             side = 0;
+          // Ignore empty rectangles when there are other rectangles
+          if (rect.width == 0 && rects.length > 1) continue;
           if (rect.bottom < this.y) {
             if (!above || above.bottom < rect.bottom) above = rect;
             side = 1;
@@ -28538,9 +28666,29 @@
       // If no element with y overlap is found, find the nearest element
       // on the y axis, move this.y into it, and retry the scan.
       if (!closestRect) {
+        if (!below && !above) return {
+          i: positions[0],
+          after: false
+        };
         let side = above && (!below || this.y - above.bottom < below.top - this.y) ? above : below;
         this.y = (side.top + side.bottom) / 2;
-        return this.scan(positions, getRects);
+        return this.scan(positions, getRects, true);
+      }
+      // Handle the case where closest matched a higher element on the
+      // same line as an element below/above the coords
+      if (closestDx && !recursed) {
+        let {
+          top,
+          bottom
+        } = closestRect;
+        if (above && above.bottom > (top + top + bottom) / 3) {
+          this.y = above.bottom - 1;
+          return this.scan(positions, getRects, true);
+        }
+        if (below && below.top < (top + bottom + bottom) / 3) {
+          this.y = below.top + 1;
+          return this.scan(positions, getRects, true);
+        }
       }
       let ltr = (bidi ? this.dirAt(positions[closestI], 1) : this.baseDir) == Direction.LTR;
       return {
@@ -28695,9 +28843,10 @@
       this.text = "";
       this.domChanged = start > -1;
       let {
-        impreciseHead: iHead,
-        impreciseAnchor: iAnchor
-      } = view.docView;
+          impreciseHead: iHead,
+          impreciseAnchor: iAnchor
+        } = view.docView,
+        curSel = view.state.selection;
       if (view.state.readOnly && start > -1) {
         // Ignore changes when the editor is read-only
         this.newSel = null;
@@ -28709,14 +28858,14 @@
         this.newSel = selectionFromPoints(selPoints, this.bounds.from);
       } else {
         let domSel = view.observer.selectionRange;
-        let head = iHead && iHead.node == domSel.focusNode && iHead.offset == domSel.focusOffset || !contains(view.contentDOM, domSel.focusNode) ? view.state.selection.main.head : view.docView.posFromDOM(domSel.focusNode, domSel.focusOffset);
-        let anchor = iAnchor && iAnchor.node == domSel.anchorNode && iAnchor.offset == domSel.anchorOffset || !contains(view.contentDOM, domSel.anchorNode) ? view.state.selection.main.anchor : view.docView.posFromDOM(domSel.anchorNode, domSel.anchorOffset);
+        let head = iHead && iHead.node == domSel.focusNode && iHead.offset == domSel.focusOffset || !contains(view.contentDOM, domSel.focusNode) ? curSel.main.head : view.docView.posFromDOM(domSel.focusNode, domSel.focusOffset);
+        let anchor = iAnchor && iAnchor.node == domSel.anchorNode && iAnchor.offset == domSel.anchorOffset || !contains(view.contentDOM, domSel.anchorNode) ? curSel.main.anchor : view.docView.posFromDOM(domSel.anchorNode, domSel.anchorOffset);
         // iOS will refuse to select the block gaps when doing
         // select-all.
         // Chrome will put the selection *inside* them, confusing
         // posFromDOM
         let vp = view.viewport;
-        if ((browser.ios || browser.chrome) && view.state.selection.main.empty && head != anchor && (vp.from > 0 || vp.to < view.state.doc.length)) {
+        if ((browser.ios || browser.chrome) && curSel.main.empty && head != anchor && (vp.from > 0 || vp.to < view.state.doc.length)) {
           let from = Math.min(head, anchor),
             to = Math.max(head, anchor);
           let offFrom = vp.from - from,
@@ -28726,7 +28875,19 @@
             anchor = view.state.doc.length;
           }
         }
-        if (view.inputState.composing > -1 && view.state.selection.ranges.length > 1) this.newSel = view.state.selection.replaceRange(EditorSelection.range(anchor, head));else this.newSel = EditorSelection.single(anchor, head);
+        if (view.inputState.composing > -1 && curSel.ranges.length > 1) {
+          this.newSel = curSel.replaceRange(EditorSelection.range(anchor, head));
+        } else if (view.lineWrapping && anchor == head && !(curSel.main.empty && curSel.main.head == head) && view.inputState.lastTouchTime > Date.now() - 100) {
+          // If this is a cursor selection change in a line-wrapping
+          // editor that may have been a touch, use the last touch
+          // position to assign a side to the cursor.
+          let before = view.coordsAtPos(head, -1),
+            assoc = 0;
+          if (before) assoc = view.inputState.lastTouchY <= before.bottom ? -1 : 1;
+          this.newSel = EditorSelection.create([EditorSelection.cursor(head, assoc)]);
+        } else {
+          this.newSel = EditorSelection.single(anchor, head);
+        }
       }
     }
   }
@@ -28774,7 +28935,10 @@
     let {
         newSel
       } = domChange,
-      sel = view.state.selection.main;
+      {
+        state
+      } = view,
+      sel = state.selection.main;
     let lastKey = view.inputState.lastKeyTime > Date.now() - 100 ? view.inputState.lastKeyCode : -1;
     if (domChange.bounds) {
       let {
@@ -28789,8 +28953,17 @@
         preferredPos = sel.to;
         preferredSide = "end";
       }
-      let diff = findDiff(view.state.doc.sliceString(from, to, LineBreakPlaceholder), domChange.text, preferredPos - from, preferredSide);
-      if (diff) {
+      let cmp = state.doc.sliceString(from, to, LineBreakPlaceholder),
+        selEnd,
+        diff;
+      if (!sel.empty && sel.from >= from && sel.to <= to && (domChange.typeOver || cmp != domChange.text) && cmp.slice(0, sel.from - from) == domChange.text.slice(0, sel.from - from) && cmp.slice(sel.to - from) == domChange.text.slice(selEnd = domChange.text.length - (cmp.length - (sel.to - from)))) {
+        // This looks like a selection replacement
+        change = {
+          from: sel.from,
+          to: sel.to,
+          insert: Text.of(domChange.text.slice(sel.from - from, selEnd).split(LineBreakPlaceholder))
+        };
+      } else if (diff = findDiff(cmp, domChange.text, preferredPos - from, preferredSide)) {
         // Chrome inserts two newlines when pressing shift-enter at the
         // end of a line. DomChange drops one of those.
         if (browser.chrome && lastKey == 13 && diff.toB == diff.from + 2 && domChange.text.slice(diff.from, diff.toB) == LineBreakPlaceholder + LineBreakPlaceholder) diff.toB--;
@@ -28800,18 +28973,11 @@
           insert: Text.of(domChange.text.slice(diff.from, diff.toB).split(LineBreakPlaceholder))
         };
       }
-    } else if (newSel && (!view.hasFocus && view.state.facet(editable) || sameSelPos(newSel, sel))) {
+    } else if (newSel && (!view.hasFocus && state.facet(editable) || sameSelPos(newSel, sel))) {
       newSel = null;
     }
     if (!change && !newSel) return false;
-    if (!change && domChange.typeOver && !sel.empty && newSel && newSel.main.empty) {
-      // Heuristic to notice typing over a selected character
-      change = {
-        from: sel.from,
-        to: sel.to,
-        insert: view.state.doc.slice(sel.from, sel.to)
-      };
-    } else if ((browser.mac || browser.android) && change && change.from == change.to && change.from == sel.head - 1 && /^\. ?$/.test(change.insert.toString()) && view.contentDOM.getAttribute("autocorrect") == "off") {
+    if ((browser.mac || browser.android) && change && change.from == change.to && change.from == sel.head - 1 && /^\. ?$/.test(change.insert.toString()) && view.contentDOM.getAttribute("autocorrect") == "off") {
       // Detect insert-period-on-double-space Mac and Android behavior,
       // and transform it into a regular space insert.
       if (newSel && change.insert.length == 2) newSel = EditorSelection.single(newSel.main.anchor - 1, newSel.main.head - 1);
@@ -28820,16 +28986,7 @@
         to: change.to,
         insert: Text.of([change.insert.toString().replace(".", " ")])
       };
-    } else if (change && change.from >= sel.from && change.to <= sel.to && (change.from != sel.from || change.to != sel.to) && sel.to - sel.from - (change.to - change.from) <= 4) {
-      // If the change is inside the selection and covers most of it,
-      // assume it is a selection replace (with identical characters at
-      // the start/end not included in the diff)
-      change = {
-        from: sel.from,
-        to: sel.to,
-        insert: view.state.doc.slice(sel.from, change.from).append(change.insert).append(view.state.doc.slice(change.to, sel.to))
-      };
-    } else if (view.state.doc.lineAt(sel.from).to < sel.to && view.docView.lineHasWidget(sel.to) && view.inputState.insertingTextAt > Date.now() - 50) {
+    } else if (state.doc.lineAt(sel.from).to < sel.to && view.docView.lineHasWidget(sel.to) && view.inputState.insertingTextAt > Date.now() - 50) {
       // For a cross-line insertion, Chrome and Safari will crudely take
       // the text of the line after the selection, flattening any
       // widgets, and move it into the joined line. This tries to detect
@@ -28838,7 +28995,7 @@
       change = {
         from: sel.from,
         to: sel.to,
-        insert: view.state.toText(view.inputState.insertingText)
+        insert: state.toText(view.inputState.insertingText)
       };
     } else if (browser.chrome && change && change.from == change.to && change.from == sel.head && change.insert.toString() == "\n " && view.lineWrapping) {
       // In Chrome, if you insert a space at the start of a wrapped
@@ -28859,7 +29016,7 @@
       if (view.inputState.lastSelectionTime > Date.now() - 50) {
         if (view.inputState.lastSelectionOrigin == "select") scrollIntoView = true;
         userEvent = view.inputState.lastSelectionOrigin;
-        if (userEvent == "select.pointer") newSel = skipAtomsForSelection(view.state.facet(atomicRanges).map(f => f(view)), newSel);
+        if (userEvent == "select.pointer") newSel = skipAtomsForSelection(state.facet(atomicRanges).map(f => f(view)), newSel);
       }
       view.dispatch({
         selection: newSel,
@@ -29042,9 +29199,12 @@
       this.lastKeyCode = 0;
       this.lastKeyTime = 0;
       this.lastTouchTime = 0;
+      this.lastTouchX = 0;
+      this.lastTouchY = 0;
       this.lastFocusTime = 0;
       this.lastScrollTop = 0;
       this.lastScrollLeft = 0;
+      this.lastWheelEvent = 0;
       // On iOS, some keys need to have their default behavior happen
       // (after which we retroactively handle them and reset the DOM) to
       // avoid messing up the virtual keyboard state.
@@ -29152,7 +29312,7 @@
       // applyDOMChange, notify key handlers of it and reset to
       // the state they produce.
       let pending;
-      if (browser.ios && !event.synthetic && !event.altKey && !event.metaKey && ((pending = PendingKeys.find(key => key.keyCode == event.keyCode)) && !event.ctrlKey || EmacsyPendingKeys.indexOf(event.key) > -1 && event.ctrlKey && !event.shiftKey)) {
+      if (browser.ios && !event.synthetic && !event.altKey && !event.metaKey && !event.shiftKey && ((pending = PendingKeys.find(key => key.keyCode == event.keyCode)) && !event.ctrlKey || EmacsyPendingKeys.indexOf(event.key) > -1 && event.ctrlKey)) {
         this.pendingIOSKey = pending || event;
         setTimeout(() => this.flushIOSKey(), 250);
         return true;
@@ -29465,14 +29625,23 @@
     view.inputState.lastScrollTop = view.scrollDOM.scrollTop;
     view.inputState.lastScrollLeft = view.scrollDOM.scrollLeft;
   };
+  observers.wheel = observers.mousewheel = view => {
+    view.inputState.lastWheelEvent = Date.now();
+  };
   handlers.keydown = (view, event) => {
     view.inputState.setSelectionOrigin("select");
     if (event.keyCode == 27 && view.inputState.tabFocusMode != 0) view.inputState.tabFocusMode = Date.now() + 2000;
     return false;
   };
   observers.touchstart = (view, e) => {
-    view.inputState.lastTouchTime = Date.now();
-    view.inputState.setSelectionOrigin("select.pointer");
+    let iState = view.inputState,
+      touch = e.targetTouches[0];
+    iState.lastTouchTime = Date.now();
+    if (touch) {
+      iState.lastTouchX = touch.clientX;
+      iState.lastTouchY = touch.clientY;
+    }
+    iState.setSelectionOrigin("select.pointer");
   };
   observers.touchmove = view => {
     view.inputState.setSelectionOrigin("select.pointer");
@@ -29558,9 +29727,9 @@
           let startRange = rangeForClick(view, start.pos, start.assoc, type);
           let from = Math.min(startRange.from, range.from),
             to = Math.max(startRange.to, range.to);
-          range = from < range.from ? EditorSelection.range(from, to) : EditorSelection.range(to, from);
+          range = from < range.from ? EditorSelection.range(from, to, range.assoc) : EditorSelection.range(to, from, range.assoc);
         }
-        if (extend) return startSel.replaceRange(startSel.main.extend(range.from, range.to));else if (multiple && type == 1 && startSel.ranges.length > 1 && (removed = removeRangeAround(startSel, cur.pos))) return removed;else if (multiple) return startSel.addRange(range);else return EditorSelection.create([range]);
+        if (extend) return startSel.replaceRange(startSel.main.extend(range.from, range.to, range.assoc));else if (multiple && type == 1 && startSel.ranges.length > 1 && (removed = removeRangeAround(startSel, cur.pos))) return removed;else if (multiple) return startSel.addRange(range);else return EditorSelection.create([range]);
       }
     };
   }
@@ -29804,7 +29973,7 @@
     view.inputState.compositionFirstChange = null;
     if (browser.chrome && browser.android) {
       // Delay flushing for a bit on Android because it'll often fire a
-      // bunch of contradictory changes in a row at end of compositon
+      // bunch of contradictory changes in a row at end of composition
       view.observer.flushSoon();
     } else if (view.inputState.compositionPendingChange) {
       // If we found pending records, schedule a flush.
@@ -29882,8 +30051,8 @@
   const appliedFirefoxHack = /*@__PURE__*/new Set();
   // In Firefox, when cut/copy handlers are added to the document, that
   // somehow avoids a bug where those events aren't fired when the
-  // selection is empty. See https://github.com/codemirror/dev/issues/1082
-  // and https://bugzilla.mozilla.org/show_bug.cgi?id=995961
+  // selection is empty. See issue #1082 and
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=995961
   function firefoxCopyCutHack(doc) {
     if (!appliedFirefoxHack.has(doc)) {
       appliedFirefoxHack.add(doc);
@@ -29940,7 +30109,7 @@
     }
     refresh(whiteSpace, lineHeight, charWidth, textHeight, lineLength, knownHeights) {
       let lineWrapping = wrappingWhiteSpace.indexOf(whiteSpace) > -1;
-      let changed = Math.abs(lineHeight - this.lineHeight) > 0.3 || this.lineWrapping != lineWrapping || Math.abs(charWidth - this.charWidth) > 0.1;
+      let changed = Math.abs(lineHeight - this.lineHeight) > 0.3 || this.lineWrapping != lineWrapping;
       this.lineWrapping = lineWrapping;
       this.lineHeight = lineHeight;
       this.charWidth = charWidth;
@@ -30712,7 +30881,8 @@
     }
   }
   class ViewState {
-    constructor(state) {
+    constructor(view, state) {
+      this.view = view;
       this.state = state;
       // These are contentDOM-local coordinates
       this.pixelViewport = {
@@ -30728,12 +30898,14 @@
       this.contentDOMHeight = 0; // contentDOM.getBoundingClientRect().height
       this.editorHeight = 0; // scrollDOM.clientHeight, unscaled
       this.editorWidth = 0; // scrollDOM.clientWidth, unscaled
-      this.scrollTop = 0; // Last seen scrollDOM.scrollTop, scaled
-      this.scrolledToBottom = false;
       // The CSS-transformation scale of the editor (transformed size /
       // concrete size)
       this.scaleX = 1;
       this.scaleY = 1;
+      // Last seen vertical offset of the element at the top of the scroll
+      // container, or top of the window if there's no wrapping scroller
+      this.scrollOffset = 0;
+      this.scrolledToBottom = false;
       // The vertical position (document-relative) to which to anchor the
       // scroll position. -1 means anchor to the end of the document.
       this.scrollAnchorPos = 0;
@@ -30770,6 +30942,7 @@
       this.updateViewportLines();
       this.lineGaps = this.ensureLineGaps([]);
       this.lineGapDeco = Decoration.set(this.lineGaps.map(gap => gap.draw(this, false)));
+      this.scrollParent = view.scrollDOM;
       this.computeVisibleRanges();
     }
     updateForViewport() {
@@ -30811,7 +30984,7 @@
       let contentChanges = update.changedRanges;
       let heightChanges = ChangedRange.extendWithRanges(contentChanges, heightRelevantDecoChanges(prevDeco, this.stateDeco, update ? update.changes : ChangeSet.empty(this.state.doc.length)));
       let prevHeight = this.heightMap.height;
-      let scrollAnchor = this.scrolledToBottom ? null : this.scrollAnchorAt(this.scrollTop);
+      let scrollAnchor = this.scrolledToBottom ? null : this.scrollAnchorAt(this.scrollOffset);
       clearHeightChangeFlag();
       this.heightMap = this.heightMap.applyChanges(this.stateDeco, update.startState.doc, this.heightOracle.setDoc(this.state.doc), heightChanges);
       if (this.heightMap.height != prevHeight || heightChangeFlag) update.flags |= 2 /* UpdateFlag.Height */;
@@ -30833,13 +31006,16 @@
       if (scrollTarget) this.scrollTarget = scrollTarget;
       if (!this.mustEnforceCursorAssoc && (update.selectionSet || update.focusChanged) && update.view.lineWrapping && update.state.selection.main.empty && update.state.selection.main.assoc && !update.state.facet(nativeSelectionHidden)) this.mustEnforceCursorAssoc = true;
     }
-    measure(view) {
-      let dom = view.contentDOM,
+    measure() {
+      let {
+          view
+        } = this,
+        dom = view.contentDOM,
         style = window.getComputedStyle(dom);
       let oracle = this.heightOracle;
       let whiteSpace = style.whiteSpace;
       this.defaultTextDirection = style.direction == "rtl" ? Direction.RTL : Direction.LTR;
-      let refresh = this.heightOracle.mustRefreshForWrapping(whiteSpace) || this.mustMeasureContent;
+      let refresh = this.heightOracle.mustRefreshForWrapping(whiteSpace) || this.mustMeasureContent === "refresh";
       let domRect = dom.getBoundingClientRect();
       let measureContent = refresh || this.mustMeasureContent || this.contentDOMHeight != domRect.height;
       this.contentDOMHeight = domRect.height;
@@ -30871,12 +31047,18 @@
         this.editorWidth = view.scrollDOM.clientWidth;
         result |= 16 /* UpdateFlag.Geometry */;
       }
-      let scrollTop = view.scrollDOM.scrollTop * this.scaleY;
-      if (this.scrollTop != scrollTop) {
+      let scrollParent = scrollableParents(this.view.contentDOM, false).y;
+      if (scrollParent != this.scrollParent) {
+        this.scrollParent = scrollParent;
         this.scrollAnchorHeight = -1;
-        this.scrollTop = scrollTop;
+        this.scrollOffset = 0;
       }
-      this.scrolledToBottom = isScrolledToBottom(view.scrollDOM);
+      let scrollOffset = this.getScrollOffset();
+      if (this.scrollOffset != scrollOffset) {
+        this.scrollAnchorHeight = -1;
+        this.scrollOffset = scrollOffset;
+      }
+      this.scrolledToBottom = isScrolledToBottom(this.scrollParent || view.win);
       // Pixel viewport
       let pixelViewport = (this.printing ? fullPixelRange : visiblePixelRange)(dom, this.paddingTop);
       let dTop = pixelViewport.top - this.pixelViewport.top,
@@ -31138,9 +31320,13 @@
     lineBlockAtHeight(height) {
       return height >= this.viewportLines[0].top && height <= this.viewportLines[this.viewportLines.length - 1].bottom && this.viewportLines.find(l => l.top <= height && l.bottom >= height) || scaleBlock(this.heightMap.lineAt(this.scaler.fromDOM(height), QueryType.ByHeight, this.heightOracle, 0, 0), this.scaler);
     }
-    scrollAnchorAt(scrollTop) {
-      let block = this.lineBlockAtHeight(scrollTop + 8);
-      return block.from >= this.viewport.from || this.viewportLines[0].top - scrollTop > 200 ? block : this.viewportLines[0];
+    getScrollOffset() {
+      let base = this.scrollParent == this.view.scrollDOM ? this.scrollParent.scrollTop : (this.scrollParent ? this.scrollParent.getBoundingClientRect().top : 0) - this.view.contentDOM.getBoundingClientRect().top;
+      return base * this.scaleY;
+    }
+    scrollAnchorAt(scrollOffset) {
+      let block = this.lineBlockAtHeight(scrollOffset + 8);
+      return block.from >= this.viewport.from || this.viewportLines[0].top - scrollOffset > 200 ? block : this.viewportLines[0];
     }
     elementAtHeight(height) {
       return scaleBlock(this.heightMap.blockAt(this.scaler.fromDOM(height), this.heightOracle, 0, 0), this.scaler);
@@ -31362,7 +31548,7 @@
       display: "block",
       whiteSpace: "pre",
       wordWrap: "normal",
-      // https://github.com/codemirror/dev/issues/456
+      // Issue #456
       boxSizing: "border-box",
       minHeight: "100%",
       padding: "4px 0",
@@ -31391,6 +31577,8 @@
       padding: "0 2px 0 6px"
     },
     ".cm-layer": {
+      userSelect: "none",
+      // #1708
       position: "absolute",
       left: 0,
       top: 0,
@@ -31444,6 +31632,25 @@
     },
     "&dark .cm-cursor": {
       borderLeftColor: "#ddd"
+    },
+    ".cm-selectionHandle": {
+      backgroundColor: "currentColor",
+      width: "1.5px"
+    },
+    ".cm-selectionHandle-start::before, .cm-selectionHandle-end::before": {
+      content: '""',
+      backgroundColor: "inherit",
+      borderRadius: "50%",
+      width: "8px",
+      height: "8px",
+      position: "absolute",
+      left: "-3.25px"
+    },
+    ".cm-selectionHandle-start::before": {
+      top: "-8px"
+    },
+    ".cm-selectionHandle-end::before": {
+      bottom: "-8px"
     },
     ".cm-dropCursor": {
       position: "absolute"
@@ -31788,7 +31995,7 @@
         view
       } = this;
       // The Selection object is broken in shadow roots in Safari. See
-      // https://github.com/codemirror/dev/issues/414
+      // issue #414
       let selection = getSelection(view.root);
       if (!selection) return false;
       let range = browser.safari && view.root.nodeType == 11 && view.root.activeElement == this.dom && safariSelectionRangeHack(this.view, selection) || selection;
@@ -32455,7 +32662,7 @@
       this.dispatchTransactions = config.dispatchTransactions || dispatch && (trs => trs.forEach(tr => dispatch(tr, this))) || (trs => this.update(trs));
       this.dispatch = this.dispatch.bind(this);
       this._root = config.root || getRoot(config.parent) || document;
-      this.viewState = new ViewState(config.state || EditorState.create(config));
+      this.viewState = new ViewState(this, config.state || EditorState.create(config));
       if (config.scrollTo && config.scrollTo.is(scrollIntoView)) this.viewState.scrollTarget = config.scrollTo.value.clip(this.viewState.state);
       this.plugins = this.state.facet(viewPlugin).map(spec => new PluginInstance(spec));
       for (let plugin of this.plugins) plugin.update(this);
@@ -32468,7 +32675,7 @@
       this.updateState = 0 /* UpdateState.Idle */;
       this.requestMeasure();
       if ((_a = document.fonts) === null || _a === void 0 ? void 0 : _a.ready) document.fonts.ready.then(() => {
-        this.viewState.mustMeasureContent = true;
+        this.viewState.mustMeasureContent = "refresh";
         this.requestMeasure();
       });
     }
@@ -32538,7 +32745,11 @@
             let {
               main
             } = tr.state.selection;
-            scrollTarget = new ScrollTarget(main.empty ? main : EditorSelection.cursor(main.head, main.head > main.anchor ? -1 : 1));
+            let {
+              x,
+              y
+            } = this.state.facet(EditorView.cursorScrollMargin);
+            scrollTarget = new ScrollTarget(main.empty ? main : EditorSelection.cursor(main.head, main.head > main.anchor ? -1 : 1), "nearest", "nearest", y, x);
           }
           for (let e of tr.effects) if (e.is(scrollIntoView)) scrollTarget = e.value.clip(this.state);
         }
@@ -32590,7 +32801,7 @@
       let hadFocus = this.hasFocus;
       try {
         for (let plugin of this.plugins) plugin.destroy(this);
-        this.viewState = new ViewState(newState);
+        this.viewState = new ViewState(this, newState);
         this.plugins = newState.facet(viewPlugin).map(spec => new PluginInstance(spec));
         this.pluginMap.clear();
         for (let plugin of this.plugins) plugin.update(this);
@@ -32656,28 +32867,28 @@
       this.measureScheduled = 0; // Prevent requestMeasure calls from scheduling another animation frame
       if (flush) this.observer.forceFlush();
       let updated = null;
-      let sDOM = this.scrollDOM,
-        scrollTop = sDOM.scrollTop * this.scaleY;
+      let scroll = this.viewState.scrollParent,
+        scrollOffset = this.viewState.getScrollOffset();
       let {
         scrollAnchorPos,
         scrollAnchorHeight
       } = this.viewState;
-      if (Math.abs(scrollTop - this.viewState.scrollTop) > 1) scrollAnchorHeight = -1;
+      if (Math.abs(scrollOffset - this.viewState.scrollOffset) > 1) scrollAnchorHeight = -1;
       this.viewState.scrollAnchorHeight = -1;
       try {
         for (let i = 0;; i++) {
           if (scrollAnchorHeight < 0) {
-            if (isScrolledToBottom(sDOM)) {
+            if (isScrolledToBottom(scroll || this.win)) {
               scrollAnchorPos = -1;
               scrollAnchorHeight = this.viewState.heightMap.height;
             } else {
-              let block = this.viewState.scrollAnchorAt(scrollTop);
+              let block = this.viewState.scrollAnchorAt(scrollOffset);
               scrollAnchorPos = block.from;
               scrollAnchorHeight = block.top;
             }
           }
           this.updateState = 1 /* UpdateState.Measuring */;
-          let changed = this.viewState.measure(this);
+          let changed = this.viewState.measure();
           if (!changed && !this.measureRequests.length && this.viewState.scrollTarget == null) break;
           if (i > 5) {
             console.warn(this.measureRequests.length ? "Measure loop restarted more than 5 times" : "Viewport failed to stabilize");
@@ -32724,10 +32935,10 @@
                 continue;
               } else {
                 let newAnchorHeight = scrollAnchorPos < 0 ? this.viewState.heightMap.height : this.viewState.lineBlockAt(scrollAnchorPos).top;
-                let diff = newAnchorHeight - scrollAnchorHeight;
-                if (diff > 1 || diff < -1) {
-                  scrollTop = scrollTop + diff;
-                  sDOM.scrollTop = scrollTop / this.scaleY;
+                let diff = (newAnchorHeight - scrollAnchorHeight) / this.scaleY;
+                if ((diff > 1 || diff < -1) && (scroll == this.scrollDOM || this.hasFocus || Math.max(this.inputState.lastWheelEvent, this.inputState.lastTouchTime) > Date.now() - 100)) {
+                  scrollOffset = scrollOffset + diff;
+                  if (scroll) scroll.scrollTop += diff;else this.win.scrollBy(0, diff);
                   scrollAnchorHeight = -1;
                   continue;
                 }
@@ -33146,7 +33357,8 @@
     cause it to scroll the given position or range into view.
     */
     static scrollIntoView(pos, options = {}) {
-      return scrollIntoView.of(new ScrollTarget(typeof pos == "number" ? EditorSelection.cursor(pos) : pos, options.y, options.x, options.yMargin, options.xMargin));
+      var _a, _b, _c, _d;
+      return scrollIntoView.of(new ScrollTarget(typeof pos == "number" ? EditorSelection.cursor(pos) : pos, (_a = options.y) !== null && _a !== void 0 ? _a : "nearest", (_b = options.x) !== null && _b !== void 0 ? _b : "nearest", (_c = options.yMargin) !== null && _c !== void 0 ? _c : 5, (_d = options.xMargin) !== null && _d !== void 0 ? _d : 5));
     }
     /**
     Return an effect that resets the editor to its current (at the
@@ -33214,7 +33426,7 @@
     }
     /**
     Create a theme extension. The first argument can be a
-    [`style-mod`](https://github.com/marijnh/style-mod#documentation)
+    [`style-mod`](https://code.haverbeke.berlin/marijn/style-mod#documentation)
     style spec providing the styles for the theme. These will be
     prefixed with a generated class for the style.
     
@@ -33259,7 +33471,7 @@
   }
   /**
   Facet to add a [style
-  module](https://github.com/marijnh/style-mod#documentation) to
+  module](https://code.haverbeke.berlin/marijn/style-mod#documentation) to
   an editor view. The view will ensure that the module is
   mounted in its [document
   root](https://codemirror.net/6/docs/ref/#view.EditorView.constructor^config.root).
@@ -33406,11 +33618,34 @@
   */
   EditorView.bidiIsolatedRanges = bidiIsolatedRanges;
   /**
+  Can be used to specify the distance that scrolling cursor into
+  view keeps it away from the sides of the editor, either as a
+  single pixel number or two different values for the different
+  axes. Defaults to 5 pixels on both axes.
+  */
+  EditorView.cursorScrollMargin = /*@__PURE__*/Facet.define({
+    combine: inputs => {
+      let x = 5,
+        y = 5;
+      for (let i of inputs) {
+        if (typeof i == "number") x = y = i;else ({
+          x,
+          y
+        } = i);
+      }
+      return {
+        x,
+        y
+      };
+    }
+  });
+  /**
   Facet that allows extensions to provide additional scroll
   margins (space around the sides of the scrolling element that
   should be considered invisible). This can be useful when the
   plugin introduces elements that cover part of that element (for
-  example a horizontally fixed gutter).
+  example a horizontally fixed gutter). Not to be confused with
+  [`cursorScrollMargin`](https://codemirror.net/6/docs/ref/#view.EditorView^cursorScrollMargin).
   */
   EditorView.scrollMargins = scrollMargins;
   /**
@@ -33961,11 +34196,13 @@
       arrow: tooltips.some(t => t.arrow)
     };
   });
+  const hoverPlugin = /*@__PURE__*/Facet.define();
   class HoverPlugin {
-    constructor(view, source, field, setHover, hoverTime) {
+    constructor(view, source, field, locked, setHover, hoverTime) {
       this.view = view;
       this.source = source;
       this.field = field;
+      this.locked = locked;
       this.setHover = setHover;
       this.hoverTime = hoverTime;
       this.hoverTimeout = -1;
@@ -33981,7 +34218,7 @@
       view.dom.addEventListener("mouseleave", this.mouseleave = this.mouseleave.bind(this));
       view.dom.addEventListener("mousemove", this.mousemove = this.mousemove.bind(this));
     }
-    update() {
+    update(update) {
       if (this.pending) {
         this.pending = null;
         clearTimeout(this.restartTimeout);
@@ -34018,23 +34255,31 @@
         let rtl = bidi && bidi.dir == Direction.RTL ? -1 : 1;
         side = lastMove.x < posCoords.left ? -rtl : rtl;
       }
+      this.activateHover(view, pos, side);
+    }
+    activateHover(view, pos, side, locked) {
       let open = this.source(view, pos, side);
-      if (open === null || open === void 0 ? void 0 : open.then) {
+      let done = value => {
+        if (value && !(Array.isArray(value) && !value.length)) {
+          let tooltips = Array.isArray(value) ? value : [value];
+          if (locked) this.locked.set(tooltips, locked);
+          view.dispatch({
+            effects: this.setHover.of(tooltips)
+          });
+        }
+      };
+      if (open && "then" in open) {
         let pending = this.pending = {
           pos
         };
         open.then(result => {
           if (this.pending == pending) {
             this.pending = null;
-            if (result && !(Array.isArray(result) && !result.length)) view.dispatch({
-              effects: this.setHover.of(Array.isArray(result) ? result : [result])
-            });
+            done(result);
           }
         }, e => logException(view.state, e, "hover tooltip"));
-      } else if (open && !(Array.isArray(open) && !open.length)) {
-        view.dispatch({
-          effects: this.setHover.of(Array.isArray(open) ? open : [open])
-        });
+      } else {
+        done(open);
       }
     }
     get tooltip() {
@@ -34055,7 +34300,7 @@
         active,
         tooltip
       } = this;
-      if (active.length && tooltip && !isInTooltip(tooltip.dom, event) || this.pending) {
+      if (active.length && !this.locked.has(active) && tooltip && !isInTooltip(tooltip.dom, event) || this.pending) {
         let {
             pos
           } = active[0] || this.pending,
@@ -34074,7 +34319,7 @@
       let {
         active
       } = this;
-      if (active.length) {
+      if (active.length && !this.locked.has(active)) {
         let {
           tooltip
         } = this;
@@ -34087,7 +34332,10 @@
     watchTooltipLeave(tooltip) {
       let watch = event => {
         tooltip.removeEventListener("mouseleave", watch);
-        if (this.active.length && !this.view.dom.contains(event.relatedTarget)) this.view.dispatch({
+        let {
+          active
+        } = this;
+        if (active.length && !this.locked.has(active) && !this.view.dom.contains(event.relatedTarget)) this.view.dispatch({
           effects: this.setHover.of([])
         });
       };
@@ -34146,38 +34394,48 @@
   */
   function hoverTooltip(source, options = {}) {
     let setHover = StateEffect.define();
+    // This would be better stored in the state field, but we've set
+    // down the type of the field in our interface, so it's indirectly
+    // stored by array identity.
+    let locked = new WeakMap();
     let hoverState = StateField.define({
       create() {
         return [];
       },
       update(value, tr) {
+        let lock = locked.get(value);
         if (value.length) {
-          if (options.hideOnChange && (tr.docChanged || tr.selection)) value = [];else if (options.hideOn) value = value.filter(v => !options.hideOn(tr, v));
-          if (tr.docChanged) {
-            let mapped = [];
-            for (let tooltip of value) {
-              let newPos = tr.changes.mapPos(tooltip.pos, -1, MapMode.TrackDel);
-              if (newPos != null) {
-                let copy = Object.assign(Object.create(null), tooltip);
-                copy.pos = newPos;
-                if (copy.end != null) copy.end = tr.changes.mapPos(copy.end);
-                mapped.push(copy);
-              }
+          if (options.hideOnChange && (tr.docChanged || tr.selection)) value = [];else if (lock && lock(tr)) value = [];else if (options.hideOn) value = value.filter(v => !options.hideOn(tr, v));
+        }
+        if (tr.docChanged && value.length) {
+          let mapped = [];
+          for (let tooltip of value) {
+            let newPos = tr.changes.mapPos(tooltip.pos, -1, MapMode.TrackDel);
+            if (newPos != null) {
+              let copy = Object.assign(Object.create(null), tooltip);
+              copy.pos = newPos;
+              if (copy.end != null) copy.end = tr.changes.mapPos(copy.end);
+              mapped.push(copy);
             }
-            value = mapped;
           }
+          value = mapped;
         }
         for (let effect of tr.effects) {
-          if (effect.is(setHover)) value = effect.value;
-          if (effect.is(closeHoverTooltipEffect)) value = [];
+          if (effect.is(setHover)) {
+            value = effect.value;
+            lock = undefined;
+          }
+          if (effect.is(closeHoverTooltipEffect) && !effect.value || effect.value == hoverState) value = [];
         }
+        if (value.length && lock) locked.set(value, lock);
         return value;
       },
       provide: f => showHoverTooltip.from(f)
     });
+    const plugin = ViewPlugin.define(view => new HoverPlugin(view, source, hoverState, locked, setHover, options.hoverTime || 300 /* Hover.Time */));
     return {
       active: hoverState,
-      extension: [hoverState, ViewPlugin.define(view => new HoverPlugin(view, source, hoverState, setHover, options.hoverTime || 300 /* Hover.Time */)), showHoverTooltipHost]
+      extension: [hoverState, plugin, hoverPlugin.of(plugin), showHoverTooltipHost]
     };
   }
   const closeHoverTooltipEffect = /*@__PURE__*/StateEffect.define();
@@ -38036,7 +38294,7 @@
     return {
       pos: start,
       end: end,
-      above: view.state.doc.lineAt(start).to < end,
+      above: true,
       create() {
         return {
           dom: diagnosticsTooltip(view, found)
@@ -38457,7 +38715,7 @@
       paddingBottom: "0.7px"
     },
     ".cm-lintRange-error": {
-      backgroundImage: /*@__PURE__*/underline("#d11")
+      backgroundImage: /*@__PURE__*/underline("#f11")
     },
     ".cm-lintRange-warning": {
       backgroundImage: /*@__PURE__*/underline("orange")
@@ -38535,6 +38793,14 @@
         padding: 0,
         margin: 0
       }
+    },
+    "&dark .cm-lintRange-active": {
+      backgroundColor: "#86714a80"
+    },
+    "&dark .cm-panel.cm-panel-lint ul": {
+      "& [aria-selected]": {
+        backgroundColor: "#2e343e"
+      }
     }
   });
   function severityWeight(sev) {
@@ -38552,15 +38818,16 @@
     }
     return sev;
   }
+  const lintHover = /*@__PURE__*/hoverTooltip(lintTooltip, {
+    hideOn: hideTooltip
+  });
   const lintExtensions = [lintState, /*@__PURE__*/EditorView.decorations.compute([lintState], state => {
     let {
       selected,
       panel
     } = state.field(lintState);
     return !selected || !panel || selected.from == selected.to ? Decoration.none : Decoration.set([activeMark.range(selected.from, selected.to)]);
-  }), /*@__PURE__*/hoverTooltip(lintTooltip, {
-    hideOn: hideTooltip
-  }), baseTheme];
+  }), lintHover, baseTheme];
 
   /**
    * @typedef {import('@lezer/common').Tree} Tree
@@ -38763,7 +39030,8 @@
    *   type?: 'function',
    *   params?: Array<{
    *     name: string;
-   *   }>
+   *   }>,
+   *   engines?: Record<string, string>
    * } } Builtin
    */
 
@@ -38934,14 +39202,20 @@
     "params": [{
       "name": "value"
     }],
-    "info": "<p>Parses a JSON string into a FEEL value. The function converts JSON primitives, objects, and arrays into their corresponding FEEL types.</p>\n<p>Returns <code>null</code> if the string is not a valid JSON value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">from json(value: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">from json(&quot;{\\&quot;a\\&quot;: 1, \\&quot;b\\&quot;: 2}&quot;)\n// {a: 1, b: 2}\n\nfrom json(&quot;true&quot;)\n// true\n\nfrom json(&quot;\\&quot;2023-06-14\\&quot;&quot;)\n// &quot;2023-06-14&quot;\n</code></pre>\n"
+    "info": "<p>Parses a JSON string into a FEEL value. The function converts JSON primitives, objects, and arrays into their corresponding FEEL types.</p>\n<p>Returns <code>null</code> if the string is not a valid JSON value.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">from json(value: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">from json(&quot;{\\&quot;a\\&quot;: 1, \\&quot;b\\&quot;: 2}&quot;)\n// {a: 1, b: 2}\n\nfrom json(&quot;true&quot;)\n// true\n\nfrom json(&quot;\\&quot;2023-06-14\\&quot;&quot;)\n// &quot;2023-06-14&quot;\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.9"
+    }
   }, {
     "name": "to json",
     "type": "function",
     "params": [{
       "name": "value"
     }],
-    "info": "<p>Converts a FEEL value into a JSON string. The function converts FEEL primitives, contexts, and lists into their\ncorresponding JSON types. Temporal values are converted to their ISO 8601 string representation, including timezone\ninformation for date and time values (format: <code>2025-11-24T10:00:00+01:00[Europe/Berlin]</code>).</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">to json(value: Any): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">to json({a: 1, b: 2})\n// &quot;{\\&quot;a\\&quot;:1,\\&quot;b\\&quot;:2}&quot;\n\nto json(true)\n// &quot;true&quot;\n\nto json(@&quot;2023-06-14&quot;)\n// &quot;\\&quot;2023-06-14\\&quot;&quot;\n\nto json(@&quot;2025-11-24T10:00:00@Europe/Berlin&quot;)\n// &quot;\\&quot;2025-11-24T10:00:00+01:00[Europe/Berlin]\\&quot;&quot;\n\nto json(@&quot;P3Y&quot;)\n// &quot;\\&quot;P3Y\\&quot;&quot;\n</code></pre>\n"
+    "info": "<p>Converts a FEEL value into a JSON string. The function converts FEEL primitives, contexts, and lists into their\ncorresponding JSON types. Temporal values are converted to their ISO 8601 string representation, including timezone\ninformation for date and time values (format: <code>2025-11-24T10:00:00+01:00[Europe/Berlin]</code>).</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">to json(value: Any): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">to json({a: 1, b: 2})\n// &quot;{\\&quot;a\\&quot;:1,\\&quot;b\\&quot;:2}&quot;\n\nto json(true)\n// &quot;true&quot;\n\nto json(@&quot;2023-06-14&quot;)\n// &quot;\\&quot;2023-06-14\\&quot;&quot;\n\nto json(@&quot;2025-11-24T10:00:00@Europe/Berlin&quot;)\n// &quot;\\&quot;2025-11-24T10:00:00+01:00[Europe/Berlin]\\&quot;&quot;\n\nto json(@&quot;P3Y&quot;)\n// &quot;\\&quot;P3Y\\&quot;&quot;\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.9"
+    }
   }, {
     "name": "list contains",
     "type": "function",
@@ -39714,7 +39988,7 @@
     "params": [{
       "name": "value"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Checks if a given value is not <code>null</code>. If the value is <code>null</code> then the function returns <code>false</code>.\nOtherwise, the function returns <code>true</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is defined(value: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is defined(1)\n// true\n\nis defined(null)\n// false\n\nis defined(x)\n// false - if no variable &quot;x&quot; exists\n\nis defined(x.y)\n// false - if no variable &quot;x&quot; exists or it doesn&#39;t have a property &quot;y&quot;\n</code></pre>\n<p>:::caution Breaking change</p>\n<p>This function worked differently in previous versions. It returned <code>true</code> if the value was <code>null</code>.\nSince this version, the function returns <code>false</code> if the value is <code>null</code>.</p>\n<p>:::</p>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Checks if a given value is not <code>null</code>. If the value is <code>null</code> then the function returns <code>false</code>.\nOtherwise, the function returns <code>true</code>.</p>\n<p>The function requires one argument. Calling <code>is defined()</code> without an argument is invalid.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is defined(value: Any): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is defined(1)\n// true\n\nis defined(null)\n// false\n\nis defined(x)\n// false - if no variable &quot;x&quot; exists\n\nis defined(x.y)\n// false - if no variable &quot;x&quot; exists or it doesn&#39;t have a property &quot;y&quot;\n\nis defined()\n// error - expected one argument\n</code></pre>\n<p>:::caution Breaking change</p>\n<p>This function worked differently in previous versions. It returned <code>true</code> if the value was <code>null</code>.\nSince this version, the function returns <code>false</code> if the value is <code>null</code>.</p>\n<p>:::</p>\n"
   }, {
     "name": "get or else",
     "type": "function",
@@ -39723,7 +39997,10 @@
     }, {
       "name": "default"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Return the provided value parameter if not <code>null</code>, otherwise return the default parameter</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">get or else(value: Any, default: Any): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">get or else(&quot;this&quot;, &quot;default&quot;)\n// &quot;this&quot;\n\nget or else(null, &quot;default&quot;)\n// &quot;default&quot;\n\nget or else(null, null)\n// null\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Return the provided value parameter if not <code>null</code>, otherwise return the default parameter</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">get or else(value: Any, default: Any): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">get or else(&quot;this&quot;, &quot;default&quot;)\n// &quot;this&quot;\n\nget or else(null, &quot;default&quot;)\n// &quot;default&quot;\n\nget or else(null, null)\n// null\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.3"
+    }
   }, {
     "name": "assert",
     "type": "function",
@@ -39732,7 +40009,10 @@
     }, {
       "name": "condition"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Verify that the given condition is met. If the condition is <code>true</code>, the function returns the value.\nOtherwise, the evaluation fails with an error.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">assert(value: Any, condition: Any)\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">assert(x, x != null)\n// &quot;value&quot; - if x is &quot;value&quot;\n// error - if x is null or doesn&#39;t exist\n\nassert(x, x &gt;= 0)\n// 4 - if x is 4\n// error - if x is less than zero\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Verify that the given condition is met. If the condition is <code>true</code>, the function returns the value.\nOtherwise, the evaluation fails with an error.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">assert(value: Any, condition: Any)\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">assert(x, x != null)\n// &quot;value&quot; - if x is &quot;value&quot;\n// error - if x is null or doesn&#39;t exist\n\nassert(x, x &gt;= 0)\n// 4 - if x is 4\n// error - if x is less than zero\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.3"
+    }
   }, {
     "name": "assert",
     "type": "function",
@@ -39743,7 +40023,10 @@
     }, {
       "name": "cause"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Verify that the given condition is met. If the condition is <code>true</code>, the function returns the value.\nOtherwise, the evaluation fails with an error containing the given message.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">assert(value: Any, condition: Any, cause: String)\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">assert(x, x != null, &quot;&#39;x&#39; should not be null&quot;)\n// &quot;value&quot; - if x is &quot;value&quot;\n// error(&#39;x&#39; should not be null) - if x is null or doesn&#39;t exist\n\nassert(x, x &gt;= 0, &quot;&#39;x&#39; should be positive&quot;)\n// 4 - if x is 4\n// error(&#39;x&#39; should be positive) - if x is less than zero\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Verify that the given condition is met. If the condition is <code>true</code>, the function returns the value.\nOtherwise, the evaluation fails with an error containing the given message.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">assert(value: Any, condition: Any, cause: String)\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">assert(x, x != null, &quot;&#39;x&#39; should not be null&quot;)\n// &quot;value&quot; - if x is &quot;value&quot;\n// error(&#39;x&#39; should not be null) - if x is null or doesn&#39;t exist\n\nassert(x, x &gt;= 0, &quot;&#39;x&#39; should be positive&quot;)\n// 4 - if x is 4\n// error(&#39;x&#39; should be positive) - if x is less than zero\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.3"
+    }
   }, {
     "name": "get value",
     "type": "function",
@@ -39770,7 +40053,10 @@
     "params": [{
       "name": "contexts"
     }],
-    "info": "<p>Union the given contexts. Returns a new context that includes all entries of the given contexts.</p>\n<p>If an entry for the same key already exists in a context, it overrides the value. The entries are overridden in the same order as in the list of contexts.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">context merge(contexts: list&lt;context&gt;): context\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">context merge([{x:1}, {y:2}])\n// {x:1, y:2}\n\ncontext merge([{x:1, y: 0}, {y:2}])\n// {x:1, y:2}\n</code></pre>\n<p>:::info\nThe function <code>context merge()</code> replaced the previous function <code>put all()</code> (Camunda Extension). The\nprevious function is deprecated and should not be used anymore.\n:::</p>\n"
+    "info": "<p>Union the given contexts. Returns a new context that includes all entries of the given contexts.</p>\n<p>If an entry for the same key already exists in a context, it overrides the value. The entries are overridden in the same order as in the list of contexts.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">context merge(contexts: list&lt;context&gt;): context\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">context merge([{x:1}, {y:2}])\n// {x:1, y:2}\n\ncontext merge([{x:1, y: 0}, {y:2}])\n// {x:1, y:2}\n</code></pre>\n<p>:::info\nThe function <code>context merge()</code> replaced the previous function <code>put all()</code> (Camunda Extension). The\nprevious function is deprecated and should not be used anymore.\n:::</p>\n",
+    "engines": {
+      "camunda": ">=8.2"
+    }
   }, {
     "name": "date and time",
     "type": "function",
@@ -39786,7 +40072,10 @@
     "params": [{
       "name": "list"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns all duplicate values of the given list.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">duplicate values(list: list): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">duplicate values([1,2,3,2,1])\n// [1,2]\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns all duplicate values of the given list.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">duplicate values(list: list): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">duplicate values([1,2,3,2,1])\n// [1,2]\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.3"
+    }
   }, {
     "name": "string join",
     "type": "function",
@@ -39806,7 +40095,10 @@
     "params": [{
       "name": "list"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns <code>true</code> if the given list is empty. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is empty(list: list): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is empty([])\n// true\n\nis empty([1,2,3])\n// false\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns <code>true</code> if the given list is empty. Otherwise, returns <code>false</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is empty(list: list): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is empty([])\n// true\n\nis empty([1,2,3])\n// false\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.6"
+    }
   }, {
     "name": "partition",
     "type": "function",
@@ -39815,14 +40107,20 @@
     }, {
       "name": "size"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns consecutive sublists of a list, each of the same size (the final list may be smaller).</p>\n<p>If <code>size</code> is less than <code>0</code>, it returns <code>null</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">partition(list: list, size: number): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">partition([1,2,3,4,5], 2)\n// [[1,2], [3,4], [5]]\n\npartition([], 2)\n// []\n\npartition([1,2], 0)\n// null\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns consecutive sublists of a list, each of the same size (the final list may be smaller).</p>\n<p>If <code>size</code> is less than <code>0</code>, it returns <code>null</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">partition(list: list, size: number): list\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">partition([1,2,3,4,5], 2)\n// [[1,2], [3,4], [5]]\n\npartition([], 2)\n// []\n\npartition([1,2], 0)\n// null\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.7"
+    }
   }, {
     "name": "fromAi",
     "type": "function",
     "params": [{
       "name": "value"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<ul>\n<li>The purpose of this function is solely to tag the value as being generated by an AI integration.</li>\n<li>The actual handling is not performed by the FEEL engine, but by a custom integration such as a connector or a job worker.</li>\n</ul>\n<p>The main use case of this function is for <a href=\"../../../connectors/out-of-the-box-connectors/agentic-ai-aiagent-tool-definitions.md\">tool definitions</a> used by the <a href=\"../../../connectors/out-of-the-box-connectors/agentic-ai-aiagent.md\">AI Agent connector</a>.</p>\n<p>See the following function overloads for additional function parameters.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.searchQuery)\n// toolCall.searchQuery contents\n\nfromAi(toolCall.userId)\n// toolCall.userId contents\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<ul>\n<li>The purpose of this function is solely to tag the value as being generated by an AI integration.</li>\n<li>The actual handling is not performed by the FEEL engine, but by a custom integration such as a connector or a job worker.</li>\n</ul>\n<p>The main use case of this function is for <a href=\"../../../connectors/out-of-the-box-connectors/agentic-ai-aiagent-tool-definitions.md\">tool definitions</a> used by the <a href=\"../../../connectors/out-of-the-box-connectors/agentic-ai-aiagent.md\">AI Agent connector</a>.</p>\n<p>See the following function overloads for additional function parameters.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.searchQuery)\n// toolCall.searchQuery contents\n\nfromAi(toolCall.userId)\n// toolCall.userId contents\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.8"
+    }
   }, {
     "name": "fromAi",
     "type": "function",
@@ -39831,7 +40129,10 @@
     }, {
       "name": "description"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>description</code> parameter to provide a textual description of the value. The description must be <code>null</code> or a string constant.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.searchQuery, &quot;The search query used to find the best match.&quot;)\n// toolCall.searchQuery contents\n\nfromAi(toolCall.searchQuery, null)\n// toolCall.searchQuery contents\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>description</code> parameter to provide a textual description of the value. The description must be <code>null</code> or a string constant.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.searchQuery, &quot;The search query used to find the best match.&quot;)\n// toolCall.searchQuery contents\n\nfromAi(toolCall.searchQuery, null)\n// toolCall.searchQuery contents\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.8"
+    }
   }, {
     "name": "fromAi",
     "type": "function",
@@ -39842,7 +40143,10 @@
     }, {
       "name": "type"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>type</code> parameter to provide type information about the value. The type must be <code>null</code> or a string constant.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string, type: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.searchQuery, &quot;The search query used to find the best match.&quot;, &quot;string&quot;)\n// toolCall.searchQuery contents\n\nfromAi(toolCall.userId, &quot;The user&#39;s ID&quot;, &quot;number&quot;)\n// toolCall.userId contents\n\nfromAi(toolCall.userId, null, &quot;number&quot;)\n// toolCall.userId contents\n\nfromAi(value: toolCall.userId, type: &quot;number&quot;)\n// toolCall.userId contents\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>type</code> parameter to provide type information about the value. The type must be <code>null</code> or a string constant.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string, type: string): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.searchQuery, &quot;The search query used to find the best match.&quot;, &quot;string&quot;)\n// toolCall.searchQuery contents\n\nfromAi(toolCall.userId, &quot;The user&#39;s ID&quot;, &quot;number&quot;)\n// toolCall.userId contents\n\nfromAi(toolCall.userId, null, &quot;number&quot;)\n// toolCall.userId contents\n\nfromAi(value: toolCall.userId, type: &quot;number&quot;)\n// toolCall.userId contents\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.8"
+    }
   }, {
     "name": "fromAi",
     "type": "function",
@@ -39855,7 +40159,10 @@
     }, {
       "name": "schema"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>schema</code> parameter to provide a (partial) <a href=\"https://json-schema.org/\">JSON schema</a> for the value.</p>\n<ul>\n<li>The schema must be <code>null</code> or a context (map) containing only constant values. For example, function calls within the schema are not supported.</li>\n<li>The schema is not validated by the FEEL engine but might be by a custom integration consuming the information.</li>\n<li>From the engine side it is possible to specify both a <code>type</code> and a <code>schema</code>, and it depends on the integration as to which value takes precedence. The <a href=\"../../../connectors/out-of-the-box-connectors/agentic-ai-aiagent.md\">AI Agent connector</a> will override any type specified in the schema if the <code>type</code> parameter is also provided.</li>\n</ul>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string, type: string, schema: context): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.documentType, &quot;The document type to provide&quot;, &quot;string&quot;, {\n  enum: [&quot;invoice&quot;, &quot;receipt&quot;, &quot;contract&quot;]\n})\n// toolCall.documentType contents\n\nfromAi(value: toolCall.documentType, description: &quot;The document type to provide&quot;, schema: {\n  type: &quot;string&quot;,\n  enum: [&quot;invoice&quot;, &quot;receipt&quot;, &quot;contract&quot;]\n})\n// toolCall.documentType contents\n\nfromAi(toolCall.tags, &quot;Tags to apply to the blog post&quot;, &quot;array&quot;, {\n  items: {\n    type: &quot;string&quot;\n  }\n})\n// toolCall.tags contents\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>schema</code> parameter to provide a (partial) <a href=\"https://json-schema.org/\">JSON schema</a> for the value.</p>\n<ul>\n<li>The schema must be <code>null</code> or a context (map) containing only constant values. For example, function calls within the schema are not supported.</li>\n<li>The schema is not validated by the FEEL engine but might be by a custom integration consuming the information.</li>\n<li>From the engine side it is possible to specify both a <code>type</code> and a <code>schema</code>, and it depends on the integration as to which value takes precedence. The <a href=\"../../../connectors/out-of-the-box-connectors/agentic-ai-aiagent.md\">AI Agent connector</a> will override any type specified in the schema if the <code>type</code> parameter is also provided.</li>\n</ul>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string, type: string, schema: context): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.documentType, &quot;The document type to provide&quot;, &quot;string&quot;, {\n  enum: [&quot;invoice&quot;, &quot;receipt&quot;, &quot;contract&quot;]\n})\n// toolCall.documentType contents\n\nfromAi(value: toolCall.documentType, description: &quot;The document type to provide&quot;, schema: {\n  type: &quot;string&quot;,\n  enum: [&quot;invoice&quot;, &quot;receipt&quot;, &quot;contract&quot;]\n})\n// toolCall.documentType contents\n\nfromAi(toolCall.tags, &quot;Tags to apply to the blog post&quot;, &quot;array&quot;, {\n  items: {\n    type: &quot;string&quot;\n  }\n})\n// toolCall.tags contents\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.8"
+    }
   }, {
     "name": "fromAi",
     "type": "function",
@@ -39870,12 +40177,18 @@
     }, {
       "name": "options"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>options</code> parameter to provide additional options for the integration handling the value definition.</p>\n<ul>\n<li>The options parameter must be <code>null</code> or a context (map) containing only constant values. For example, function calls within options are not supported.</li>\n</ul>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string, type: string, schema: context, options: context): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.documentType, &quot;The document type to provide&quot;, &quot;string&quot;, null, {\n  required: false\n})\n// toolCall.documentType contents\n\nfromAi(value: toolCall.documentType, options: {\n  required: false\n})\n// toolCall.documentType contents\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the unmodified <code>value</code> parameter.</p>\n<p>In addition to the previous overload, it also accepts an optional <code>options</code> parameter to provide additional options for the integration handling the value definition.</p>\n<ul>\n<li>The options parameter must be <code>null</code> or a context (map) containing only constant values. For example, function calls within options are not supported.</li>\n</ul>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">fromAi(value: Any, description: string, type: string, schema: context, options: context): Any\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">fromAi(toolCall.documentType, &quot;The document type to provide&quot;, &quot;string&quot;, null, {\n  required: false\n})\n// toolCall.documentType contents\n\nfromAi(value: toolCall.documentType, options: {\n  required: false\n})\n// toolCall.documentType contents\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.8"
+    }
   }, {
     "name": "random number",
     "type": "function",
     "params": [],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns a random number between <code>0</code> and <code>1</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">random number(): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">random number()\n// 0.9701618132579795\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns a random number between <code>0</code> and <code>1</code>.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">random number(): number\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">random number()\n// 0.9701618132579795\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.2"
+    }
   }, {
     "name": "extract",
     "type": "function",
@@ -39891,33 +40204,55 @@
     "params": [{
       "name": "string"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the given string without leading and trailing spaces.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">trim(string: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">trim(&quot;  hello world  &quot;)\n// &quot;hello world&quot;\n\ntrim(&quot;hello   world &quot;)\n// &quot;hello   world&quot;\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the given string without leading and trailing spaces.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">trim(string: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">trim(&quot;  hello world  &quot;)\n// &quot;hello world&quot;\n\ntrim(&quot;hello   world &quot;)\n// &quot;hello   world&quot;\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.6"
+    }
   }, {
     "name": "uuid",
     "type": "function",
     "params": [],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns a UUID (Universally Unique Identifier) with 36 characters.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">uuid(): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">uuid()\n// &quot;7793aab1-d761-4d38-916b-b7270e309894&quot;\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns a UUID (Universally Unique Identifier) with 36 characters.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">uuid(): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">uuid()\n// &quot;7793aab1-d761-4d38-916b-b7270e309894&quot;\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.6"
+    }
   }, {
     "name": "to base64",
     "type": "function",
     "params": [{
       "name": "value"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the given string encoded in Base64 format.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">to base64(value: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">to base64(&quot;FEEL&quot;)\n// &quot;RkVFTA==&quot;\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the given string encoded in Base64 format.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">to base64(value: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">to base64(&quot;FEEL&quot;)\n// &quot;RkVFTA==&quot;\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.6"
+    }
+  }, {
+    "name": "from base64",
+    "type": "function",
+    "params": [{
+      "name": "value"
+    }],
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns the given Base64 encoded string decoded to a plain string.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">from base64(value: string): string\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">from base64(&quot;RkVFTA==&quot;)\n// &quot;FEEL&quot;\n</code></pre>\n"
   }, {
     "name": "is blank",
     "type": "function",
     "params": [{
       "name": "string"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns <code>true</code> if the given string is blank (empty or contains only whitespaces).</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is blank(string: string): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is blank(&quot;&quot;)\n// true\n\nis blank(&quot; &quot;)\n// true\n\nis blank(&quot;hello world&quot;)\n// false\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Returns <code>true</code> if the given string is blank (empty or contains only whitespaces).</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">is blank(string: string): boolean\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">is blank(&quot;&quot;)\n// true\n\nis blank(&quot; &quot;)\n// true\n\nis blank(&quot;hello world&quot;)\n// false\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.8"
+    }
   }, {
     "name": "last day of month",
     "type": "function",
     "params": [{
       "name": "date"
     }],
-    "info": "<p><em>Camunda Extension</em></p>\n<p>Takes the month of the given date or date-time value and returns the last day of this month.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">last day of month(date: date): date\n</code></pre>\n<pre><code class=\"language-feel\">last day of month(date: date and time): date\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">last day of month(date(&quot;2022-10-01&quot;))\n// date(&quot;2022-10-31&quot;))\n\nlast day of month(date and time(&quot;2022-10-16T12:00:00&quot;))\n// date(&quot;2022-10-31&quot;))\n</code></pre>\n"
+    "info": "<p><em>Camunda Extension</em></p>\n<p>Takes the month of the given date or date-time value and returns the last day of this month.</p>\n<p><strong>Function signature</strong></p>\n<pre><code class=\"language-feel\">last day of month(date: date): date\n</code></pre>\n<pre><code class=\"language-feel\">last day of month(date: date and time): date\n</code></pre>\n<p><strong>Examples</strong></p>\n<pre><code class=\"language-feel\">last day of month(date(&quot;2022-10-01&quot;))\n// date(&quot;2022-10-31&quot;))\n\nlast day of month(date and time(&quot;2022-10-16T12:00:00&quot;))\n// date(&quot;2022-10-31&quot;))\n</code></pre>\n",
+    "engines": {
+      "camunda": ">=8.2"
+    }
   }];
 
   /**
@@ -39965,55 +40300,6 @@
       marginBottom: 0
     }
   });
-  EditorView.baseTheme({
-    '& .variableName': {
-      color: '#10f'
-    },
-    '& .number': {
-      color: '#164'
-    },
-    '& .string': {
-      color: '#a11'
-    },
-    '& .bool': {
-      color: '#219'
-    },
-    '& .function': {
-      color: '#aa3731',
-      fontWeight: 'bold'
-    },
-    '& .control': {
-      color: '#708'
-    }
-  });
-  syntaxHighlighting(HighlightStyle.define([{
-    tag: tags.variableName,
-    class: 'variableName'
-  }, {
-    tag: tags.name,
-    class: 'variableName'
-  }, {
-    tag: tags.number,
-    class: 'number'
-  }, {
-    tag: tags.string,
-    class: 'string'
-  }, {
-    tag: tags.bool,
-    class: 'bool'
-  }, {
-    tag: tags.function(tags.variableName),
-    class: 'function'
-  }, {
-    tag: tags.function(tags.special(tags.variableName)),
-    class: 'function'
-  }, {
-    tag: tags.controlKeyword,
-    class: 'control'
-  }, {
-    tag: tags.operatorKeyword,
-    class: 'control'
-  }]));
 
   /**
    * @typedef { import('../language').Dialect } Dialect
