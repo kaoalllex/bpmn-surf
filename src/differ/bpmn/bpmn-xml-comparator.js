@@ -169,9 +169,14 @@ class BpmnXmlComparator {
         this.#changedEscalations =
             this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#ESCALATION_TAG_NAME);
 
-        const myProcessNode = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PROCESS_TAG_NAME))
-            .filter(elem => elem.getAttribute('isExecutable') === 'true')[0];
-        const myNodesWithIdAttr = myProcessNode.querySelectorAll('[id]');
+        // isExecutable only picks the main process out of a collaboration; it says
+        // nothing about what is worth comparing. A file whose only process is not
+        // executable (the properties panel can clear the flag) still has to be diffed,
+        // and a file with no process at all yields an empty diff instead of throwing.
+        const myProcessNodes = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PROCESS_TAG_NAME));
+        const myProcessNode = myProcessNodes.find(elem => elem.getAttribute('isExecutable') === 'true')
+            ?? myProcessNodes[0];
+        const myNodesWithIdAttr = myProcessNode ? myProcessNode.querySelectorAll('[id]') : [];
 
         const result = {
             processNode: myProcessNode,
