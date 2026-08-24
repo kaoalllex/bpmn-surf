@@ -134,12 +134,11 @@ class EditSession {
         try {
             diff = this.#comparator.compare(xml, this.#baselineXml);
         } catch (error) {
-            // BUG-0029: compare() requires a bpmn:process[isExecutable="true"] and
-            // dereferences it straight away, so clearing "Executable" in the properties
-            // panel throws here. Abort THIS recompute only — keep the last good
-            // colouring rather than flashing the canvas clean on a state the user may
-            // undo in a second — but say so in the toolbar, because the state can also
-            // be permanent and a frozen-but-silent diff is worse than a stale one.
+            // A safety net: the editor can put the model into a shape compare() chokes
+            // on. Abort THIS recompute only — keep the last good colouring rather than
+            // flashing the canvas clean on a state the user may undo in a second — but
+            // say so in the toolbar, because the state can also be permanent and a
+            // frozen-but-silent diff is worse than a stale one.
             if (!this.#coloringPaused) {
                 // Once per streak: commands arrive in bursts and this would flood.
                 console.warn('cannot compare the edited diagram against the baseline', error);

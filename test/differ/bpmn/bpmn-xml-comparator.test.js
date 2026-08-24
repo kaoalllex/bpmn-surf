@@ -283,3 +283,34 @@ describe('BpmnXmlComparator condition whitespace normalization', () => {
         assert.deepEqual(Array.from(result.changedRowIds), ['Flow_2']);
     });
 });
+
+// isExecutable is a deployment flag, not a diffing one: clearing it in the properties
+// panel (or opening a non-executable file) must not blank the diff — and used to throw,
+// because the executable-process lookup was dereferenced without a guard (BUG-0029).
+describe('BpmnXmlComparator non-executable process', () => {
+    const nonExecutable = (xml) => xml.replace(/isExecutable="true"/g, 'isExecutable="false"');
+    const noProcess = base.replace(/<bpmn:process[\s\S]*<\/bpmn:process>/, '');
+
+    it('compares the only process even when it is not executable', () => {
+        const result = compare(nonExecutable(changedName), nonExecutable(base));
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Task_1: ['General'] });
+    });
+
+    it('keeps the executable process when one of several is executable', () => {
+        const twoProcesses = (xml) => xml.replace(
+            '<bpmn:process',
+            '<bpmn:process id="Process_0" isExecutable="false"><bpmn:task id="Ignored_1" /></bpmn:process><bpmn:process'
+        );
+        const result = compare(twoProcesses(changedName), twoProcesses(base));
+        assert.equal(result.processNode.getAttribute('id'), 'Process_1');
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Task_1']);
+    });
+
+    it('yields an empty diff when the document has no process at all', () => {
+        const result = compare(noProcess, base);
+        assert.deepEqual(Array.from(result.missingShapeIds), []);
+        assert.deepEqual(Array.from(result.changedShapeIds), []);
+        assert.equal(result.nodeIdToDiffsMap.size, 0);
+    });
+});

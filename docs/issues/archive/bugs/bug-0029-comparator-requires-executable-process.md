@@ -2,7 +2,7 @@
 id: BUG-0029
 title: BpmnXmlComparator.compare() throws on a diagram with no executable process
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -26,8 +26,8 @@ The throw propagates out of `#prepareDiffData` → `#showMr`/`#showBranch` →
 `BpmnDiffer#show()`, none of which catch it, so the differ page is left blank
 with an unhandled rejection rather than showing the diagram.
 
-Expected: a diagram with no executable process renders, with an empty diff
-(nothing to compare) rather than an exception.
+Expected: a diagram with no executable process renders, with the diff computed
+on the process it does have, rather than an exception.
 
 ## Context
 
@@ -49,3 +49,28 @@ the guard belongs in `compare()`, where every caller routes through.
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-08-24 · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
+
+Fixed at the root in `compare()`: the executable-process lookup became
+`find(isExecutable) ?? processes[0]`, and the `querySelectorAll` behind it is
+guarded, so a document with no `bpmn:process` at all yields an empty diff
+instead of throwing.
+
+Chose the fallback over the empty diff this file originally specified, on the
+human's call: `isExecutable` only picks the main process out of a collaboration
+and several executable processes in one file are not supported anyway, so the
+flag says nothing about what is worth comparing. A file whose only process
+carries `isExecutable="false"` now gets a real diff — and in edit mode clearing
+"Executable" no longer freezes the colouring.
+
+That makes the FEAT-0031 guard in `EditSession#recompute` a generic safety net
+rather than this bug's workaround; its comment was rewritten to say so (the
+try/catch itself is kept — the editor can still reach a shape `compare()` chokes
+on).
+
+Tests: three cases in `test/differ/bpmn/bpmn-xml-comparator.test.js`
+(`describe('BpmnXmlComparator non-executable process')`) — the non-executable
+single process, the multi-process document where the executable one must still
+win, and the no-process document. The first and third were observed failing with
+the reported `TypeError` before the fix. `npm test` — 1175/1175 green.
