@@ -2,7 +2,7 @@
 id: REFAC-0013
 title: The cross-tab dedup regression test for edit-mode dive-in asserts nothing
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -65,3 +65,18 @@ test, delete the fix and confirm the test fails before keeping it.
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-08-24 · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
+
+Closed as a **duplicate** — no code or test change here. The work is merged into
+[REFAC-0015] §3 (cross-tab dedup in edit mode), which touches the same spec file
+(`test/e2e/differ-cross-tab-dedup.spec.js`) and needs the same edit-tab + sibling
+view-tab fixture, so splitting it across two sessions would pay for that machinery
+twice.
+
+Still valid at the time of closing, and carried over verbatim into §3: the vacuous
+assertion at `test/differ/shared/differ-params.test.js:151`, and the missing e2e case
+for `BpmnDiffer#openDifferForFile` (`src/differ/bpmn/bpmn-differ.js:712-725`) invoked
+from an edit tab. Noted there that the mutation sweep behind [REFAC-0015] could not
+have found this one: the defect is a variable swap (`params` → `this.#params`), which
+none of its operators produce.
