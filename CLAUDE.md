@@ -22,7 +22,7 @@ Do your internal reasoning (thinking) in **English** regardless of the conversat
 
 ## Workflow
 
-Multi-step work follows the Superpowers flow: `brainstorming` → `writing-plans` → `executing-plans`. Plans live in `docs/superpowers/plans/`, specs and designs in `docs/superpowers/specs/`. Implementation and git steps inside that flow are carried out by the project skills: `feature`/`fix`/`refactor`; the git-publishing steps (`/mr`, then `/cleanup` after the human merges) are on hold while the repository has no reachable remote — work stops at local commits. Each skill's trigger conditions live in its own `description` (`.claude/skills/`, `.claude/commands/`; surfaced in the CLI via `/`) — not duplicated here.
+Multi-step work follows the Superpowers flow: `brainstorming` → `writing-plans` → `executing-plans`. Plans live in `docs/superpowers/plans/` — **local only, not tracked by git** (spent scaffolding: once a plan ships, git history and `docs/` are the record). Specs and designs live in `docs/superpowers/specs/` and *are* tracked. Implementation and git steps inside that flow are carried out by the project skills: `feature`/`fix`/`refactor`; the git-publishing steps (`/mr`, then `/cleanup` after the human merges) are on hold while the repository has no reachable remote — work stops at local commits. Each skill's trigger conditions live in its own `description` (`.claude/skills/`, `.claude/commands/`; surfaced in the CLI via `/`) — not duplicated here.
 
 ## Critical rules (brief; full lists — in docs/)
 
