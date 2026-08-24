@@ -82,6 +82,23 @@ added the mode suffix to the identity key *for* is unguarded on the edit side.
 Fix: mirror the K1/K2 pair with `mode: 'edit'`, and add the case the suffix exists
 for — an edit tab must NOT be deduplicated against a view tab of the same diagram.
 
+Plus a fourth case in the same file, merged in from [REFAC-0013] (closed as a
+duplicate of this section): **an edit tab diving into another diagram**.
+`#openDifferForFile` (`bpmn-differ.js:712-725`) must compute the identity key from
+`toNestedDifferParams()` — which drops `mode`, so the child publishes a view key —
+and not from `this.#params`. No e2e test ever calls that method from an edit tab, so
+the K1 case exists only in view mode. The mutation sweep could not surface this one:
+the defect is a variable swap (`params` → `this.#params`), not an operator or
+literal its generator mutates.
+Fix: an edit tab dives into a diagram a sibling view tab already shows → focus by
+name, no new differ opened. And rewrite or delete
+`test/differ/shared/differ-params.test.js:151` (`'matches the key a nested differ
+will publish, even from an edit-mode parent'`): both sides of its equality derive
+from the same `nestedRaw`, so the parent's `mode: 'edit'` is inert and the assertion
+holds by construction for any input — it passes against the very bug it names. The
+same `#openDifferForFile` shape now exists in `src/differ/dmn/dmn-differ.js`; DMN has
+no edit mode so it cannot exhibit the defect today, but the two should stay in step.
+
 **4. `differ-cross-tab-dedup.spec.js` K3 passes for a different reason than it
 names.** Its comment says "pagehide closes its registry channel", but mutating
 `'pagehide'` (`differ-tab-navigator.js:82`) kills nothing: closing the tab tears the
@@ -145,9 +162,10 @@ directly; it belongs to a future Layer-3 suite.
 
 ### How to re-run the sweep
 
-The scripts lived in a session scratchpad and are gone. **Step one of this task is
-to materialise them under `scripts/` so the score is reproducible.** The recipe,
-including the two traps that cost an hour:
+The scripts lived in a session scratchpad and are gone; materialise them under
+`scripts/` so the score is reproducible. **This is the LAST batch, not the first** —
+see the sequencing note below for why. The recipe, including the two traps that cost
+an hour:
 
 - **Generator** — walk the target files, skip comment lines and occurrences inside
   string literals, and emit one mutant per occurrence for: `===`↔`!==`, `&&`↔`||`,
@@ -175,6 +193,34 @@ including the two traps that cost an hour:
   of specs (48 specs 18.5 s vs 128 specs 15 s).
 - Whole run: ~65 minutes, ~3.5 mutants/min.
 
+### Sequencing — do this in batches, not in one sitting
+
+Sized on 2026-08-24 against the actual specs. The whole task is ~6 hours, so it does
+not fit one session; it splits cleanly because the batches share no state.
+
+| Batch | Items | Estimate |
+|---|---|---|
+| **A** — edit-mode invariants | §2, §3 (incl. the dive-in case), §4 | ~1h15 |
+| **B** — canvas colouring | §1 | ~30 min |
+| **C** — the rest | §5, §6, §7 | ~1h30 |
+| **D** — reproducibility | the sweep script + a re-measuring run | 2-3h, of which ~65 min is the run itself |
+
+Do **A + B first**: §1 is the largest blast radius (`paint` can be disabled wholesale
+and the whole suite stays green) and §3 is the freshest ground. After A+B the status
+is `partial` with C and D listed as the remainder.
+
+Two cost findings worth keeping, because they contradict how the items read:
+
+- **§1 is cheap, not expensive.** `dmn-highlight-added.spec.js:15-16` is a working
+  template, and `differ-highlight{,-changed,-removed}.spec.js` already boot the right
+  fixtures in all three directions. The work is a two-line `toHaveCSS` addition to
+  each existing spec plus one connection case — no new spec files.
+- **Batch D is expensive, and it is a metric, not a guard.** The value of this task is the
+  killed mutants; the 78% number is bookkeeping. Three hours on the runner buys the
+  same protection as zero hours on the runner, while three hours on §5-§7 buys real
+  coverage. Hence its demotion from "step one" above. If the budget runs out, drop D
+  and say so in the work log — do not drop C for it.
+
 ### Definition of done
 
 Of the 86 survivors: 12 are log strings, ~21 are equivalent mutants or the Layer-2
@@ -182,7 +228,12 @@ postMessage boundary (both listed above as "do not chase"), **23 are the §1-§7
 this task must close**, and ~30 sit in §8.
 
 Done = the 23 mutants named in §1-§7 are killed by new or amended tests, re-measured
-by a sweep run, and the sweep script lives under `scripts/`. §8 is **not** required:
+by a sweep run, and the sweep script lives under `scripts/`. Batch D (the script and
+the re-measure) is the one part that may be dropped deliberately: without it the task
+closes as `partial`, with the killed mutants argued in the work log instead of
+re-measured. The dive-in-from-edit
+case folded into §3 from [REFAC-0013] is not one of the 23 (no mutant expresses it),
+so it is done when its e2e case exists and the vacuous unit test is gone. §8 is **not** required:
 work through the list, fix what is cheap, and record a one-line verdict for each item
 left alone so the next run does not re-litigate it. Most of §8 is defensive branches
 in `catch` blocks, null guards, and workarounds for shapes no fixture contains
