@@ -2,7 +2,7 @@
 id: REFAC-0014
 title: Audit the existing test suite for assertions that cannot fail
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -95,3 +95,62 @@ shapes actually recur here.
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-08-24 · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
+
+Scan done, three shapes fixed, prevention recorded. `src/` is unchanged — every
+edit is in `test/` or `docs/`.
+
+**Found and fixed**
+
+1. `test/e2e/differ-edit-markers.spec.js` — case 8 from the statement, the one
+   genuinely vacuous test in the suite. `'a freshly opened editor shows no edit
+   markers'` asserted `toHaveCount(0)` at boot, before any recompute. Rewritten as
+   `'an editor back at its baseline shows no edit markers'`: one
+   `modeling.updateProperties` command (so a single Undo returns the whole edit),
+   assert exactly one marker, Undo, assert none. Confirming check: with the
+   baseline corrupted in `EditSession#start`, it is the **only** one of the seven
+   specs in that file that fails; the old version passed.
+2. `test/e2e/differ-view-only.spec.js` — the two BUG-0011 guards used
+   `toBeHidden()` on `.djs-palette` / `.djs-context-pad`, which in Playwright also
+   holds for an element that is not in the DOM at all. Added `toHaveCount(1)`
+   before each. Confirming check: renaming the selector now fails the spec.
+3. Three defensive branches in `src/` reachable only with a falsy value that no
+   test passed — found by a mutation sweep, not by reading. One unit test each,
+   all three mutations now killed:
+   `GitLabPlatformClient#prChangedFiles` `(response && response.changes) || []`
+   (the existing "loader yields nothing" case exits at the earlier `!content`
+   guard), `BackNavigator` `#getProcessIdsFunc() || []`, `HandlerNavigator
+   #setChangedHandlers` `|| new Map()` (its test passed `new Map()` — the truthy
+   stand-in the statement names).
+
+**Method, and what came back clean.** Grepped every shape in the statement, then
+mutation-swept all 16 defensive guards in `src/` against the unit suite (remove
+one guard, run `npm test`; a survivor is an untested or stand-in-tested branch) —
+13 were already killed, the 3 above were not.
+
+- All 60 absence assertions checked by hand: every denied class and title string
+  exists in `src/` (no dead selectors), and each runs after the action that would
+  produce the thing or has a positive control in the same file. Only case 8 failed
+  this.
+- Zero escape-hatch assertions (`=== null ||`, `|| true`, `toBeTruthy()` on a
+  compound) anywhere — the FEAT-0031 one had already been removed. Zero tests
+  without an assertion. No unused parameters or fields on the test doubles
+  (`xmlQueue` is gone).
+- Cases 1–6 are fixed in the tree; case 7 stays open as [REFAC-0013].
+- The counter-evidence holds: `differ-cross-tab-dedup.spec.js` and the comparator
+  goldens are honest. Age predicted nothing — the one vacuous test was the newest.
+
+**Prevention.** `docs/testing.md` opens with a new section, "Every test must be
+observed failing": delete the fix, watch the test fail, restore it — plus the
+three shapes above as the ones that actually recur here, and the mutation-sweep
+recipe. Also corrected the stale "~0.5 sec" runtime for `npm test` next to it
+(1172 tests, ~5 s).
+
+Verification: `npm test` 1172/1172, `npx playwright test` 128/128.
+
+Follow-up: the 16-guard sweep above was widened afterwards to a full mutation run
+over the eight files behind the priority invariants (289 mutants, 70% score). That
+found coverage gaps rather than dishonest tests, so they are tracked separately as
+[REFAC-0015] — with one exception recorded there: `differ-cross-tab-dedup.spec.js`
+K3 passes for a different reason than its comment names, which is this task's shape.

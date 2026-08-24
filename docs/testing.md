@@ -1,8 +1,20 @@
 # Testing
 
+## Every test must be observed failing
+
+A test never observed failing is an assumption, not a guard. Before a regression test is done: **delete the fix, watch the test fail, restore the fix.** Cheap here — `npm test` is ~5 s, a single e2e spec ~2 s (`npx playwright test <spec>`).
+
+Three shapes have actually produced tests that could not fail in this repo (audited in [REFAC-0014]) — the name and the comment were accurate, the assertion was not, which is why they read as coverage and survived review:
+
+- **An absence assertion placed before the step that would produce the thing.** "A freshly opened editor shows no edit markers" asserted `toHaveCount(0)` at boot, where no recompute had run and no marker could exist whatever the baseline was. A guard for "X does not appear" has to run *after* the action that would make X appear — and the same spec should assert, on the way, that X *does* appear in the positive case.
+- **Playwright counts a missing element as hidden.** `expect(locator).toBeHidden()` and `toHaveCount(0)` both hold when the selector matches nothing, so a renamed third-party class (`.djs-palette`, `.djs-context-pad`, any `bio-properties-panel-*`) silently turns the guard into a no-op. Assert `toHaveCount(1)` first, or deny a string the same test has just seen present.
+- **A defensive branch exercised with a truthy stand-in for absence.** `new Map()` / `[]` / `{}` / `''` / `0` do not reach a `|| new Map()` or `|| []` fallback — the empty value is truthy. Pass the actual `null`/`undefined` the guard is written for.
+
+A cheap sweep for the third shape: grep `src/` for `|| []`, `?? []`, `|| new Map()`, `if (!x) return`, remove one guard at a time and run `npm test`. Every guard that survives is either untested or protected only by a stand-in.
+
 ## Unit tests
 
-There are unit tests for the isolated differ-page classes. Run: **`npm test`** (~0.5 sec, run after any changes in covered files and mandatorily before every push — see docs/git-workflow.md). The runner is the built-in `node:test`; the only dev dependency is `jsdom` (DOM/DOMParser for Node) — it does **not** get into the extension, `manifest.json` is not affected.
+There are unit tests for the isolated differ-page classes. Run: **`npm test`** (~5 sec, run after any changes in covered files and mandatorily before every push — see docs/git-workflow.md). The runner is the built-in `node:test`; the only dev dependency is `jsdom` (DOM/DOMParser for Node) — it does **not** get into the extension, `manifest.json` is not affected.
 
 There is no separate report file: `node:test` prints failed checks (assertion diff + stack) right into the run output. Do not rerun the tests just to "look at the error" — the details are already in the output of the previous run, read them from there. A rerun is justified only after changes in the code/tests.
 

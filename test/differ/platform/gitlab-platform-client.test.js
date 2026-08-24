@@ -153,4 +153,9 @@ describe('GitLabPlatformClient.prChangedFiles', () => {
         const { client } = withLoader(null);
         assert.deepEqual(plain(await client.prChangedFiles(2)), []);
     });
+
+    it('returns [] when the response carries no changes key', async () => {
+        const { client } = withLoader({});
+        assert.deepEqual(plain(await client.prChangedFiles(2)), []);
+    });
 });

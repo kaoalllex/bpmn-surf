@@ -24,14 +24,25 @@ async function renameTask1(page, text) {
     await nameInput.blur();
 }
 
-// An untouched diagram must show NO edit markers: the baseline is the XML as
-// saveXML() returns it right after the import, so bpmn-js' own normalisation does
-// not read as a change (FEAT-0031).
-test('a freshly opened editor shows no edit markers', async ({ page }) => {
+// The baseline is the XML as saveXML() returns it right after the import, so
+// bpmn-js' own normalisation must not read as a change (FEAT-0031). Undoing the
+// edit puts the model back at exactly that baseline, so the recompute it triggers
+// must find nothing — asserting the same emptiness at boot would hold whatever the
+// baseline is, because no recompute has run there yet (REFAC-0014).
+test('an editor back at its baseline shows no edit markers', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, { params: editParams({ sourceRef: 'mr-sha', targetRef: 'mr-sha' }) });
 
-    await expect(page.locator('.edit-diff-changed')).toHaveCount(0);
+    // One command, so a single Undo returns the whole edit.
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        modeler.get('modeling').updateProperties(
+            modeler.get('elementRegistry').get('Task_1'), { name: 'ZZZ' });
+    });
+    await expect(page.locator('.edit-diff-changed')).toHaveCount(1, { timeout: 5000 });
+
+    await page.getByTitle('Undo (Ctrl+Z)').click();
+    await expect(page.locator('.edit-diff-changed')).toHaveCount(0, { timeout: 5000 });
 });
 
 test('editing a name marks the element as changed', async ({ page }) => {

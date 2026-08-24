@@ -95,6 +95,19 @@ describe('HandlerNavigator.refreshChangedBadges — labels (BUG-0016)', () => {
         assert.deepEqual(overlays.added.map(o => o.elementId), ['TaskA', 'TaskB']);
     });
 
+    // The caller clears the badges by handing over whatever the lookup produced,
+    // which is nothing when there is no MR to compare against.
+    it('adds nothing when the changed handlers are absent altogether', () => {
+        const host = { id: 'Task', businessObject: bo({ attrs: { 'camunda:class': 'Foo' } }) };
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, fakeRegistry([host]));
+        nav.setChangedHandlers(null);
+
+        nav.refreshChangedBadges();
+
+        assert.equal(overlays.added.length, 0);
+    });
+
     it('adds nothing when no handler is changed', () => {
         const host = { id: 'Task', businessObject: bo({ attrs: { 'camunda:class': 'Foo' } }) };
         const overlays = fakeOverlays();

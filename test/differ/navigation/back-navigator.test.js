@@ -32,11 +32,12 @@ describe('BackNavigator', () => {
         calls = { diveOutToOpener: 0, opened: [], urls: [] };
     });
 
-    function build({ divedInFrom = null, callerLocator = locatorReturning([]) } = {}) {
+    function build({ divedInFrom = null, callerLocator = locatorReturning([]),
+                     getProcessIdsFunc = () => ['P1'] } = {}) {
         const nav = new scope.BackNavigator({
             callerLocator,
             divedInFrom,
-            getProcessIdsFunc: () => ['P1'],
+            getProcessIdsFunc,
             getCurrentRefFunc: () => 'main',
             currentFilePath: 'bpmn/Self.bpmn',
             onDiveOutToOpener: () => { calls.diveOutToOpener++; },
@@ -120,6 +121,19 @@ describe('BackNavigator', () => {
             group.querySelector('.differ-back-menu-item').click();
             assert.equal(calls.diveOutToOpener, 1);
             assert.equal(calls.opened.length, 0); // not reopened fresh
+        });
+
+        // The diagram may not be parsed yet when the caret is clicked, so the getter
+        // can answer with nothing — the locator must still receive a list.
+        it('passes an empty list when there are no process ids yet', async () => {
+            const seen = [];
+            const callerLocator = {
+                resolveCallers: async (processIds) => { seen.push(processIds); return []; },
+                blobSearchPageUrl: () => 'https://gitlab.example/search'
+            };
+            const { group } = build({ divedInFrom: DIVED_IN_FROM, callerLocator, getProcessIdsFunc: () => null });
+            await openMenu(group);
+            assert.deepEqual(Array.from(seen[0]), []);
         });
 
         it('shows a "no caller" message for a top-level diagram (empty result)', async () => {
