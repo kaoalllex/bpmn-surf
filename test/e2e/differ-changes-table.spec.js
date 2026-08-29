@@ -27,5 +27,5 @@ test('lists changes and highlights the element on row click', async ({ page }) =
     // Clicking the row highlights the element on the canvas (big marker).
     await taskRow.click();
     await expect(page.locator('svg .djs-element[data-element-id="Task_2"]'))
-        .toHaveClass(/highlight-diff-big/);
+        .toHaveClass(/(^|\s)highlight-diff-big(\s|$)/);
 });

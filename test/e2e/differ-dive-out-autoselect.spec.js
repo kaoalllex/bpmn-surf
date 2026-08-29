@@ -20,6 +20,14 @@ test('auto-selects the Call Activity for selectCalledProcessIds on open', async 
     await expect(badge).toBeVisible();
     await expect(badge).toHaveAttribute('title', 'Open the called diagram');
     await expect(page.locator('svg .djs-element.selected[data-element-id="CallActivity_1"]')).toBeVisible();
+    // The canvas selection alone is not the contract: after an import the properties
+    // panel re-renders the ROOT and subscribes to selection.changed only in a
+    // post-mount effect, so a single early select() leaves the canvas highlighted while
+    // the panel still shows the whole diagram. #selectIntoPropertiesPanel re-asserts the
+    // selection until propertiesPanel.updated confirms — this is what asserts that
+    // retry loop (REFAC-0015 §6).
+    await expect(page.locator('.bio-properties-panel-header-type')).toHaveText('Call Activity');
+    await expect(page.locator('.bio-properties-panel-header-label')).toHaveText('Run sub-process');
 });
 
 // J9: the same mechanism for the DMN->BPMN direction — a Business Rule Task is
@@ -35,4 +43,5 @@ test('auto-selects the Business Rule Task for a decision id on open', async ({ p
     await expect(badge).toBeVisible();
     await expect(badge).toHaveAttribute('title', 'Open the called decision');
     await expect(page.locator('svg .djs-element.selected[data-element-id="BusinessRuleTask_1"]')).toBeVisible();
+    await expect(page.locator('.bio-properties-panel-header-type')).toHaveText('Business Rule Task');
 });

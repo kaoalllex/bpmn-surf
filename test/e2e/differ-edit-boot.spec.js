@@ -239,3 +239,52 @@ test('edit mode keeps the sequence flow condition editable', async ({ page }) =>
     await expect(page.locator('svg .djs-element[data-element-id="Flow_2"]'))
         .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
 });
+
+// Drag Task_1 aside. A real pointer gesture, not modeling.updateProperties via the
+// test seam: Chromium suppresses the beforeunload prompt on a frame that never had a
+// user gesture, so the interaction is part of what the guard needs.
+async function dragTask1(page) {
+    const shape = page.locator('svg .djs-element[data-element-id="Task_1"]');
+    const box = await shape.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 120, box.y + box.height / 2 + 60, { steps: 10 });
+    await page.mouse.up();
+    await expect(page.getByTitle('Undo (Ctrl+Z)')).toBeEnabled();
+}
+
+// FEAT-0031: an editor tab holds the only copy of the work — nothing is written back
+// to the repository — so closing it with edits pending must ask first. The guard runs
+// through EditSession#isDirty, unlike the undo/redo buttons, which read the command
+// stack directly (REFAC-0015 §7).
+test('closing an editor with unsaved edits asks for confirmation', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+    await dragTask1(page);
+
+    const dialogPromise = page.waitForEvent('dialog');
+    await page.close({ runBeforeUnload: true });
+
+    const dialog = await dialogPromise;
+    expect(dialog.type()).toBe('beforeunload');
+    await dialog.dismiss();
+});
+
+// The control: without it the test above would also pass against a guard that warns
+// unconditionally, which would nag on every close of an untouched editor.
+test('closing an untouched editor asks nothing', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: editParams() });
+
+    // A gesture, so the prompt is not suppressed for want of one — but a selection is
+    // not a command, so the session stays clean.
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+    await expect(page.getByTitle('Undo (Ctrl+Z)')).toBeDisabled();
+
+    const dialogs = [];
+    page.on('dialog', (dialog) => { dialogs.push(dialog); dialog.dismiss(); });
+    await page.close({ runBeforeUnload: true });
+    await page.waitForEvent('close');
+
+    expect(dialogs).toEqual([]);
+});

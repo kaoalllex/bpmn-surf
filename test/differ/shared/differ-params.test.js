@@ -148,19 +148,20 @@ describe('DifferParams', () => {
             assert.equal(nested.identityKey(), targetKey);
         });
 
-        it('matches the key a nested differ will publish, even from an edit-mode parent', () => {
-            // BUG found in the whole-branch review: an edit-mode tab's OWN
-            // identityKey() carries mode/editSide, but the nested tab it dives into
-            // is a view tab (toNestedDifferParams drops mode). So the key used to
-            // open/focus the dive-in target must be computed from the NESTED
-            // params, not from the parent's own params — this is what
-            // BpmnDiffer#openDifferForFile now does.
+        it('a dive-in target key from an edit-mode parent is a VIEW key', () => {
+            // An edit-mode tab's OWN identityKey() carries mode/editSide, but the tab
+            // it dives into is a view tab (toNestedDifferParams drops mode). So the
+            // key used to open/focus the dive-in target must be computed from the
+            // NESTED params — BpmnDiffer#openDifferForFile. Deriving both sides from
+            // nestedRaw would hold for any input, so the parent's key is the other
+            // side: it must NOT equal the child's (REFAC-0015 §3).
             const parent = new DifferParams({ ...validParams, mode: 'edit', editSide: 'target' });
             const nestedRaw = parent.toNestedDifferParams('src/sub.bpmn', 'sub.bpmn');
-            const targetKey = DifferParams.identityKeyFor(nestedRaw, 'src/sub.bpmn');
 
-            const nested = new DifferParams(nestedRaw);
-            assert.equal(nested.identityKey(), targetKey);
+            const childKey = new DifferParams(nestedRaw).identityKey();
+            assert.equal(childKey, DifferParams.identityKeyFor(nestedRaw, 'src/sub.bpmn'));
+            assert.ok(childKey.endsWith('\nview'));
+            assert.notEqual(DifferParams.identityKeyFor(parent, 'src/sub.bpmn'), childKey);
         });
     });
 
