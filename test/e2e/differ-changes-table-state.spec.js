@@ -17,10 +17,10 @@ test('resetSelection removes the big marker when the table is hidden', async ({ 
     await taskRow.click();
 
     const addedTask = page.locator('svg .djs-element[data-element-id="Task_2"]');
-    await expect(addedTask).toHaveClass(/highlight-diff-big/);
+    await expect(addedTask).toHaveClass(/(^|\s)highlight-diff-big(\s|$)/);
 
     await page.getByRole('button', { name: 'Hide changes' }).click();
-    await expect(addedTask).not.toHaveClass(/highlight-diff-big/);
+    await expect(addedTask).not.toHaveClass(/(^|\s)highlight-diff-big(\s|$)/);
 });
 
 // New file in the MR (base-sha absent). NOTE (corrected during execution): with the

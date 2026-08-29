@@ -2,7 +2,7 @@
 id: REFAC-0015
 title: Close the coverage gaps a mutation sweep found in the priority invariants
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -123,31 +123,61 @@ the viewport transform changed.
 Fix: assert the selected element after a search jump, and that the properties panel
 shows that element.
 
+⚠️ **Mis-attributed when written** (found 2026-08-29). Those line numbers are
+`#applyInitialCallActivitySelection` / `#selectIntoPropertiesPanel` — the FEAT-0023
+dive-out auto-select, which the search never calls (`SearchPanel` selects and scrolls
+itself, and `differ-search-navigation.spec.js:35` already asserts the selection after
+a jump). The real gap is that nothing asserted the PROPERTIES PANEL follows the
+auto-selection, which is the only reason the retry loop exists. Closed against
+`differ-dive-out-autoselect.spec.js` instead.
+
 **7. Unsaved-work warning and `isDirty`.** `edit-session.js:63,64` — the
 `beforeunload` guard is unpinned; `:100` — `'commandStack'` can be renamed because
 tests read `canUndo()` straight off `window.__bpmnDifferModeler` instead of going
 through `EditSession#isDirty`. Playwright can assert the former via
 `page.on('dialog')`.
 
-**8. Smaller, decide case by case.**
+**8. Smaller, decide case by case.** Verdicts recorded 2026-08-29 — settled, do not
+re-litigate without new evidence.
 - `bpmn-differ.js:459` — `if (this.#changesTableView) clear()` on the absent side.
   `differ-changes-table-state.spec.js` already documents in a comment that the table
   is never populated there, so it characterises an end state, not a transition; the
   mutant confirms `clear()` itself is unguarded.
+  **Verdict: leave.** A test would assert the same empty table twice over.
 - `bpmn-differ.js:645` — `if (!sourceRef || !changeRequestId) return;` before loading
   changed handlers; `||` → `&&` survives.
+  **Verdict: leave, but the strongest candidate here.** Real consequence — without
+  the guard, branch-view mode calls the platform API with an undefined change id on
+  every diagram. Unobservable today only because `FakePlatformClient.prChangedFiles`
+  returns `[]` whatever it is handed; killing it means teaching the fake to record or
+  reject that call, which pins the fake as much as the product.
 - `bpmn-differ.js:891,893` — properties-panel container lookup and its null guard.
+  **Verdict: leave.** The only branch is a `console.warn` after `doWithAttempts` gives
+  up; the success path is covered by every spec that reads the panel.
 - `bpmn-differ.js:771` — `if (!businessObject) return false`.
+  **Verdict: leave.** Defensive; no fixture holds an element without a businessObject.
 - `diff-highlighter.js:45,48,49` — the `bpmn:TextAnnotation` workaround (`setColor`
   does not work for them); no fixture contains a TextAnnotation.
+  **Verdict: leave until a fixture needs one anyway.** Killing it costs a new diagram
+  fixture, and the workaround already sits inside a `try/catch` that swallows failure.
 - `diff-highlighter.js:76` — removing the `selected` marker before highlighting.
+  **Verdict: KILLED** — `differ-highlight.spec.js`, "highlighting an element that is
+  selected clears the selection marker". Cheap and user-visible: without it, pressing
+  ☼ appears to do nothing to the element the user had selected.
 - `diff-highlighter.js:124` — excluding `bpmn:Association` from highlighting.
+  **Verdict: leave.** No fixture contains an Association.
 - `dmn-diff-painter.js:54,64,111` — `if (cell && cell.parentElement)` null guards.
+  **Verdict: leave.** Defensive guards around a DOM shape dmn-js always produces.
 - `differ-params.js:21` — `if (this.sourceRef && this.localFileContent)`, the
   local-file mode, absent from e2e.
+  **Verdict: move to dismissed.** It guards a lone `console.error`, which is the
+  documented reason the log-string survivors are not chased.
 - `differ-tab-navigator.js:150,183,186,208,211` — returns in `catch` branches and the
   cross-origin `focus()` fallback; `:246,251` — `#getLinkOrScriptHref`.
+  **Verdict: leave.** The catch branches need a cross-origin opener, which Layer-2
+  cannot construct; the href lookups would only be restated by an assertion.
 - `bpmn-differ.js:874` — hiding `.bjs-powered-by` (cosmetic).
+  **Verdict: leave.** Cosmetic, and already inside a `try/catch`.
 
 **Dismissed, do not chase.** 14 survivors are log strings (the sweep skips
 `console.*` lines, but the project also logs through its own helper). Equivalent
@@ -256,3 +286,163 @@ decision, not part of this task.
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-08-29 (3) · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
+
+Batch 3 — the remainder: **§4, §5, §6, the §3a half, the §8 verdicts and batch D**.
+Production code still untouched; everything here is tests, a script and docs.
+
+- §3a — `differ-cross-tab-dedup.spec.js`: a second ✎ press focuses the editor already
+  open (the K1 mirror). Together with the E1 case from batch 1 the mode suffix is now
+  pinned in both directions — dropping `parts.push(params.mode …)` reddens three cases.
+- §5 — `differ-highlight.spec.js`: the ☼ blink and the swap to the steady outline, plus
+  turning the highlight off mid-blink. Both classes contain `highlight-diff`, so the
+  regexes are anchored on word boundaries; a loose `/highlight-diff/` cannot tell the
+  phases apart, which is exactly why the class name was renameable unnoticed.
+- §6 — **the item was mis-attributed when written** (noted in place, above). Those line
+  numbers are the FEAT-0023 dive-out auto-select, which the search never calls, and the
+  search's own selection is already asserted. The real gap was that nothing checked the
+  PROPERTIES PANEL follows the auto-selection — the only reason `#selectIntoPropertiesPanel`
+  retries at all. Closed in `differ-dive-out-autoselect.spec.js`.
+- §4 — the K3 comment now says what the test proves (an end state, not the mechanism)
+  and why the `pagehide` listener still earns its place (bfcache, where the document is
+  not torn down). No e2e test can tell the two apart from outside; correcting the
+  comment was the honest half of the two options the item offered.
+- §8 — a one-line verdict recorded against every item (see the list above; settled, do
+  not re-litigate). One killed: `diff-highlighter.js:76`, the `selected` marker cleared
+  before highlighting — cheap and user-visible, since without it ☼ appears to do
+  nothing to the element the user had selected.
+- Batch D — `scripts/mutation-sweep.js` (generator + runner, no dependencies) and a
+  full re-measure. Documented in `docs/testing.md` and the `docs/architecture.md`
+  key-files table.
+
+Mutants killed this batch: `differ-params.js:114` (the mode suffix), `diff-highlighter.js:8`
+(`PULSE_HIGHLIGHTING_MARKER`), `:86` (`if (this.#timeoutId)`), `:76` (the `selected`
+marker), `bpmn-differ.js:824` and `:828` (the retry loop's give-up guards).
+
+**Equivalent after all**, moved off the list rather than tested around:
+`bpmn-differ.js:785` (`scrollToElement`) — the import fits the view, so no element in any
+fixture is ever off-screen and the call is a no-op; and `:812`, `:834` plus the four
+`'propertiesPanel.updated'` literals — observable only when the panel misses the first
+`select()`, a race that cannot be provoked deterministically from outside.
+
+### Re-measure (2026-08-29, `scripts/mutation-sweep.js`, suite green at baseline)
+
+277 mutants, **209 killed / 68 survived — 75%** (was 70%). The generator reproduces the
+original run closely: six of the eight files match its mutant counts exactly, and only
+`bpmn-differ.js` differs (123 vs 135), a file that has changed since 2026-08-24 — so the
+raw percentages are comparable but not identical measurements.
+
+| file | mutants | survived | score | was |
+|------|--------:|---------:|------:|----:|
+| `src/differ/bpmn/edit/edit-color-resolver.js` | 14 | 0 | 100% | 100% |
+| `src/differ/shared/diagram-versions.js` | 1 | 0 | 100% | 100% |
+| `src/differ/bpmn/edit/edit-session.js` | 13 | 1 | 92% | 69% |
+| `src/differ/dmn/dmn-diff-painter.js` | 26 | 3 | 88% | 88% |
+| `src/differ/shared/differ-tab-navigator.js` | 52 | 12 | 77% | 77% |
+| `src/differ/bpmn/bpmn-differ.js` | 123 | 35 | 72% | 63% |
+| `src/differ/shared/differ-params.js` | 31 | 9 | 71% | 84% |
+| `src/differ/bpmn/diff-highlighter.js` | 17 | 8 | 53% | 29% |
+
+`differ-params.js` reads as a regression only because this generator mutates every
+`requireDefined(..., 'label')` argument, which the original counted more sparingly: all
+nine of its survivors are on the dismissed list (seven such labels and, twice, the
+`sourceRef && localFileContent` guard around a lone `console.error`). Its effective
+score is 100%.
+
+The 68 survivors break down as: **27 dismissed** (log strings, `'_blank'`, the channel
+names, the `requireDefined` labels, the Layer-2 postMessage boundary), **24 left
+deliberately** with the §8 verdicts above, **12 recorded equivalent** under §6 and §4,
+and **5 new**, none of them worth a test:
+
+- `bpmn-differ.js:853,857` — a null guard and an `element.id` filter in `#readProcessIds`;
+  defensive, same class as the §8 guards.
+- `differ-tab-navigator.js:127` — `removeEventListener('message', …)`; renaming it leaks a
+  listener, which nothing observes.
+- `edit-session.js:142` — `if (!this.#coloringPaused)` guards a once-per-streak
+  `console.warn`. **Dismissed**, same rationale as `bpmn-differ.js:399`.
+- `diff-highlighter.js:4` — `BIG_HIGHLIGHTING_MARKER`. This one **was** a real hole and is
+  now **killed**: `differ-changes-table{,-state}.spec.js` asserted `/highlight-diff-big/`
+  unanchored, which still matches `MUThighlight-diff-big`. The three assertions are now
+  anchored on word boundaries, the same defect the §5 work found in the pulse markers.
+
+Excluding the 27 dismissed mutants the score is 209/250 = **84%**; the ticket's estimate
+for closing §1-§7 was 78%, and ~88% with §8 as well. The per-mutant verdicts are a run
+artifact, not committed — re-derive with `node scripts/mutation-sweep.js` (~50 min).
+
+`npm test` 1175 pass / 0 fail; `npx playwright test` 137 pass (was 128 when the task was
+written).
+
+**Status: done.** All §1-§7 items are closed or argued equivalent, §8 has a verdict per
+item, and the sweep is reproducible from `scripts/`.
+
+### 2026-08-29 (2) · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
+
+Batch 2: **§2, §7 and the [REFAC-0013] half of §3** (the dive-in case and the vacuous
+unit test). Production code untouched again.
+
+- §2 — `differ-edit-download.spec.js` gained the only case that reaches
+  `editSide: 'target'`: `targetFilePath: 'processes/old-name.bpmn'` against
+  `filePath: 'diagram.bpmn'`, asserting both the download name
+  (`old-name-edited-…`, the BUG-0002 rename) and that the baseline loaded is the
+  base version (no `Task_2` in the exported XML).
+- §3c — `differ-cross-tab-dedup.spec.js`: an edit tab dives into a diagram a sibling
+  view tab already shows → focus by name, no new differ. And
+  `test/differ/shared/differ-params.test.js` — the vacuous case was rewritten rather
+  than deleted: the parent's own key is now the other side of the comparison
+  (`identityKeyFor(parent, …) !== childKey`, and the child's key ends with `view`),
+  so it no longer holds by construction.
+- §7 — `differ-edit-boot.spec.js`: closing an editor with a pending edit raises the
+  `beforeunload` dialog (`page.close({ runBeforeUnload: true })` + `waitForEvent`),
+  and the control case — an untouched editor closes silently. The edit is made by a
+  real drag, not through the `window.__bpmnDifferModeler` seam: Chromium suppresses
+  the prompt on a frame with no user gesture, so the interaction is part of the
+  contract. These assertions go through `EditSession#isDirty`, which the undo/redo
+  tests bypass.
+
+Mutants killed (each applied, re-run, restored): `differ-params.js:12`
+(`EDIT_SIDE_TARGET`), `bpmn-differ.js:247` (the `editSide === TARGET` import branch —
+takes down 4 of the 5 download cases), `edit-session.js:63` (`'beforeunload'`), `:64`
+(`if (!this.isDirty())` negated — both new cases go red, one per direction) and `:100`
+(`'commandStack'`). Plus the [REFAC-0013] defect itself, which no mutant expresses:
+swapping `params` → `this.#params` in `#openDifferForFile` reddens the new dive-in
+case and nothing else.
+
+`npm test` 1175 pass / 0 fail; `npx playwright test` 133 pass (was 129).
+
+**Remaining at the time**: §5, §6, §3a, §4, §8 and batch D — all closed in the next
+entry.
+
+### 2026-08-29 · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
+
+Batch 1 of the re-planned sequencing (the A–D batches were split into finer,
+independently committable items): **§1 in full and the mode-suffix half of §3**.
+
+- §1 — `DiffHighlighter.paint` is now asserted. `modeling.setColor` writes the
+  colour inline on the `.djs-visual` child, so `toHaveCSS` reaches it without
+  styles.css: fill on the shape in all three directions
+  (`differ-highlight.spec.js` ADD `rgb(136,255,136)`,
+  `differ-highlight-changed.spec.js` CHANGE `rgb(136,136,255)`,
+  `differ-highlight-removed.spec.js` REMOVE `rgb(255,136,136)`) and stroke on the
+  added connection Flow_3 (`rgb(0,170,0)`, `DiffType.ADD.rowColor`). Painting
+  happens at load, independent of the ☼ toggle, so the assertions sit before the
+  click; the marker-class assertions are unchanged. The three comments that
+  declared the colour deliberately unasserted were corrected.
+- §3 (partial) — `differ-cross-tab-dedup.spec.js` gained the case the mode suffix
+  exists for: a sibling tab VIEWS the same diagram (same platform/refs/path), ✎ is
+  pressed, and a fresh edit differ is opened with `mode: 'edit'` /
+  `editSide: 'source'` instead of the viewer being focused by name.
+
+Mutants killed (verified by applying each mutation and re-running, then restoring):
+`diff-highlighter.js:36` (`if (shapeIdList.length > 0)` negated — all three specs
+go red), `diff-highlighter.js:59` (`rowIdList` — the added spec), and
+`bpmn-differ.js:697` (the `focusExistingDifferTab` guard negated — the new dedup
+case). No production code changed.
+
+`npm test` 1175 pass / 0 fail; `npx playwright test` 129 pass (was 128).
+
+**Remaining**, in the order planned: §3a (K1/K2 with `mode: 'edit'`), §3c + the
+[REFAC-0013] dive-in-from-edit case and the vacuous
+`test/differ/shared/differ-params.test.js:151`, §2 (`editSide: 'target'` download),
+§7 (`beforeunload` / `isDirty`), §5 (pulse phase), §6 (search selection), §4 (the K3
+pagehide comment), §8 (one-line verdicts), and batch D (the sweep script) last.

@@ -73,3 +73,19 @@ test('a manually coloured element keeps its colour in the file', async ({ page }
     expect(xml).toContain('#ffcdd2');
     expect(xml).not.toContain('#88ff88');
 });
+
+// BUG-0002 rename handling on the edit side. When the MR renamed the file, the target
+// version keeps its OLD name, so an editor opened on THAT side must both load the base
+// version and download under the pre-rename name. editSide 'target' is the only path
+// that reads targetFileName, and nothing exercised it (REFAC-0015 §2).
+test('editing the target side loads the base version and keeps its pre-rename name', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: editParams({ editSide: 'target', targetFilePath: 'processes/old-name.bpmn' })
+    });
+
+    const { name, xml } = await downloadedText(page);
+    expect(name).toMatch(/^old-name-edited-\d{8}-\d{6}\.bpmn$/);
+    // base.bpmn is the baseline here; Task_2 is what the MR added on top of it.
+    expect(xml).not.toContain('Task_2');
+});

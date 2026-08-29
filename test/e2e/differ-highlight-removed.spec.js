@@ -9,9 +9,9 @@ const {
 // versions swapped, to exercise the REMOVE direction the existing test never touches.
 // The base (target) side has the extra Task_2; the MR removed it. show() renders the
 // MR side first (2 elements, nothing to remove); "Switch branch" shows the base side,
-// where Task_2 is REMOVED and is part of setDiffElementIds. Turning the diff highlight
-// on (☼) marks it with the same `highlight-diff` class (the colour, red, comes from
-// modeling.setColor + styles.css and is not asserted — the class is the robust signal).
+// where Task_2 is REMOVED and is part of setDiffElementIds. It is painted red by
+// modeling.setColor as soon as that side renders; turning the diff highlight on (☼)
+// then marks it with the same `highlight-diff` class.
 test('marks a removed element when the highlight is on (base side)', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, {
@@ -26,6 +26,9 @@ test('marks a removed element when the highlight is on (base side)', async ({ pa
 
     const removedTask = page.locator('svg .djs-element[data-element-id="Task_2"]');
     await expect(removedTask).toBeVisible();
+    // DiffType.REMOVE.shapeColor #ff8888, set inline by modeling.setColor.
+    await expect(removedTask.locator('.djs-visual > rect'))
+        .toHaveCSS('fill', 'rgb(255, 136, 136)');
     // Off by default.
     await expect(removedTask).not.toHaveClass(/highlight-diff/);
 

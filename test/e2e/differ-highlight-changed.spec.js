@@ -9,7 +9,8 @@ const {
 // ("Review request" → "Approve request"). compare(mr, branch) flags Task_1 as a
 // CHANGED shape (changedShapeIds), so it joins setDiffElementIds. Turning the diff
 // highlight on (☼) marks it with `highlight-diff` — exercising the changed direction
-// that the shipped added-only test never covers. The colour (blue) is not asserted.
+// that the shipped added-only test never covers. The CHANGE colour is painted at load,
+// before any toggle (REFAC-0015 §1).
 test('marks a changed element when the highlight is on (MR side)', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, {
@@ -18,6 +19,9 @@ test('marks a changed element when the highlight is on (MR side)', async ({ page
 
     const changedTask = page.locator('svg .djs-element[data-element-id="Task_1"]');
     await expect(changedTask).toBeVisible();
+    // DiffType.CHANGE.shapeColor #8888ff, set inline by modeling.setColor.
+    await expect(changedTask.locator('.djs-visual > rect'))
+        .toHaveCSS('fill', 'rgb(136, 136, 255)');
     await expect(changedTask).not.toHaveClass(/highlight-diff/);
 
     await page.getByTitle('Turn diff highlight on').click();
