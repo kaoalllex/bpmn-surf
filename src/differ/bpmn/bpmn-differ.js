@@ -87,6 +87,7 @@ class BpmnDiffer {
         this.#selection = this.#bpmnJS.get('selection');
         const bpmnJSEventBus = this.#bpmnJS.get('eventBus');
         const bpmnJSOverlays = this.#bpmnJS.get('overlays');
+        this.#keepOutlinesRendered(bpmnJSEventBus, this.#bpmnJS.get('outline'));
 
         this.#viewport.setBpmnCanvas(bpmnJSCanvas);
         this.#diffHighlighter = new DiffHighlighter(bpmnJSCanvas, this.#elementRegistry, bpmnJSModeling);
@@ -363,6 +364,20 @@ class BpmnDiffer {
             onOpenUrl: (url) => window.open(url, '_blank')
         });
         this.#view.setBackNavigator(this.#backNavigator);
+    }
+
+    // Every outline-based marker we paint (the ☼ diff highlight, search matches,
+    // the edit-mode diff) is styled through the .djs-outline child of the element.
+    // Since the diagram-js 15.17 → 15.24 bump (bpmn-js 18.25) that child is created
+    // lazily, only when an element is hovered or selected, so the markers landed on
+    // elements that had nothing to style and the user saw no effect (BUG-0030).
+    // Restore the eager creation diagram-js did on render until then.
+    #keepOutlinesRendered(eventBus, outline) {
+        eventBus.on(['shape.added', 'connection.added'], ({ element }) => {
+            if (element.parent) {
+                outline.createOutline(element);
+            }
+        });
     }
 
     #createModeler() {

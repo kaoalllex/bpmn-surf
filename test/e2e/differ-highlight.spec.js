@@ -105,3 +105,23 @@ test('highlighting an element that is selected clears the selection marker', asy
     await expect(addedTask).toHaveClass(PULSE);
     await expect(addedTask).not.toHaveClass(/selected/);
 });
+
+// BUG-0030: the marker classes above are only half the story — every
+// .highlight-diff* rule styles the .djs-outline child, so the user sees nothing
+// unless that child is actually rendered. diagram-js creates it lazily (hover /
+// selection only), which the class-based assertions cannot catch.
+test('the highlight marker renders a visible cyan outline', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page);
+
+    const addedTask = page.locator('svg .djs-element[data-element-id="Task_2"]');
+    await expect(addedTask).toBeVisible();
+
+    await page.getByTitle('Turn diff highlight on').click();
+    await expect(addedTask).toHaveClass(PULSE);
+
+    const outline = addedTask.locator('.djs-outline');
+    await expect(outline).toHaveCount(1);
+    await expect(outline).toHaveCSS('visibility', 'visible');
+    await expect(outline).toHaveCSS('stroke', 'rgb(102, 255, 255)');
+});
