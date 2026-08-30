@@ -217,7 +217,6 @@ class DmnDiffer {
             return;
         }
         this.#switchToViewTableMode();
-        this.#hidePoweredByLabel();
         this.#viewport.fit();
         this.#viewport.scrollTop = scrollTop;
     }
@@ -315,14 +314,6 @@ class DmnDiffer {
         if (this.#params.divedInFrom) {
             this.#diveOutToCallerDiffer(
                 this.#params.divedInFrom.filePath, this.#params.divedInFrom.fileName);
-        }
-    }
-
-    #hidePoweredByLabel() {
-        try {
-            document.querySelector('.bjs-powered-by').style.display = 'none';
-        } catch (error) {
-            console.warn('powered by label not found', error);
         }
     }
 

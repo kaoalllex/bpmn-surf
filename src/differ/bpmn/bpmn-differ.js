@@ -885,11 +885,6 @@ class BpmnDiffer {
                 console.warn('modeler pallete not found', error);
             }
         }
-        try {
-            document.querySelector('.bjs-powered-by').style.display = 'none';
-        } catch (error) {
-            console.warn('powered by label not found', error);
-        }
         // BUG-0011: the context-pad (edit-only actions, vetoed via EDIT_EVENTS) is
         // created lazily on first selection, so it is hidden via CSS (.djs-context-pad)
         // rather than here — see styles.css. FEAT-0031 re-shows it via the
