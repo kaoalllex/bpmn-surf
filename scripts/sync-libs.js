@@ -7,6 +7,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const esbuild = require('esbuild');
 
 const ROOT_DIR = path.join(__dirname, '..');
 const NODE_MODULES_DIR = path.join(ROOT_DIR, 'node_modules');
@@ -34,7 +35,14 @@ const LIBS = [
         package: 'dmn-js',
         from: 'dist',
         files: [
-            'dmn-viewer.development.js',
+            // INFRA-0001: the production build, despite bundling Inferno in dev
+            // mode just like the development one, so it logs "Inferno is in
+            // development mode" plus a "minified copy of the development build"
+            // warning on load — Inferno's own check looks for its `testFn` name,
+            // which dmn-js's minifier mangles. Cosmetic, and the dev build runs
+            // Inferno in exactly the same mode, only silently: 1.3 MB for two
+            // console lines is a bad trade.
+            'dmn-viewer.production.min.js',
             'assets/diagram-js.css',
             'assets/dmn-js-decision-table-controls.css',
             'assets/dmn-js-decision-table.css',
@@ -54,6 +62,10 @@ const LIBS = [
     {
         package: 'bpmn-js-properties-panel',
         from: 'dist',
+        // the only build the package ships is an unminified UMD (2.4 MB) — unlike
+        // bpmn-js and dmn-js, which ship a .production.min. Minifying it here is
+        // what keeps it from dominating the packaged extension (INFRA-0001).
+        minify: true,
         files: [
             'bpmn-js-properties-panel.umd.js'
         ]
@@ -90,6 +102,15 @@ function packageVersion(packageName) {
     return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
 }
 
+// keepNames because the panel reads constructor.name; its diagram-js services all
+// carry explicit $inject, so mangling argument names is safe. transform, not
+// bundle: the input is already a self-contained UMD file.
+function minifyInto(sourceFile, targetFile) {
+    const source = fs.readFileSync(sourceFile, 'utf8');
+    const { code } = esbuild.transformSync(source, { minify: true, keepNames: true });
+    fs.writeFileSync(targetFile, code);
+}
+
 function syncLib(lib) {
     const sourceDir = path.join(NODE_MODULES_DIR, lib.package, lib.from);
     const targetDir = path.join(LIBS_DIR, lib.to ?? lib.package);
@@ -101,7 +122,11 @@ function syncLib(lib) {
         }
         const targetFile = path.join(targetDir, file);
         fs.mkdirSync(path.dirname(targetFile), { recursive: true });
-        fs.copyFileSync(sourceFile, targetFile);
+        if (lib.minify) {
+            minifyInto(sourceFile, targetFile);
+        } else {
+            fs.copyFileSync(sourceFile, targetFile);
+        }
     }
 
     console.log(`${lib.package}@${packageVersion(lib.package)}: ${lib.files.length} files`);

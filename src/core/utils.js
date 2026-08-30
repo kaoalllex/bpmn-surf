@@ -230,7 +230,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addStylesheet('libs/dmn-js/assets/dmn-js-shared.css', doc, getResourceUrlByNameFunc);
     await addStylesheet('libs/dmn-js/assets/dmn-font/css/dmn.css', doc, getResourceUrlByNameFunc);
 
-    await addScript('libs/dmn-js/dmn-viewer.development.js', doc, getResourceUrlByNameFunc);
+    await addScript('libs/dmn-js/dmn-viewer.production.min.js', doc, getResourceUrlByNameFunc);
 
     // properties panel
     await addStylesheet('libs/bpmn-js-properties-panel/assets/element-templates.css', doc, getResourceUrlByNameFunc);

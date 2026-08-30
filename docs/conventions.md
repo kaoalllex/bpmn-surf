@@ -6,7 +6,7 @@
 - ⚠️ The order of `content_scripts` in `manifest.json` and in `utils.js#loadScripts` — **do not reorder unless necessary** (load-time dependencies between scripts). The composition of `manifest.json` itself can be edited freely, without separate approval; a typical case is adding a new differ-page file synchronously to `web_accessible_resources` and `loadScripts` (names in `loadScripts` = paths in `web_accessible_resources`)
 - ⚠️ The shared differ-page classes (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType`) are used by both the BPMN and the DMN differ — before renaming/changing them, Grep across all js files
 - ⚠️ Vanilla JavaScript only (ES6+): no TypeScript, frameworks, bundlers, or build step
-- ⚠️ Do not add new runtime dependencies; dev dependencies (`package.json#devDependencies`) — only with the user's approval (currently: `jsdom` for tests and the library packages for `sync:libs`)
+- ⚠️ Do not add new runtime dependencies; dev dependencies (`package.json#devDependencies`) — only with the user's approval (currently: `jsdom` and `@playwright/test` for tests, `esbuild` for minifying inside `sync:libs`, and the library packages themselves)
 - ⚠️ Chrome Manifest V3
 - ⚠️ Preserve existing behavior, UX, and backward compatibility
 - ⚠️ If the user asks you to **come up with/propose something yourself** (names, codes, schema, structure, format) — first show the proposal and wait for confirmation, and only then do the work that depends on it (so as not to do it in vain)
@@ -20,6 +20,8 @@ If a change risks **unexpected or out-of-scope** behavior changes: stop, explain
 
 `libs/` — vendored dist files of external libraries; they are committed (the extension is loaded unpacked, there is no build step). The source of truth is the versions in `package.json#devDependencies`, copying is done by `scripts/sync-libs.js` (the file list and path mapping are declared in it).
 
+Most packages ship a ready `.production.min.js`, which is copied verbatim. A lib marked `minify: true` in the script is instead passed through esbuild (`transformSync`, `keepNames`) — this is a `sync:libs`-time step over a vendored file, not a build step for the extension: what ships is still a plain file loaded by a `<script>` tag.
+
 Update procedure:
 1. Change the package version in `package.json#devDependencies`
 2. `npm install && npm run sync:libs`
@@ -29,6 +31,8 @@ Update procedure:
 Nuances:
 - The properties-panel CSS comes from separate packages: `properties-panel.css` — from `@bpmn-io/properties-panel`, `element-templates.css` — from `bpmn-js-element-templates`; their versions must be compatible with `bpmn-js-properties-panel` (these are its peer dependencies)
 - The target paths in `libs/` cannot be changed without synchronously changing `manifest.json#web_accessible_resources`, `utils.js#loadScripts` and `camunda-bpmn-moddle-manager.js`
+- `bpmn-js-properties-panel` ships **only** an unminified UMD build, hence its `minify: true`. Minifying it is safe because all of its diagram-js services carry an explicit `$inject` (nothing relies on argument names) — recheck that after a major upgrade
+- dmn-js logs `Inferno is in development mode` plus a `console.error` about "a minified copy of the development build" on every load. Both dmn-js builds bundle Inferno in dev mode; only the minified one trips Inferno's own name-based self-check. Cosmetic — **not** a reason to go back to `dmn-viewer.development.js`, which is 2.6× larger for the same dev-mode Inferno ([INFRA-0001])
 - Major upgrades of bpmn-js/dmn-js/properties-panel may break the API — check the differ of both types (BPMN and DMN)
 
 ## Code style
