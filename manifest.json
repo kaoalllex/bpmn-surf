@@ -12,7 +12,6 @@
     "content_scripts": [
         {
             "matches": [
-                "https://gitlab.example.com/*",
                 "https://gitlab.com/*"
             ],
             "css": [
