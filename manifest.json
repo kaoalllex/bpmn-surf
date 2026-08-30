@@ -131,7 +131,7 @@
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.ttf",
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff",
                 "libs/bpmn-js/assets/bpmn-font/font/bpmn.woff2",
-                "libs/dmn-js/dmn-viewer.development.js",
+                "libs/dmn-js/dmn-viewer.production.min.js",
                 "libs/dmn-js/assets/dmn-js-decision-table-controls.css",
                 "libs/dmn-js/assets/dmn-js-decision-table.css",
                 "libs/dmn-js/assets/dmn-js-shared.css",
