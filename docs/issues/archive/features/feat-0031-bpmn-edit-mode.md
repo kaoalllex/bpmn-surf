@@ -2,7 +2,7 @@
 id: FEAT-0031
 title: BPMN edit mode — edit the shown diagram in a separate tab and download the result
 priority: medium
-status: in-progress
+status: done
 ---
 
 ## Statement
