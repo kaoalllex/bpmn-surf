@@ -11,7 +11,8 @@ The schema was renamed — no such name exists in master, the diff is not built.
 
 ## Context
 
-- MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/4119/diffs?commit_id=a34a768619d0efd47a331ea94df3653cd0c9dfde#aaaf91f17e455f9dd71767bf9d2c5ac5d5df2350
+- Repro: an MR that renames a schema file — the new path exists only in the source branch;
+  reproduced on a self-managed GitLab with the legacy (non rapid-diffs) diff markup
 
 ### Root of the problem
 

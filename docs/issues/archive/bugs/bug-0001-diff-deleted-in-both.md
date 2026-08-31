@@ -11,7 +11,7 @@ The MR is closed but is detected incorrectly, and the file is deleted in both br
 
 ## Context
 
-- MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/3082/diffs#b0f241e6a57a97ab996588742c2f9197941f9250 (file `assignMeetingTasks.bpmn`)
+- Repro: a closed MR in which the schema (`assignMeetingTasks.bpmn`) is deleted both in the MR branch and in master
 - Symptoms: log `MR is not merged. Target commit id is target branch name: master`; then:
   ```
   404 (Not Found) — loading mr bpmn xml

@@ -625,7 +625,7 @@ describe('HandlerLocator.matchesExactTopic (BUG-0027)', () => {
 // Integration test using real GitLab search API response data (BUG-0027)
 describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
     // Mock GitLab search API response from:
-    // https://gitlab.example.com/api/v4/projects/118208/search?scope=blobs&ref=master&search=Order_PrepareItem_FindItems
+    // https://gitlab.example.com/api/v4/projects/42/search?scope=blobs&ref=master&search=Order_PrepareItem_FindItems
     const gitLabSearchResponse = [
         {
             basename: 'order/item/src/main/kotlin/prepare/FindItemsInCatalogTask',
@@ -636,7 +636,7 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
             id: null,
             ref: 'master',
             startline: 21,
-            project_id: 118208
+            project_id: 42
         },
         {
             basename: 'order/item/src/main/kotlin/prepare/FindItemsTask',
@@ -647,7 +647,7 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
             id: null,
             ref: 'master',
             startline: 15,
-            project_id: 118208
+            project_id: 42
         },
         {
             basename: 'order/item/src/main/kotlin/prepare/util/OrderExtensions',
@@ -658,7 +658,7 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
             id: null,
             ref: 'master',
             startline: 20,
-            project_id: 118208
+            project_id: 42
         },
         {
             basename: 'order/item/src/main/resources/bpmn/prepare/PrepareItem',
@@ -669,7 +669,7 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
             id: null,
             ref: 'master',
             startline: 63,
-            project_id: 118208
+            project_id: 42
         },
         {
             basename: 'order/item/src/main/resources/bpmn/prepare/PrepareItem',
@@ -680,7 +680,7 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
             id: null,
             ref: 'master',
             startline: 80,
-            project_id: 118208
+            project_id: 42
         }
     ];
 

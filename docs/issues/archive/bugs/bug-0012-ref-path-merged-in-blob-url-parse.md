@@ -19,14 +19,16 @@ The diagram itself opens normally — the bug shows up only on navigation to the
 ## Context
 
 Reproduction:
-- Schema: `https://gitlab.example.com/example-project/example-repo/-/blob/a4084af3387695c4182c04522b6fa644bb033d78/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
+- Schema: opened in blob view by a bare 40-character commit SHA, under a module path that
+  does not start with the project name —
+  `/-/blob/<sha>/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
 - Task: `GenerateAdditionalAgreementToCreditAgreement`.
 
 A Search API request goes to the log where `ref` = **SHA + the path to the schema directory**, not a clean SHA:
 
 ```
-GET /api/v4/projects/118208/search?scope=blobs
-    &ref=a4084af3387695c4182c04522b6fa644bb033d78%2Fbusiness%2Fmodule-a%2Fsrc%2Fmain%2Fresources%2Fbpmn%2Fagreement
+GET /api/v4/projects/42/search?scope=blobs
+    &ref=<sha>%2Fbusiness%2Fmodule-a%2Fsrc%2Fmain%2Fresources%2Fbpmn%2Fagreement
     &search=class%20ModuleA_Agreement_PreApprove_GenerateAdditionalAgreementToCreditAgreement
 ```
 
@@ -49,7 +51,7 @@ Incorrect blob-URL parsing in `GitLabUrlParser.extractBranchCommitIdAndFilePath`
    alternatives, the last of which is the catch-all `[0-9a-zA-Z-_./]+` (includes `/`),
    greedy: `` `\/-\/blob\/(master|develop|feature\/…|bugfix\/…|[0-9a-zA-Z-_./]+)\/(.*)` ``.
    The group captured everything up to the last `/`:
-   `branchCommitId = a4084…/business/…/agreement`, `filePath = AgreementPreApprove.bpmn`.
+   `branchCommitId = <sha>/business/…/agreement`, `filePath = AgreementPreApprove.bpmn`.
 
 **Why viewing still works, but the search doesn't.** The corrupted `targetRef`
 is used in two incompatible ways:

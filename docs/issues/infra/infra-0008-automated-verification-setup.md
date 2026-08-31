@@ -27,9 +27,9 @@ console output.
   - The `chrome-devtools` MCP controls a **separate** Chrome instance: it came up
     on `about:blank`, **no extension loaded**, profile "managed by your
     organization".
-  - Opening `https://gitlab.example.com/.../merge_requests/1073/diffs` redirected
-    to SSO `https://devplatform.example.com/auth/login` — **no authenticated
-    session**, and the interactive SSO login cannot be completed by the agent.
+  - Opening an internal MR diffs page redirected to the corporate SSO login
+    page — **no authenticated session**, and the interactive SSO login cannot
+    be completed by the agent.
 - Blockers to solve, roughly in order:
   1. **Extension loading** — launch the MCP-controlled Chrome with the unpacked
      extension from the repo (`--load-extension=<repo>` / a dedicated user-data

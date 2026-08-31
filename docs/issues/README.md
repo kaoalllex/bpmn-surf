@@ -79,8 +79,10 @@ What was done in this session: the essence of the change, key files, what remain
 
 ## Related materials
 
-- **Analysis of analogues** (other BPMN plugins): https://chat.example.com/example/pl/mubj8tqxsprcxft8r1dny4k4ph
-- **A separate BPMN viewing system**: https://metrics.example.com
-- **BPMN Diff for CI/CD** (gradle-plugin): https://gitlab.example.com/example-tools/bpmn-diff-gradle-plugin
-  - Discussion: https://chat.example.com/example/pl/dk3pocadipbs7nzpwo3h617yne
-- **BPMN viewer plugin in GitLab**: https://gitlab.example.com/example-infra/gitlab-bpmn-viewer
+Prior art surveyed before this project started. All of it is internal to the author's
+employer and not reachable from outside it, so it is recorded here by description only:
+
+- **Analysis of analogues** — a review of the other BPMN plugins available at the time.
+- **A separate BPMN viewing system** — an in-house web service for viewing BPMN diagrams.
+- **BPMN Diff for CI/CD** — an internal Gradle plugin that renders BPMN diffs in pipelines.
+- **BPMN viewer plugin in GitLab** — an internal GitLab plugin that renders BPMN files in the repository UI.

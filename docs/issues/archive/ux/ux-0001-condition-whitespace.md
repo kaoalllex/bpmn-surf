@@ -11,7 +11,7 @@ When comparing conditions on a Sequence Flow (`bpmn:conditionExpression`), insig
 
 ## Context
 
-- Example MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/4335/diffs
+- Example of a change that only reformats a condition expression without altering its meaning:
   ```
   before:                                 after:
   ${                                      ${

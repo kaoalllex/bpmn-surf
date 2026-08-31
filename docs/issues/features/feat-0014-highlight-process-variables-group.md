@@ -30,9 +30,9 @@ Open design questions:
 
 ## Context
 
-- Discovered during manual verification of the external-libraries upgrade (MR
-  https://gitlab.example.com/kaoalllex/bpmn-diff/-/merge_requests/77; bpmn-js 16→18, dmn-js 15→17,
-  properties-panel 3.7→3.44). **Not a regression**: the group was not highlighted before the upgrade either.
+- Discovered during manual verification of the external-libraries upgrade
+  (bpmn-js 16→18, dmn-js 15→17, properties-panel 3.7→3.44). **Not a regression**:
+  the group was not highlighted before the upgrade either.
 - Affected files: `src/differ/bpmn/bpmn-xml-comparator.js` (diff→group map, aggregation),
   `src/differ/bpmn/properties-panel-highlighter.js` (highlighting by header text).
 - Diagnostics already exist: the comparator logs a diff without a mapped group

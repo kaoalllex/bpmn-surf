@@ -187,7 +187,7 @@ describe('GitLabUrlParser.extractBranchCommitIdAndFilePath', () => {
 
     it('matches the commit SHA exactly without swallowing a deep path (no hint, path not project-anchored)', () => {
         const { parser } = createParser();
-        const sha = 'a4084af3387695c4182c04522b6fa644bb033d78';
+        const sha = '0123456789abcdef0123456789abcdef01234567';
         const res = parser.extractBranchCommitIdAndFilePath(
             `https://x/g/proj/-/blob/${sha}/business/module-a/src/main/resources/bpmn/dir/a.bpmn`, 'proj', null);
         assert.equal(res.branchCommitId, sha);

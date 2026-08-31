@@ -16,7 +16,8 @@ Eliminate accumulated comparator edge cases:
 
 ## Context
 
-- Change of the error code (`bpmn:error`). Example MR: https://gitlab.example.com/example-project/example-repo/-/merge_requests/795. Code: `bpmn-xml-comparator.js` (property mapping → group `Error`).
+- Change of the error code (`bpmn:error`): seen on an MR that changed a task's error code and
+  got no highlight in the diff. Code: `bpmn-xml-comparator.js` (property mapping → group `Error`).
 - `failedJobRetryTimeCycle`: code `bpmn-xml-comparator.js`.
 - Group title for `bpmn:startEvent/isInterrupting`: code `bpmn-xml-comparator.js`.
 - DMN outputs by id instead of label: code `dmn-xml-comparator.js#compareOutputs`.

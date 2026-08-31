@@ -13,7 +13,7 @@ interaction with the page).
 
 Reported observation: open an MR, work for a while → fine; leave the tab idle for
 a few minutes → pairs of warnings appear at intervals (e.g. 19:33:52 ×2,
-19:33:55 ×2) for `self-service/namespaces/-/merge_requests/116117`.
+19:33:55 ×2) on a single MR page left open in the tab.
 
 The Chrome error entry's stack trace is misleading:
 

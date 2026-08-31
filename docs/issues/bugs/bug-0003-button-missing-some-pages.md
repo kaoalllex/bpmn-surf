@@ -13,7 +13,6 @@ Find and fix the detection problems for eligible GitLab pages; add diagnostics f
 
 - Special case: when the "Show one file at a time" checkbox is unchecked, GitLab shows all files in a row, and the plugin does not understand that a bpmn/dmn file is selected → there is no button. The button must be drawn immediately for all bpmn/dmn file blocks. **(still open)**
 - Lazy-render race (single-file mode): selecting a bpmn file makes GitLab swap the diff DOM asynchronously. When the render takes longer than `findSelectedFilePath()`'s ~1.5s detection budget (`doWithAttempts` in `gitlab-dom-scraper.js`), the `mouseup` run finds no `[data-path]`/`<diff-file>` element and gives up (`cannot find data-path element` → `file not selected`). Nothing re-triggers on the late render (only `mouseup`/`popstate` are listened to), so the button appears only on a second manual click. **Fixed** via a debounced `MutationObserver` (see work log).
-- Original bug: https://chat.example.com/example/pl/hzu9eoc44384xq4jk6a1apna8a
 
 ## Work log
 

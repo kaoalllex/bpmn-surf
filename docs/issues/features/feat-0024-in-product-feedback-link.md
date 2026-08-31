@@ -96,7 +96,7 @@ this posture change in the README alongside the update-checker note.
    (today only `raw.githubusercontent.com` is listed). Confirm the API host — the
    `create-post` gateway host may differ from the channel host
    (`chat.example.com`, today's `FEEDBACK_URL`).
-4. **Auth & authorship** — the crux. the chat is Mattermost-based (the channel URL is
+4. **Auth & authorship** — the crux. The chat is Mattermost-based (the channel URL is
    MM-shaped), so `create-post` likely mirrors MM `POST /api/v4/posts`
    `{ channel_id, message, props }`. Two ways to author as the user:
    - **(B1) reuse the user's existing chat session** — `fetch(..., {credentials:

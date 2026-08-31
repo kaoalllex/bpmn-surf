@@ -11,7 +11,8 @@ Currently, for any MR commit the final version of the schema is shown (the lates
 
 ## Context
 
-- Example MR: https://gitlab.example.com/example-group/example-service/-/merge_requests/3931/diffs
+- Repro: an MR with several commits touching the same schema — select any commit other than
+  the last one on the MR diffs page
 
 ## Work log
 

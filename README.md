@@ -9,7 +9,7 @@ Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas 
 
 ## Installation
 
-1. Download the latest `bpmn-surf-x.y.z.zip` from the [Releases page](https://gitlab.example.com/kaoalllex/bpmn-surf/-/releases)
+1. Download the latest `bpmn-surf-x.y.z.zip` from the [Releases page](https://github.com/kaoalllex/bpmn-surf/releases)
 2. Unzip it to a folder of your choice
 3. Open the extensions page: `chrome://extensions`
 4. Enable **Developer mode** (toggle in the top-right corner)
@@ -53,4 +53,4 @@ To update, download a newer zip, unzip it over the old folder, and click ⟳ on 
 
 ## Links
 
-- [Chat channel](https://chat.example.com/example/channels/bpmn-surf)
+- [Issues](https://github.com/kaoalllex/bpmn-surf/issues) — bug reports and feature requests
