@@ -1,6 +1,6 @@
 ---
 id: BUG-0003
-title: BPMN Diff button is not shown on some pages
+title: bpmn-surf button is not shown on some pages
 priority: high
 status: open
 ---

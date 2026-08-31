@@ -12,7 +12,6 @@
         "test:e2e:headed": "playwright test --headed",
         "sync:libs": "node scripts/sync-libs.js",
         "package": "bash scripts/package.sh",
-        "release:gitlab": "bash scripts/release-gitlab.sh",
         "worktree": "bash scripts/new-worktree.sh"
     },
     "devDependencies": {

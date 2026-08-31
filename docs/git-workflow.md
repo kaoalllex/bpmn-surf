@@ -5,8 +5,8 @@ Read before any git operations (branches, commits, push, MR, rebase).
 ## Current mode: local-only, no reachable remote
 
 **We do not work with GitLab any more.** `gitlab.example.com` is unreachable from the
-development machine (DNS does not resolve), so `git fetch` / `git push origin`, `glab` and
-`npm run release:gitlab` fail instantly. The `origin` remote still points at the old GitLab
+development machine (DNS does not resolve), so `git fetch` / `git push origin` and `glab`
+fail instantly. The `origin` remote still points at the old GitLab
 URL and is dead — do not try to reach it, and do not report the failure as a problem to fix.
 
 The plan is to publish the repository on **public GitHub** ([INFRA-0007]; `gh` is already
@@ -14,7 +14,7 @@ installed and authenticated on the machine). Until that move happens:
 
 - branch off the **local** `master` — no `git fetch origin` first, it will fail;
 - commit locally, in small reviewable steps, as before;
-- **do not** push, do not open an MR/PR, do not run `/mr`, `/cleanup` or `npm run release:gitlab`;
+- **do not** push, do not open an MR/PR, do not run `/mr` or `/cleanup`;
 - `npm test` before declaring a task finished stays mandatory — it is fully local;
 - `master` stays protected by convention: never commit into it, even locally.
 
@@ -77,19 +77,12 @@ The remote branch is usually removed by GitLab on merge; if it remains — `git 
 
 ## Releases (inactive — moves to GitHub Releases, [INFRA-0007])
 
-Distribution is via **GitLab Releases** (a git tag + an attached zip asset), not via archives committed into the repo (binaries would bloat the git history forever). The Releases page (`/-/releases`) is the user-facing download list — it lists every version automatically, so there is nothing to prune.
+Distribution is via **releases** (a git tag + an attached zip asset), not via archives committed into the repo (binaries would bloat the git history forever). The releases page is the user-facing download list — it lists every version automatically, so there is nothing to prune.
 
-1. Bump the version on a branch via `/release` (`manifest.json` + `version.json` + a `CHANGELOG.md` entry) and merge the MR — see the `release` skill.
-2. After the MR is merged, on a fresh `master`, publish the release:
+1. Bump the version on a branch via `/release` (`manifest.json` + `version.json` + a `CHANGELOG.md` entry) and merge it — see the `release` skill.
+2. On a fresh `master`, build the distribution zip with `npm run package` (`scripts/package.sh` reads the version from `manifest.json`), then create the `vX.Y.Z` release with that zip attached and notes taken from the matching `CHANGELOG.md` section.
 
-   ```bash
-   git checkout master && git pull
-   npm run release:gitlab        # → scripts/release-gitlab.sh
-   ```
-
-   `release-gitlab.sh` reads the version from `manifest.json`, builds the zip via `package.sh`, then creates the `vX.Y.Z` release with the zip attached as a download asset and notes taken from the matching `CHANGELOG.md` section. The git tag is created server-side from `--ref` (default `master`) via the API — no tag push into protected `master` is needed. Pass a ref to tag a different commit: `npm run release:gitlab -- <sha|branch|tag>`.
-
-   Requires `glab` authenticated against the project's GitLab (`glab auth status`). The script aborts if `vX.Y.Z` already exists — bump the version first.
+   The old GitLab release script was removed together with the rest of the GitLab-specific tooling; the GitHub equivalent (`gh release create`) is wired up as part of the move.
 
 The automated update notifier (FEAT-0012) stays inactive until the `UPDATE_*` URLs in `src/core/config.js` are set (area B / [INFRA-0007]); pointing `UPDATE_HOME_URL` at the Releases page is a cheap later step.
 
