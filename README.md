@@ -54,3 +54,7 @@ To update, download a newer zip, unzip it over the old folder, and click ⟳ on 
 ## Links
 
 - [Issues](https://github.com/kaoalllex/bpmn-surf/issues) — bug reports and feature requests
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).

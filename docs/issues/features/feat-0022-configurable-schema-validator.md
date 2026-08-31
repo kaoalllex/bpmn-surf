@@ -56,7 +56,7 @@ as absorbed.
 - **REST contract (phase 2)**: request/response format, which version/ref we validate
   (target / source / both), timeout and fallback when the service is unavailable, authentication.
 - ⚠️ **host_permissions**: the validation service URL is **configurable**, do not hardcode an
-  internal domain — coordinate with [INFRA-0007] (migration to GitHub, going public).
+  internal domain — the repository is public, so no internal host may be baked into it.
 - **What we validate**: a single version (the one open) or both diff versions; show
   "new violations that appeared in the MR" separately?
 - **DMN**: whether to apply the validator to DMN or BPMN only at the start.
@@ -76,7 +76,6 @@ as absorbed.
 ### Links
 
 - [IDEA-0001] — absorbed by this task (closed).
-- [INFRA-0007] — configurable external URLs / host_permissions (for the REST phase).
 
 ### Affected files (expected)
 

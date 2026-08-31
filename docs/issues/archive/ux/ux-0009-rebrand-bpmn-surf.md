@@ -48,7 +48,7 @@ Brand identity (folded in from the original UX-0009 scope):
 
 - **Relaunch scope: area A first, then B.** R1 = internal `bpmn-surf` relaunch
   (rename + browsing features), shipped to the company via the chat channel. The
-  public GitHub/Web Store launch (area B) is a later milestone — see [INFRA-0007].
+  public GitHub/Web Store launch (area B) is a later milestone.
 - **The rename commit is gated** on the browsing story being true: it lands only
   after [FEAT-0023] (back navigation) and [FEAT-0005] (navigate to called DMN).
   The name promises free movement between schemas (dive in *and* out); shipping
@@ -65,7 +65,7 @@ Brand identity (folded in from the original UX-0009 scope):
 - **Extension icon = placeholder for R1.** No designer / no build step (vanilla
   project), so R1 ships a simple placeholder icon set (16/32/48/128) in the
   brand tone; the final icon is a later task / part of area B.
-- **Git repo + local folder rename are deferred to area B** ([INFRA-0007]).
+- **Git repo + local folder rename are deferred to area B.**
   Part 1 renames only in-product strings, `manifest.json`, README and docs.
   `config.js` example URLs and `host_permissions` (tied to the actual repo move)
   stay untouched in R1.
@@ -77,7 +77,7 @@ Brand identity (folded in from the original UX-0009 scope):
 - **[FEAT-0024] stays a separate task** (R1.2) — the toolbar wordmark is built as
   a convenient anchor for the future feedback link, but the link is not in R1.
 - **One file, no epic split.** The meaningful split is area A (this task) vs
-  area B ([INFRA-0007]); within area A the work is one coherent MR, so progress
+  area B; within area A the work is one coherent MR, so progress
   is tracked here in the Work log rather than in micro-subtasks.
 
 ### Decisions (2026-06-21) — button labels reworded (supersedes "labels stay")
@@ -130,8 +130,6 @@ Brand identity (folded in from the original UX-0009 scope):
   browsing-first shift this rebrand reflects.
 - [FEAT-0024] — in-product feedback link; the relaunch's feedback loop, shipped
   alongside the brand work in R1.2.
-- [INFRA-0007] — area B (public GitHub launch); the `bpmn-surf` name travels to
-  the public repo there. Git repo / folder rename happens here, not in R1.
 - [UX-0010] — `Show diff with local` dropdown; split out of this task, may share
   the R1 MR.
 - [IDEA-0003] — the CamOD / prod-operator direction (separate product scope).
@@ -152,12 +150,11 @@ Done:
   the `release` skill); added a `## 1.0.0` section to `CHANGELOG.md` (release
   notes / delta, feeds the FEAT-0012 "What's new"). `1.0.0` is an intentional
   major bump for the relaunch (breaks the prior `0.MINOR` scheme).
-- **Brand sweep finished** — `FEEDBACK_URL` in `config.js` and the README channel
-  link → `https://chat.example.com/example/channels/bpmn-surf` (chat channel
-  confirmed renamed). Remaining `bpmn-diff` strings are intentional: code paths
-  (`*-differ.js`), internal ids (`gl-bpmn-diff-*`, `ALARM_NAME`), the
-  `bpmn-diff-tests` npm name, and the area-B GitHub URL examples — all deferred
-  to [INFRA-0007].
+- **Brand sweep finished** — `FEEDBACK_URL` in `config.js` and the README link
+  point at the renamed feedback channel. Remaining `bpmn-diff` strings are
+  intentional: code paths (`*-differ.js`), internal ids (`gl-bpmn-diff-*`,
+  `ALARM_NAME`), the `bpmn-diff-tests` npm name, and the GitHub URL examples —
+  all deferred to area B.
 - **README reworked to be user-facing** — dropped the dev sections (they
   duplicated `docs/`); `glab` setup moved into `docs/git-workflow.md`. Expanded
   `## Features` into a full grouped capability catalog and folded the two
@@ -252,5 +249,5 @@ implemented yet. See the 2026-06-20 Decisions above for the scope boundaries.
    `--remove-source-branch`; merge stays with the human.
 
 **Explicitly out of R1:** git repo / folder rename, `config.js` /
-host-permissions changes (→ area B / [INFRA-0007]), the final icon, [FEAT-0024]
+host-permissions changes (→ area B), the final icon, [FEAT-0024]
 (separate). [UX-0010] (local-file dropdown) may ride along as its own commit.

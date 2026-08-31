@@ -3,9 +3,8 @@ const MASTER_BRANCH_NAME = 'master';
 //const MASTER_BRANCH_NAME = 'main';
 
 // --- Feedback --------------------------------------------------------------
-// Channel opened by the "Leave feedback" link in the action popup.
-// "bpmn-diff" because the chat does not allow renaming a channel link
-const FEEDBACK_URL = 'https://chat.example.com/example/channels/bpmn-diff';
+// Page opened by the "Leave feedback" link in the action popup.
+const FEEDBACK_URL = 'https://github.com/kaoalllex/bpmn-surf/issues';
 
 // --- Extension update (FEAT-0012) ------------------------------------------
 // The version source is a public version.json (see the format in the root
@@ -13,16 +12,12 @@ const FEEDBACK_URL = 'https://chat.example.com/example/channels/bpmn-diff';
 // own files (a load-unpacked limitation): it only notifies and guides the user
 // through the update.
 //
-// TODO(github-migration): fill in after moving the sources to public GitHub.
-// While the URLs are empty → update checking is inactive (no network requests,
+// If the URLs are empty → update checking is inactive (no network requests,
 // no errors). The origin from *_URL must be in manifest#host_permissions.
-// Example (raw GitHub): https://raw.githubusercontent.com/<owner>/bpmn-diff/master/version.json
-const UPDATE_VERSION_MANIFEST_URL = '';
-// Example: https://raw.githubusercontent.com/<owner>/bpmn-diff/master/CHANGELOG.md
-const UPDATE_CHANGELOG_URL = '';
+const UPDATE_VERSION_MANIFEST_URL = 'https://raw.githubusercontent.com/kaoalllex/bpmn-surf/master/version.json';
+const UPDATE_CHANGELOG_URL = 'https://raw.githubusercontent.com/kaoalllex/bpmn-surf/master/CHANGELOG.md';
 // Download/releases page (opened by the "Update" button).
-// Example: https://github.com/<owner>/bpmn-diff
-const UPDATE_HOME_URL = '';
+const UPDATE_HOME_URL = 'https://github.com/kaoalllex/bpmn-surf';
 // Update command for a git install (shown in the popup with a copy button).
 const UPDATE_GIT_PULL_COMMAND = 'git pull';
 

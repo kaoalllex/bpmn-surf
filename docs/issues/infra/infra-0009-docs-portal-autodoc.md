@@ -87,20 +87,16 @@ Moving `docs/{architecture,conventions,git-workflow,testing}.md` and
 `docs/issues/README.md` (→ `dev/issues/README.md`). Inter-task links go by code
 (`[BUG-0001]`), so issue cross-links survive the move. Use `git mv`.
 
-### Open question — left open for now
+### Open question — overtaken by the move to GitHub
 
-The repo lives in a **personal namespace** on the internal GitLab.
-AutoDoc publishes to a per-tenant Pages host (`https://{tenant}.<pages-host>/{repo}/`), and a
-personal namespace is likely **not** a valid devplatform Pages tenant — so AutoDoc
-may have nowhere to deploy until the repo moves under a proper group/tenant. Ask the
-AutoDoc team (`~example-pipelines` in the chat) whether personal namespaces are supported.
-This ties into [INFRA-0007] (move under a tenant / to GitHub).
+The original question was whether AutoDoc could publish from a personal namespace on
+the internal GitLab. It is moot: the repository is now public on GitHub, so the
+publishing layer is the right-hand column of the table above — vanilla Docusaurus on
+GitHub Pages. AutoDoc is out of scope; the source layout below is unaffected.
 
 ### Relations
 
 - [INFRA-0006] — user documentation **content** (written into this structure).
-- [INFRA-0007] — repo migration / going public; the tenant question and the
-  eventual switch AutoDoc → vanilla Docusaurus on GitHub Pages belong with it.
 - [INFRA-0005] — distribution build; reuse its install steps in `getting-started`.
 - [UX-0009] — `bpmn-surf` rebrand; portal title/branding should match.
 
