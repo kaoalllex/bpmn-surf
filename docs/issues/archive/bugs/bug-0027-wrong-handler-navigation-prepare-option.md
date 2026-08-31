@@ -13,8 +13,7 @@ different step (`Order_PrepareItem_FindItemsInCatalog`).
 
 ## Context
 
-- Diagram: `PrepareItem.bpmn`
-  https://gitlab.example.com/example-project/example-repo/-/blob/master/order/item/src/main/resources/bpmn/prepare/PrepareItem.bpmn
+- Diagram: `PrepareItem.bpmn`, opened in repository blob view on the default branch
 - Expected: clicking on step `Order_PrepareItem_FindItems` → navigate to
   its handler (`FindItemsTask.kt`).
 - Actual: navigates to handler for step

@@ -1,4 +1,4 @@
-# https://wiki.example.com/pages/viewpage.action?pageId=1276675705
+# Repository policy file — schema defined by the internal dev platform.
 
 # project:
 #   badges:
@@ -6,8 +6,8 @@
 #     - type: Coverage
 #     - type: Custom
 #       name: "Quality Gate"
-#       link_url: "https://devplatform.example.com/tenants/example-project/repositories/view/example-repo"
-#       image_url: "https://devplatform.example.com/api/v2/tenants/example-project/repositories/example-repo/quality-gate-badges/%{commit_sha}"
+#       link_url: "https://<dev-platform-host>/tenants/<tenant>/repositories/view/<repo>"
+#       image_url: "https://<dev-platform-host>/api/v2/tenants/<tenant>/repositories/<repo>/quality-gate-badges/%{commit_sha}"
 
 merge_request:
   method: 'rebase_merge' # https://docs.gitlab.com/ee/user/project/merge_requests/methods/#merge-commit-with-semi-linear-history

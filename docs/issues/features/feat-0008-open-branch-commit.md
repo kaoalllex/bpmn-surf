@@ -29,7 +29,7 @@ for Changed). Skip/disable it for the `Local` side — a local file has no commi
   extra (hence the low priority).
 - A `commitUrl(ref)` helper in `src/differ/shared/differ-params.js` (next to
   `rawFileUrl` / `blobFileUrl`) would build the URL the same way.
-- Example link: https://gitlab.example.com/example-group/example-service/-/commit/85c64b3ed8c345ddd9f27f614f70a0e5136b5873
+- Example link shape: `https://gitlab.example.com/<group>/<project>/-/commit/<sha>`
 
 ## Work log
 

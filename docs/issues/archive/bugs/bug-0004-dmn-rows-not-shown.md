@@ -9,10 +9,6 @@ status: done
 
 4 rows were added to the bottom of a large DMN table — some zoom modes show only the last 3.
 
-## Context
-
-- MR: https://gitlab.example.com/example-group/example-adapter/-/merge_requests/775/diffs#747aeb319c37e4c2379be395ca41f33cd784ec42
-
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.

@@ -89,8 +89,8 @@ Moving `docs/{architecture,conventions,git-workflow,testing}.md` and
 
 ### Open question — left open for now
 
-The repo lives in a **personal namespace** (`gitlab.example.com/kaoalllex/bpmn-surf`).
-AutoDoc publishes to `https://{tenant}.pages.example.com/{repo}/`, and a
+The repo lives in a **personal namespace** on the internal GitLab.
+AutoDoc publishes to a per-tenant Pages host (`https://{tenant}.<pages-host>/{repo}/`), and a
 personal namespace is likely **not** a valid devplatform Pages tenant — so AutoDoc
 may have nowhere to deploy until the repo moves under a proper group/tenant. Ask the
 AutoDoc team (`~example-pipelines` in the chat) whether personal namespaces are supported.

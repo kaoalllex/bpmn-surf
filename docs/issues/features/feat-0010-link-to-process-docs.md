@@ -11,7 +11,7 @@ Store a link to the documentation and add quick navigation from the viewer.
 
 ## Context
 
-- Discussion: https://chat.example.com/example/pl/9q4tppopxbynueq15inp9c7brh
+- Origin: a team-chat discussion about linking a diagram to its process documentation (no public record).
 
 ## Work log
 

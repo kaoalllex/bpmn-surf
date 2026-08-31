@@ -4,7 +4,7 @@ const MASTER_BRANCH_NAME = 'master';
 
 // --- Feedback --------------------------------------------------------------
 // Channel opened by the "Leave feedback" link in the action popup.
-// "bpmn-diff" because Chat do not rename channel link
+// "bpmn-diff" because the chat does not allow renaming a channel link
 const FEEDBACK_URL = 'https://chat.example.com/example/channels/bpmn-diff';
 
 // --- Extension update (FEAT-0012) ------------------------------------------

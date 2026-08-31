@@ -15,13 +15,13 @@ handler source not found for topic 'ModuleA_Agreement_PreApprove_CreateSigningDo
 ```
 
 This is a **separate** cause from [BUG-0012] (ref/path merging): after the BUG-0012 fix, a
-clean SHA goes into the request (`ref=a4084af3387695c4182c04522b6fa644bb033d78`), but the Search
+clean SHA goes into the request (`ref=<sha>`), but the Search
 API still returns empty.
 
 ## Context
 
 Reproduction:
-- Schema: `…/example-project/example-repo/-/blob/a4084af3387695c4182c04522b6fa644bb033d78/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
+- Schema: `…/-/blob/<sha>/business/module-a/src/main/resources/bpmn/agreement/AgreementPreApprove.bpmn`
 - Task `CreateSigningDocumentInStorage`, the handler is declared in exactly the way that
   `#searchSubscriptionLocation` searches for (the literal topic string in the annotation):
 
@@ -52,13 +52,13 @@ a file with the same annotation on the default branch, the same Search API:
 
 Conclusion: on an instance with **basic search** (Gitaly `git grep`, like the gitlab.com test
 project) the locator logic is **correct** — a literal with punctuation, ref by SHA, and the bare topic
-find the file. Since on example the same request gives `200` + `[]`, example has a different backend —
+find the file. Since the self-managed instance answers the same request with `200` + `[]`, it has a different backend —
 **Advanced Search (Elasticsearch)**, and it:
 - **ignores** the `ref` for blob search, only the default branch is indexed;
 - parses the query string differently (`"` = phrase, `(` `)` — service chars) → the literal
   `ExternalTaskSubscription("…")` may not match.
 
-### Root cause (confirmed on example)
+### Root cause (confirmed on the self-managed instance)
 
 **Confirmed: candidate A** — punctuation breaks the query in ES. The term with `"`/`()` doesn't
 find it, even though the file is in the index; the bare topic string finds it. Fixed by switching to a
@@ -70,12 +70,12 @@ both with and without a ref. In parallel it was confirmed that ES does in fact i
 [`"ref":"master"` in the response on a request without a ref], but the handler is there, so for
 viewing this is not a blocker.)
 
-### Diagnostics to confirm (run in a browser with a example session)
+### Diagnostics to confirm (run in a browser with an authenticated session on that instance)
 
-scope=blobs, project 118208, topic `ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`:
+scope=blobs, project id 42, topic `ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`:
 
-- D1 bare topic, no ref: `…/api/v4/projects/118208/search?scope=blobs&search=ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`
-- D2 bare topic, ref=schema SHA: `…&ref=a4084af3387695c4182c04522b6fa644bb033d78&search=ModuleA_…_CreateSigningDocumentInStorage`
+- D1 bare topic, no ref: `…/api/v4/projects/42/search?scope=blobs&search=ModuleA_Agreement_PreApprove_CreateSigningDocumentInStorage`
+- D2 bare topic, ref=schema SHA: `…&ref=<sha>&search=ModuleA_…_CreateSigningDocumentInStorage`
 - D3 quotes+parens, no ref: `…&search=ExternalTaskSubscription("ModuleA_…_CreateSigningDocumentInStorage")`
 
 Interpretation:

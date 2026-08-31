@@ -11,7 +11,7 @@ Diagram complexity assessment.
 
 ## Context
 
-- https://wiki.example.com/pages/viewpage.action?pageId=4314635945
+- Origin: an internal wiki page proposing complexity metrics for BPMN diagrams (no public record).
 
 ## Work log
 

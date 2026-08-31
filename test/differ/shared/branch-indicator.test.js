@@ -103,7 +103,7 @@ describe('BranchIndicator — single-version view (no source side)', () => {
     });
 
     it('prefixes a bare commit sha so it is not shown unlabelled', () => {
-        const sha = 'a4084af3387695c4182c04522b6fa644bb033d78';
+        const sha = '0123456789abcdef0123456789abcdef01234567';
         const indicator = new BranchIndicator(sha, null);
         const element = indicator.createElement();
         indicator.setShownLabel(sha);

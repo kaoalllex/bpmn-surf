@@ -24,8 +24,8 @@ The task is not to "fix" (there is no bug) but to decide whether reducing the co
 
 ## Context
 
-- Example: MR https://gitlab.example.com/example-group/example-service/-/merge_requests/3931 ,
-  file `pllOfferSigning.bpmn` (first appeared in the MR; the MR is merged). Opening the first
+- Example: a merged MR that introduces a new schema file `pllOfferSigning.bpmn`
+  (the file first appears in that MR). Opening the first
   commit `d72d870a` → "no original"; opening the last `e644ef1f` → `Original ·
   …(60bd4b11)` (the previous MR commit). The diff itself is correct — the question is about the meaning/label.
 - Code: `gitlab-api-repo-provider.js` (`getSourceCommitId`/`getTargetCommitId`/`getDiffSideLabels`),
