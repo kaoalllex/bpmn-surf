@@ -32,14 +32,11 @@ the same fields telemetry would eventually collect.
 
 ## Context
 
-- Channel depends on the relaunch scope (see [UX-0009]):
-  - Area A (internal): the existing chat channel
-    (`chat.example.com/.../bpmn-diff`) + a `mailto:` for private bug reports.
-  - Area B (public): **GitHub Issues** (with an issue template) becomes the home
-    after the migration ([INFRA-0007]); keep `mailto:` as the low-friction path.
-- The feedback URL/email should be **configurable** (`src/core/config.js`,
-  alongside the `UPDATE_*` URLs) so the channel can switch A → B without code
-  churn.
+- The channel is **GitHub Issues**: `FEEDBACK_URL` in `src/core/config.js` already
+  points at the repository's issue tracker. Still to do — an issue template, and a
+  `mailto:` as the low-friction path for private bug reports.
+- The feedback URL/email stays **configurable** (`src/core/config.js`, alongside the
+  `UPDATE_*` URLs) so the channel can move without code churn.
 
 ### Relations
 
@@ -94,8 +91,8 @@ this posture change in the README alongside the update-checker note.
    `chrome.runtime` messaging (mirrors `update:openUrl`); the SW does the `fetch`.
    Requires adding the chat/messenger API origin to `manifest#host_permissions`
    (today only `raw.githubusercontent.com` is listed). Confirm the API host — the
-   `create-post` gateway host may differ from the channel host
-   (`chat.example.com`, today's `FEEDBACK_URL`).
+   `create-post` gateway host may differ from the channel host. Note this approach
+   predates the move to GitHub Issues as the feedback channel.
 4. **Auth & authorship** — the crux. The chat is Mattermost-based (the channel URL is
    MM-shaped), so `create-post` likely mirrors MM `POST /api/v4/posts`
    `{ channel_id, message, props }`. Two ways to author as the user:
