@@ -5,9 +5,8 @@ Read before any git operations (branches, commits, push, PR, rebase).
 ## Remote: public GitHub
 
 The repository is published at **https://github.com/kaoalllex/bpmn-surf**. `gh` is
-installed and authenticated on the development machine; `glab` is not — the old internal
-GitLab is gone. (GitLab still matters as the platform the extension *works on*; that is
-unrelated to where these sources live.)
+installed and authenticated on the development machine. (GitLab still matters as the
+platform the extension *works on*; that is unrelated to where these sources live.)
 
 The normal flow applies:
 
@@ -17,8 +16,8 @@ The normal flow applies:
 - `npm test` before declaring a task finished stays mandatory;
 - `master` stays protected: never commit into it directly — everything lands through a PR.
 
-The `/mr` and `/cleanup` commands still wrap the GitLab `glab` flow and are **not** usable;
-do the push and the PR with `git` and `gh` directly.
+The `/pr` and `/cleanup` commands wrap this flow: `/pr` pushes the branch and opens the
+pull request, `/cleanup` syncs master and deletes the merged local branch afterwards.
 
 ## Branches
 
