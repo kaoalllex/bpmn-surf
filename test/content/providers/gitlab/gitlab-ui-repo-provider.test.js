@@ -43,6 +43,26 @@ function selfManagedHeaderMarkup() {
         </main>`;
 }
 
+// GitLab renders the .is-merge-request marker only when the user's "Layout width"
+// preference is Fixed, so with Fluid layout the tabs container has no such class.
+function fluidLayoutHeaderMarkup() {
+    return `
+        <main id="content-body">
+            <div class="merge-request">
+                <div class="merge-request-details issuable-details">
+                    <div class="merge-request-sticky-header-wrapper js-merge-request-sticky-header-wrapper">
+                        <div class="merge-request-sticky-header gl-border-b">
+                            <div class="merge-request-tabs-container gl-flex gl-justify-between gl-relative gl-gap-2 js-tabs-affix">
+                                <ul class="merge-request-tabs"></ul>
+                                <div class="merge-request-tabs-actions"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>`;
+}
+
 function addDiffButton(scope, fileType) {
     const provider = new scope.GitLabUIRepoProvider();
     provider.addButton({
@@ -88,6 +108,17 @@ describe('GitLabUIRepoProvider.addButton — DIFF', () => {
     it('inserts the button into the self-managed header (direct sticky header)', () => {
         const scope = createScope();
         scope.document.body.innerHTML = selfManagedHeaderMarkup();
+
+        addDiffButton(scope, scope.FILE_TYPE_BPMN);
+
+        const button = diffButton(scope.document);
+        assert.ok(button, 'button should be inserted');
+        assert.ok(button.closest('.merge-request-tabs-actions'));
+    });
+
+    it('inserts the button into the fluid-layout header (no .is-merge-request marker)', () => {
+        const scope = createScope();
+        scope.document.body.innerHTML = fluidLayoutHeaderMarkup();
 
         addDiffButton(scope, scope.FILE_TYPE_BPMN);
 

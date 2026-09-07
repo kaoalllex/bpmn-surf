@@ -14,8 +14,10 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.gl-flex.gl-justify-between.gl-relative.is-merge-request.js-tabs-affix > div',
         // GitLab.com: sticky header is nested inside .merge-request-sticky-header-wrapper
         '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header-wrapper > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.is-merge-request.js-tabs-affix > div',
-        // Tolerant fallback: any MR tabs container, regardless of header wrapper nesting
-        '#content-body div.merge-request-tabs-container.is-merge-request.js-tabs-affix > div'
+        // Tolerant fallback: any MR tabs container, regardless of header wrapper nesting.
+        // Deliberately without .is-merge-request: GitLab adds that class only when the
+        // user's "Layout width" preference is Fixed, so with Fluid layout it is absent.
+        '#content-body div.merge-request-tabs-container.js-tabs-affix > div'
     ];
 
     // #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
