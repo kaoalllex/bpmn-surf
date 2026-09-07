@@ -7,6 +7,13 @@
 # is dev-only (docs/, test/, scripts/, node_modules/, venv/, package*.json, ...).
 # The file set must mirror what manifest.json references.
 #
+# Extra content-script hosts (internal GitLab instances) are passed as arguments
+# and injected into the staged manifest only — they are never written to the
+# tracked manifest.json:
+#
+#     npm run package                        # public build (gitlab.com only)
+#     npm run package -- gitlab.internal.example
+#
 # Requires the system `zip`. Output: dist/bpmn-surf-<version>.zip
 #
 set -euo pipefail
@@ -27,6 +34,22 @@ rm -rf dist
 mkdir -p "$stage/icons"
 
 cp manifest.json "$stage/"
+
+# Staged copy only — the tracked manifest stays public.
+if [ "$#" -gt 0 ]; then
+    node -e '
+        const fs = require("fs");
+        const [file, ...hosts] = process.argv.slice(1);
+        const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+        const matches = manifest.content_scripts[0].matches;
+        for (const host of hosts.reverse()) {
+            const pattern = `https://${host}/*`;
+            if (!matches.includes(pattern)) matches.unshift(pattern);
+        }
+        fs.writeFileSync(file, JSON.stringify(manifest, null, 4));
+    ' "$stage/manifest.json" "$@"
+    echo "package: added hosts to content_scripts matches: $*"
+fi
 cp -R src "$stage/"
 cp -R libs "$stage/"
 cp icons/*.png "$stage/icons/"
