@@ -22,7 +22,7 @@ Do your internal reasoning (thinking) in **English** regardless of the conversat
 
 ## Workflow
 
-Multi-step work follows the Superpowers flow: `brainstorming` → `writing-plans` → `executing-plans`. Plans live in `docs/superpowers/plans/` — **local only, not tracked by git** (spent scaffolding: once a plan ships, git history and `docs/` are the record). Specs and designs live in `docs/superpowers/specs/` and *are* tracked. Implementation and git steps inside that flow are carried out by the project skills: `feature`/`fix`/`refactor`; publishing means pushing the branch and opening a PR on GitHub (`/pr`, then `/cleanup` once it is merged). Each skill's trigger conditions live in its own `description` (`.claude/skills/`, `.claude/commands/`; surfaced in the CLI via `/`) — not duplicated here.
+Multi-step work follows the Superpowers flow: `brainstorming` → `writing-plans` → `executing-plans`. Plans, specs and designs live in `docs/superpowers/` — **local only, not tracked by git**: they are working artifacts for the duration of a task, not a record. Whatever is worth keeping moves out before the task closes — into `docs/` if it describes the system as shipped, or into the task file in `docs/issues/` if it describes work still to be done; git history covers the rest. Implementation and git steps inside that flow are carried out by the project skills: `feature`/`fix`/`refactor`; publishing means pushing the branch and opening a PR on GitHub (`/pr`, then `/cleanup` once it is merged). Each skill's trigger conditions live in its own `description` (`.claude/skills/`, `.claude/commands/`; surfaced in the CLI via `/`) — not duplicated here.
 
 ## Critical rules (brief; full lists — in docs/)
 

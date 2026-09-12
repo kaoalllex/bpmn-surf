@@ -5,4 +5,4 @@ dist/
 .claude/skill-eval-workspace/
 test-results/
 playwright-report/
-docs/superpowers/plans/
+docs/superpowers/
