@@ -9,13 +9,29 @@ Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas 
 
 ## Installation
 
-1. Download the latest `bpmn-surf-x.y.z.zip` from the [Releases page](https://github.com/kaoalllex/bpmn-surf/releases)
-2. Unzip it to a folder of your choice
-3. Open the extensions page: `chrome://extensions`
-4. Enable **Developer mode** (toggle in the top-right corner)
-5. Click **Load unpacked** and select the unzipped `bpmn-surf` folder — it needs no build and runs directly from the files
+The extension has no build step — it runs directly from the source files.
 
-To update, download a newer zip, unzip it over the old folder, and click ⟳ on the extension in `chrome://extensions`.
+1. Get the sources: `git clone https://github.com/kaoalllex/bpmn-surf.git`, or **Code → Download ZIP** on GitHub and unzip
+2. Open the extensions page: `chrome://extensions`
+3. Enable **Developer mode** (toggle in the top-right corner)
+4. Click **Load unpacked** and select the `bpmn-surf` folder
+
+To update, pull (or re-download) the sources and click ⟳ on the extension in `chrome://extensions`.
+
+### Your own GitLab instance
+
+Out of the box the extension only runs on `gitlab.com`. To use it on a self-hosted GitLab,
+add your host to `content_scripts[0].matches` in `manifest.json`:
+
+```json
+"matches": [
+    "https://gitlab.com/*",
+    "https://gitlab.mycompany.com/*"
+]
+```
+
+Then click ⟳ on the extension in `chrome://extensions`. Keep the file edited locally — it is
+overwritten by the next `git pull`.
 
 ## Features
 
