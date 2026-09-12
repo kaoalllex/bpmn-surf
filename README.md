@@ -60,6 +60,13 @@ overwritten by the next `git pull`.
 - Searching for an element on the canvas
 - A clear indication when a schema is absent in one of the versions
 
+**Editing a BPMN schema**
+
+- Opening the schema currently on screen in an **edit mode** (the **✎** button) — in a separate tab; nothing is ever written back to the repository
+- Canvas editing: palette, context pad, undo/redo — plus an editable properties panel (names, implementation, topics, conditions, In/Out mappings, Inputs/Outputs)
+- Edits are coloured against the version you started from (🟩 added, 🟦 changed), with a toggle to turn the colouring off, and manual colours for individual elements
+- Downloading the result as a single `.bpmn` file
+
 **Versions & viewport**
 
 - Switching between the shown versions (the **Switch branch** button); the target branch is shown by name, not by hash
