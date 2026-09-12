@@ -50,6 +50,35 @@ console output.
 - Related: `docs/testing.md` (manual checking section to be updated once a
   harness exists); the unit-test harness `test/support/scope.js` is unaffected.
 
+## Design decisions for Layer 3
+
+Settled while designing the three-layer test architecture (2026-06-25); Layers 1
+and 2 shipped, Layer 3 is what remains of that design and is this task. The layer
+table lives in `docs/testing.md`.
+
+- **Runner: `@playwright/test`**, already a dev dependency — it loads an MV3
+  extension, intercepts network, and produces trace/screenshot/HTML artifacts.
+  Layer 3 specs live alongside the Layer-2 ones in `test/e2e/`.
+- **Extension loading:** a persistent context with `--load-extension=<repo root>`
+  (the repo root *is* the unpacked extension — the manifest sits at the root), on
+  a dedicated user-data profile.
+- **Backend: route interception from local fixtures**, not a live GitLab. Fulfil
+  the MR page HTML, `/api/v4/...` JSON, `/-/raw/...` XML, search and `/changes`
+  from captured files. This removes the authentication blocker above entirely.
+- **Page fixtures: synthetic GitLab-shaped pages by default.** Button injection
+  keys off a handful of container selectors only (`GitLabDomScraper`,
+  `GitLabUIRepoProvider`: `[data-path]`, `.is-active`, `<diff-file>`, the ref
+  selector, `.merge-request-sticky-header-wrapper`), and the provider unit tests
+  already build GitLab DOM by hand. Synthetic fixtures are fully offline and need
+  no human in the loop.
+- **Captured real pages are the optional higher-fidelity path**, only if a
+  regression ever depends on real GitLab markup. API/raw/search JSON can be
+  captured by an agent with a PAT; rendered page HTML needs a one-time
+  interactive capture by the human. Markup drift is accepted — recapture on
+  redesign.
+- **Not part of `npm test`.** `npm run test:e2e` runs on demand and before
+  merging; the unit loop stays fast.
+
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
