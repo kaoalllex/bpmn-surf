@@ -35,11 +35,11 @@ console output.
      extension from the repo (`--load-extension=<repo>` / a dedicated user-data
      profile), pointed at the working tree so the current branch's code is used
      (and reloaded after edits).
-  2. **Authentication** — reach an authenticated GitLab. Options: reuse an
-     existing logged-in profile/cookies; or use the gitlab.com test project
-     (`dev.example/bpmn-diff-test`, PAT in `~/.secrets/gitlab-token`, see the
-     project memory) which avoids internal SSO. The test project would need
-     fixtures with a Call Activity chain (A calls B calls C) for navigation tests.
+  2. **Authentication** — solved by not needing it: serve the pages and API
+     responses from local fixtures through Playwright route interception (see
+     the design decisions below) instead of reaching a live, logged-in GitLab.
+     Driving a real instance stays an option for higher fidelity, and then needs
+     a session the agent cannot obtain on its own.
   3. **Driving + capture** — a `verifier-bpmn-diff` skill (or a script) that opens
      an MR, clicks "Show schema diff", drives the differ (dive in/out, search,
      switch branch), and captures screenshots + console.

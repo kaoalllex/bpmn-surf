@@ -2,7 +2,7 @@
 id: FEAT-0024
 title: In-product feedback link (explicit, context-prefilled)
 priority: medium
-status: open
+status: partial
 ---
 
 ## Statement
@@ -125,3 +125,11 @@ this posture change in the README alongside the update-checker note.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-12 · claude-opus-5 · `5f9a94b`
+
+Surface 1 (popup footer) shipped as part of the move to public GitHub: the
+"Leave feedback" link in `src/popup/popup.html` opens `FEEDBACK_URL`
+(`src/core/config.js`), now `https://github.com/kaoalllex/bpmn-surf/issues`.
+Surfaces 2-4 (differ toolbar, empty/error state, README + "what's new" pointer)
+and the prefilled context are not done.
