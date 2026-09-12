@@ -7,15 +7,13 @@ a human-readable change history. Updated on release (the `release` skill).
 ## 1.2.0
 
 - FEAT-0031: edit mode — recolour elements, edit flow conditions, undo/redo, download the edited diagram
+- BUG-0003: find the MR tabs container under a fluid layout
 - BUG-0027: fix handler navigation picking the wrong file when the topic name is a prefix of another
 - BUG-0028: stop falling back to the first search hit when none of them matches the handler topic exactly
 - BUG-0029: compare the process a diagram has, executable or not
 - BUG-0030: recreate the element outline the diff markers are drawn on
 - REFAC-0014, REFAC-0015: close the coverage gaps a mutation sweep found
 - INFRA-0001: ship production builds of the vendored libs
-- chore: upgrade bpmn-js, dmn-js and the properties panel to their latest releases
-- fix: stop hiding the bpmn.io watermark
-- chore: license the project under MIT and move the feedback link to GitHub Issues
 
 ## 1.1.0
 

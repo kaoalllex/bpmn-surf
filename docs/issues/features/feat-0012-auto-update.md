@@ -51,6 +51,20 @@ Remaining (why `partial`):
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries at the top (most recent first). -->
 
+### 2026-09-12 · claude-opus-5 · `67fc6e1`
+
+**The update check is switched off on purpose, not broken.**
+`UPDATE_VERSION_MANIFEST_URL` and `UPDATE_CHANGELOG_URL` in `src/core/config.js`
+are empty strings, which makes the checker inert — no requests, no errors. They
+were emptied because the raw.githubusercontent.com URLs 404 while the repository
+is unpublished. To switch the feature back on, fill in the two URLs (the intended
+values sit in the comments right above them); nothing else is needed, the origin
+is already in `manifest#host_permissions`.
+
+Note the standing limitation: a load-unpacked extension cannot replace its own
+files, so this feature notifies and guides — it never updates anything itself.
+Real auto-update needs the Chrome Web Store.
+
 ### 2026-06-17 · claude-opus-4-8 · branch `feature/feat-0012-auto-update`
 
 Implemented the embedded update notifier. Pure version/changelog logic
