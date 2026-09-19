@@ -58,6 +58,40 @@ Notes for whoever implements this:
   platform kind with it, since an arbitrary internal hostname need not contain the
   word "gitlab" — decide whether the user picks the kind in the UI or it is probed.
 
+### Decisions (agreed 2026-09-19)
+
+The target is a Chrome Web Store install — including for self-hosted GitLab users —
+with store auto-updates.
+
+- **`gitlab.com` stays declarative** in `manifest.json#content_scripts`: works with no
+  prompt, existing users see no permission request after the update. It is shown in
+  the popup as built-in, not removable (a manifest entry cannot be unregistered via
+  the API; the user can still restrict it in Chrome's own site-access settings).
+- **No duplicated script list**: the service worker registers user hosts with the
+  `js`/`css` arrays read from `chrome.runtime.getManifest().content_scripts[0]`, so the
+  load order stays defined in one place.
+- **Hosts are not stored in `chrome.storage`**: the list is the granted optional
+  origins (`chrome.permissions.getAll()`). Registrations are reconciled with it on
+  `runtime.onInstalled` (the script list may change between versions) and on
+  `permissions.onAdded/onRemoved` (the user can revoke access in `chrome://extensions`).
+- **`https://` only** — `optional_host_permissions: ["https://*/*"]`, which is the upper
+  bound of what may be requested; each request covers one concrete origin. Input is
+  normalized to `https://<host>/*` (a pasted MR URL is accepted).
+- **Platform kind**: `github.com` → github, any other injected host → gitlab
+  (`platform-detection.js`). GitHub support is still a stub, so GHES hosts are deferred.
+- **Update-safe permissions**: every new *required* permission must land now
+  (`scripting`), since adding one later disables the extension after an auto-update
+  until the user approves it. Host access is optional and can be requested any time.
+- **Store readiness, in scope**: drop the unused `activeTab` and
+  `host_permissions: raw.githubusercontent.com` (update check is off — empty URLs);
+  the FEAT-0012 update checker switches itself off for store installs
+  (`chrome.runtime.getManifest().update_url` is set only there).
+- **Out of scope**: privacy policy and permission justifications for the store listing;
+  a stricter self-hosted CSP (none observed — the manifest-edited self-hosted install works);
+  admin-pushed hosts via managed storage.
+- Settings persistence rules — `docs/conventions.md` ("Persistent settings").
+  The main-branch constant is not a setting — see [BUG-0032].
+
 ### Relations
 
 - [REFAC-0004] — the platform abstraction and GitHub support; this task is what
