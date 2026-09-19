@@ -96,6 +96,26 @@ describe('MergedMrCommitResolver — merged MR via badge', () => {
     });
 });
 
+describe('MergedMrCommitResolver — target branch', () => {
+    it('searches the history of the MR target branch, not master', async () => {
+        const scope = createScope();
+        const branches = [];
+        const urls = [];
+        const masterCommitManager = {
+            findPreviousCommitId: async (commitId, branchName) => { branches.push(branchName); return null; }
+        };
+        const loadContent = async (url) => { urls.push(url); return atomFeed([]); };
+        const resolver = new scope.MergedMrCommitResolver(
+            { url: 'https://x/g/p' }, { isMergedByBadge: () => true }, masterCommitManager, loadContent);
+
+        await resolver.resolveTargetCommitId('src-sha', 'My title', 'release/1.0', MR_INFO_URL);
+
+        assert.deepEqual(branches, ['release/1.0']);
+        assert.equal(urls.length, 1);
+        assert.ok(urls[0].startsWith('https://x/g/p/-/commits/release/1.0?format=atom'), urls[0]);
+    });
+});
+
 describe('MergedMrCommitResolver — merged MR via API', () => {
     it('detects a merged MR from merged_at in the MR info', async () => {
         const { resolver } = buildResolver({

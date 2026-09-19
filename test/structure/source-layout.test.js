@@ -55,9 +55,7 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/differ/navigation/decision-navigator.js',
     'src/differ/navigation/correlation-navigator.js',
     // doomed (slated for removal once primary paths are proven)
-    'src/differ/navigation/process-file-index.js',
-    // global-coupled test debt
-    'src/content/providers/gitlab/master-commit-manager.js'
+    'src/differ/navigation/process-file-index.js'
 ]);
 
 function mirrorTestPath(srcFile) {

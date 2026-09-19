@@ -5,6 +5,7 @@ class MasterCommitManager {
     static CACHE_TTL_MS = 1000 * 60 * 60; // 1 hour
 
     #projectInfo;
+    #branchName = null;
     #cachedPages = new Map();
     #cacheInitialized = false;
     #inFlightRequests = new Map();
@@ -15,7 +16,17 @@ class MasterCommitManager {
     }
 
     #getCacheKey() {
-        return `${MasterCommitManager.CACHE_KEY_PREFIX}${this.#projectInfo.id}`;
+        return `${MasterCommitManager.CACHE_KEY_PREFIX}${this.#projectInfo.id}_${this.#branchName}`;
+    }
+
+    // The in-memory state belongs to one branch; a different MR target branch starts over.
+    #useBranch(branchName) {
+        if (branchName === this.#branchName) return;
+        this.#branchName = branchName;
+        this.#cachedPages = new Map();
+        this.#cacheInitialized = false;
+        this.#inFlightRequests = new Map();
+        this.#lastPageKnown = null;
     }
 
     #initializeCache() {
@@ -97,7 +108,7 @@ class MasterCommitManager {
         }
 
         if (this.#lastPageKnown !== null && pageNumber > this.#lastPageKnown) {
-            // Requested page is beyond the known last page of master; 
+            // Requested page is beyond the known last page of the branch;
             // returning empty array is expected
             return [];
         }
@@ -110,10 +121,11 @@ class MasterCommitManager {
     }
 
     async #fetchAndUpdatePage(pageNumber) {
+        const branchName = this.#branchName;
         const request = (async () => {
             try {
                 const offset = (pageNumber - 1) * MasterCommitManager.COMMITS_PER_PAGE;
-                const url = `${this.#projectInfo.url}/-/commits/master?format=atom&limit=${MasterCommitManager.COMMITS_PER_PAGE}&offset=${offset}`;
+                const url = `${this.#projectInfo.url}/-/commits/${encodeBranchName(branchName)}?format=atom&limit=${MasterCommitManager.COMMITS_PER_PAGE}&offset=${offset}`;
 
                 const res = await fetch(url);
                 if (!res.ok) {
@@ -132,6 +144,9 @@ class MasterCommitManager {
                     updated: e.querySelector('updated')?.textContent ?? ''
                 }));
 
+                // The target branch changed while this request was in flight.
+                if (branchName !== this.#branchName) return entries;
+
                 this.#cachedPages.set(pageNumber, entries);
 
                 if (entries.length < MasterCommitManager.COMMITS_PER_PAGE) {
@@ -149,8 +164,9 @@ class MasterCommitManager {
         return request;
     }
 
-    async findPreviousCommitId(commitId) {
+    async findPreviousCommitId(commitId, branchName) {
         if (!commitId) return null;
+        this.#useBranch(branchName);
 
         let page = 1;
 

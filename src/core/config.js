@@ -1,7 +1,3 @@
-// GitLab default branch (usually this is "master", but can also be "main")
-const MASTER_BRANCH_NAME = 'master';
-//const MASTER_BRANCH_NAME = 'main';
-
 // --- Feedback --------------------------------------------------------------
 // Page opened by the "Leave feedback" link in the action popup.
 const FEEDBACK_URL = 'https://github.com/kaoalllex/bpmn-surf/issues';

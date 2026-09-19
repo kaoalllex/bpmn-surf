@@ -85,6 +85,12 @@ function shortenCommitId(commitId) {
     return typeof commitId === 'string' ? commitId.substring(0, 8) : commitId;
 }
 
+// A branch name as a URL path segment: slashes stay path separators, anything else
+// git allows in a name (e.g. '#') is escaped.
+function encodeBranchName(branchName) {
+    return branchName.split('/').map(encodeURIComponent).join('/');
+}
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
