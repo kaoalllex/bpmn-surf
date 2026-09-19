@@ -2,7 +2,7 @@
 id: BUG-0032
 title: Merged-MR target commit is searched in a hardcoded `master`, not the MR's target branch
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -55,3 +55,16 @@ become a user setting — it should not).
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-19 · claude-opus-5 · `478e294` (branch `fix/bug-0032-merged-mr-target-branch`)
+
+`MergedMrCommitResolver` passes `targetBranchName` to the title search and to
+`MasterCommitManager.findPreviousCommitId(commitId, branchName)`. The manager keys its
+`localStorage` cache by project and branch and resets its in-memory state when the
+branch changes. Branch names go into the URL via the new `utils.js#encodeBranchName`.
+`MASTER_BRANCH_NAME` is gone. Tests: new `master-commit-manager.test.js` (the file left
+`UNTESTED_BY_DESIGN`) plus a resolver test for the target branch.
+
+Left as is: old `bpmn_diff_master_commits_<projectId>` keys stay orphaned in
+`localStorage` (never read again); the resolver's title-search cache is not keyed by
+title or branch — a pre-existing gap, out of scope.
