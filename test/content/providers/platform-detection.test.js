@@ -35,7 +35,10 @@ describe('detectPlatformKind', () => {
         assert.equal(detectPlatformKind(loc('https://github.com/org/gitlab-mirror/pull/1/files')), PLATFORM_KIND.GITHUB);
     });
 
-    it('returns null for an unknown host', () => {
-        assert.equal(detectPlatformKind(loc('https://bitbucket.org/owner/repo/pull-requests/3')), null);
+    it('treats any other injected host as gitlab', () => {
+        // Content scripts only run where the user granted the host (FEAT-0033),
+        // so a host matching nothing more specific is a configured GitLab that
+        // need not carry the word "gitlab" in its name.
+        assert.equal(detectPlatformKind(loc('https://code.acme.com/group/proj')), PLATFORM_KIND.GITLAB);
     });
 });
