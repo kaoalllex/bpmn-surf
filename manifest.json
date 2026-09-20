@@ -48,7 +48,7 @@
     ],
     "action": {
         "default_popup": "src/popup/popup.html",
-        "default_title": "bpmn-surf — update",
+        "default_title": "bpmn-surf",
         "default_icon": {
             "16": "icons/icon-16.png",
             "32": "icons/icon-32.png",
@@ -56,21 +56,12 @@
             "128": "icons/icon-128.png"
         }
     },
-    "background": {
-        "service_worker": "src/background/update-service-worker.js"
-    },
     "permissions": [
-        "activeTab",
-        "storage",
-        "alarms"
-    ],
-    "host_permissions": [
-        "https://raw.githubusercontent.com/*"
+        "activeTab"
     ],
     "web_accessible_resources": [
         {
             "resources": [
-                "src/popup/popup.html",
                 "src/content/main.js",
                 "src/core/utils.js",
                 "src/differ/shared/diff-type.js",
@@ -108,7 +99,6 @@
                 "src/differ/shared/branch-indicator.js",
                 "src/differ/shared/differ-loading-overlay.js",
                 "src/differ/shared/differ-empty-state.js",
-                "src/differ/shared/update-indicator.js",
                 "src/differ/shared/differ-tab-navigator.js",
                 "src/differ/bpmn/bpmn-differ-view.js",
                 "src/differ/navigation/back-navigator.js",

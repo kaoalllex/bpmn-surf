@@ -44,7 +44,6 @@ class BpmnDifferView {
     #filePathElement = null;
     #emptyState = null;
     #loadingOverlay = new DifferLoadingOverlay();
-    #updateInfo = null;
     #backNavigator = null;
     #editGroup = null;
     #coloringButton = null;
@@ -59,12 +58,6 @@ class BpmnDifferView {
         this.#params = params;
         this.#branchIndicator = branchIndicator;
         this.#callbacks = callbacks;
-    }
-
-    // Update notification info { updateAvailable, latestVersion, popupUrl } for
-    // the toolbar indicator (FEAT-0012). Set before build(); null = no indicator.
-    setUpdateInfo(updateInfo) {
-        this.#updateInfo = updateInfo;
     }
 
     // Back-navigation control (FEAT-0023). Set before build(); null = no control.
@@ -529,9 +522,6 @@ class BpmnDifferView {
             toolbar.appendChild(viewGroup);
         }
 
-        //--- update indicator (FEAT-0012), only when an update is available
-        this.#appendUpdateIndicator(toolbar);
-
         //--- back navigation (FEAT-0023), only when there is somewhere to go back
         this.#appendBackNavigator(toolbar);
 
@@ -542,23 +532,6 @@ class BpmnDifferView {
             onClick: () => window.close()
         }));
         toolbar.appendChild(closeGroup);
-    }
-
-    // The differ page is a plain web context (no chrome.*): the indicator just
-    // opens the popup page (passed as a chrome-extension:// URL by the content
-    // script) in a new tab, where the rich update UI runs (FEAT-0012).
-    #appendUpdateIndicator(toolbar) {
-        const indicator = new UpdateIndicator(this.#updateInfo);
-        const element = indicator.createElement(() => {
-            if (this.#updateInfo && this.#updateInfo.popupUrl) {
-                window.open(this.#updateInfo.popupUrl, '_blank');
-            }
-        });
-        if (element) {
-            const group = this.#group();
-            group.appendChild(element);
-            toolbar.appendChild(group);
-        }
     }
 
     // The control builds its own group (split ⤴ + ▾ + menu) or returns null when

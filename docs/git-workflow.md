@@ -59,12 +59,10 @@ The remote branch is removed by GitHub on merge when the repository has "automat
 
 Distribution is via **releases** (a git tag + an attached zip asset), not via archives committed into the repo (binaries would bloat the git history forever). The releases page is the user-facing download list — it lists every version automatically, so there is nothing to prune.
 
-1. Bump the version on a branch via `/release` (`manifest.json` + `version.json` + a `CHANGELOG.md` entry) and merge it — see the `release` skill.
+1. Bump the version on a branch via `/release` (`manifest.json` + a `CHANGELOG.md` entry) and merge it — see the `release` skill.
 2. On a fresh `master`, build the distribution zip with `npm run package` (`scripts/package.sh` reads the version from `manifest.json`), then create the `vX.Y.Z` release with `gh release create`, that zip attached and notes taken from the matching `CHANGELOG.md` section.
 
 A build for an internal GitLab instance takes the host as an argument — `npm run package -- gitlab.internal.example` — which prepends `https://<host>/*` to the content-script `matches` **in the staged copy only**; the tracked `manifest.json` keeps listing `gitlab.com` alone, so internal domains never enter the repository.
-
-The automated update notifier (FEAT-0012) reads the `UPDATE_*` URLs in `src/core/config.js`. They are empty until the sources are published (the check makes no requests at all); filling them back in is what turns the notifier on, and a new `version.json` on `master` is then what makes it offer the update.
 
 ## CI
 

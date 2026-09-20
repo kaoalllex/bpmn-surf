@@ -88,10 +88,6 @@ class DmnDiffer {
             onDownload: () => this.#downloadShownBranchFile(),
             onSwitchBranch: () => this.#switchBranch()
         });
-        // Update notification (FEAT-0012): info comes raw in params from the
-        // content script (which read it from the service worker's state).
-        this.#view.setUpdateInfo(this.#rawParams.updateInfo);
-
         // Back navigation (FEAT-0005, the DMN direction of FEAT-0023): dive out to
         // the diagram we came from, plus a picker of any BPMN diagram that calls
         // this decision (reverse blob-search, lazy). Stepping up to a caller asks

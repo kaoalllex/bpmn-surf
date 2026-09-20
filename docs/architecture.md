@@ -11,7 +11,7 @@ Chrome Extension (Manifest V3) for visually comparing BPMN 2.0 and DMN diagrams 
 
 ## Directory structure
 
-All application code is under `src/`; the root keeps only `manifest.json`, `version.json`, `CHANGELOG.md`, `libs/`, `icons/` (extension icons; placeholder in R1 of the bpmn-surf rebrand, UX-0009), `docs/`, `test/`, `scripts/`, `package*.json`. The layout reflects three script scopes: `core/` (shared), `content/` (the content script for GitLab pages), `differ/` (the separate differ tab), plus the extension context for the update mechanism — `background/` (service worker) and `popup/` (the icon popup window). File names are unique across the whole tree — in the table below the path is not duplicated, lookup is by name.
+All application code is under `src/`; the root keeps only `manifest.json`, `CHANGELOG.md`, `libs/`, `icons/` (extension icons; placeholder in R1 of the bpmn-surf rebrand, UX-0009), `docs/`, `test/`, `scripts/`, `package*.json`. The layout reflects three script scopes: `core/` (shared), `content/` (the content script for GitLab pages), `differ/` (the separate differ tab), plus the extension context — `popup/` (the window opened from the extension icon). File names are unique across the whole tree — in the table below the path is not duplicated, lookup is by name.
 
 ```
 src/
@@ -26,13 +26,10 @@ src/
                gitlab-url-parser.js, gitlab-dom-scraper.js,
                merged-mr-commit-resolver.js, master-commit-manager.js, single-entry-cache.js
       github/  (GitHub provider — populated in REFAC-0004 step 1.3+)
-  update/      version-info.js, update-checker.js       (pure update logic, FEAT-0012)
-  background/  update-service-worker.js                 (SW: version check + badge)
-  popup/       popup.html, popup.js, popup.css           (update window opened from the icon)
+  popup/       popup.html, popup.js, popup.css          (the window opened from the extension icon)
   differ/      styles.css
     shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js,
-               differ-loading-overlay.js, differ-empty-state.js, update-indicator.js,
-               differ-tab-navigator.js
+               differ-loading-overlay.js, differ-empty-state.js, differ-tab-navigator.js
     bpmn/      bpmn-differ.js, bpmn-differ-view.js, bpmn-xml-comparator.js, diff-highlighter.js,
                changes-table-view.js, properties-panel-highlighter.js, properties-group-expander.js,
                condition-formatter.js, canvas-viewport.js, element-searcher.js, search-panel.js
@@ -74,7 +71,7 @@ The BPMN differ page has two modes: view (the default, read-only diff review) an
 **Three script scopes** (do not confuse them):
 1. **GitLab page content scripts** — the order is set in `manifest.json#content_scripts` (app, providers, utilities).
 2. **The differ page** (a separate tab) — scripts are loaded via `utils.js#loadScripts` in the order: `utils.js` → class files → `bpmn-differ.js` → `dmn-differ.js`. They all share the single global scope of this tab. A new JS file for the differ page must be added both to `loadScripts` and to the manifest's `web_accessible_resources`. ⚠️ The differ page is a `window.open('about:blank')` (see `utils.js#openDiffer`): an ordinary web context with no access to `chrome.*`. Data from "outside" arrives only through postMessage parameters from the content script; feedback goes back via `window.opener` or by opening a web-accessible extension page.
-3. **The update extension context (FEAT-0012)** — the service worker (`background/update-service-worker.js`) and the popup (`popup/`). They have full access to `chrome.*`. The SW pulls in `core/config.js` + `update/*` via `importScripts`; the popup via `<script>`. These files are NOT part of the four differ/content registries (they live in `manifest#action`/`#background`, and `popup.html` is additionally in `web_accessible_resources` — so the differ page can open it via `window.open`). Update flow: on a `chrome.alarms` schedule the SW fetches `version.json` → compares it with `manifest.version` → writes the state to `chrome.storage.local` and sets a badge; the popup and the indicator in the differ toolbar display this and walk the user through the update (`git pull` + `chrome.runtime.reload`). The extension does not replace its own files itself (a load-unpacked limitation) — it only notifies.
+3. **The extension context** — the popup (`popup/`), which has full access to `chrome.*`. It pulls in `core/config.js` via `<script>` and shows the installed version plus the feedback link. These files are NOT part of the four differ/content registries (the popup lives in `manifest#action`).
 
 **Shared differ-page classes**: `bpmn-differ.js` (`BpmnDiffer`) and `dmn-differ.js` (`DmnDiffer`) are orchestrators, both using the shared classes `DifferParams` (differ-params.js), `DiagramVersions` (diagram-versions.js), `BranchIndicator` (branch-indicator.js), as well as `DiffType` (diff-type.js). There is no global mutable state on the differ page — all state lives in class fields, dependencies are passed through constructors. When changing the shared classes, check both the BPMN and the DMN diff.
 
@@ -142,14 +139,10 @@ The BPMN differ page has two modes: view (the default, read-only diff review) an
 | `platform-client.js` | `PlatformClient` — the differ-scope interface (REFAC-0004) for every platform-specific data access the differ page performs; the mirror of the content scope's `RepoProvider` seam. Methods (throw-stubs here): `rawFileUrl(ref, filePath)`, `blobFileUrl(ref, filePath, line?)`, `searchCode(ref, term)` → normalised `{path, line, snippet}[]`, `searchPageUrl(term, ref)`, `prChangedFiles(changeId)` → `{path, oldPath, status}[]`, `prDiffsUrl(changeId)`. Search hits are normalised so a platform's own JSON never reaches the locators (they gate/classify on the neutral `snippet`) |
 | `gitlab-platform-client.js` | `GitLabPlatformClient extends PlatformClient` — holds verbatim the GitLab URL/search/changes construction that used to live inline in `DifferParams` and the locators (`/-/raw/`, `/-/blob/`, `/api/v4/.../search?scope=blobs`, `/-/search`, MR `/changes`, `/-/merge_requests/{iid}/diffs`), so GitLab behaviour is unchanged. Constructed from the descriptor's `{projectUrl, hostUrl, projectId}`; fetching still goes through the global cookie-session `loadFileContent` (injectable for tests). Auth-aware fetching is deferred to subtask 3 |
 | `platform-client-factory.js` | `createPlatformClient(platform)` — builds the differ-scope client by `platform.kind` (`'gitlab'` → `GitLabPlatformClient`; `'github'` → inert `GitHubPlatformClient`, REFAC-0004 step 1.3; default throws); the differ mirror of `repo-provider-factory.js`. `github-platform-client.js` throws on every method until subtask 2 |
-| `version-info.js` | `VersionInfo` — pure version logic (FEAT-0012): numeric `compare`/`isNewer` (not lexical — otherwise `0.9` > `0.18`), parsing `CHANGELOG.md` and selecting entries newer than the installed one (`changesSince`). No DOM/network/`chrome.*`, unit-tested |
-| `update-checker.js` | `UpdateChecker` — the network part of the check (FEAT-0012): fetches `version.json` and (if there is something newer) `CHANGELOG.md`, computes the result via `VersionInfo`. The fetchers are injected (DI) → unit tests without the network. GET only, `credentials:'omit'` (no cookies / data sending) |
-| `update-service-worker.js` | The service worker of the update mechanism (FEAT-0012): a `chrome.alarms` scheduled check + a check at startup, a badge on the icon, state in `chrome.storage.local`, handling of popup/content messages (`update:getState`/`checkNow`/`setEnabled`/`reload`/`openPopup`/`openUrl`). Respects auto-check being disabled (then it does not touch the network). The version source is configurable (`config.js#UPDATE_*`), with an empty URL it is a no-op |
-| `popup/` | The icon popup window (`popup.html`/`popup.js`/`popup.css`, FEAT-0012): the current/latest version, the check time, the explicit source URL + "no data is sent", "What's new" (from the CHANGELOG), "Check now", "Update" (copy `git pull` + "Reload the extension" via `runtime.reload`) and an auto-check toggle. The SW owns the network/state; the popup only displays and sends commands. Works both as an action popup and as a tab (opened from the differ indicator) |
-| `update-indicator.js` | `UpdateIndicator` — the shared (BPMN+DMN) "🔔 vX" indicator in the differ page's toolbar (FEAT-0012), modeled on `BranchIndicator`. The differ page has no `chrome.*`, so `updateInfo` arrives in the params from the content script, and a click opens the popup as a tab (`window.open` by `popupUrl` = `chrome.runtime.getURL('src/popup/popup.html')`). The views call `setUpdateInfo()` before `build()` |
+| `popup/` | The window opened from the extension icon (`popup.html`/`popup.js`/`popup.css`): the installed version and the "Leave feedback" link |
 | `models.js` | DTOs: `FileType`, `ProjectInfo`, `MergeRequestInfo` |
 | `utils.js` | DOM, HTTP, XML parsing, script loading |
-| `config.js` | Constants (feedback URL, update check) |
+| `config.js` | Constants (the feedback URL) |
 | `file-type-detector.js` | Determining the file type by extension |
 | `camunda-bpmn-moddle-manager.js` | Loading/caching the Camunda moddle |
 | `master-commit-manager.js` | The MR target-branch commit history with a cache in localStorage (per project and branch) |

@@ -19,9 +19,9 @@
 //  1. It runs in a COPY of the working tree, never in the repo. Mutating the repo in
 //     place and restoring afterwards loses the user's work on any crash, and the
 //     Playwright web server would serve half-mutated sources to a parallel session.
-//  2. The copy serves e2e on its own port. differ-update-indicator.spec.js hardcodes
-//     4173 as the harness origin, so the port is rewritten in `test/` as well as in
-//     playwright.config.js — otherwise the copy fails its own baseline.
+//  2. The copy serves e2e on its own port. The literal 4173 lives in `test/` (the
+//     static server's default) as well as in playwright.config.js, so it is rewritten
+//     in both — otherwise the copy fails its own baseline.
 //  3. Every command is prefixed with `exec `. execSync's timeout kills the shell, not
 //     a hung grandchild; some mutants hang `node --test` forever, and without `exec `
 //     the run stalls on one mutant instead of timing it out.
