@@ -122,6 +122,7 @@ const EXPORTED_NAMES = [
     'DifferLoadingOverlay',
     'DifferEmptyState',
     'SingleEntryCache',
+    'MasterCommitManager',
     'GitLabUrlParser',
     'GitLabDomScraper',
     'MergedMrCommitResolver',

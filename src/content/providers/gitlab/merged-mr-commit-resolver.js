@@ -57,11 +57,11 @@ class MergedMrCommitResolver {
         let targetCommitId = null;
         if (isMerged) {
             console.debug('MR is likely merged. Trying to find target commit id by MR commit id...');
-            targetCommitId = await this.#findPreviousCommitId(sourceCommitId);
+            targetCommitId = await this.#findPreviousCommitId(sourceCommitId, targetBranchName);
             if (!targetCommitId) {
-                const actualMrCommitId = await this.#findCommitIdByTitle(changeTitle);
+                const actualMrCommitId = await this.#findCommitIdByTitle(changeTitle, targetBranchName);
                 if (actualMrCommitId) {
-                    targetCommitId = await this.#findPreviousCommitId(actualMrCommitId);
+                    targetCommitId = await this.#findPreviousCommitId(actualMrCommitId, targetBranchName);
                 }
             }
         }
@@ -96,15 +96,15 @@ class MergedMrCommitResolver {
         return false;
     }
 
-    async #findPreviousCommitId(commitId) {
+    async #findPreviousCommitId(commitId, targetBranchName) {
         console.debug('try to find target branch previous commit id for commit id: ' + commitId);
-        return await this.#masterCommitManager.findPreviousCommitId(commitId);
+        return await this.#masterCommitManager.findPreviousCommitId(commitId, targetBranchName);
     }
 
-    async #findCommitIdByTitle(commitTitle) {
+    async #findCommitIdByTitle(commitTitle, targetBranchName) {
         console.debug('try to find target branch commit id by title: ' + commitTitle);
 
-        await this.#loadFilteredEntries(commitTitle);
+        await this.#loadFilteredEntries(commitTitle, targetBranchName);
 
         const index = this.#filteredByTitleMasterCommitEntries.findIndex(entry => {
             const titleElement = entry.querySelector('title');
@@ -120,14 +120,14 @@ class MergedMrCommitResolver {
         return foundCommitId;
     }
 
-    async #loadFilteredEntries(commitTitle) {
+    async #loadFilteredEntries(commitTitle, targetBranchName) {
         console.debug('loading master commit entries filtered by title...');
         if (this.#filteredByTitleMasterCommitEntries) {
             console.debug('loading master commit entries filtered by title...done (used cache)');
             return;
         }
 
-        const url = this.#projectInfo.url + '/-/commits/' + MASTER_BRANCH_NAME + '?format=atom&search=' + encodeURIComponent(commitTitle);
+        const url = this.#projectInfo.url + '/-/commits/' + encodeBranchName(targetBranchName) + '?format=atom&search=' + encodeURIComponent(commitTitle);
         const content = await this.#loadContent(url, true);
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, 'text/xml');
