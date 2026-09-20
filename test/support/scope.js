@@ -75,7 +75,9 @@ const SCOPE_FILES = [
     'src/content/providers/repo-provider-factory.js',
     'src/content/file-type-detector.js',
     'src/content/diff-params-builder.js',
-    'src/content/page-reloader.js'
+    'src/content/page-reloader.js',
+    // popup / service-worker scope: pure helpers, no chrome.* (FEAT-0033).
+    'src/hosts/host-patterns.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().
@@ -86,6 +88,7 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'detectPlatformKind', 'PLATFORM_KIND',
+    'normalizeHostPattern', 'userOriginsFrom',
     'PlatformClient',
     'GitLabPlatformClient',
     'GitHubPlatformClient',
