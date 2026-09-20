@@ -37,6 +37,7 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/differ/platform/github-platform-client.js',
     'src/differ/shared/diff-type.js',
     // chrome.* glue: chrome.* APIs and DOM, neither available under node.
+    'src/background/service-worker.js',
     'src/popup/popup.js',
     // orchestrators / DOM+lib glue
     'src/content/app.js',

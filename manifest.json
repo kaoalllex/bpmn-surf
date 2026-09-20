@@ -56,8 +56,14 @@
             "128": "icons/icon-128.png"
         }
     },
+    "background": {
+        "service_worker": "src/background/service-worker.js"
+    },
     "permissions": [
-        "activeTab"
+        "scripting"
+    ],
+    "optional_host_permissions": [
+        "https://*/*"
     ],
     "web_accessible_resources": [
         {
