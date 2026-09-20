@@ -11,7 +11,7 @@ Chrome Extension (Manifest V3) for visually comparing BPMN 2.0 and DMN diagrams 
 
 ## Directory structure
 
-All application code is under `src/`; the root keeps only `manifest.json`, `CHANGELOG.md`, `libs/`, `icons/` (extension icons; placeholder in R1 of the bpmn-surf rebrand, UX-0009), `docs/`, `test/`, `scripts/`, `package*.json`. The layout reflects three script scopes: `core/` (shared), `content/` (the content script for GitLab pages), `differ/` (the separate differ tab), plus the extension context — `popup/` (the window opened from the extension icon). File names are unique across the whole tree — in the table below the path is not duplicated, lookup is by name.
+All application code is under `src/`; the root keeps only `manifest.json`, `CHANGELOG.md`, `libs/`, `icons/` (extension icons; placeholder in R1 of the bpmn-surf rebrand, UX-0009), `docs/`, `test/`, `scripts/`, `package*.json`. The layout reflects three script scopes: `core/` (shared), `content/` (the content script for GitLab pages), `differ/` (the separate differ tab), plus the extension context — `background/` (service worker) and `popup/` (the window opened from the extension icon), with `hosts/` shared by those two. File names are unique across the whole tree — in the table below the path is not duplicated, lookup is by name.
 
 ```
 src/
@@ -26,7 +26,9 @@ src/
                gitlab-url-parser.js, gitlab-dom-scraper.js,
                merged-mr-commit-resolver.js, master-commit-manager.js, single-entry-cache.js
       github/  (GitHub provider — populated in REFAC-0004 step 1.3+)
-  popup/       popup.html, popup.js, popup.css          (the window opened from the extension icon)
+  hosts/       host-patterns.js                        (pure match-pattern logic, FEAT-0033)
+  background/  service-worker.js                       (SW: content-script registration for added hosts)
+  popup/       popup.html, popup.js, popup.css         (the window opened from the extension icon)
   differ/      styles.css
     shared/    differ-params.js, diagram-versions.js, branch-indicator.js, diff-type.js,
                differ-loading-overlay.js, differ-empty-state.js, differ-tab-navigator.js
@@ -71,7 +73,7 @@ The BPMN differ page has two modes: view (the default, read-only diff review) an
 **Three script scopes** (do not confuse them):
 1. **GitLab page content scripts** — the order is set in `manifest.json#content_scripts` (app, providers, utilities).
 2. **The differ page** (a separate tab) — scripts are loaded via `utils.js#loadScripts` in the order: `utils.js` → class files → `bpmn-differ.js` → `dmn-differ.js`. They all share the single global scope of this tab. A new JS file for the differ page must be added both to `loadScripts` and to the manifest's `web_accessible_resources`. ⚠️ The differ page is a `window.open('about:blank')` (see `utils.js#openDiffer`): an ordinary web context with no access to `chrome.*`. Data from "outside" arrives only through postMessage parameters from the content script; feedback goes back via `window.opener` or by opening a web-accessible extension page.
-3. **The extension context** — the popup (`popup/`), which has full access to `chrome.*`. It pulls in `core/config.js` via `<script>` and shows the installed version plus the feedback link. These files are NOT part of the four differ/content registries (the popup lives in `manifest#action`).
+3. **The extension context** — the service worker (`background/service-worker.js`) and the popup (`popup/`), both with full access to `chrome.*`; the popup pulls in `core/config.js` + `hosts/host-patterns.js` via `<script>`, the SW the latter via `importScripts`. These files are NOT part of the four differ/content registries (they live in `manifest#background`/`#action`). Configurable hosts (FEAT-0033): `gitlab.com` is declared in `manifest#content_scripts`, every other host is an optional permission the user grants in the popup, and the SW mirrors the granted origins into one `chrome.scripting` registration whose `js`/`css` come from that same manifest entry. The granted permissions are the list — nothing is stored — so the SW reconciles on `runtime.onInstalled` and `permissions.onAdded/onRemoved`.
 
 **Shared differ-page classes**: `bpmn-differ.js` (`BpmnDiffer`) and `dmn-differ.js` (`DmnDiffer`) are orchestrators, both using the shared classes `DifferParams` (differ-params.js), `DiagramVersions` (diagram-versions.js), `BranchIndicator` (branch-indicator.js), as well as `DiffType` (diff-type.js). There is no global mutable state on the differ page — all state lives in class fields, dependencies are passed through constructors. When changing the shared classes, check both the BPMN and the DMN diff.
 
@@ -139,6 +141,8 @@ The BPMN differ page has two modes: view (the default, read-only diff review) an
 | `platform-client.js` | `PlatformClient` — the differ-scope interface (REFAC-0004) for every platform-specific data access the differ page performs; the mirror of the content scope's `RepoProvider` seam. Methods (throw-stubs here): `rawFileUrl(ref, filePath)`, `blobFileUrl(ref, filePath, line?)`, `searchCode(ref, term)` → normalised `{path, line, snippet}[]`, `searchPageUrl(term, ref)`, `prChangedFiles(changeId)` → `{path, oldPath, status}[]`, `prDiffsUrl(changeId)`. Search hits are normalised so a platform's own JSON never reaches the locators (they gate/classify on the neutral `snippet`) |
 | `gitlab-platform-client.js` | `GitLabPlatformClient extends PlatformClient` — holds verbatim the GitLab URL/search/changes construction that used to live inline in `DifferParams` and the locators (`/-/raw/`, `/-/blob/`, `/api/v4/.../search?scope=blobs`, `/-/search`, MR `/changes`, `/-/merge_requests/{iid}/diffs`), so GitLab behaviour is unchanged. Constructed from the descriptor's `{projectUrl, hostUrl, projectId}`; fetching still goes through the global cookie-session `loadFileContent` (injectable for tests). Auth-aware fetching is deferred to subtask 3 |
 | `platform-client-factory.js` | `createPlatformClient(platform)` — builds the differ-scope client by `platform.kind` (`'gitlab'` → `GitLabPlatformClient`; `'github'` → inert `GitHubPlatformClient`, REFAC-0004 step 1.3; default throws); the differ mirror of `repo-provider-factory.js`. `github-platform-client.js` throws on every method until subtask 2 |
+| `host-patterns.js` | Pure match-pattern logic for the configurable hosts (FEAT-0033), shared by the SW and the popup: `normalizeHostPattern(input)` → `https://<host>/*` (a bare host, an origin or a pasted MR url; https only, port/path dropped) or `null`; `userOriginsFrom(origins, declaredMatches)` → the granted origins the manifest does not declare itself |
+| `service-worker.js` | Keeps the runtime content-script registrations in sync with the granted host permissions (FEAT-0033): one registration (`bpmn-surf-user-hosts`) whose `matches` are the user's origins and whose `js`/`css` are read from `manifest#content_scripts[0]`, reconciled on install/update and on every permission change |
 | `popup/` | The window opened from the extension icon (`popup.html`/`popup.js`/`popup.css`): the installed version and the "Leave feedback" link |
 | `models.js` | DTOs: `FileType`, `ProjectInfo`, `MergeRequestInfo` |
 | `utils.js` | DOM, HTTP, XML parsing, script loading |

@@ -62,6 +62,8 @@ Distribution is via **releases** (a git tag + an attached zip asset), not via ar
 1. Bump the version on a branch via `/release` (`manifest.json` + a `CHANGELOG.md` entry) and merge it — see the `release` skill.
 2. On a fresh `master`, build the distribution zip with `npm run package` (`scripts/package.sh` reads the version from `manifest.json`), then create the `vX.Y.Z` release with `gh release create`, that zip attached and notes taken from the matching `CHANGELOG.md` section.
 
+Since [FEAT-0033] a self-hosted host is added from the extension popup, so a preconfigured build is no longer needed to reach an internal instance — the argument below only saves the user that one step.
+
 A build for an internal GitLab instance takes the host as an argument — `npm run package -- gitlab.internal.example` — which prepends `https://<host>/*` to the content-script `matches` **in the staged copy only**; the tracked `manifest.json` keeps listing `gitlab.com` alone, so internal domains never enter the repository.
 
 ## CI

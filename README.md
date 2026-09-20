@@ -20,18 +20,18 @@ To update, pull (or re-download) the sources and click ⟳ on the extension in `
 
 ### Your own GitLab instance
 
-Out of the box the extension only runs on `gitlab.com`. To use it on a self-hosted GitLab,
-add your host to `content_scripts[0].matches` in `manifest.json`:
+Out of the box the extension runs on `gitlab.com`. To use it on a self-hosted GitLab,
+add the host from the extension popup — no file editing:
 
-```json
-"matches": [
-    "https://gitlab.com/*",
-    "https://gitlab.mycompany.com/*"
-]
-```
+1. Click the bpmn-surf icon in the browser toolbar
+2. Under **Sites**, type the host (`gitlab.mycompany.com`; a pasted merge request link
+   works too) and click **Add**
+3. Confirm the access request Chrome shows
+4. Reload the GitLab tabs you already had open
 
-Then click ⟳ on the extension in `chrome://extensions`. Keep the file edited locally — it is
-overwritten by the next `git pull`.
+Only `https` hosts are accepted. The host is kept as a Chrome permission, so it survives
+updates and re-installs; remove it with the `×` next to it in the popup (or in
+`chrome://extensions` → Details → Site access).
 
 ## Features
 
