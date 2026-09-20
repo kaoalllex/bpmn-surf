@@ -45,6 +45,15 @@ Nuances:
 - Comments — only when necessary, in English, concise
 - `chrome.*` API; account for the differences between content scripts / service workers
 
+## Persistent settings (`chrome.storage`)
+
+Stored data must survive extension updates (a Chrome Web Store install auto-updates):
+
+- One key per feature, its value a single object (e.g. `updateState`) — not one key per field
+- Read with defaults merged over the stored value: `{ ...DEFAULTS, ...stored }`. Adding a field is then free — old data reads as is
+- Never rename a key or rename/retype a field in place. If that becomes unavoidable, migrate the stored value in `runtime.onInstalled` (`reason: 'update'`)
+- Do not store what Chrome already keeps (e.g. granted host permissions) — a second copy only drifts
+
 ## Default assumptions
 
 - Read-only behavior (the extension writes nothing to GitLab)
