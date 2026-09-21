@@ -7,6 +7,11 @@ class BpmnDifferView {
 
     // GitLab's native button classes — kept so buttons match the host UI;
     // sizing/margins are layered on top via the .differ-btn* classes.
+    // FEAT-0024: the 💬 button's two states — the plain invitation, and the
+    // nudge after this tab hit a failure the user may not have noticed.
+    static FEEDBACK_TITLE = 'Report a problem or send feedback';
+    static FEEDBACK_ALERT_TITLE = 'Something went wrong — report it';
+
     static BTN_CLASS = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
 
     // U+200E LEFT-TO-RIGHT MARK — prefixed to the file path so the bidi algorithm
@@ -35,6 +40,7 @@ class BpmnDifferView {
     #propsCell = null;
     #splitterCell = null;
     #hidePropsButton = null;
+    #feedbackButton = null;
     #isPropsCellHidden = false;
     #viewport = null;
     #changesTableView = null;
@@ -53,7 +59,7 @@ class BpmnDifferView {
     #editColoringPaused = false;
 
     // callbacks: { onDownload, onSwitchBranch, onToggleHighlight, onOpenEditor,
-    //   onUndo, onRedo, onToggleEditColoring }
+    //   onFeedback, onUndo, onRedo, onToggleEditColoring }
     constructor(params, branchIndicator, callbacks) {
         this.#params = params;
         this.#branchIndicator = branchIndicator;
@@ -524,6 +530,15 @@ class BpmnDifferView {
 
         //--- back navigation (FEAT-0023), only when there is somewhere to go back
         this.#appendBackNavigator(toolbar);
+
+        //--- feedback (FEAT-0024): report this exact diff, context prefilled
+        const feedbackGroup = this.#group();
+        this.#feedbackButton = this.#button({
+            icon: '💬', title: BpmnDifferView.FEEDBACK_TITLE,
+            onClick: () => this.#callbacks.onFeedback()
+        });
+        feedbackGroup.appendChild(this.#feedbackButton);
+        toolbar.appendChild(feedbackGroup);
 
         //--- close group (destructive, separated)
         const closeGroup = this.#group();

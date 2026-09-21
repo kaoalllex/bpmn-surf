@@ -86,7 +86,8 @@ class DmnDiffer {
         this.#tabNavigator.registerTab(this.#params.identityKey());
         this.#view = new DmnDifferView(this.#params, this.#branchIndicator, this.#viewport, {
             onDownload: () => this.#downloadShownBranchFile(),
-            onSwitchBranch: () => this.#switchBranch()
+            onSwitchBranch: () => this.#switchBranch(),
+            onFeedback: () => this.#openFeedbackIssue()
         });
         // Back navigation (FEAT-0005, the DMN direction of FEAT-0023): dive out to
         // the diagram we came from, plus a picker of any BPMN diagram that calls
@@ -228,6 +229,25 @@ class DmnDiffer {
     // the file in the exact shown version. A side with no repo ref (local file
     // used as the source), or where the file is absent (new/deleted in the MR),
     // yields url:null → an inactive, non-link path (the blob URL would 404 there).
+    // FEAT-0024: open a GitHub issue prefilled with this diff's context and the
+    // tail of this tab's console. Nothing is sent — the user sees the whole body
+    // in GitHub's own form and edits or abandons it there.
+    #openFeedbackIssue() {
+        const url = FeedbackReport.buildUrl(FEEDBACK_URL, {
+            extensionVersion: this.#params.extensionVersion,
+            platformKind: this.#params.platform.kind,
+            hostUrl: this.#params.platform.hostUrl,
+            changeRequestId: this.#params.changeRequestId,
+            fileName: this.#params.fileName,
+            fileType: 'DMN',
+            sourceLabel: this.#params.sourceLabel,
+            sourceUrl: this.#shownFileFor(false).url,
+            targetLabel: this.#params.targetLabel,
+            targetUrl: this.#shownFileFor(true).url
+        }, getConsoleLogTail());
+        window.open(url, '_blank', 'noopener');
+    }
+
     #shownFileFor(targetSide) {
         const ref = targetSide ? this.#params.targetRef : this.#params.sourceRef;
         const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
