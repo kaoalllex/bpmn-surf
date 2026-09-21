@@ -2,7 +2,7 @@
 id: FEAT-0033
 title: Configure the GitLab/GitHub hosts the extension runs on, from the popup
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -86,6 +86,9 @@ with store auto-updates.
   `host_permissions: raw.githubusercontent.com` (update check is off — empty URLs);
   the FEAT-0012 update checker switches itself off for store installs
   (`chrome.runtime.getManifest().update_url` is set only there).
+  *Superseded on 2026-09-20:* since no non-store update channel is planned, [FEAT-0012]
+  was closed as wontfix and its code deleted in the first commit of this branch — there is
+  no checker left to gate, and `storage`/`alarms` went with it.
 - **Out of scope**: privacy policy and permission justifications for the store listing;
   a stricter self-hosted CSP (none observed — the manifest-edited self-hosted install works);
   admin-pushed hosts via managed storage.
@@ -112,3 +115,38 @@ with store auto-updates.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-20 · claude-opus-5 · branch `feature/feat-0033-configurable-hosts`
+
+Implemented per the agreed decisions. `gitlab.com` stays declarative; any other host is an
+optional permission granted from the popup, and `background/service-worker.js` mirrors the
+granted origins into one `chrome.scripting` registration (`bpmn-surf-user-hosts`) whose
+`js`/`css` are read from `manifest#content_scripts[0]` — the script list is not duplicated.
+Nothing is stored: `chrome.permissions.getAll()` is the list, reconciled on
+`runtime.onInstalled` and `permissions.onAdded/onRemoved`.
+
+New: `src/hosts/host-patterns.js` (pure `normalizeHostPattern` / `userOriginsFrom`, unit
+tested in `test/hosts/host-patterns.test.js`) and `src/background/service-worker.js`.
+`platform-detection.js` now treats any injected non-github host as gitlab (the matcher list
+ends in a catch-all; `detectPlatformKind` no longer returns null). The popup gained a
+**Sites** section: `gitlab.com` as built-in, the granted hosts with a remove button, an add
+field, and the "reload open tabs" note. manifest: `permissions: ["scripting"]`,
+`optional_host_permissions: ["https://*/*"]`, no `host_permissions`, `activeTab` dropped,
+`default_title` is now `bpmn-surf`.
+
+The branch opens with the deletion of [FEAT-0012] (see the superseded note above).
+`npm test` 1145 pass, `npm run test:e2e` 136 pass.
+
+After manual testing the popup hint moved out of the body text into a `?` badge next to the
+Sites heading; the tooltip is CSS, because a native `title` attribute renders nothing inside
+an extension popup window. It also records what the testing turned up: Chrome can keep
+showing a removed host under `chrome://extensions` → Details → Site access. That record is
+Chrome's own — `permissions.getAll()` no longer lists the origin, `permissions.contains()`
+returns false and the registration is dropped, so the extension does not run there; the same
+caveat is in the README.
+
+Verified by hand in Chrome (2026-09-21): gitlab.com unchanged and prompt-free, a self-hosted
+instance added from the popup → Chrome's consent dialog → buttons after a tab reload, styles
+arriving with the scripts, the differ opening against that instance, and removal stopping the
+injection. `npm run package` builds the zip with the new manifest.
+

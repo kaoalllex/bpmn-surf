@@ -9,7 +9,7 @@ class UIRepoProvider {
      * RepoProvider.isAvailable: the detected platform kind is passed in (computed
      * once by createUIRepoProvider via detectPlatformKind) and the provider
      * compares it to its own kind.
-     * @param {string|null} platformKind the page's detected PLATFORM_KIND
+     * @param {string} platformKind the page's detected PLATFORM_KIND
      * @returns {boolean}
      */
     isAvailable(platformKind) {

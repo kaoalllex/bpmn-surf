@@ -2,10 +2,17 @@
 id: FEAT-0012
 title: Auto-update of the plugin version
 priority: high
-status: partial
+status: done
 ---
 
 ## Statement
+
+> **Closed on 2026-09-20 as wontfix — the code is removed.** Distribution moved to the
+> Chrome Web Store, which updates the extension itself, and no non-store update channel
+> is planned. The notifier only ever helped `load unpacked` installs, and [FEAT-0033]
+> removed the last reason to distribute those (a self-hosted GitLab host is now added
+> from the popup instead of by editing `manifest.json`). History keeps the implementation
+> if the decision is ever reversed.
 
 Goals: not force manual updates; notify about new versions.
 
@@ -50,6 +57,21 @@ Remaining (why `partial`):
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries at the top (most recent first). -->
+
+### 2026-09-20 · claude-opus-5 · branch `feature/feat-0033-configurable-hosts`
+
+Closed as wontfix and deleted, in the first commit of the FEAT-0033 branch (the two
+collide in `manifest.json`, the service worker and the popup; deleting first kept the
+feature smaller). Removed: `src/update/` + its tests, `update-service-worker.js`,
+`update-indicator.js` + its unit and e2e specs, the root `version.json`, the `updateInfo`
+plumbing (`app.js#getUpdateInfo` → params → `setUpdateInfo` in both views and both
+orchestrators), the `.differ-update-indicator` styles, the `UPDATE_*` constants in
+`config.js`, and the update UI in the popup (which now reads the version from
+`chrome.runtime.getManifest()` and links to feedback directly — no service worker).
+`manifest.json` lost `background`, `storage`, `alarms`, `host_permissions` and the
+`popup.html` WAR entry; `action.default_title` is now `bpmn-surf`. Docs updated:
+`architecture.md`, `git-workflow.md`, `.claude/commands/release.md` (no more
+`version.json` bump). `npm test` 1125 pass, `npm run test:e2e` 136 pass.
 
 ### 2026-09-12 · claude-opus-5 · `67fc6e1`
 

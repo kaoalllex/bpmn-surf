@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="popup.css">
-    <title>bpmn-surf — update</title>
+    <title>bpmn-surf</title>
 </head>
 <body>
     <header class="pu-header">
@@ -22,59 +22,32 @@
         <span class="pu-version" id="currentVersion">—</span>
     </main>
 
-    <!-- Update-check UI is hidden for now (kept in markup, see SHOW_UPDATE_UI in popup.js). -->
-    <section class="pu-status hidden" id="statusBlock">
-        <div class="pu-status-line" id="statusLine">Checking for updates…</div>
-        <div class="pu-meta" id="checkedAt"></div>
-    </section>
-
-    <section class="pu-update hidden" id="updateBlock">
-        <div class="pu-update-head">
-            Version <strong id="latestVersion"></strong> is available
-        </div>
-        <div class="pu-changes" id="changes"></div>
-
-        <details class="pu-guide" id="guide">
-            <summary>How to update</summary>
-            <ol class="pu-steps">
-                <li>
-                    Update the extension files:
-                    <div class="pu-cmd">
-                        <code id="gitPull">git pull</code>
-                        <button type="button" id="copyCmd" class="pu-mini">copy</button>
-                    </div>
-                    <div class="pu-hint hidden" id="downloadHint">
-                        Not using git? <a href="#" id="downloadLink">Open the download page</a>
-                        and replace the files in the extension folder.
-                    </div>
-                </li>
-                <li>Click "Reload extension" — it will re-read the files from disk.</li>
-            </ol>
-            <button type="button" id="reloadBtn" class="pu-primary">Reload extension</button>
-            <p class="pu-note">
-                The extension does not change its own files — you bring the bytes
-                to disk yourself (a limitation of "load unpacked"). Reloading applies
-                the already updated files.
-            </p>
-        </details>
-    </section>
-
-    <section class="pu-actions hidden">
-        <button type="button" id="checkNowBtn" class="pu-secondary">Check now</button>
-        <label class="pu-toggle">
-            <input type="checkbox" id="autoCheck">
-            <span>Check for updates automatically</span>
-        </label>
+    <section class="pu-sites">
+        <h2 class="pu-section-title">
+            Sites
+            <span class="pu-help" tabindex="0" role="button" aria-describedby="sitesTip">?</span>
+            <span class="pu-tip" id="sitesTip" role="tooltip">
+                Chrome asks you to allow access to the site you add. Tabs that are already
+                open need a reload before the buttons appear there. A site you remove here
+                can stay listed in chrome://extensions &#8594; Site access — that record is
+                Chrome's own, the extension no longer runs there.
+            </span>
+        </h2>
+        <ul class="pu-site-list" id="siteList"></ul>
+        <form class="pu-add" id="addHostForm">
+            <input type="text" id="hostInput" class="pu-input" placeholder="gitlab.mycompany.com"
+                   autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button type="submit" class="pu-primary">Add</button>
+        </form>
+        <div class="pu-error hidden" id="hostError"></div>
     </section>
 
     <section class="pu-feedback">
-        <a href="#" id="feedbackLink" class="pu-feedback-link">Leave feedback</a>
+        <a href="#" id="feedbackLink" class="pu-feedback-link" target="_blank" rel="noopener">Leave feedback</a>
     </section>
 
-    <footer class="pu-footer hidden">
-        <div class="pu-transparency" id="transparency"></div>
-    </footer>
-
+    <script src="../core/config.js"></script>
+    <script src="../hosts/host-patterns.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

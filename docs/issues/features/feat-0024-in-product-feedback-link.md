@@ -24,7 +24,7 @@ Surfaces to add the link to (by ROI):
 3. **Empty / error state** — when a diff fails to build or the entry button
    cannot find its container ([BUG-0003]): "something off? tell us". Turns
    failures into signal.
-4. **README + the "what's new" block** of the update popup — a one-line pointer.
+4. **README** — a one-line pointer.
 
 **Prefill context** into the link: extension version, GitLab version, file type,
 URL pattern — but **never** schema content. Makes reports actionable and designs
@@ -35,8 +35,8 @@ the same fields telemetry would eventually collect.
 - The channel is **GitHub Issues**: `FEEDBACK_URL` in `src/core/config.js` already
   points at the repository's issue tracker. Still to do — an issue template, and a
   `mailto:` as the low-friction path for private bug reports.
-- The feedback URL/email stays **configurable** (`src/core/config.js`, alongside the
-  `UPDATE_*` URLs) so the channel can move without code churn.
+- The feedback URL/email stays **configurable** (`src/core/config.js`) so the channel
+  can move without code churn.
 
 ### Relations
 
@@ -75,8 +75,8 @@ this posture change in the README alongside the update-checker note.
    preview* of the attached context, and submit-on-Enter (see open question on
    Enter vs Cmd/Ctrl+Enter — plain Enter collides with newlines in a textarea).
    The differ page is a plain `about:blank` web context with no `chrome.*`, so its
-   composer must hand the payload back to the content script (same pattern as the
-   `UpdateIndicator` → `update:openUrl` round-trip).
+   composer must hand the payload back to the content script (via `window.opener`,
+   the way the differ already reports back).
 2. **Context collection** (the FEAT-0024 prefill fields, made concrete):
    - *user text* — from the textarea.
    - *schema / MR link* — the GitLab page URL (MR/blob) from the content script;
@@ -131,5 +131,5 @@ this posture change in the README alongside the update-checker note.
 Surface 1 (popup footer) shipped as part of the move to public GitHub: the
 "Leave feedback" link in `src/popup/popup.html` opens `FEEDBACK_URL`
 (`src/core/config.js`), now `https://github.com/kaoalllex/bpmn-surf/issues`.
-Surfaces 2-4 (differ toolbar, empty/error state, README + "what's new" pointer)
+Surfaces 2-4 (differ toolbar, empty/error state, README pointer)
 and the prefilled context are not done.

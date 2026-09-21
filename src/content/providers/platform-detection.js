@@ -16,14 +16,15 @@ const PLATFORM_KIND = {
     GITHUB: 'github'
 };
 
-// Ordered most-specific first: github.com wins before the loose gitlab
-// substring (a github.com URL with 'gitlab' in the path must read 'github').
+// Ordered most-specific first, and the last one is a catch-all: content scripts
+// run only on gitlab.com and on the hosts the user added from the popup
+// (FEAT-0033), so anything that is not github.com is a GitLab — an internal
+// instance need not carry the word 'gitlab' in its name.
 const PLATFORM_MATCHERS = [
     { kind: PLATFORM_KIND.GITHUB, matches: (loc) => loc.hostname === 'github.com' },
-    { kind: PLATFORM_KIND.GITLAB, matches: (loc) => loc.href.includes('gitlab') }
+    { kind: PLATFORM_KIND.GITLAB, matches: () => true }
 ];
 
 function detectPlatformKind(location = window.location) {
-    const matcher = PLATFORM_MATCHERS.find((m) => m.matches(location));
-    return matcher ? matcher.kind : null;
+    return PLATFORM_MATCHERS.find((m) => m.matches(location)).kind;
 }

@@ -1,157 +1,98 @@
 'use strict';
 
-// Update window UI (FEAT-0012). The service worker owns the network and state;
-// the popup only displays state and sends it commands. The same file works
-// both as an action popup and as an open tab.
+// Extension popup UI: the installed version, the sites the extension runs on
+// (FEAT-0033) and the feedback link. Works both as an action popup and as a tab.
+//
+// There is no host list to store: the granted optional host permissions are the
+// list (docs/conventions.md, "Persistent settings"). The service worker watches
+// the same permissions and keeps the content-script registrations in sync.
 
-// Update-check UI is hidden for now (flip to re-enable, and remove the matching
-// `hidden` classes in popup.html). The popup still talks to the service worker to
-// show the current version and the feedback link.
-const SHOW_UPDATE_UI = false;
+const DECLARED_MATCHES = chrome.runtime.getManifest().content_scripts[0].matches;
 
 const els = {
     currentVersion: document.getElementById('currentVersion'),
-    statusBlock: document.getElementById('statusBlock'),
-    statusLine: document.getElementById('statusLine'),
-    checkedAt: document.getElementById('checkedAt'),
-    updateBlock: document.getElementById('updateBlock'),
-    latestVersion: document.getElementById('latestVersion'),
-    changes: document.getElementById('changes'),
-    guide: document.getElementById('guide'),
-    gitPull: document.getElementById('gitPull'),
-    copyCmd: document.getElementById('copyCmd'),
-    downloadHint: document.getElementById('downloadHint'),
-    downloadLink: document.getElementById('downloadLink'),
-    reloadBtn: document.getElementById('reloadBtn'),
-    checkNowBtn: document.getElementById('checkNowBtn'),
-    autoCheck: document.getElementById('autoCheck'),
-    transparency: document.getElementById('transparency'),
+    siteList: document.getElementById('siteList'),
+    addHostForm: document.getElementById('addHostForm'),
+    hostInput: document.getElementById('hostInput'),
+    hostError: document.getElementById('hostError'),
     feedbackLink: document.getElementById('feedbackLink')
 };
 
-function send(message) {
-    return chrome.runtime.sendMessage(message);
+function hostOf(pattern) {
+    return pattern.replace(/^https:\/\//, '').replace(/\/\*$/, '');
 }
 
-function formatCheckedAt(ts) {
-    if (!ts) return '';
-    try {
-        return `Checked: ${new Date(ts).toLocaleString('en-US')}`;
-    } catch (e) {
-        return '';
-    }
+function showError(message) {
+    els.hostError.textContent = message;
+    els.hostError.classList.toggle('hidden', !message);
 }
 
-function renderChanges(changes) {
-    els.changes.textContent = '';
-    for (const entry of (changes || [])) {
-        const head = document.createElement('div');
-        head.className = 'pu-change-version';
-        head.textContent = entry.version;
-        const body = document.createElement('div');
-        body.className = 'pu-change-body';
-        body.textContent = entry.body || '';
-        els.changes.appendChild(head);
-        els.changes.appendChild(body);
-    }
-}
+// A declared match is injected by Chrome itself and cannot be unregistered
+// through the API — it is shown as built-in rather than with a remove button.
+function appendSite(pattern, builtIn) {
+    const host = hostOf(pattern);
+    const item = document.createElement('li');
+    item.className = 'pu-site';
 
-function render(state) {
-    const result = state.lastResult || {};
+    const name = document.createElement('span');
+    name.className = 'pu-site-host';
+    name.textContent = host;
+    item.appendChild(name);
 
-    els.currentVersion.textContent = `v${state.currentVersion || '—'}`;
-    els.autoCheck.checked = !!state.enabled;
-    els.checkedAt.textContent = formatCheckedAt(result.checkedAt);
-
-    if (state.feedbackUrl) {
-        els.feedbackLink.dataset.url = state.feedbackUrl;
-    }
-
-    // transparency: what we check and where
-    if (state.manifestUrl) {
-        els.transparency.textContent =
-            `Version check: ${state.manifestUrl} — read only (GET), no cookies, nothing is sent.`;
+    if (builtIn) {
+        const badge = document.createElement('span');
+        badge.className = 'pu-site-badge';
+        badge.textContent = 'built-in';
+        item.appendChild(badge);
     } else {
-        els.transparency.textContent =
-            'Update source is not configured — automatic checking is disabled.';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'pu-site-remove';
+        remove.title = `Remove ${host}`;
+        remove.textContent = '×';
+        remove.addEventListener('click', () => removeHost(pattern));
+        item.appendChild(remove);
     }
 
-    const available = !!result.updateAvailable;
-    els.statusBlock.classList.toggle('up-to-date', !available && state.manifestUrl && !result.error);
+    els.siteList.appendChild(item);
+}
 
-    if (!state.enabled) {
-        els.statusLine.textContent = 'Automatic checking is off.';
-    } else if (!state.manifestUrl) {
-        els.statusLine.textContent = 'Update source is not configured.';
-    } else if (result.error) {
-        els.statusLine.textContent = 'Could not check for updates.';
-    } else if (available) {
-        els.statusLine.textContent = 'An update is available.';
-    } else if (result.checkedAt) {
-        els.statusLine.textContent = 'You are on the latest version.';
-    } else {
-        els.statusLine.textContent = 'Updates have not been checked yet.';
+async function renderSites() {
+    const { origins } = await chrome.permissions.getAll();
+    els.siteList.textContent = '';
+    for (const pattern of DECLARED_MATCHES) {
+        appendSite(pattern, true);
     }
-
-    if (available && SHOW_UPDATE_UI) {
-        els.latestVersion.textContent = `v${result.latestVersion}`;
-        renderChanges(result.changes);
-        els.gitPull.textContent = state.gitPullCommand || 'git pull';
-        if (state.homeUrl) {
-            els.downloadHint.classList.remove('hidden');
-            els.downloadLink.dataset.url = state.homeUrl;
-        } else {
-            els.downloadHint.classList.add('hidden');
-        }
-        els.updateBlock.classList.remove('hidden');
-    } else {
-        els.updateBlock.classList.add('hidden');
+    for (const pattern of userOriginsFrom(origins, DECLARED_MATCHES)) {
+        appendSite(pattern, false);
     }
 }
 
-async function refresh() {
-    const state = await send({ type: 'update:getState' });
-    if (state && state.ok) render(state);
+async function removeHost(pattern) {
+    await chrome.permissions.remove({ origins: [pattern] });
+    await renderSites();
 }
 
-async function checkNow() {
-    els.checkNowBtn.disabled = true;
-    els.statusLine.textContent = 'Checking for updates…';
-    try {
-        const state = await send({ type: 'update:checkNow' });
-        if (state && state.ok) render(state);
-    } finally {
-        els.checkNowBtn.disabled = false;
+els.addHostForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const pattern = normalizeHostPattern(els.hostInput.value);
+    if (!pattern) {
+        showError('Enter an https host, for example gitlab.mycompany.com');
+        return;
     }
-}
-
-async function setEnabled(enabled) {
-    const state = await send({ type: 'update:setEnabled', enabled });
-    if (state && state.ok) render(state);
-}
-
-function copyCommand() {
-    const text = els.gitPull.textContent;
-    navigator.clipboard.writeText(text).then(() => {
-        const prev = els.copyCmd.textContent;
-        els.copyCmd.textContent = 'copied';
-        setTimeout(() => { els.copyCmd.textContent = prev; }, 1500);
-    }).catch(() => {});
-}
-
-els.checkNowBtn.addEventListener('click', checkNow);
-els.autoCheck.addEventListener('change', () => setEnabled(els.autoCheck.checked));
-els.copyCmd.addEventListener('click', copyCommand);
-els.reloadBtn.addEventListener('click', () => send({ type: 'update:reload' }));
-els.downloadLink.addEventListener('click', e => {
-    e.preventDefault();
-    const url = els.downloadLink.dataset.url;
-    if (url) send({ type: 'update:openUrl', url });
-});
-els.feedbackLink.addEventListener('click', e => {
-    e.preventDefault();
-    const url = els.feedbackLink.dataset.url;
-    if (url) send({ type: 'update:openUrl', url });
+    showError('');
+    // Chrome grants the permission only while the user gesture is live, so the
+    // request must be issued in this same task — nothing is awaited before it.
+    chrome.permissions.request({ origins: [pattern] })
+        .then(granted => {
+            if (granted) {
+                els.hostInput.value = '';
+            }
+            return renderSites();
+        })
+        .catch(e => showError(String((e && e.message) || e)));
 });
 
-refresh();
+els.currentVersion.textContent = `v${chrome.runtime.getManifest().version}`;
+els.feedbackLink.href = FEEDBACK_URL;
+renderSites();
