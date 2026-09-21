@@ -31,6 +31,6 @@ labels: ''
 
 <!-- Optional. The 💬 button attaches the tail of the differ tab's console. -->
 
----
-No diagram or XML content is ever included automatically. A log can still
-contain file paths, branch names and your host — review it before submitting.
+<!-- The diagram file itself is never attached automatically. A log can still
+     contain file paths, branch names, your host and identifiers from the diagram
+     (process and element ids, topic names) — review it before submitting. -->

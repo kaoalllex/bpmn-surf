@@ -97,6 +97,13 @@ describe('FeedbackReport.buildBody', () => {
         assert.ok(!out.includes('debug lines dropped'), out);
     });
 
+    it('addresses the privacy notice to the submitter, not to the published issue', () => {
+        // A comment: plainly visible in GitHub's new-issue form, gone once posted.
+        assert.ok(body.includes('<!-- The diagram file itself is never attached.'), body);
+        assert.ok(body.includes('identifiers from the'), body);
+        assert.ok(body.trimEnd().endsWith('-->'), body);
+    });
+
     it('escapes a pipe so a ref cannot break the context table', () => {
         const out = FeedbackReport.buildBody({ ...context, sourceLabel: 'wip|hack' }, emptyLog);
         assert.ok(out.includes('wip\\|hack'), out);

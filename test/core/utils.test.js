@@ -217,6 +217,27 @@ describe('console log ring (FEAT-0024)', () => {
         assert.ok(text.includes(' 29'), 'the newest line must survive');
     });
 
+    it('keeps an info line wherever it sits — every one of them reports a miss', () => {
+        const scope = ringScope();
+        scope.window.console.info('cannot find bpmn file path by process id: Call1');
+        for (let i = 0; i < 80; i++) {
+            scope.window.console.debug('chatter-' + i);
+        }
+        const { text } = scope.getConsoleLogTail({ maxLines: 10, maxChars: 4000 });
+        assert.ok(text.includes('cannot find bpmn file path by process id: Call1'), text);
+    });
+
+    it('strips the extension origin from stack frames', () => {
+        const scope = ringScope();
+        const error = new scope.window.Error('boom');
+        error.stack = 'Error: boom\n'
+            + '    at loadFileContent (chrome-extension://nhjcomblkinhdfgedpbanobjllkibloo/src/core/utils.js:65:15)';
+        scope.window.console.warn('request failed', error);
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(!text.includes('chrome-extension://'), text);
+        assert.ok(text.includes('at loadFileContent (src/core/utils.js:65:15)'), text);
+    });
+
     it('records uncaught errors that never reach console.*', () => {
         const scope = ringScope();
         scope.window.dispatchEvent(new scope.window.ErrorEvent('error', { message: 'uncaught boom' }));
@@ -249,11 +270,13 @@ describe('describeDifferParams (FEAT-0024)', () => {
         extensionVersion: '1.2.0'
     };
 
-    it('keeps the fields that identify the tab', () => {
-        const described = describeDifferParams(rawParams);
+    it('keeps the fields that identify the tab, with refs shortened', () => {
+        const described = describeDifferParams({ ...rawParams, sourceRef: '90a2e87c4163d33e56c6a5741eb467161efb54f7' });
         assert.equal(described.platform, 'gitlab');
         assert.equal(described.host, 'https://gitlab.example.com');
-        assert.equal(described.sourceRef, 'mr-sha');
+        // The full sha is already in the report's links; here it only crowds out
+        // the rest of the line, which is capped.
+        assert.equal(described.sourceRef, '90a2e87c');
         assert.equal(described.targetRef, 'base-sha');
         assert.equal(described.changeRequestId, '123');
         assert.equal(described.filePath, 'src/process.bpmn');

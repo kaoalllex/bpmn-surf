@@ -142,7 +142,7 @@ object with XML and asserts it does not surface.
 The log comes from a 200-line ring in `utils.js`, filled by the existing
 `appendTimeToConsoleLogs()` proxy plus `error`/`unhandledrejection` listeners. The tail
 is two-tier: the last N lines of any level (the narrative around the button press) plus
-every buffered `warn`/`error`/`uncaught`/`unhandled-rejection`, wherever it sits, with
+every buffered `info`/`warn`/`error`/`uncaught`/`unhandled-rejection`, wherever it sits, with
 `… N lines skipped` on the joins. A plain tail was the wrong shape — live `console.debug`
 calls outnumber `warn`+`error` 99 to 65, so a quiet ending regularly pushed the single
 warning that explains the report out of the window before the URL budget ever saw it. Two

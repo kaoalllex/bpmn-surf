@@ -49,9 +49,13 @@ class FeedbackReport {
             '',
             ...FeedbackReport.#logSection(logTail),
             '',
-            '---',
-            'No diagram or XML content is included. The log above can still contain file',
-            'paths, branch names and your host — review it before submitting.'
+            // Addressed to whoever is about to press Submit, so it is a comment:
+            // GitHub's new-issue form shows it plainly, and the published issue
+            // does not carry a privacy notice nobody needs any more.
+            '<!-- The diagram file itself is never attached. The log above can still',
+            '     contain file paths, branch names, your host and identifiers from the',
+            '     diagram (process and element ids, topic names) — review it, and edit',
+            '     or delete anything you would rather not share. -->'
         ].join('\n');
     }
 

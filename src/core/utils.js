@@ -158,7 +158,11 @@ function formatLogArg(arg) {
     let text;
     let limit = CONSOLE_MAX_ARG_CHARS;
     if (arg instanceof Error) {
-        text = arg.stack || `${arg.name}: ${arg.message}`;
+        // Every frame is prefixed with chrome-extension://<32-char id>/, which is
+        // 52 characters of nothing — about a quarter of the budget over four
+        // frames. The repo-relative path is what a reader needs.
+        text = (arg.stack || `${arg.name}: ${arg.message}`)
+            .replace(/chrome-extension:\/\/[a-z]+\//g, '');
         limit = CONSOLE_MAX_ERROR_CHARS;
     } else if (typeof arg === 'string') {
         text = arg;
@@ -186,8 +190,10 @@ function callSiteFromStack(stack) {
 }
 
 // The levels worth keeping wherever they sit in the buffer, as opposed to the
-// narrative around the moment the report was raised.
-const CONSOLE_SIGNAL_LEVELS = new Set(['warn', 'error', 'uncaught', 'unhandled-rejection']);
+// narrative around the moment the report was raised. `info` is in: every one of
+// its call sites reports that something the user asked for was not found, which
+// is usually the conclusion a report is about.
+const CONSOLE_SIGNAL_LEVELS = new Set(['info', 'warn', 'error', 'uncaught', 'unhandled-rejection']);
 
 // The rendered line keeps the level in its text (`12:00:00.000 warn [file.js:12]: …`),
 // which FeedbackReport reads back to decide what to shed under the URL budget.
@@ -248,8 +254,8 @@ function describeDifferParams(rawParams) {
         platform: rawParams.platform && rawParams.platform.kind,
         host: rawParams.platform && rawParams.platform.hostUrl,
         changeRequestId: rawParams.changeRequestId,
-        sourceRef: rawParams.sourceRef,
-        targetRef: rawParams.targetRef,
+        sourceRef: shortenCommitId(rawParams.sourceRef),
+        targetRef: shortenCommitId(rawParams.targetRef),
         filePath: rawParams.filePath,
         targetFilePath: rawParams.targetFilePath,
         mode: rawParams.mode,
