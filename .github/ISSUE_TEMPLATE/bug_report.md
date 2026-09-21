@@ -24,6 +24,9 @@ labels: ''
 | Compared |  |
 | Against |  |
 
+<!-- Comparing two versions gives a Compared/Against pair; viewing a single
+     version from a branch gives one `Version` row instead. -->
+
 ## Console log
 
 <!-- Optional. The 💬 button attaches the tail of the differ tab's console. -->

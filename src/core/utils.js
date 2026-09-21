@@ -147,13 +147,19 @@ const CONSOLE_RING_SIZE = 200;
 // objects, and an uncapped JSON.stringify would drop a moddle descriptor — or a
 // user's diagram XML — into the report.
 const CONSOLE_MAX_ARG_CHARS = 300;
+// An Error gets a larger budget: its message alone can fill the ordinary one (a
+// failed request repeats a long URL twice), leaving no stack frames — and the
+// frames are what locates the failure.
+const CONSOLE_MAX_ERROR_CHARS = 600;
 const consoleRing = [];
 let consoleRingInstalled = false;
 
 function formatLogArg(arg) {
     let text;
+    let limit = CONSOLE_MAX_ARG_CHARS;
     if (arg instanceof Error) {
         text = arg.stack || `${arg.name}: ${arg.message}`;
+        limit = CONSOLE_MAX_ERROR_CHARS;
     } else if (typeof arg === 'string') {
         text = arg;
     } else {
@@ -164,8 +170,8 @@ function formatLogArg(arg) {
             text = String(arg);
         }
     }
-    return text.length > CONSOLE_MAX_ARG_CHARS
-        ? `${text.slice(0, CONSOLE_MAX_ARG_CHARS)}…(+${text.length - CONSOLE_MAX_ARG_CHARS} chars)`
+    return text.length > limit
+        ? `${text.slice(0, limit)}…(+${text.length - limit} chars)`
         : text;
 }
 

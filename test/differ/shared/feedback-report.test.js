@@ -18,7 +18,8 @@ const context = {
     sourceLabel: 'feature/x',
     sourceUrl: 'https://gitlab.example.com/g/p/-/blob/mr-sha/src/process.bpmn',
     targetLabel: 'master',
-    targetUrl: 'https://gitlab.example.com/g/p/-/blob/base-sha/src/process.bpmn'
+    targetUrl: 'https://gitlab.example.com/g/p/-/blob/base-sha/src/process.bpmn',
+    sourceKind: 'ref'
 };
 
 const emptyLog = { text: '', omitted: 0 };
@@ -56,9 +57,31 @@ describe('FeedbackReport.buildBody', () => {
         assert.ok(!body.includes('edit mode'), body);
     });
 
-    it('says so when a side has no file', () => {
+    it('says a file is absent only when it really is — a side that exists but has no file', () => {
         const out = FeedbackReport.buildBody({ ...context, sourceUrl: null }, emptyLog);
-        assert.ok(out.includes('n/a (file absent on this side)'), out);
+        assert.ok(out.includes('feature/x — n/a (file absent on this side)'), out);
+    });
+
+    it('collapses a branch view to one Version row instead of an empty comparison', () => {
+        const out = FeedbackReport.buildBody(
+            { ...context, changeRequestId: undefined, sourceKind: 'none', sourceLabel: null, sourceUrl: null },
+            emptyLog);
+        assert.ok(out.includes(`| Version | master — ${context.targetUrl} |`), out);
+        assert.ok(!out.includes('| Compared |'), out);
+        assert.ok(!out.includes('| Against |'), out);
+        // The old rendering claimed a missing file and stacked three dashes.
+        assert.ok(!out.includes('file absent on this side'), out);
+        assert.ok(!out.includes('— —'), out);
+    });
+
+    it('names a local file as a local file, not as an absent one', () => {
+        const out = FeedbackReport.buildBody(
+            { ...context, sourceKind: 'local-file', sourceLabel: 'my-draft.bpmn', sourceUrl: null },
+            emptyLog);
+        assert.ok(out.includes('| Compared | local file "my-draft.bpmn" (not in the repository) |'), out);
+        assert.ok(!out.includes('file absent on this side'), out);
+        // The repository side is still a normal link.
+        assert.ok(out.includes(`| Against | master — ${context.targetUrl} |`), out);
     });
 
     it('marks the omitted and the dropped lines explicitly', () => {
@@ -77,6 +100,16 @@ describe('FeedbackReport.buildBody', () => {
     it('escapes a pipe so a ref cannot break the context table', () => {
         const out = FeedbackReport.buildBody({ ...context, sourceLabel: 'wip|hack' }, emptyLog);
         assert.ok(out.includes('wip\\|hack'), out);
+    });
+});
+
+describe('FeedbackReport.sourceKindFor', () => {
+    it('reads the source side off the params', () => {
+        assert.equal(FeedbackReport.sourceKindFor({ sourceRef: 'mr-sha' }), 'ref');
+        assert.equal(FeedbackReport.sourceKindFor({ sourceRef: null }), 'none');
+        assert.equal(
+            FeedbackReport.sourceKindFor({ sourceRef: null, localFileContent: '<xml/>' }),
+            'local-file');
     });
 });
 

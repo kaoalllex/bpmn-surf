@@ -240,6 +240,7 @@ class DmnDiffer {
             changeRequestId: this.#params.changeRequestId,
             fileName: this.#params.fileName,
             fileType: 'DMN',
+            sourceKind: FeedbackReport.sourceKindFor(this.#params),
             sourceLabel: this.#params.sourceLabel,
             sourceUrl: this.#shownFileFor(false).url,
             targetLabel: this.#params.targetLabel,

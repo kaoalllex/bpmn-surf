@@ -144,6 +144,18 @@ describe('console log ring (FEAT-0024)', () => {
         assert.ok(!text.includes('[object Object]'), text);
     });
 
+    it('gives an Error more room than an ordinary argument, so stack frames survive', () => {
+        const scope = ringScope();
+        const error = new scope.window.Error('x'.repeat(280));
+        error.stack = `Error: ${'x'.repeat(280)}\n` + '    at someFrame (file.js:1:1)\n'.repeat(20);
+        scope.window.console.warn('request failed', error);
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.includes('at someFrame'), 'the cap must leave room for frames');
+        assert.match(text, /…\(\+\d+ chars\)$/);
+        // Still capped, just at the larger Error budget.
+        assert.ok(text.length < 800, 'length ' + text.length);
+    });
+
     it('caps a single huge argument so a moddle or a diagram cannot land in the ring', () => {
         const scope = ringScope();
         scope.window.console.debug('params', { localFileContent: '<bpmn:definitions>'.repeat(500) });

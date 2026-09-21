@@ -125,8 +125,13 @@ Git history keeps the full sketch if the idea ever returns.
 v1 shipped — surface 2 done, the task closes.
 
 `FeedbackReport` (`src/differ/shared/feedback-report.js`, pure) builds the prefilled
-issue: title, a Context table (extension version, platform kind + host, page, file +
-type, both compared labels and blob links) and the console tail in a `<details>` block.
+issue: title, a Context table (extension version, platform kind + host, page including
+edit mode, file + type, and the versions) and the console tail in a `<details>` block.
+The source side has three states that a first real report showed being conflated into
+one misleading row: a branch view has no second side (now one `Version` row, not a
+`Compared` row claiming a missing file), a local-file comparison is present but has no
+repository URL (now named as a local file), and only an added/deleted file in a merge
+request is genuinely "absent on this side".
 The budget is on the **whole URL** (7000 chars, GitHub 414s around 8 KB), so the log
 sheds lines until it fits — debug chatter first, wherever it sits, because a warning or
 a stack trace is worth more to a reader than the debug line before it. Both markers are

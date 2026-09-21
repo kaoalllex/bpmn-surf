@@ -9,6 +9,15 @@
 class FeedbackReport {
     static ISSUE_TEMPLATE = 'bug_report.md';
 
+    // What the diff's source side actually is. The three cases render very
+    // differently and conflating them makes the report lie: a branch view has no
+    // second side at all, and a local file is present but has no URL in the
+    // repository — neither is "the file is absent on this side", which is the
+    // genuine third case (a file added or deleted in the merge request).
+    static SOURCE_REF = 'ref';
+    static SOURCE_LOCAL_FILE = 'local-file';
+    static SOURCE_NONE = 'none';
+
     // GitHub answers 414 to a prefilled issue URL somewhere around 8 KB. Stay
     // clear of the cliff — the log is what gets trimmed to fit.
     static MAX_URL_LENGTH = 7000;
@@ -34,8 +43,7 @@ class FeedbackReport {
             `| Platform | ${FeedbackReport.#cell(context.platformKind)} · ${FeedbackReport.#cell(context.hostUrl)} |`,
             `| Page | ${FeedbackReport.#pageDescription(context)} |`,
             `| File | ${FeedbackReport.#cell(context.fileName)} (${FeedbackReport.#cell(context.fileType)}) |`,
-            `| Compared | ${FeedbackReport.#side(context.sourceLabel, context.sourceUrl)} |`,
-            `| Against | ${FeedbackReport.#side(context.targetLabel, context.targetUrl)} |`,
+            ...FeedbackReport.#comparisonRows(context),
             '',
             '## Console log',
             '',
@@ -115,6 +123,34 @@ class FeedbackReport {
         return context.editSide
             ? `${page} — **edit mode**, editing the ${FeedbackReport.#cell(context.editSide)} side`
             : page;
+    }
+
+    // Which side is which, told as the reader needs it rather than as the params
+    // happen to be shaped.
+    static sourceKindFor({ localFileContent, sourceRef }) {
+        if (localFileContent) {
+            return FeedbackReport.SOURCE_LOCAL_FILE;
+        }
+        return sourceRef ? FeedbackReport.SOURCE_REF : FeedbackReport.SOURCE_NONE;
+    }
+
+    static #comparisonRows(context) {
+        if (context.sourceKind === FeedbackReport.SOURCE_NONE) {
+            // One version on screen and nothing to compare it with; a
+            // Compared/Against pair here reads as if a side had gone missing.
+            return [`| Version | ${FeedbackReport.#side(context.targetLabel, context.targetUrl)} |`];
+        }
+        return [
+            `| Compared | ${FeedbackReport.#sourceSide(context)} |`,
+            `| Against | ${FeedbackReport.#side(context.targetLabel, context.targetUrl)} |`
+        ];
+    }
+
+    static #sourceSide(context) {
+        if (context.sourceKind === FeedbackReport.SOURCE_LOCAL_FILE) {
+            return `local file "${FeedbackReport.#cell(context.sourceLabel)}" (not in the repository)`;
+        }
+        return FeedbackReport.#side(context.sourceLabel, context.sourceUrl);
     }
 
     static #side(label, url) {

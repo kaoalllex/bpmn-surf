@@ -46,7 +46,7 @@ test('BPMN differ: the feedback button opens a prefilled issue', async ({ page }
     expect(body).not.toContain('bpmn:definitions');
 });
 
-test('BPMN differ: a branch-only tab reports no merge request and no compared side', async ({ page }) => {
+test('BPMN differ: a branch-only tab reports one version, not a half-empty comparison', async ({ page }) => {
     wireDiagnostics(page);
     const { defaultBpmnParams } = require('./support/boot-differ.js');
     await bootBpmnDiffer(page, {
@@ -55,7 +55,30 @@ test('BPMN differ: a branch-only tab reports no merge request and no compared si
 
     const { body } = await pressFeedback(page);
     expect(body).toContain('branch view (no merge request)');
-    expect(body).toContain('n/a (file absent on this side)');
+    expect(body).toContain('| Version | master — http://localhost/blob/base-sha/diagram.bpmn |');
+    expect(body).not.toContain('| Compared |');
+    // The old rendering claimed a missing file and stacked three dashes.
+    expect(body).not.toContain('file absent on this side');
+    expect(body).not.toContain('— —');
+});
+
+test('BPMN differ: a local-file comparison is named as one, not as a missing file', async ({ page }) => {
+    wireDiagnostics(page);
+    const { defaultBpmnParams, read } = require('./support/boot-differ.js');
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({
+            sourceRef: null,
+            sourceLabel: 'my-draft.bpmn',
+            localFileContent: read('test/e2e/fixtures/added-task.bpmn')
+        })
+    });
+
+    const { body } = await pressFeedback(page);
+    expect(body).toContain('| Compared | local file "my-draft.bpmn" (not in the repository) |');
+    expect(body).toContain('| Against | master — http://localhost/blob/base-sha/diagram.bpmn |');
+    expect(body).not.toContain('file absent on this side');
+    // The local file's own content is never quoted back.
+    expect(body).not.toContain('bpmn:definitions');
 });
 
 test('DMN differ: the feedback button opens a prefilled issue', async ({ page }) => {

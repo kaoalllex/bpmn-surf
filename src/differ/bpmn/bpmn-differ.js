@@ -690,6 +690,7 @@ class BpmnDiffer {
             editSide: this.#isEditMode() ? this.#params.editSide : null,
             fileName: this.#params.fileName,
             fileType: 'BPMN',
+            sourceKind: FeedbackReport.sourceKindFor(this.#params),
             sourceLabel: this.#params.sourceLabel,
             sourceUrl: this.#shownFileFor(false).url,
             targetLabel: this.#params.targetLabel,
