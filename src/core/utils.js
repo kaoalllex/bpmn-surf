@@ -179,27 +179,58 @@ function callSiteFromStack(stack) {
     return match ? ` [${match[1]}:${match[2]}]` : '';
 }
 
+// The levels worth keeping wherever they sit in the buffer, as opposed to the
+// narrative around the moment the report was raised.
+const CONSOLE_SIGNAL_LEVELS = new Set(['warn', 'error', 'uncaught', 'unhandled-rejection']);
+
+// The rendered line keeps the level in its text (`12:00:00.000 warn [file.js:12]: …`),
+// which FeedbackReport reads back to decide what to shed under the URL budget.
 function recordConsoleLine(timestamp, level, args, site = '') {
-    consoleRing.push(`${timestamp} ${level}${site}: ${args.map(formatLogArg).join(' ')}`);
+    consoleRing.push({
+        level,
+        line: `${timestamp} ${level}${site}: ${args.map(formatLogArg).join(' ')}`
+    });
     if (consoleRing.length > CONSOLE_RING_SIZE) {
         consoleRing.shift();
     }
 }
 
-// The last lines of this page's console, oldest first, within both budgets.
-// `omitted` counts the buffered lines the tail dropped, so the report can say so.
-function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
-    const lines = consoleRing.slice(-maxLines);
-    let omitted = consoleRing.length - lines.length;
-    while (lines.length > 1 && lines.join('\n').length > maxChars) {
-        lines.shift();
-        omitted++;
+// Picked entries, oldest first, with an explicit marker wherever the selection
+// jumped over buffered lines — so a reader never mistakes the join for a
+// continuous stream.
+function renderConsoleLines(picked) {
+    const out = [];
+    for (let i = 0; i < picked.length; i++) {
+        const skipped = i === 0 ? 0 : picked[i].index - picked[i - 1].index - 1;
+        if (skipped > 0) {
+            out.push(`… ${skipped} lines skipped`);
+        }
+        out.push(picked[i].line);
     }
-    let text = lines.join('\n');
+    return out.join('\n');
+}
+
+// The tail of this page's console, oldest first, within both budgets. Two tiers:
+// the last `maxLines` entries of any level (what was happening when the user
+// pressed the button) PLUS every signal line still buffered, wherever it sits.
+// Debug outnumbers warn/error about two to one, so a plain tail regularly drops
+// the single warning that explains the report and keeps 50 lines of chatter.
+// `omitted` counts the buffered lines before the first shown one; lines skipped
+// between shown ones are marked inline instead.
+function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
+    const recentFrom = Math.max(0, consoleRing.length - maxLines);
+    const picked = consoleRing
+        .map((entry, index) => ({ line: entry.line, index }))
+        .filter(({ index }) => index >= recentFrom || CONSOLE_SIGNAL_LEVELS.has(consoleRing[index].level));
+
+    while (picked.length > 1 && renderConsoleLines(picked).length > maxChars) {
+        picked.shift();
+    }
+    let text = renderConsoleLines(picked);
     if (text.length > maxChars) {
         text = text.slice(-maxChars);
     }
-    return { text, omitted };
+    return { text, omitted: picked.length ? picked[0].index : consoleRing.length };
 }
 
 // What is safe to log about the params a differ tab was opened with. The raw

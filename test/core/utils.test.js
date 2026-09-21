@@ -162,6 +162,49 @@ describe('console log ring (FEAT-0024)', () => {
         assert.ok(omitted > 0);
     });
 
+    it('keeps a warning that fell out of the recent window, and marks the gap', () => {
+        const scope = ringScope();
+        scope.window.console.warn('the one warning that explains everything');
+        for (let i = 0; i < 120; i++) {
+            scope.window.console.debug('chatter-' + i);
+        }
+        const { text, omitted } = scope.getConsoleLogTail({ maxLines: 10, maxChars: 4000 });
+
+        // Tier 2: the warning survives although 120 lines of debug followed it.
+        assert.ok(text.includes('the one warning that explains everything'), text);
+        // Tier 1: the ten most recent lines, whatever their level.
+        assert.ok(text.includes('chatter-119'), text);
+        assert.ok(text.includes('chatter-110'), text);
+        // Everything between the two tiers is gone, and says so rather than
+        // letting the join read as one continuous stream.
+        assert.ok(!text.includes('chatter-5 '), text);
+        assert.ok(text.includes('… 110 lines skipped'), text);
+        // Nothing precedes the warning in the buffer, so nothing is omitted at the head.
+        assert.equal(omitted, 0);
+    });
+
+    it('does not repeat a signal line that is already in the recent window', () => {
+        const scope = ringScope();
+        for (let i = 0; i < 5; i++) {
+            scope.window.console.debug('chatter-' + i);
+        }
+        scope.window.console.error('boom once');
+        const { text } = scope.getConsoleLogTail({ maxLines: 10, maxChars: 4000 });
+        assert.equal(text.split('boom once').length - 1, 1, text);
+        assert.ok(!text.includes('lines skipped'), text);
+    });
+
+    it('drops debug from the head under the character budget but keeps the signals', () => {
+        const scope = ringScope();
+        scope.window.console.warn('early warning');
+        for (let i = 0; i < 30; i++) {
+            scope.window.console.debug('x'.repeat(100) + ' ' + i);
+        }
+        const { text } = scope.getConsoleLogTail({ maxLines: 50, maxChars: 600 });
+        assert.ok(text.length <= 600, 'length ' + text.length);
+        assert.ok(text.includes(' 29'), 'the newest line must survive');
+    });
+
     it('records uncaught errors that never reach console.*', () => {
         const scope = ringScope();
         scope.window.dispatchEvent(new scope.window.ErrorEvent('error', { message: 'uncaught boom' }));
