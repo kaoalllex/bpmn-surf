@@ -23,7 +23,11 @@
     </main>
 
     <section class="pu-sites">
-        <h2 class="pu-section-title">Sites</h2>
+        <h2 class="pu-section-title">
+            Sites
+            <span class="pu-help" tabindex="0" role="note"
+                  title="Chrome asks you to allow access to the site you add.&#10;Tabs that are already open need a reload before the buttons appear there.&#10;A site you remove here can stay listed in chrome://extensions &#8594; Site access: Chrome keeps that record, the extension no longer runs there.">?</span>
+        </h2>
         <ul class="pu-site-list" id="siteList"></ul>
         <form class="pu-add" id="addHostForm">
             <input type="text" id="hostInput" class="pu-input" placeholder="gitlab.mycompany.com"
@@ -31,10 +35,6 @@
             <button type="submit" class="pu-primary">Add</button>
         </form>
         <div class="pu-error hidden" id="hostError"></div>
-        <p class="pu-note">
-            Chrome asks for access to the site you add. Tabs that are already open
-            need a reload before the buttons show up there.
-        </p>
     </section>
 
     <section class="pu-feedback">

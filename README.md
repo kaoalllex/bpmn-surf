@@ -30,8 +30,9 @@ add the host from the extension popup — no file editing:
 4. Reload the GitLab tabs you already had open
 
 Only `https` hosts are accepted. The host is kept as a Chrome permission, so it survives
-updates and re-installs; remove it with the `×` next to it in the popup (or in
-`chrome://extensions` → Details → Site access).
+updates and re-installs; remove it with the `×` next to it in the popup. Chrome may keep
+showing a removed host under `chrome://extensions` → Details → Site access — that record is
+its own, the extension no longer runs there.
 
 ## Features
 

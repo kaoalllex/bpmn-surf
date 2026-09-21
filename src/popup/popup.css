@@ -93,6 +93,8 @@ button:hover { background: var(--pu-accent-dim); }
 .pu-sites { padding: 0 18px 4px; }
 
 .pu-section-title {
+    display: flex;
+    align-items: center;
     margin: 0 0 8px;
     font-size: 12px;
     font-weight: 600;
@@ -100,6 +102,25 @@ button:hover { background: var(--pu-accent-dim); }
     letter-spacing: 1.2px;
     color: var(--pu-muted);
 }
+
+/* Native tooltip on a `?` badge: the hint is long and only needed once. */
+.pu-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    margin-left: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--pu-muted);
+    border: 1px solid var(--pu-border);
+    border-radius: 50%;
+    cursor: help;
+}
+.pu-help:hover,
+.pu-help:focus { color: var(--pu-accent); border-color: var(--pu-accent); outline: none; }
 
 .pu-site-list { list-style: none; margin: 0 0 10px; padding: 0; }
 
@@ -152,7 +173,6 @@ button:hover { background: var(--pu-accent-dim); }
 .pu-primary:hover { background: #6BB0F2; }
 
 .pu-error { margin-top: 6px; font-size: 12px; color: #F2A0A0; }
-.pu-note { margin: 8px 0 0; font-size: 11.5px; color: var(--pu-muted); }
 
 /* ---- Feedback link (AdGuard "How to enhance protection" slot) ---- */
 .pu-feedback {
