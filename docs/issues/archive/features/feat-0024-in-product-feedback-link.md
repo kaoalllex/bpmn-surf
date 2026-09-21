@@ -2,7 +2,7 @@
 id: FEAT-0024
 title: In-product feedback link (explicit, context-prefilled)
 priority: medium
-status: partial
+status: done
 ---
 
 ## Statement
@@ -17,12 +17,13 @@ Surfaces to add the link to (by ROI):
 
 1. ✅ **Popup footer** — the persistent home: the "Leave feedback" link next to the
    version (shipped 2026-09-12).
-2. ⬜ **Differ toolbar** — a small "💬" affordance in the toolbar's right block.
-   Contextual: the user is looking at a diagram, hits a wrong diff → one click.
-   Captures feedback at the moment of friction. **This is what v1 below builds.**
-3. ⬜ **Empty / error state** — when a diff fails to build or the entry button cannot
-   find its container ([BUG-0031]): "something off? tell us". Turns failures into
-   signal. Deliberately out of v1.
+2. ✅ **Differ toolbar** — the "💬" button in the toolbar's right block, on both the
+   BPMN and the DMN differ (shipped 2026-09-21). Contextual: the user is looking at a
+   diagram, hits a wrong diff → one click. Captures feedback at the moment of friction.
+3. ❌ **Empty / error state** — when a diff fails to build or the entry button cannot
+   find its container ([BUG-0031]): "something off? tell us". **Dropped**, not deferred:
+   the 💬 button is present in every differ state (including the empty ones) and badges
+   itself on an uncaught failure, which covers the same moment without a second surface.
 4. ✅ **README** — a one-line pointer (the Issues link in the README's links list).
 
 **Prefill context** into the link: extension version, platform + host, file name and
@@ -118,6 +119,60 @@ Git history keeps the full sketch if the idea ever returns.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-21 · claude-opus-5 · branch `feature/feat-0024-differ-feedback`
+
+v1 shipped — surface 2 done, the task closes.
+
+`FeedbackReport` (`src/differ/shared/feedback-report.js`, pure) builds the prefilled
+issue: title, a Context table (extension version, platform kind + host, page, file +
+type, both compared labels and blob links) and the console tail in a `<details>` block.
+The budget is on the **whole URL** (7000 chars, GitHub 414s around 8 KB), so the log
+sheds lines until it fits — debug chatter first, wherever it sits, because a warning or
+a stack trace is worth more to a reader than the debug line before it. Both markers are
+explicit: `… N earlier lines omitted` / `… N debug lines dropped to fit the URL`.
+Schema/XML content is never in the body — pinned by a test that pollutes the context
+object with XML and asserts it does not surface.
+
+The log comes from a 200-line ring in `utils.js`, filled by the existing
+`appendTimeToConsoleLogs()` proxy plus `error`/`unhandledrejection` listeners. Two
+additions beyond the agreed plan, both because the first readers of these logs will be
+AI agents triaging a report:
+
+- **Call site per line** (`12:00:00.000 warn [handler-navigator.js:125]: …`), derived
+  from the proxy's own stack. Without it a reader cannot locate the code: e.g.
+  `'cannot find overlay element by id: '` is logged verbatim from three navigators.
+- **`describeDifferParams()`**, because `console.debug('diff params: ', rawParams)` in
+  both orchestrators dumped the whole camunda moddle (~100 KB) and, in local-file mode,
+  the user's own diagram XML. That was a live privacy leak into any report, and it also
+  ate the entire log budget. Arguments are additionally capped at 300 chars.
+
+`extensionVersion` travels on `DifferParams` (and through nested/edit params), filled by
+`DiffParamsBuilder`, which now takes it via the constructor rather than reading `chrome.*`
+itself — the differ page has no `chrome.*`. `config.js` joined the differ-page registries,
+since `FEEDBACK_URL` is read there.
+
+The button badges itself (one pulse, then a static red dot) on an uncaught error or a
+rejected promise — **not** on `console.error`, which dmn-js emits on every single load
+([INFRA-0001]); that trigger would cry wolf on every DMN diff. Pinned by a test that
+fires `console.error` and asserts the button stays clean.
+
+Alongside, a UX change the toolbar asked for: `Hide properties` was the only text button
+in the right half and its width changed as the label flipped. It is now a `◨`/`◻` icon
+carrying the action as its `aria-label`, moved next to 💬, so view and edit mode end the
+same way — panel toggle · feedback · close. Two e2e specs updated to locate it by name.
+
+`registries.test.js` gained a duplicate-path guard after this work introduced one that
+every existing check happily ignored.
+
+**Dropped, not deferred:** surface 3 (empty/error state — see above), `mailto:` (the
+GitHub issue form is the preview and the private-report argument died with the move to a
+public tracker), and the cross-scope console tail via `window.opener` (needs its own
+message round-trip; nothing so far shows the differ's own buffer is insufficient).
+
+Tests: `npm test` 1180 green, `npm run test:e2e` 146 green. Every new test was observed
+failing under a targeted mutation, including one guard that could not fail
+(`Set.add` returns the Set, so a duplicate filter was always empty) — caught by that pass.
 
 ### 2026-09-21 · claude-opus-5 · branch `docs/feat-0024-refresh`
 
