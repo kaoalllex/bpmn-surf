@@ -345,6 +345,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js', doc, getResourceUrlByNameFunc);
 
     await addStylesheet('src/differ/styles.css', doc, getResourceUrlByNameFunc);
+    await addScript('src/core/config.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/utils.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/diff-type.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/condition-formatter.js', doc, getResourceUrlByNameFunc);
@@ -382,6 +383,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/shared/differ-loading-overlay.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-empty-state.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-tab-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/feedback-report.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/back-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/dmn/dmn-table-viewport.js', doc, getResourceUrlByNameFunc);

@@ -69,6 +69,7 @@
         {
             "resources": [
                 "src/content/main.js",
+                "src/core/config.js",
                 "src/core/utils.js",
                 "src/differ/shared/diff-type.js",
                 "src/differ/bpmn/condition-formatter.js",
@@ -106,6 +107,7 @@
                 "src/differ/shared/differ-loading-overlay.js",
                 "src/differ/shared/differ-empty-state.js",
                 "src/differ/shared/differ-tab-navigator.js",
+                "src/differ/shared/feedback-report.js",
                 "src/differ/bpmn/bpmn-differ-view.js",
                 "src/differ/navigation/back-navigator.js",
                 "src/differ/dmn/dmn-table-viewport.js",
