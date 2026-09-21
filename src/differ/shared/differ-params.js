@@ -43,6 +43,11 @@ class DifferParams {
 
         this.camundaBpmnModdle = params.camundaBpmnModdle;
 
+        // FEAT-0024: the differ page has no chrome.*, so the version the feedback
+        // report quotes travels in the params. Undefined in a tab opened before
+        // the field existed, and in the e2e harness.
+        this.extensionVersion = params.extensionVersion;
+
         // FEAT-0023, dive-in (down): the calling diagram we dived in FROM, whose
         // tab is still open above us — { filePath, fileName } or null. Set only
         // when opened by diving into a Call Activity, NOT when stepping up to a
@@ -133,6 +138,7 @@ class DifferParams {
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: this.camundaBpmnModdle,
+            extensionVersion: this.extensionVersion,
             ...extra
         };
     }
@@ -161,6 +167,7 @@ class DifferParams {
             filePath: this.filePath,
             targetFilePath: this.targetFilePath,
             fileName: this.fileName,
+            extensionVersion: this.extensionVersion,
             camundaBpmnModdle: this.camundaBpmnModdle,
             mode: DifferParams.MODE_EDIT,
             editSide: editSide

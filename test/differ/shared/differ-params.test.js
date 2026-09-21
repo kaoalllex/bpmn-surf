@@ -225,3 +225,22 @@ describe('DifferParams', () => {
         assert.equal(p.toEditDifferParams('source').localFileContent, '<xml/>');
     });
 });
+
+describe('DifferParams.extensionVersion (FEAT-0024)', () => {
+    const params = new DifferParams({
+        platform: { projectUrl: 'https://host/p' },
+        targetRef: 'base-sha',
+        filePath: 'a/process.bpmn',
+        fileName: 'process.bpmn',
+        extensionVersion: '1.2.0'
+    });
+
+    it('is exposed on the params', () => {
+        assert.equal(params.extensionVersion, '1.2.0');
+    });
+
+    it('travels into nested and edit params, so a dived-into tab still reports it', () => {
+        assert.equal(params.toNestedDifferParams('b/other.bpmn', 'other.bpmn').extensionVersion, '1.2.0');
+        assert.equal(params.toEditDifferParams(DifferParams.EDIT_SIDE_SOURCE).extensionVersion, '1.2.0');
+    });
+});

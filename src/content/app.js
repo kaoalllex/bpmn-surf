@@ -26,7 +26,7 @@ class App {
         this.#moddleManager = new CamundaBpmnModdleManager();
         this.#pageReloader = new PageReloader();
         this.#fileTypeDetector = new FileTypeDetector();
-        this.#diffParamsBuilder = new DiffParamsBuilder();
+        this.#diffParamsBuilder = new DiffParamsBuilder(chrome.runtime.getManifest().version);
     }
 
     /**

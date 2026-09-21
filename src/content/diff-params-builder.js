@@ -10,6 +10,15 @@
  *    not leak into the core.
  */
 class DiffParamsBuilder {
+    #extensionVersion;
+
+    // The version is injected rather than read from chrome.* here, so the builder
+    // stays a pure function of its inputs; the differ page needs it because it has
+    // no chrome.* of its own (FEAT-0024).
+    constructor(extensionVersion) {
+        this.#extensionVersion = extensionVersion;
+    }
+
     /**
      * Params for diff mode (Merge Request: source ref vs target ref).
      */
@@ -42,7 +51,8 @@ class DiffParamsBuilder {
             targetLabel: targetLabel,
             filePath: filePath,
             fileName: fileName,
-            camundaBpmnModdle: camundaBpmnModdle
+            camundaBpmnModdle: camundaBpmnModdle,
+            extensionVersion: this.#extensionVersion
         };
     }
 
