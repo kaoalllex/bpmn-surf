@@ -95,6 +95,8 @@ async function bootBpmnDiffer(page, { params = defaultBpmnParams(), fixtures = B
     await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
     await page.evaluate(async ({ params, fixtures }) => {
         const client = new FakePlatformClient(fixtures);
+        // Kept on window so a spec can inspect what the differ asked the platform for.
+        window.__platformClient = client;
         await new BpmnDiffer(params, client).show();
     }, { params, fixtures });
 }
@@ -113,6 +115,8 @@ async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN
     await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
     await page.evaluate(async ({ params, fixtures }) => {
         const client = new FakePlatformClient(fixtures);
+        // Kept on window so a spec can inspect what the differ asked the platform for.
+        window.__platformClient = client;
         await new DmnDiffer(params, client).show();
     }, { params, fixtures });
 }

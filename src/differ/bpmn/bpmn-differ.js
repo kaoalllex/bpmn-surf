@@ -710,9 +710,14 @@ class BpmnDiffer {
     // Commit/ref of the diagram version currently shown (for opening handler code
     // and for resolving a Call Activity's called process file).
     #getShownRef() {
-        return this.#branchIndicator.isTargetBranchShown()
-            ? this.#params.targetRef
-            : this.#params.sourceRef;
+        if (this.#branchIndicator.isTargetBranchShown()) {
+            return this.#params.targetRef;
+        }
+        // A local file has no ref in the repository (BUG-0033), so lookups against
+        // it fall back to the version it is being compared with. Returning null
+        // here builds `ref=null` URLs that 404, and only some of the consumers
+        // guard against it — this is the one place they all pass through.
+        return this.#params.sourceRef || this.#params.targetRef;
     }
 
     // FEAT-0031: edit mode lifts the BUG-0011/0014/0015 mutes for THIS tab only.

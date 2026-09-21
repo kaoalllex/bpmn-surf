@@ -260,9 +260,14 @@ class DmnDiffer {
     // Commit/ref of the decision version currently shown (for resolving the BPMN
     // files that call this decision, FEAT-0005).
     #getShownRef() {
-        return this.#branchIndicator.isTargetBranchShown()
-            ? this.#params.targetRef
-            : this.#params.sourceRef;
+        if (this.#branchIndicator.isTargetBranchShown()) {
+            return this.#params.targetRef;
+        }
+        // A local file has no ref in the repository (BUG-0033), so lookups against
+        // it fall back to the version it is being compared with. Returning null
+        // here builds `ref=null` URLs that 404, and only some of the consumers
+        // guard against it — this is the one place they all pass through.
+        return this.#params.sourceRef || this.#params.targetRef;
     }
 
     // The DMN XML of the version currently shown.
