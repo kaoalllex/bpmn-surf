@@ -347,10 +347,6 @@ class BpmnDiffer {
             onToggleEditColoring: () => this.#editSession.setColoringEnabled(
                 !this.#editSession.coloringEnabled)
         });
-        // Update notification (FEAT-0012): info comes raw in params from the
-        // content script (which read it from the service worker's state).
-        this.#view.setUpdateInfo(this.#rawParams.updateInfo);
-
         // Back navigation (FEAT-0023): default back to where we came from, plus a
         // picker of any diagram that calls this one (reverse blob-search, lazy).
         this.#backNavigator = new BackNavigator({

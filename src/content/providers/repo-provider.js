@@ -7,7 +7,7 @@ class RepoProvider {
      * platform kind is passed in (computed once by the caller via
      * detectPlatformKind) so the provider only compares it to its own kind —
      * it does not re-detect from globals.
-     * @param {string|null} platformKind the page's detected PLATFORM_KIND
+     * @param {string} platformKind the page's detected PLATFORM_KIND
      * @returns {boolean} true if the provider can work with the current page
      */
     isAvailable(platformKind) {

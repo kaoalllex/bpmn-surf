@@ -259,17 +259,6 @@
     opacity: 0.45;
 }
 
-/* update-available indicator (FEAT-0012) — accented, draws the eye without
-   shouting; only shown when a newer version is published */
-.differ-update-indicator {
-    border-color: hsl(212, 73%, 46%);
-    color: hsl(212, 73%, 46%);
-    font-weight: 600;
-}
-.differ-update-indicator:hover {
-    background-color: hsl(212, 73%, 96%);
-}
-
 /* back navigation control (FEAT-0023): split ⤴ button + ▾ caret with a
    dropdown of the diagrams that call this one. Anchored near the right edge
    (before Close), so the menu drops down aligned to the group's right. */
