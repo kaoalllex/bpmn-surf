@@ -15,28 +15,84 @@ never silent telemetry.
 
 Surfaces to add the link to (by ROI):
 
-1. **Popup footer** — the persistent home. The popup is already the "meta"
-   surface (updates, transparency); add a "Feedback / report a bug" link next to
-   the version.
-2. **Differ toolbar** — a small "💬 Feedback" affordance near the
-   `differ-update-indicator`. Contextual: the user is looking at a diagram, hits
-   a wrong diff → one click. Captures feedback at the moment of friction.
-3. **Empty / error state** — when a diff fails to build or the entry button
-   cannot find its container ([BUG-0003]): "something off? tell us". Turns
-   failures into signal.
-4. **README** — a one-line pointer.
+1. ✅ **Popup footer** — the persistent home: the "Leave feedback" link next to the
+   version (shipped 2026-09-12).
+2. ⬜ **Differ toolbar** — a small "💬" affordance in the toolbar's right block.
+   Contextual: the user is looking at a diagram, hits a wrong diff → one click.
+   Captures feedback at the moment of friction. **This is what v1 below builds.**
+3. ⬜ **Empty / error state** — when a diff fails to build or the entry button cannot
+   find its container ([BUG-0031]): "something off? tell us". Turns failures into
+   signal. Deliberately out of v1.
+4. ✅ **README** — a one-line pointer (the Issues link in the README's links list).
 
-**Prefill context** into the link: extension version, GitLab version, file type,
-URL pattern — but **never** schema content. Makes reports actionable and designs
-the same fields telemetry would eventually collect.
+**Prefill context** into the link: extension version, platform + host, file name and
+type, the compared refs, URL pattern, and a tail of the console log — but **never**
+schema content. Makes reports actionable and designs the same fields telemetry would
+eventually collect.
 
 ## Context
 
 - The channel is **GitHub Issues**: `FEEDBACK_URL` in `src/core/config.js` already
-  points at the repository's issue tracker. Still to do — an issue template, and a
-  `mailto:` as the low-friction path for private bug reports.
+  points at the repository's issue tracker. Still to do — an issue template (part of
+  v1); a `mailto:` for private reports is dropped (see the decisions below).
 - The feedback URL/email stays **configurable** (`src/core/config.js`) so the channel
   can move without code churn.
+
+### Decisions (agreed 2026-09-21) — v1 scope
+
+v1 is "the report at the moment of friction": one 💬 button in the differ toolbar that
+opens a **prefilled GitHub issue**, including the console log the session produced. No
+composer, no network call from the extension — `window.open` and nothing else.
+
+- **Surface**: the 💬 button lives in the differ toolbar's right block (before Close),
+  on **both** the BPMN and the DMN differ — the toolbar code is per-view, so both
+  `bpmn-differ-view.js` and `dmn-differ-view.js` get it (the shared-class rule).
+  The popup keeps its plain link; surfaces 3 (empty/error state) and `mailto:` are
+  deliberately out of v1.
+- **Prefill** via `…/issues/new?title=…&body=…`, with `template=` once the issue
+  template exists. Fields: extension version, platform kind + host, file name + type,
+  both compared refs/labels, the page URL pattern, and the console log tail. **Never**
+  schema or XML content.
+- **Console log — capture**: a bounded ring buffer fed from
+  `utils.js#appendTimeToConsoleLogs()`, which already proxies
+  `console.debug/info/warn/error` and is installed in all three scopes (`app.js`,
+  `bpmn-differ.js`, `dmn-differ.js`). `console.log` is not used anywhere in `src/`, and
+  because the proxy replaces the global methods, errors logged by bpmn-js/dmn-js land in
+  the buffer too. Add `window.onerror` and `unhandledrejection` into the same buffer —
+  the failures that matter most never go through `console.*`.
+- **Console log — scope**: only the buffer of the page the button was pressed on (the
+  differ's own). Pulling the content-script tail across `window.opener` is **deferred**
+  until a real report shows it is missing — it needs its own message round-trip.
+- **Budget**: the browser tolerates long URLs, GitHub does not — a prefilled issue URL
+  is rejected around 8 KB (414). So the *whole URL* is budgeted: the log goes last,
+  inside a `<details>` block, trimmed to roughly the last 50 lines / 4 KB with an
+  explicit `… N earlier lines omitted` marker. The buffer itself keeps more (~200 lines)
+  so the marker is honest.
+- **Privacy**: the GitHub issue form *is* the preview — the user sees the whole body and
+  edits or deletes anything before submitting, which satisfies the "visible preview of
+  exactly what will be sent" rule. The extension itself sends nothing. Logs may still
+  carry file paths, branch names and an internal host, so the body must make that
+  visible rather than bury it.
+- **Extension version on the differ page**: there is no `chrome.*` there, so the version
+  must travel in the differ params (`extensionVersion` on `DifferParams`, filled by the
+  content script from `chrome.runtime.getManifest().version`). The param channel that
+  used to carry `updateInfo` was removed with [FEAT-0012].
+- **Global state carve-out**: the differ page bans global mutable state. The ring buffer
+  is an accepted exception — write-only diagnostics with no effect on rendering, reachable
+  only through `getConsoleLogTail()`. Record the carve-out in `docs/conventions.md` when
+  implementing, so the next reader does not treat it as a violation.
+- **Closing**: when v1 ships the task goes to `done`, with surface 3, `mailto:` and the
+  cross-scope log tail recorded as dropped rather than pending.
+
+#### Affected files (expected)
+
+`src/core/utils.js` (ring buffer, error hooks, `getConsoleLogTail`), a new pure
+`src/differ/shared/feedback-report.js` (title/body/URL assembly + budgeting) with its
+registrations in `utils.js#loadScripts`, `manifest#web_accessible_resources` and
+`test/support/scope.js`; `src/differ/bpmn/bpmn-differ-view.js` and
+`src/differ/dmn/dmn-differ-view.js` (the button); `src/differ/shared/differ-params.js`
+plus `src/content/diff-params-builder.js` (the `extensionVersion` field);
+`.github/ISSUE_TEMPLATE/`; `docs/conventions.md` and `docs/architecture.md`.
 
 ### Relations
 
@@ -44,87 +100,36 @@ the same fields telemetry would eventually collect.
   predecessor: explicit, click-driven, same context fields. Telemetry stays
   deferred.
 - [UX-0009] — the relaunch this feedback loop serves.
-- [BUG-0003] — error-state surface ties into the "button missing" failure.
+- [BUG-0031] — the live "no button" failure the error-state surface would turn into
+  signal ([BUG-0003], named here before, is closed).
 
-### Approach B — auto-publish a chat post via the v4 API (2026-06-22)
+### Superseded: Approach B — auto-publish a chat post (2026-06-22)
 
-A richer alternative (or second iteration) of the plain link/`mailto` above:
-instead of just *opening* the channel, the user writes a short description in an
-in-product composer and we **POST a real post into the chat channel** through the
-`create-post` API
-(`https://messenger.example.com/time-server/docs/v4/create-post`),
-attaching the context automatically (logs, link to the schema/MR, env fields).
-
-The post is published **only on an explicit user keystroke** (Enter / Cmd+Enter
-in the composer) — never auto-sent. That keystroke is the consent gate and fixes
-**authorship to the user** (the post is created under the user's own chat
-identity, not a bot/service account). This keeps the privacy invariant of the
-tool ("nothing is sent silently / user-initiated only") while still landing
-feedback directly in the channel.
-
-**Why this is a meaningful step up from area A's plain link:** it moves us from
-"sending data is never automated" to "data *is* sent over the network on submit".
-That is acceptable only with (a) a visible preview of exactly what will be sent,
-(b) an explicit submit action, and (c) no schema content ever included. Document
-this posture change in the README alongside the update-checker note.
-
-#### Implementation sketch
-
-1. **Composer UI** (reuse FEAT-0024 surfaces — popup footer + differ toolbar 💬):
-   a small modal/panel with a `<textarea>` for the user's text, a *collapsible
-   preview* of the attached context, and submit-on-Enter (see open question on
-   Enter vs Cmd/Ctrl+Enter — plain Enter collides with newlines in a textarea).
-   The differ page is a plain `about:blank` web context with no `chrome.*`, so its
-   composer must hand the payload back to the content script (via `window.opener`,
-   the way the differ already reports back).
-2. **Context collection** (the FEAT-0024 prefill fields, made concrete):
-   - *user text* — from the textarea.
-   - *schema / MR link* — the GitLab page URL (MR/blob) from the content script;
-     on the differ page, rebuild it from `DifferParams` (file name + versions).
-   - *logs* — **new infra**: add a small in-memory ring buffer fed from the
-     existing `appendTimeToConsoleLogs()` proxy in `src/core/utils.js` (it already
-     wraps `console.debug/info/warn/error`). The differ page keeps its own buffer
-     and ships the tail back with the payload. Attach only the last N lines.
-   - *env* — extension version (`manifest`), GitLab version (DOM scraper),
-     file type, URL pattern. **Never** schema/XML content.
-3. **Network call** — route through the background service worker via
-   `chrome.runtime` messaging (mirrors `update:openUrl`); the SW does the `fetch`.
-   Requires adding the chat/messenger API origin to `manifest#host_permissions`
-   (today only `raw.githubusercontent.com` is listed). Confirm the API host — the
-   `create-post` gateway host may differ from the channel host. Note this approach
-   predates the move to GitHub Issues as the feedback channel.
-4. **Auth & authorship** — the crux. The chat is Mattermost-based (the channel URL is
-   MM-shaped), so `create-post` likely mirrors MM `POST /api/v4/posts`
-   `{ channel_id, message, props }`. Two ways to author as the user:
-   - **(B1) reuse the user's existing chat session** — `fetch(..., {credentials:
-     'include'})` with `host_permissions` for the chat origin. MM cookie auth also
-     needs the CSRF token (`MMCSRF` cookie → `X-CSRF-Token`/`X-Requested-With`
-     header). No stored secret; requires the user to be logged into the chat in the
-     same browser. *Recommended if it works — authorship is intrinsically the
-     logged-in user.*
-   - **(B2) Personal Access Token** entered in settings, stored in
-     `chrome.storage`. Robust, explicit, authorship = token owner — but stores a
-     credential.
-   - `channel_id` of the `bpmn-surf` channel: resolve by name via the API, or pin
-     it in `config.js` next to `FEEDBACK_URL`.
-5. **Config** — add the API base URL + `channel_id` (and any token) to
-   `src/core/config.js` alongside `FEEDBACK_URL`, so the channel/host can change
-   without code churn.
-
-#### Open questions (decide before building B)
-
-- **Auth model:** B1 (session cookie + CSRF) vs B2 (Personal Access Token)?
-- **Exact API contract** — the docs are behind corporate SSO (302 → devplatform
-  login); read the authed page for method/endpoint/headers/body before coding.
-- **Submit key** — plain Enter vs Cmd/Ctrl+Enter (textarea newline conflict).
-- **Logs** — attached by default, or opt-in per submission? Scrub repo
-  paths/names, or show them in the preview and let the user delete?
-- **Destination** — public `bpmn-surf` channel post vs a thread/DM.
+Dropped on 2026-09-21. It proposed an in-product composer that POSTed the report into a
+corporate Mattermost channel through a `create-post` API, authored as the user via their
+chat session or a stored Personal Access Token. Every premise is gone: the feedback
+channel is GitHub Issues, the extension ships from the Chrome Web Store with a minimal
+permission list (`scripting` only — a corporate API origin in `host_permissions` would
+have to be justified at review), storing a credential contradicts the privacy posture,
+and its plumbing (a service-worker `fetch` mirroring `update:openUrl`) no longer exists.
+Git history keeps the full sketch if the idea ever returns.
 
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-21 · claude-opus-5 · branch `docs/feat-0024-refresh`
+
+No code — brought the task in line with reality and pinned down v1. Surfaces 1 and 4 are
+in fact shipped (the popup link and the README Issues pointer); the file still listed
+surface 4 as pending. Approach B cut down to a superseded note (its premises died with
+the move to GitHub Issues and the Chrome Web Store permission diet). Added the v1
+decisions: a 💬 button in both differ toolbars opening a prefilled GitHub issue that
+carries the context fields plus a console-log tail, captured by a ring buffer hooked into
+the existing `appendTimeToConsoleLogs()` proxy and `window.onerror`/`unhandledrejection`.
+Deferred by decision: the content-script log tail via `window.opener`, the empty/error
+state surface, and `mailto:`.
 
 ### 2026-09-12 · claude-opus-5 · `5f9a94b`
 
