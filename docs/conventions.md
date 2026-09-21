@@ -10,7 +10,7 @@
 - ⚠️ Chrome Manifest V3
 - ⚠️ Preserve existing behavior, UX, and backward compatibility
 - ⚠️ If the user asks you to **come up with/propose something yourself** (names, codes, schema, structure, format) — first show the proposal and wait for confirmation, and only then do the work that depends on it (so as not to do it in vain)
-- ⚠️ In the GitLab-page content scripts, global variables hold critical state — do not refactor them without careful analysis; on the differ page there must be no global mutable state
+- ⚠️ In the GitLab-page content scripts, global variables hold critical state — do not refactor them without careful analysis; on the differ page there must be no global mutable state — with one carve-out ([FEAT-0024]): the console ring buffer in `utils.js` (`consoleRing`, reachable only through `getConsoleLogTail()`). It is write-only diagnostics that nothing renders from, and the feedback report has no other way to reach what the page logged
 - ⚠️ Small, incremental, reviewable changes; do not mix refactoring with features/fixes
 - ⚠️ After changes that affect the architecture, key files, flows, or processes, — **update the instructions**: CLAUDE.md, the files in `docs/` (architecture.md, git-workflow.md, testing.md, conventions.md) and the prompts/skills in `.claude/agents/` and `.claude/skills/` and, if the way-of-working changed, the `## Workflow` section of CLAUDE.md. Verification: Grep across `.claude/`, `docs/` and CLAUDE.md for mentions of the changed names/concepts
 
