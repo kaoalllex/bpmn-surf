@@ -106,3 +106,29 @@ for (const [label, boot] of [['BPMN', bootBpmnDiffer], ['DMN', bootDmnDiffer]]) 
         await expect(button).not.toHaveClass(/differ-feedback-alert/);
     });
 }
+
+// The toolbar's right edge is a promise to the user: the panel toggle and 💬 sit
+// together, immediately left of Close, in BOTH modes — the FEAT-0031 edit bar used
+// to keep the panel toggle in a group of its own further left.
+const tailOf = (page) => page.evaluate(() =>
+    [...document.querySelectorAll('.differ-toolbar .differ-btn')]
+        .map(b => b.textContent).slice(-3));
+
+test('BPMN view mode ends with the panel toggle, feedback and close', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page);
+    expect(await tailOf(page)).toEqual(['◨', '💬', '✕']);
+});
+
+test('BPMN edit mode ends the same way', async ({ page }) => {
+    const { defaultBpmnParams } = require('./support/boot-differ.js');
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: defaultBpmnParams({ mode: 'edit', editSide: 'source' }) });
+    expect(await tailOf(page)).toEqual(['◨', '💬', '✕']);
+});
+
+test('DMN has no properties panel, so its bar ends with feedback and close', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootDmnDiffer(page);
+    expect(await tailOf(page)).toEqual(expect.arrayContaining(['💬', '✕']));
+});
