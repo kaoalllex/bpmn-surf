@@ -25,8 +25,13 @@
     <section class="pu-sites">
         <h2 class="pu-section-title">
             Sites
-            <span class="pu-help" tabindex="0" role="note"
-                  title="Chrome asks you to allow access to the site you add.&#10;Tabs that are already open need a reload before the buttons appear there.&#10;A site you remove here can stay listed in chrome://extensions &#8594; Site access: Chrome keeps that record, the extension no longer runs there.">?</span>
+            <span class="pu-help" tabindex="0" role="button" aria-describedby="sitesTip">?</span>
+            <span class="pu-tip" id="sitesTip" role="tooltip">
+                Chrome asks you to allow access to the site you add. Tabs that are already
+                open need a reload before the buttons appear there. A site you remove here
+                can stay listed in chrome://extensions &#8594; Site access — that record is
+                Chrome's own, the extension no longer runs there.
+            </span>
         </h2>
         <ul class="pu-site-list" id="siteList"></ul>
         <form class="pu-add" id="addHostForm">

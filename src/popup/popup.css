@@ -93,6 +93,7 @@ button:hover { background: var(--pu-accent-dim); }
 .pu-sites { padding: 0 18px 4px; }
 
 .pu-section-title {
+    position: relative;
     display: flex;
     align-items: center;
     margin: 0 0 8px;
@@ -103,7 +104,8 @@ button:hover { background: var(--pu-accent-dim); }
     color: var(--pu-muted);
 }
 
-/* Native tooltip on a `?` badge: the hint is long and only needed once. */
+/* A `?` badge with its own tooltip: the hint is long and needed once, and a
+   native title attribute renders nothing inside an extension popup window. */
 .pu-help {
     display: inline-flex;
     align-items: center;
@@ -121,6 +123,28 @@ button:hover { background: var(--pu-accent-dim); }
 }
 .pu-help:hover,
 .pu-help:focus { color: var(--pu-accent); border-color: var(--pu-accent); outline: none; }
+
+.pu-tip {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 2;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--pu-fg);
+    background: var(--pu-panel);
+    border: 1px solid var(--pu-border);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.pu-help:hover + .pu-tip,
+.pu-help:focus + .pu-tip { display: block; }
 
 .pu-site-list { list-style: none; margin: 0 0 10px; padding: 0; }
 
