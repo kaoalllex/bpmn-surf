@@ -30,7 +30,7 @@ class DmnDiffer {
     }
 
     async show() {
-        console.debug('diff params: ', this.#rawParams);
+        console.debug('diff params:', describeDifferParams(this.#rawParams));
         this.#init();
         console.debug('init done');
 

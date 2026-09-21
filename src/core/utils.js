@@ -138,23 +138,124 @@ function requireDefined(arg, argName) {
     return arg;
 }
 
+// FEAT-0024: a bounded ring of the lines this page logged, so the feedback
+// report can carry the tail of what actually happened. Write-only diagnostics:
+// nothing reads it but getConsoleLogTail() and nothing renders from it — the one
+// accepted piece of global mutable state on the differ page (docs/conventions.md).
+const CONSOLE_RING_SIZE = 200;
+// A single argument is capped rather than trusted: callers log whole param
+// objects, and an uncapped JSON.stringify would drop a moddle descriptor — or a
+// user's diagram XML — into the report.
+const CONSOLE_MAX_ARG_CHARS = 300;
+const consoleRing = [];
+let consoleRingInstalled = false;
+
+function formatLogArg(arg) {
+    let text;
+    if (arg instanceof Error) {
+        text = arg.stack || `${arg.name}: ${arg.message}`;
+    } else if (typeof arg === 'string') {
+        text = arg;
+    } else {
+        try {
+            const json = JSON.stringify(arg);
+            text = json === undefined ? String(arg) : json;
+        } catch (error) {
+            text = String(arg);
+        }
+    }
+    return text.length > CONSOLE_MAX_ARG_CHARS
+        ? `${text.slice(0, CONSOLE_MAX_ARG_CHARS)}…(+${text.length - CONSOLE_MAX_ARG_CHARS} chars)`
+        : text;
+}
+
+// `at <fn> (path/to/file.js:12:34)` → `file.js:12`. The same message text is
+// logged verbatim from several files, so without the site a reader of the report
+// cannot tell which one spoke.
+function callSiteFromStack(stack) {
+    // [0] is 'Error', [1] the proxy trap that captured it, [2] the real caller.
+    const frame = (stack || '').split('\n')[2] || '';
+    const match = frame.match(/([^/\\ ()]+\.js):(\d+):\d+\)?\s*$/);
+    return match ? ` [${match[1]}:${match[2]}]` : '';
+}
+
+function recordConsoleLine(timestamp, level, args, site = '') {
+    consoleRing.push(`${timestamp} ${level}${site}: ${args.map(formatLogArg).join(' ')}`);
+    if (consoleRing.length > CONSOLE_RING_SIZE) {
+        consoleRing.shift();
+    }
+}
+
+// The last lines of this page's console, oldest first, within both budgets.
+// `omitted` counts the buffered lines the tail dropped, so the report can say so.
+function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
+    const lines = consoleRing.slice(-maxLines);
+    let omitted = consoleRing.length - lines.length;
+    while (lines.length > 1 && lines.join('\n').length > maxChars) {
+        lines.shift();
+        omitted++;
+    }
+    let text = lines.join('\n');
+    if (text.length > maxChars) {
+        text = text.slice(-maxChars);
+    }
+    return { text, omitted };
+}
+
+// What is safe to log about the params a differ tab was opened with. The raw
+// object carries the whole camunda moddle descriptor and, in local-file mode,
+// the user's own diagram XML — neither belongs in a log that ships with a
+// feedback report (FEAT-0024).
+function describeDifferParams(rawParams) {
+    return {
+        platform: rawParams.platform && rawParams.platform.kind,
+        host: rawParams.platform && rawParams.platform.hostUrl,
+        changeRequestId: rawParams.changeRequestId,
+        sourceRef: rawParams.sourceRef,
+        targetRef: rawParams.targetRef,
+        filePath: rawParams.filePath,
+        targetFilePath: rawParams.targetFilePath,
+        mode: rawParams.mode,
+        editSide: rawParams.editSide,
+        localFile: Boolean(rawParams.localFileContent),
+        extensionVersion: rawParams.extensionVersion
+    };
+}
+
 function appendTimeToConsoleLogs() {
+    if (consoleRingInstalled) {
+        return;
+    }
+    consoleRingInstalled = true;
+
     const formatter = new Intl.DateTimeFormat('en', {
         hour: '2-digit', minute: '2-digit', second: '2-digit',
         hour12: false,
         fractionalSecondDigits: 3
     });
-    const handler = {
+    const handlerFor = (level) => ({
         apply: function (target, thisArg, argArray) {
             const ts = formatter.format(new Date());
+            recordConsoleLine(ts, level, argArray, callSiteFromStack(new Error().stack));
             target.apply(console, [`${ts}:`, ...argArray]);
         }
-    };
+    });
 
-    console.debug = new Proxy(console.debug, handler);
-    console.info = new Proxy(console.info, handler);
-    console.warn = new Proxy(console.warn, handler);
-    console.error = new Proxy(console.error, handler);
+    console.debug = new Proxy(console.debug, handlerFor('debug'));
+    console.info = new Proxy(console.info, handlerFor('info'));
+    console.warn = new Proxy(console.warn, handlerFor('warn'));
+    console.error = new Proxy(console.error, handlerFor('error'));
+
+    // The failures that matter most never go through console.*. addEventListener
+    // rather than window.onerror, so an existing handler is not clobbered.
+    window.addEventListener('error', (event) => {
+        const where = event.filename ? ` (${event.filename}:${event.lineno})` : '';
+        recordConsoleLine(formatter.format(new Date()), 'uncaught',
+            [(event.message || String(event.error)) + where]);
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+        recordConsoleLine(formatter.format(new Date()), 'unhandled-rejection', [event.reason]);
+    });
 }
 
 function parseXml(xml) {

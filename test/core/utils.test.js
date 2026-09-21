@@ -96,3 +96,121 @@ describe('doWithAttempts', () => {
         assert.equal(calls, 3);
     });
 });
+
+describe('console log ring (FEAT-0024)', () => {
+    // A fresh scope per test: the ring is module state of utils.js.
+    function ringScope() {
+        const scope = createScope();
+        // Silence the proxied output — the proxy still calls the real method.
+        for (const level of ['debug', 'info', 'warn', 'error']) {
+            scope.window.console[level] = () => {};
+        }
+        scope.appendTimeToConsoleLogs();
+        return scope;
+    }
+
+    it('keeps the tail in chronological order, tagged with level and call site', () => {
+        const scope = ringScope();
+        scope.window.console.debug('first');
+        scope.window.console.warn('second');
+        const { text, omitted } = scope.getConsoleLogTail();
+        const lines = text.split('\n');
+        assert.equal(omitted, 0);
+        assert.equal(lines.length, 2);
+        assert.match(lines[0], /debug \[utils\.test\.js:\d+\]: first$/);
+        assert.match(lines[1], /warn \[utils\.test\.js:\d+\]: second$/);
+    });
+
+    it('evicts the oldest lines past the ring size and reports them as omitted', () => {
+        const scope = ringScope();
+        for (let i = 0; i < 260; i++) {
+            scope.window.console.debug('line-' + i);
+        }
+        const { text, omitted } = scope.getConsoleLogTail({ maxLines: 10, maxChars: 4000 });
+        const lines = text.split('\n');
+        assert.equal(lines.length, 10);
+        assert.ok(lines[0].endsWith('line-250'), lines[0]);
+        assert.ok(lines[9].endsWith('line-259'), lines[9]);
+        // 200 kept of the 260 logged, 10 shown: 190 of the kept ones are omitted.
+        assert.equal(omitted, 190);
+    });
+
+    it('serialises object and Error arguments instead of [object Object]', () => {
+        const scope = ringScope();
+        scope.window.console.error('failed', { code: 42 }, new scope.window.Error('boom'));
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.includes('{"code":42}'), text);
+        assert.ok(text.includes('boom'), text);
+        assert.ok(!text.includes('[object Object]'), text);
+    });
+
+    it('caps a single huge argument so a moddle or a diagram cannot land in the ring', () => {
+        const scope = ringScope();
+        scope.window.console.debug('params', { localFileContent: '<bpmn:definitions>'.repeat(500) });
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.length < 500, 'length ' + text.length);
+        assert.match(text, /…\(\+\d+ chars\)$/);
+    });
+
+    it('trims the tail to the character budget, counting the dropped lines', () => {
+        const scope = ringScope();
+        for (let i = 0; i < 20; i++) {
+            scope.window.console.debug('x'.repeat(100));
+        }
+        const { text, omitted } = scope.getConsoleLogTail({ maxLines: 50, maxChars: 500 });
+        assert.ok(text.length <= 500, 'length ' + text.length);
+        assert.ok(omitted > 0);
+    });
+
+    it('records uncaught errors that never reach console.*', () => {
+        const scope = ringScope();
+        scope.window.dispatchEvent(new scope.window.ErrorEvent('error', { message: 'uncaught boom' }));
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.includes('uncaught: uncaught boom'), text);
+    });
+
+    it('records unhandled rejections that never reach console.*', () => {
+        const scope = ringScope();
+        const event = new scope.window.Event('unhandledrejection');
+        event.reason = new scope.window.Error('rejected boom');
+        scope.window.dispatchEvent(event);
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.includes('rejected boom'), text);
+    });
+});
+
+describe('describeDifferParams (FEAT-0024)', () => {
+    const { describeDifferParams } = createScope();
+
+    const rawParams = {
+        platform: { kind: 'gitlab', hostUrl: 'https://gitlab.example.com', projectId: 42 },
+        sourceRef: 'mr-sha',
+        targetRef: 'base-sha',
+        changeRequestId: '123',
+        filePath: 'src/process.bpmn',
+        fileName: 'process.bpmn',
+        camundaBpmnModdle: { name: 'Camunda', types: [{ name: 'camunda:FormField' }] },
+        localFileContent: '<bpmn:definitions id="Definitions_1"/>',
+        extensionVersion: '1.2.0'
+    };
+
+    it('keeps the fields that identify the tab', () => {
+        const described = describeDifferParams(rawParams);
+        assert.equal(described.platform, 'gitlab');
+        assert.equal(described.host, 'https://gitlab.example.com');
+        assert.equal(described.sourceRef, 'mr-sha');
+        assert.equal(described.targetRef, 'base-sha');
+        assert.equal(described.changeRequestId, '123');
+        assert.equal(described.filePath, 'src/process.bpmn');
+        assert.equal(described.extensionVersion, '1.2.0');
+    });
+
+    it('drops the moddle descriptor and the local diagram content', () => {
+        const serialised = JSON.stringify(describeDifferParams(rawParams));
+        assert.ok(!serialised.includes('camunda:FormField'), serialised);
+        assert.ok(!serialised.includes('bpmn:definitions'), serialised);
+        // ...but still says a local file is in play, which matters when triaging.
+        assert.equal(describeDifferParams(rawParams).localFile, true);
+        assert.equal(describeDifferParams({ platform: {} }).localFile, false);
+    });
+});

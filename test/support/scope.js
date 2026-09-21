@@ -136,7 +136,8 @@ const EXPORTED_NAMES = [
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
-    'findPropertiesGroupHeader'
+    'findPropertiesGroupHeader',
+    'appendTimeToConsoleLogs', 'getConsoleLogTail', 'describeDifferParams'
 ];
 
 // Creates a fresh isolated scope per test file (or per test, if needed):
