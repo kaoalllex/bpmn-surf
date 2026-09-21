@@ -135,6 +135,18 @@ field, and the "reload open tabs" note. manifest: `permissions: ["scripting"]`,
 `default_title` is now `bpmn-surf`.
 
 The branch opens with the deletion of [FEAT-0012] (see the superseded note above).
-`npm test` 1145 pass, `npm run test:e2e` 136 pass. Manual verification in Chrome (load
-unpacked → add a host → grant → reload the tab) is on the human.
+`npm test` 1145 pass, `npm run test:e2e` 136 pass.
+
+After manual testing the popup hint moved out of the body text into a `?` badge next to the
+Sites heading; the tooltip is CSS, because a native `title` attribute renders nothing inside
+an extension popup window. It also records what the testing turned up: Chrome can keep
+showing a removed host under `chrome://extensions` → Details → Site access. That record is
+Chrome's own — `permissions.getAll()` no longer lists the origin, `permissions.contains()`
+returns false and the registration is dropped, so the extension does not run there; the same
+caveat is in the README.
+
+Verified by hand in Chrome (2026-09-21): gitlab.com unchanged and prompt-free, a self-hosted
+instance added from the popup → Chrome's consent dialog → buttons after a tab reload, styles
+arriving with the scripts, the differ opening against that instance, and removal stopping the
+injection. `npm run package` builds the zip with the new manifest.
 
