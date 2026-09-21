@@ -143,7 +143,10 @@ The log comes from a 200-line ring in `utils.js`, filled by the existing
 `appendTimeToConsoleLogs()` proxy plus `error`/`unhandledrejection` listeners. The tail
 is two-tier: the last N lines of any level (the narrative around the button press) plus
 every buffered `info`/`warn`/`error`/`uncaught`/`unhandled-rejection`, wherever it sits, with
-`… N lines skipped` on the joins. A plain tail was the wrong shape — live `console.debug`
+`… N lines skipped` on the joins — except lines logged from `libs/`, which are never
+promoted: bpmn-js warns about a deprecated context-pad call on every click and dmn-js
+errors about its own build on every load ([INFRA-0001]), so promoting them would fill
+every report with a minified stack that is identical each time. A plain tail was the wrong shape — live `console.debug`
 calls outnumber `warn`+`error` 99 to 65, so a quiet ending regularly pushed the single
 warning that explains the report out of the window before the URL budget ever saw it. Two
 additions beyond the agreed plan, both because the first readers of these logs will be

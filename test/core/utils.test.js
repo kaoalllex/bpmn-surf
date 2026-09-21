@@ -292,3 +292,33 @@ describe('describeDifferParams (FEAT-0024)', () => {
         assert.equal(describeDifferParams({ platform: {} }).localFile, false);
     });
 });
+
+describe('library-origin log lines (FEAT-0024)', () => {
+    const { callSiteFromStack, isPromotedSignal } = createScope();
+
+    const stackFrom = (frame) => `Error\n    at Object.apply (src/core/utils.js:3:25)\n${frame}`;
+
+    it('tells a vendored library frame from our own', () => {
+        const ours = callSiteFromStack(stackFrom(
+            '    at loadFileContent (chrome-extension://abcdef/src/core/utils.js:65:15)'));
+        assert.equal(ours.site, ' [utils.js:65]');
+        assert.equal(ours.fromLibrary, false);
+
+        const theirs = callSiteFromStack(stackFrom(
+            '    at as.getPad (chrome-extension://abcdef/libs/bpmn-js/bpmn-modeler.production.min.js:27:83808)'));
+        assert.equal(theirs.site, ' [bpmn-modeler.production.min.js:27]');
+        assert.equal(theirs.fromLibrary, true);
+    });
+
+    it('never promotes a library line out of the recent window', () => {
+        // bpmn-js warns about a deprecated call on every context-pad click and
+        // dmn-js errors about its own build on every load (INFRA-0001).
+        assert.equal(isPromotedSignal({ level: 'warn', fromLibrary: true }), false);
+        assert.equal(isPromotedSignal({ level: 'error', fromLibrary: true }), false);
+        // Ours still are, and debug still is not.
+        assert.equal(isPromotedSignal({ level: 'warn', fromLibrary: false }), true);
+        assert.equal(isPromotedSignal({ level: 'info', fromLibrary: false }), true);
+        assert.equal(isPromotedSignal({ level: 'uncaught', fromLibrary: false }), true);
+        assert.equal(isPromotedSignal({ level: 'debug', fromLibrary: false }), false);
+    });
+});

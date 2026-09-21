@@ -179,14 +179,17 @@ function formatLogArg(arg) {
         : text;
 }
 
-// `at <fn> (path/to/file.js:12:34)` → `file.js:12`. The same message text is
-// logged verbatim from several files, so without the site a reader of the report
-// cannot tell which one spoke.
+// `at <fn> (path/to/file.js:12:34)` → `file.js:12`, plus whether the caller is a
+// vendored library. The same message text is logged verbatim from several files,
+// so without the site a reader of the report cannot tell which one spoke.
 function callSiteFromStack(stack) {
     // [0] is 'Error', [1] the proxy trap that captured it, [2] the real caller.
     const frame = (stack || '').split('\n')[2] || '';
     const match = frame.match(/([^/\\ ()]+\.js):(\d+):\d+\)?\s*$/);
-    return match ? ` [${match[1]}:${match[2]}]` : '';
+    return {
+        site: match ? ` [${match[1]}:${match[2]}]` : '',
+        fromLibrary: frame.includes('/libs/')
+    };
 }
 
 // The levels worth keeping wherever they sit in the buffer, as opposed to the
@@ -195,11 +198,23 @@ function callSiteFromStack(stack) {
 // is usually the conclusion a report is about.
 const CONSOLE_SIGNAL_LEVELS = new Set(['info', 'warn', 'error', 'uncaught', 'unhandled-rejection']);
 
+// A library's own complaints never earn that promotion. bpmn-js warns about a
+// deprecated call on every context-pad click and dmn-js errors about its own
+// build on every load (INFRA-0001): both repeat in every session, carry a
+// minified stack nobody can read, and would crowd out the lines that differ from
+// one report to the next. A genuine library failure still reaches the report —
+// through the recent window, through our own catch-and-warn around the call, or
+// as an uncaught error, which never comes through console.* at all.
+function isPromotedSignal(entry) {
+    return CONSOLE_SIGNAL_LEVELS.has(entry.level) && !entry.fromLibrary;
+}
+
 // The rendered line keeps the level in its text (`12:00:00.000 warn [file.js:12]: …`),
 // which FeedbackReport reads back to decide what to shed under the URL budget.
-function recordConsoleLine(timestamp, level, args, site = '') {
+function recordConsoleLine(timestamp, level, args, { site = '', fromLibrary = false } = {}) {
     consoleRing.push({
         level,
+        fromLibrary,
         line: `${timestamp} ${level}${site}: ${args.map(formatLogArg).join(' ')}`
     });
     if (consoleRing.length > CONSOLE_RING_SIZE) {
@@ -233,7 +248,7 @@ function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
     const recentFrom = Math.max(0, consoleRing.length - maxLines);
     const picked = consoleRing
         .map((entry, index) => ({ line: entry.line, index }))
-        .filter(({ index }) => index >= recentFrom || CONSOLE_SIGNAL_LEVELS.has(consoleRing[index].level));
+        .filter(({ index }) => index >= recentFrom || isPromotedSignal(consoleRing[index]));
 
     while (picked.length > 1 && renderConsoleLines(picked).length > maxChars) {
         picked.shift();

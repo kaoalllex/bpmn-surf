@@ -139,7 +139,8 @@ const EXPORTED_NAMES = [
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
     'findPropertiesGroupHeader',
-    'appendTimeToConsoleLogs', 'getConsoleLogTail', 'describeDifferParams'
+    'appendTimeToConsoleLogs', 'getConsoleLogTail', 'describeDifferParams',
+    'callSiteFromStack', 'isPromotedSignal'
 ];
 
 // Creates a fresh isolated scope per test file (or per test, if needed):
