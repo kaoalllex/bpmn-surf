@@ -540,6 +540,17 @@ class BpmnDifferView {
         feedbackGroup.appendChild(this.#feedbackButton);
         toolbar.appendChild(feedbackGroup);
 
+        // Uncaught failures are the ones the user may never see in the console —
+        // badge the button so the report happens at the moment of friction. Not
+        // console.error: dmn-js emits one on every load (INFRA-0001).
+        const flagFailure = () => {
+            this.#feedbackButton.classList.add('differ-feedback-alert');
+            this.#feedbackButton.title = BpmnDifferView.FEEDBACK_ALERT_TITLE;
+        };
+        window.addEventListener('error', flagFailure);
+        window.addEventListener('unhandledrejection', flagFailure);
+
+
         //--- close group (destructive, separated)
         const closeGroup = this.#group();
         closeGroup.appendChild(this.#button({

@@ -71,3 +71,38 @@ test('DMN differ: the feedback button opens a prefilled issue', async ({ page })
     expect(body).toContain('http://localhost/blob/mr-sha/decision.dmn');
     expect(body).not.toContain('dmn:definitions');
 });
+
+// The badge fires on an uncaught failure only. console.error is deliberately not
+// a trigger: dmn-js logs one on every load (INFRA-0001), which this very run
+// mirrors into the log as [console.error].
+for (const [label, boot] of [['BPMN', bootBpmnDiffer], ['DMN', bootDmnDiffer]]) {
+    test(`${label} differ: an uncaught error badges the feedback button`, async ({ page }) => {
+        wireDiagnostics(page);
+        await boot(page);
+
+        const button = page.locator(FEEDBACK);
+        await expect(button).toHaveCount(1);
+        await expect(button).not.toHaveClass(/differ-feedback-alert/);
+        await expect(button).toHaveAttribute('title', 'Report a problem or send feedback');
+
+        await page.evaluate(() => window.dispatchEvent(
+            new ErrorEvent('error', { message: 'probe failure' })));
+
+        await expect(button).toHaveClass(/differ-feedback-alert/);
+        await expect(button).toHaveAttribute('title', 'Something went wrong — report it');
+        // The dot is the persistent part of the signal, so it must actually render.
+        const dot = await button.evaluate(el =>
+            getComputedStyle(el, '::after').backgroundColor);
+        expect(dot).toBe('rgb(195, 34, 34)');
+    });
+
+    test(`${label} differ: console.error alone does not badge the button`, async ({ page }) => {
+        wireDiagnostics(page);
+        await boot(page);
+
+        const button = page.locator(FEEDBACK);
+        await expect(button).toHaveCount(1);
+        await page.evaluate(() => console.error('a benign library complaint'));
+        await expect(button).not.toHaveClass(/differ-feedback-alert/);
+    });
+}

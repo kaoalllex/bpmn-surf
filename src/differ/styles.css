@@ -687,3 +687,31 @@ th {
     font-size: 15px;
     line-height: 20px;
 }
+
+/* FEAT-0024: this tab hit an uncaught error or a rejected promise — something
+   the user may not have noticed, and exactly the moment a report is worth most.
+   Deliberately NOT wired to console.error: dmn-js logs one on every load
+   (INFRA-0001), so that signal would cry wolf on every DMN diff.
+   One short pulse to catch the eye, then a static dot that stays for the tab —
+   the canvas already runs two looping pulses (diff markers, search matches). */
+.differ-feedback-alert {
+    position: relative;
+    animation: differ-feedback-alert-pulse 0.5s ease-in-out 3;
+}
+
+.differ-feedback-alert::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: hsl(0, 70%, 45%);
+    box-shadow: 0 0 0 1.5px hsl(0, 0%, 100%);
+}
+
+@keyframes differ-feedback-alert-pulse {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 0 3px hsla(0, 70%, 45%, 0.45); }
+}
