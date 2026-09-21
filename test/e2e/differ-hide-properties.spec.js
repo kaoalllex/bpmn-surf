@@ -11,6 +11,7 @@ test('hides and shows the properties panel', async ({ page }) => {
     await bootBpmnDiffer(page);
 
     // An icon button, so its accessible name has to come from aria-label (FEAT-0024).
+    // The filled half tracks where the panel is: right when up, left when gone.
     await expect(page.getByRole('button', { name: 'Hide the properties panel' }))
         .toHaveText('◨');
 
@@ -22,6 +23,7 @@ test('hides and shows the properties panel', async ({ page }) => {
 
     await page.getByRole('button', { name: 'Hide the properties panel' }).click();
     await expect(page.getByRole('button', { name: 'Show the properties panel' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Show the properties panel' })).toHaveText('◧');
     await expect(props).toBeHidden();
     await expect(splitter).toBeHidden();
 

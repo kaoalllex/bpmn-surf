@@ -47,6 +47,15 @@ describe('FeedbackReport.buildBody', () => {
         assert.ok(out.includes('branch view (no merge request)'), out);
     });
 
+    it('names the edit mode and the side being edited (FEAT-0031)', () => {
+        const out = FeedbackReport.buildBody({ ...context, editSide: 'target' }, emptyLog);
+        assert.ok(out.includes('merge request !123 — **edit mode**, editing the target side'), out);
+    });
+
+    it('leaves view mode unannotated — it is the default', () => {
+        assert.ok(!body.includes('edit mode'), body);
+    });
+
     it('says so when a side has no file', () => {
         const out = FeedbackReport.buildBody({ ...context, sourceUrl: null }, emptyLog);
         assert.ok(out.includes('n/a (file absent on this side)'), out);

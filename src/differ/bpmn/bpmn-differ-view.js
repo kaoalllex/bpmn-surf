@@ -8,9 +8,10 @@ class BpmnDifferView {
     // GitLab's native button classes — kept so buttons match the host UI;
     // sizing/margins are layered on top via the .differ-btn* classes.
     // The properties toggle shows the panel's CURRENT state (the way ☼/☀ does):
-    // a filled right-hand pane when the panel is up, an empty one when it is not.
+    // the filled half is where the properties panel is — on the right when it is
+    // up, and swung over to the left (i.e. gone from the right) when it is not.
     static PROPS_SHOWN_ICON = '◨';
-    static PROPS_HIDDEN_ICON = '◻';
+    static PROPS_HIDDEN_ICON = '◧';
     // The label names the ACTION, and is the button's accessible name — an icon
     // button has none of its own.
     static PROPS_HIDE_LABEL = 'Hide the properties panel';

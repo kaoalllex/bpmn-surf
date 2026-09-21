@@ -106,9 +106,15 @@ class FeedbackReport {
     }
 
     static #pageDescription(context) {
-        return context.changeRequestId
+        const page = context.changeRequestId
             ? `merge request !${FeedbackReport.#cell(context.changeRequestId)}`
             : 'branch view (no merge request)';
+        // An edit tab owns one side and its toolbar is a different one, so a report
+        // that only said "merge request !123" would describe the wrong screen
+        // (FEAT-0031 edit mode). View mode is the default and stays unannotated.
+        return context.editSide
+            ? `${page} — **edit mode**, editing the ${FeedbackReport.#cell(context.editSide)} side`
+            : page;
     }
 
     static #side(label, url) {

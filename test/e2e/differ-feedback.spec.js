@@ -132,3 +132,12 @@ test('DMN has no properties panel, so its bar ends with feedback and close', asy
     await bootDmnDiffer(page);
     expect(await tailOf(page)).toEqual(expect.arrayContaining(['💬', '✕']));
 });
+
+test('BPMN edit mode: the report says which side is being edited', async ({ page }) => {
+    const { defaultBpmnParams } = require('./support/boot-differ.js');
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: defaultBpmnParams({ mode: 'edit', editSide: 'source' }) });
+
+    const { body } = await pressFeedback(page);
+    expect(body).toContain('**edit mode**, editing the source side');
+});

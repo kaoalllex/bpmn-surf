@@ -687,6 +687,7 @@ class BpmnDiffer {
             platformKind: this.#params.platform.kind,
             hostUrl: this.#params.platform.hostUrl,
             changeRequestId: this.#params.changeRequestId,
+            editSide: this.#isEditMode() ? this.#params.editSide : null,
             fileName: this.#params.fileName,
             fileType: 'BPMN',
             sourceLabel: this.#params.sourceLabel,
