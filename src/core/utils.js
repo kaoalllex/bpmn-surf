@@ -238,27 +238,76 @@ function recordConsoleLine(timestamp, level, args, { site = '', fromLibrary = fa
 // Picked entries, oldest first, with an explicit marker wherever the selection
 // jumped over buffered lines — so a reader never mistakes the join for a
 // continuous stream.
+// Length, in entries, of the cycle of the given period starting at `start`.
+// Stops at the first entry that breaks the pattern or that the tail selection
+// skipped over — a gap means the two lines were not actually in a row.
+function consoleCycleLength(picked, start, period) {
+    if (start + period > picked.length) {
+        return 1;
+    }
+    for (let j = 1; j < period; j++) {
+        if (picked[start + j].index !== picked[start + j - 1].index + 1) {
+            return 1;
+        }
+    }
+    let length = period;
+    while (start + length < picked.length) {
+        const current = picked[start + length];
+        if (current.index !== picked[start + length - 1].index + 1) {
+            break;
+        }
+        if (current.entry.body !== picked[start + length - period].entry.body) {
+            break;
+        }
+        length++;
+    }
+    return length;
+}
+
+// Picked entries, oldest first, with an explicit marker wherever the selection
+// jumped over buffered lines — so a reader never mistakes the join for a
+// continuous stream.
+//
+// A cycle of identical or of two alternating lines says only how many times the
+// same thing happened, so it shows the cycle once and counts the rest. Switch
+// branch pressed fifteen times spent 22 lines on that one sentence, and those
+// lines pushed the boot and the first failed lookup out of the report. Only an
+// uninterrupted cycle: anything in between is part of the story.
 function renderConsoleLines(picked) {
     const out = [];
-    let runLine = null;
-    let repeats = 1;
-    for (let i = 0; i < picked.length; i++) {
-        const previous = i > 0 ? picked[i - 1] : null;
-        const skipped = previous ? picked[i].index - previous.index - 1 : 0;
-        // A run of identical lines says only that the same thing happened N
-        // times — which the count says exactly, in one line instead of N. Only
-        // an uninterrupted run: anything between them is part of the story.
-        if (previous && skipped === 0 && picked[i].entry.body === previous.entry.body) {
-            repeats++;
-            out[out.length - 1] = `${runLine} (×${repeats})`;
-            continue;
+    let i = 0;
+    while (i < picked.length) {
+        if (i > 0) {
+            const skipped = picked[i].index - picked[i - 1].index - 1;
+            if (skipped > 0) {
+                out.push(`… ${plural(skipped, 'line')} skipped`);
+            }
         }
-        repeats = 1;
-        runLine = picked[i].entry.line;
-        if (skipped > 0) {
-            out.push(`… ${plural(skipped, 'line')} skipped`);
+
+        let period = 1;
+        let length = consoleCycleLength(picked, i, 1);
+        if (length === 1) {
+            // Not a repeat; maybe an alternation. `A B A B` is the shortest one
+            // worth collapsing — below that the marker costs more than it saves.
+            const alternating = consoleCycleLength(picked, i, 2);
+            if (alternating >= 4) {
+                period = 2;
+                length = alternating;
+            }
         }
-        out.push(runLine);
+
+        for (let j = 0; j < period; j++) {
+            out.push(picked[i + j].entry.line);
+        }
+        const collapsed = length - period;
+        if (collapsed > 0) {
+            if (period === 1) {
+                out[out.length - 1] = `${picked[i].entry.line} (×${length})`;
+            } else {
+                out.push(`… ${plural(collapsed, 'more line')} alternating between these`);
+            }
+        }
+        i += length;
     }
     return out.join('\n');
 }

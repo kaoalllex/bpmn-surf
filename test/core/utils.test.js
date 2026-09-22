@@ -252,13 +252,56 @@ describe('console log ring (FEAT-0024)', () => {
         assert.match(lines[1], /called process file not found: Call1 \(×4\)$/);
     });
 
-    it('does not collapse repeats that something else came between', () => {
+    // Two helpers, so each message keeps one call site and so one body: the same
+    // text logged from different lines is deliberately not "the same line".
+    function switching(scope) {
+        const branch = () => scope.window.console.debug('showing branch bpmn xml file...');
+        const mr = () => scope.window.console.debug('showing mr bpmn xml file...');
+        return { branch, mr };
+    }
+
+    it('collapses an alternating pair, which is what Switch branch produces', () => {
         const scope = ringScope();
-        scope.window.console.debug('showing branch');
-        scope.window.console.debug('showing mr');
-        scope.window.console.debug('showing branch');
+        const { branch, mr } = switching(scope);
+        scope.window.console.debug('before the toggling');
+        for (let i = 0; i < 8; i++) {
+            branch();
+            mr();
+        }
+        scope.window.console.debug('after the toggling');
+
+        const { text } = scope.getConsoleLogTail();
+        const lines = text.split('\n');
+        // before + branch + mr + marker + after, instead of 18 lines.
+        assert.equal(lines.length, 5, text);
+        assert.ok(lines[1].endsWith('showing branch bpmn xml file...'), lines[1]);
+        assert.ok(lines[2].endsWith('showing mr bpmn xml file...'), lines[2]);
+        assert.equal(lines[3], '… 14 more lines alternating between these');
+        assert.ok(lines[4].endsWith('after the toggling'), lines[4]);
+    });
+
+    it('leaves an alternation too short to be worth a marker alone', () => {
+        const scope = ringScope();
+        const { branch, mr } = switching(scope);
+        branch();
+        mr();
+        branch();
         const { text } = scope.getConsoleLogTail();
         assert.equal(text.split('\n').length, 3, text);
+        assert.ok(!text.includes('alternating'), text);
+    });
+
+    it('does not collapse a cycle that a third line broke', () => {
+        const scope = ringScope();
+        const { branch, mr } = switching(scope);
+        branch();
+        mr();
+        scope.window.console.warn('something else happened');
+        branch();
+        mr();
+        const { text } = scope.getConsoleLogTail();
+        assert.equal(text.split('\n').length, 5, text);
+        assert.ok(!text.includes('alternating'), text);
         assert.ok(!text.includes('×'), text);
     });
 
