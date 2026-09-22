@@ -7,21 +7,6 @@ class BpmnDifferView {
 
     // GitLab's native button classes — kept so buttons match the host UI;
     // sizing/margins are layered on top via the .differ-btn* classes.
-    // The properties toggle shows the panel's CURRENT state (the way ☼/☀ does):
-    // the filled half is where the properties panel is — on the right when it is
-    // up, and swung over to the left (i.e. gone from the right) when it is not.
-    static PROPS_SHOWN_ICON = '◨';
-    static PROPS_HIDDEN_ICON = '◧';
-    // The label names the ACTION, and is the button's accessible name — an icon
-    // button has none of its own.
-    static PROPS_HIDE_LABEL = 'Hide the properties panel';
-    static PROPS_SHOW_LABEL = 'Show the properties panel';
-
-    // FEAT-0024: the 💬 button's two states — the plain invitation, and the
-    // nudge after this tab hit a failure the user may not have noticed.
-    static FEEDBACK_TITLE = 'Report a problem or send feedback';
-    static FEEDBACK_ALERT_TITLE = 'Something went wrong — report it';
-
     static BTN_CLASS = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
 
     // U+200E LEFT-TO-RIGHT MARK — prefixed to the file path so the bidi algorithm
@@ -37,10 +22,26 @@ class BpmnDifferView {
     // freshly opened differ tab (BUG-0018). Stored globally, like the width.
     static PROPS_HIDDEN_KEY = 'bpmnDiffer.propsHidden';
 
+    // Toolbar glyphs and labels that are read from more than one place; the
+    // single-use ones stay inline at the button that carries them.
+    //
     // U+1F58C LOWER LEFT PAINTBRUSH — default text presentation, so it stays
     // monochrome next to the other toolbar glyphs. The on/off state is the
     // pressed look, not a second glyph (FEAT-0031).
     static COLORING_ICON = '\u{1F58C}';
+    // The properties toggle shows the panel's CURRENT state (the way ☼/☀ does):
+    // the filled half is where the panel is — on the right when it is up, and
+    // swung over to the left (i.e. gone from the right) when it is not.
+    static PROPS_SHOWN_ICON = '◨';
+    static PROPS_HIDDEN_ICON = '◧';
+    // Its label names the ACTION, and doubles as the accessible name — an icon
+    // button has none of its own.
+    static PROPS_HIDE_LABEL = 'Hide the properties panel';
+    static PROPS_SHOW_LABEL = 'Show the properties panel';
+    // The 💬 button's two states: the plain invitation, and the nudge after this
+    // tab hit a failure the user may not have noticed (FEAT-0024).
+    static FEEDBACK_TITLE = 'Report a problem or send feedback';
+    static FEEDBACK_ALERT_TITLE = 'Something went wrong — report it';
 
     #params;
     #branchIndicator;

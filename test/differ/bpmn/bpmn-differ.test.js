@@ -22,7 +22,9 @@ function loadBpmnDiffer() {
         runScripts: 'outside-only'
     });
     const context = dom.getInternalVMContext();
-    for (const file of ['src/core/utils.js', 'src/differ/bpmn/bpmn-differ.js']) {
+    for (const file of [
+        'src/core/utils.js', 'src/core/console-log.js', 'src/differ/bpmn/bpmn-differ.js'
+    ]) {
         const code = fs.readFileSync(path.join(ROOT, file), 'utf8');
         new vm.Script(code, { filename: file }).runInContext(context);
     }

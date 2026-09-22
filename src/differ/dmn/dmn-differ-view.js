@@ -6,16 +6,18 @@ class DmnDifferView {
 
     // GitLab's native button classes — kept so buttons match the host UI;
     // sizing/margins are layered on top via the .differ-btn* classes.
-    // FEAT-0024: the 💬 button's two states — the plain invitation, and the
-    // nudge after this tab hit a failure the user may not have noticed.
-    static FEEDBACK_TITLE = 'Report a problem or send feedback';
-    static FEEDBACK_ALERT_TITLE = 'Something went wrong — report it';
-
     static BTN_CLASS = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50';
 
     // U+200E LEFT-TO-RIGHT MARK — prefixed to the file path so the bidi algorithm
     // keeps the LTR path order inside the rtl left-truncating element (FEAT-0026).
     static LRM = '‎';
+
+    // The one toolbar label read from more than one place; the single-use glyphs
+    // stay inline at the button that carries them. The 💬 button's two states:
+    // the plain invitation, and the nudge after this tab hit a failure the user
+    // may not have noticed (FEAT-0024).
+    static FEEDBACK_TITLE = 'Report a problem or send feedback';
+    static FEEDBACK_ALERT_TITLE = 'Something went wrong — report it';
 
     #params;
     #branchIndicator;

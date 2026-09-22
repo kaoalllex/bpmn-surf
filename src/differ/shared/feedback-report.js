@@ -1,6 +1,6 @@
 // FEAT-0024: assembles the prefilled GitHub issue that the differ toolbar's 💬
 // button opens. Pure string work — no DOM, no network, no chrome.*: the caller
-// supplies the context and the console tail (getConsoleLogTail in utils.js) and
+// supplies the context and the console tail (ConsoleLog.tail) and
 // opens the returned URL itself.
 //
 // Schema/XML content is never part of a report: only the fields spelled out in
@@ -39,7 +39,7 @@ class FeedbackReport {
         return `[differ] ${context.fileName || 'diagram'}`;
     }
 
-    // `logTail`: { text, omitted } from getConsoleLogTail(), optionally with
+    // `logTail`: { text, omitted } from ConsoleLog.tail(), optionally with
     // `debugDropped` — the debug lines buildUrl() shed to fit the budget.
     static buildBody(context, logTail) {
         return [

@@ -22,6 +22,7 @@ const ROOT = path.join(__dirname, '..', '..');
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
     'src/core/utils.js',
+    'src/core/console-log.js',
     'src/differ/shared/diff-type.js',
     'src/differ/bpmn/condition-formatter.js',
     'src/differ/bpmn/bpmn-xml-comparator.js',
@@ -138,9 +139,9 @@ const EXPORTED_NAMES = [
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
-    'findPropertiesGroupHeader',
-    'appendTimeToConsoleLogs', 'getConsoleLogTail', 'describeDifferParams',
-    'callSiteFromStack', 'isPromotedSignal', 'describeImportError'
+    'findPropertiesGroupHeader', 'plural',
+    // the console ring subsystem (console-log.js)
+    'ConsoleLog'
 ];
 
 // Creates a fresh isolated scope per test file (or per test, if needed):

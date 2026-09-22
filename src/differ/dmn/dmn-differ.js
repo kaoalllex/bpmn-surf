@@ -30,7 +30,7 @@ class DmnDiffer {
     }
 
     async show() {
-        console.debug('diff params:', describeDifferParams(this.#rawParams));
+        console.debug('diff params:', ConsoleLog.describeDifferParams(this.#rawParams));
         this.#init();
         console.debug('init done');
 
@@ -210,7 +210,7 @@ class DmnDiffer {
             // const { warnings } = result;
             // console.debug('dmn schema loaded succesfully', warnings);
         } catch (err) {
-            console.error('dmn loading error', describeImportError(err));
+            console.error('dmn loading error', ConsoleLog.describeImportError(err));
             return;
         }
         this.#switchToViewTableMode();
@@ -245,7 +245,7 @@ class DmnDiffer {
             sourceUrl: this.#shownFileFor(false).url,
             targetLabel: this.#params.targetLabel,
             targetUrl: this.#shownFileFor(true).url
-        }, getConsoleLogTail());
+        }, ConsoleLog.tail());
         window.open(url, '_blank', 'noopener');
     }
 
@@ -355,7 +355,7 @@ class DmnDiffer {
 }
 
 function main() {
-    appendTimeToConsoleLogs();
+    ConsoleLog.install();
 
     window.addEventListener('message', async function (msg) {
         // console.debug('message received', msg);

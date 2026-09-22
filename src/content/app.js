@@ -33,7 +33,7 @@ class App {
      * Initializes the application
      */
     init() {
-        appendTimeToConsoleLogs();
+        ConsoleLog.install();
 
         // try to start immediately (in case of direct page load)
         this.#handleStart(null, 'immediately');

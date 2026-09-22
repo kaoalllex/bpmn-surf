@@ -69,7 +69,7 @@ class BpmnDiffer {
     }
 
     async show() {
-        console.debug('diff params:', describeDifferParams(this.#rawParams));
+        console.debug('diff params:', ConsoleLog.describeDifferParams(this.#rawParams));
         this.#init();
         console.debug('init done');
 
@@ -557,7 +557,7 @@ class BpmnDiffer {
             // const { warnings } = result;
             // console.debug('bpmn schema loaded succesfully', warnings);
         } catch (err) {
-            console.error('bpmn schema loading error', describeImportError(err));
+            console.error('bpmn schema loading error', ConsoleLog.describeImportError(err));
             return;
         }
 
@@ -709,7 +709,7 @@ class BpmnDiffer {
             sourceUrl: this.#shownFileFor(false).url,
             targetLabel: this.#params.targetLabel,
             targetUrl: this.#shownFileFor(true).url
-        }, getConsoleLogTail());
+        }, ConsoleLog.tail());
         window.open(url, '_blank', 'noopener');
     }
 
@@ -944,7 +944,7 @@ class BpmnDiffer {
 }
 
 function main() {
-    appendTimeToConsoleLogs();
+    ConsoleLog.install();
 
     window.addEventListener('message', async function (msg) {
         // console.debug('message received', msg);
