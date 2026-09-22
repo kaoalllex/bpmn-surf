@@ -154,6 +154,20 @@ const CONSOLE_MAX_ERROR_CHARS = 600;
 const consoleRing = [];
 let consoleRingInstalled = false;
 
+// `1 line` / `2 lines`. The log markers are read by a human in every report.
+function plural(count, word) {
+    return `${count} ${word}${count === 1 ? '' : 's'}`;
+}
+
+// Once a stack enters a minified bundle the offsets say nothing to anyone, so
+// keep the frame that entered it and count the rest away.
+function collapseLibraryFrames(stack) {
+    return stack.replace(/(?:\n[^\n]*\blibs\/[^\n]*){2,}/g, (run) => {
+        const frames = run.split('\n');
+        return `\n${frames[1]}\n    … ${plural(frames.length - 2, 'more library frame')}`;
+    });
+}
+
 function formatLogArg(arg) {
     let text;
     let limit = CONSOLE_MAX_ARG_CHARS;
@@ -161,8 +175,8 @@ function formatLogArg(arg) {
         // Every frame is prefixed with chrome-extension://<32-char id>/, which is
         // 52 characters of nothing — about a quarter of the budget over four
         // frames. The repo-relative path is what a reader needs.
-        text = (arg.stack || `${arg.name}: ${arg.message}`)
-            .replace(/chrome-extension:\/\/[a-z]+\//g, '');
+        text = collapseLibraryFrames((arg.stack || `${arg.name}: ${arg.message}`)
+            .replace(/chrome-extension:\/\/[a-z]+\//g, ''));
         limit = CONSOLE_MAX_ERROR_CHARS;
     } else if (typeof arg === 'string') {
         text = arg;
@@ -175,7 +189,7 @@ function formatLogArg(arg) {
         }
     }
     return text.length > limit
-        ? `${text.slice(0, limit)}…(+${text.length - limit} chars)`
+        ? `${text.slice(0, limit)}…(+${plural(text.length - limit, 'char')})`
         : text;
 }
 
@@ -212,11 +226,10 @@ function isPromotedSignal(entry) {
 // The rendered line keeps the level in its text (`12:00:00.000 warn [file.js:12]: …`),
 // which FeedbackReport reads back to decide what to shed under the URL budget.
 function recordConsoleLine(timestamp, level, args, { site = '', fromLibrary = false } = {}) {
-    consoleRing.push({
-        level,
-        fromLibrary,
-        line: `${timestamp} ${level}${site}: ${args.map(formatLogArg).join(' ')}`
-    });
+    // `body` is the line without its timestamp — what makes two lines "the same"
+    // when a run of them is collapsed.
+    const body = `${level}${site}: ${args.map(formatLogArg).join(' ')}`;
+    consoleRing.push({ level, fromLibrary, body, line: `${timestamp} ${body}` });
     if (consoleRing.length > CONSOLE_RING_SIZE) {
         consoleRing.shift();
     }
@@ -227,12 +240,25 @@ function recordConsoleLine(timestamp, level, args, { site = '', fromLibrary = fa
 // continuous stream.
 function renderConsoleLines(picked) {
     const out = [];
+    let runLine = null;
+    let repeats = 1;
     for (let i = 0; i < picked.length; i++) {
-        const skipped = i === 0 ? 0 : picked[i].index - picked[i - 1].index - 1;
-        if (skipped > 0) {
-            out.push(`… ${skipped} lines skipped`);
+        const previous = i > 0 ? picked[i - 1] : null;
+        const skipped = previous ? picked[i].index - previous.index - 1 : 0;
+        // A run of identical lines says only that the same thing happened N
+        // times — which the count says exactly, in one line instead of N. Only
+        // an uninterrupted run: anything between them is part of the story.
+        if (previous && skipped === 0 && picked[i].entry.body === previous.entry.body) {
+            repeats++;
+            out[out.length - 1] = `${runLine} (×${repeats})`;
+            continue;
         }
-        out.push(picked[i].line);
+        repeats = 1;
+        runLine = picked[i].entry.line;
+        if (skipped > 0) {
+            out.push(`… ${plural(skipped, 'line')} skipped`);
+        }
+        out.push(runLine);
     }
     return out.join('\n');
 }
@@ -247,8 +273,8 @@ function renderConsoleLines(picked) {
 function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
     const recentFrom = Math.max(0, consoleRing.length - maxLines);
     const picked = consoleRing
-        .map((entry, index) => ({ line: entry.line, index }))
-        .filter(({ index }) => index >= recentFrom || isPromotedSignal(consoleRing[index]));
+        .map((entry, index) => ({ entry, index }))
+        .filter(({ entry, index }) => index >= recentFrom || isPromotedSignal(entry));
 
     while (picked.length > 1 && renderConsoleLines(picked).length > maxChars) {
         picked.shift();

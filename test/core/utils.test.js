@@ -166,8 +166,9 @@ describe('console log ring (FEAT-0024)', () => {
 
     it('trims the tail to the character budget, counting the dropped lines', () => {
         const scope = ringScope();
+        // Distinct lines: identical ones would collapse into a count instead.
         for (let i = 0; i < 20; i++) {
-            scope.window.console.debug('x'.repeat(100));
+            scope.window.console.debug('x'.repeat(100) + ' ' + i);
         }
         const { text, omitted } = scope.getConsoleLogTail({ maxLines: 50, maxChars: 500 });
         assert.ok(text.length <= 500, 'length ' + text.length);
@@ -236,6 +237,73 @@ describe('console log ring (FEAT-0024)', () => {
         const { text } = scope.getConsoleLogTail();
         assert.ok(!text.includes('chrome-extension://'), text);
         assert.ok(text.includes('at loadFileContent (src/core/utils.js:65:15)'), text);
+    });
+
+    it('collapses a run of identical lines into a count', () => {
+        const scope = ringScope();
+        scope.window.console.debug('before');
+        for (let i = 0; i < 4; i++) {
+            scope.window.console.info('called process file not found: Call1');
+        }
+        scope.window.console.debug('after');
+        const { text } = scope.getConsoleLogTail();
+        const lines = text.split('\n');
+        assert.equal(lines.length, 3, text);
+        assert.match(lines[1], /called process file not found: Call1 \(×4\)$/);
+    });
+
+    it('does not collapse repeats that something else came between', () => {
+        const scope = ringScope();
+        scope.window.console.debug('showing branch');
+        scope.window.console.debug('showing mr');
+        scope.window.console.debug('showing branch');
+        const { text } = scope.getConsoleLogTail();
+        assert.equal(text.split('\n').length, 3, text);
+        assert.ok(!text.includes('×'), text);
+    });
+
+    it('does not collapse two identical signals the tail selection pulled together', () => {
+        // Both warns are promoted out of the buffer, so they end up adjacent in the
+        // tail with a "lines skipped" marker between them. Merging them would claim
+        // the same thing happened twice in a row, which it did not.
+        const scope = ringScope();
+        // Through one helper, so both warns share a call site and so a body — two
+        // identical messages logged from different lines never look the same.
+        const warn = (message) => scope.window.console.warn(message);
+        warn('the same signal');
+        for (let i = 0; i < 5; i++) {
+            scope.window.console.debug('chatter-' + i);
+        }
+        warn('the same signal');
+        const { text } = scope.getConsoleLogTail({ maxLines: 1, maxChars: 4000 });
+        const lines = text.split('\n');
+        assert.equal(lines.length, 3, text);
+        assert.ok(lines[1].includes('… 5 lines skipped'), text);
+        assert.ok(!text.includes('×'), text);
+    });
+
+    it('counts one skipped line in the singular', () => {
+        const scope = ringScope();
+        scope.window.console.warn('the signal');
+        scope.window.console.debug('the one line in between');
+        scope.window.console.debug('the recent one');
+        const { text } = scope.getConsoleLogTail({ maxLines: 1, maxChars: 4000 });
+        assert.ok(text.includes('… 1 line skipped'), text);
+    });
+
+    it('collapses a minified library stack to the frame that entered it', () => {
+        const scope = ringScope();
+        const error = new scope.window.Error('deprecated');
+        error.stack = 'Error: deprecated\n'
+            + '    at as.getPad (libs/bpmn-js/bpmn-modeler.production.min.js:27:83808)\n'
+            + '    at libs/bpmn-js/bpmn-modeler.production.min.js:343:245139\n'
+            + '    at Object.click (libs/bpmn-js/bpmn-modeler.production.min.js:343:245208)\n'
+            + '    at as.trigger (libs/bpmn-js/bpmn-modeler.production.min.js:27:81733)';
+        scope.window.console.warn('library complaint', error);
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.includes('at as.getPad (libs/bpmn-js/bpmn-modeler.production.min.js:27:83808)'), text);
+        assert.ok(text.includes('… 3 more library frames'), text);
+        assert.ok(!text.includes('245139'), text);
     });
 
     it('records uncaught errors that never reach console.*', () => {

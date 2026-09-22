@@ -154,7 +154,15 @@ every buffered `info`/`warn`/`error`/`uncaught`/`unhandled-rejection`, wherever 
 `… N lines skipped` on the joins — except lines logged from `libs/`, which are never
 promoted: bpmn-js warns about a deprecated context-pad call on every click and dmn-js
 errors about its own build on every load ([INFRA-0001]), so promoting them would fill
-every report with a minified stack that is identical each time. A plain tail was the wrong shape — live `console.debug`
+every report with a minified stack that is identical each time.
+
+Three compressions came out of reading real reports: an uninterrupted run of identical
+lines collapses to `(×N)` — four clicks on a failing dive-in badge were four identical
+`info` lines, and `info` is a promoted level, so they would have crowded out the
+narrative; a minified `libs/` stack keeps only the frame that entered it, since
+`bpmn-modeler.production.min.js:27:83808` locates nothing without sources; and the
+markers count in the singular, because `… 1 debug lines dropped` shipped in a real
+report. A plain tail was the wrong shape — live `console.debug`
 calls outnumber `warn`+`error` 99 to 65, so a quiet ending regularly pushed the single
 warning that explains the report out of the window before the URL budget ever saw it. Two
 additions beyond the agreed plan, both because the first readers of these logs will be

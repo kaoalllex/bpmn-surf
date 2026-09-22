@@ -107,10 +107,10 @@ class FeedbackReport {
         }
         const markers = [];
         if (logTail.omitted > 0) {
-            markers.push(`… ${logTail.omitted} earlier lines omitted`);
+            markers.push(`… ${plural(logTail.omitted, 'earlier line')} omitted`);
         }
         if (logTail.debugDropped > 0) {
-            markers.push(`… ${logTail.debugDropped} debug lines dropped to fit the URL`);
+            markers.push(`… ${plural(logTail.debugDropped, 'debug line')} dropped to fit the URL`);
         }
         return [
             '<details>',

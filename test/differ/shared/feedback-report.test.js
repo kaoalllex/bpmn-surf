@@ -112,6 +112,12 @@ describe('FeedbackReport.buildBody', () => {
         assert.ok(out.includes('last line'), out);
     });
 
+    it('counts one dropped line in the singular', () => {
+        const out = FeedbackReport.buildBody(context, { text: 'last line', omitted: 1, debugDropped: 1 });
+        assert.ok(out.includes('… 1 earlier line omitted'), out);
+        assert.ok(out.includes('… 1 debug line dropped to fit the URL'), out);
+    });
+
     it('omits the markers when nothing was dropped', () => {
         const out = FeedbackReport.buildBody(context, { text: 'only line', omitted: 0 });
         assert.ok(!out.includes('earlier lines omitted'), out);
