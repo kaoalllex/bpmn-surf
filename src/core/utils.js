@@ -204,10 +204,18 @@ async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc) {
     }
     console.debug('sending message...');
     // Addressed, not broadcast: the params carry the diagram — including the
-    // user's local file in local-file mode. The tab is an about:blank this page
-    // just opened, so it inherits this origin; the differ's own listener already
-    // checks the sender's origin, and this closes the other half.
-    newWindow.postMessage(msg, window.location.origin);
+    // user's local file in local-file mode. The new tab is an about:blank this
+    // page just opened, so it inherits this page's origin.
+    //
+    // `window.origin`, NOT `location.origin`: this runs from the content script
+    // (a real origin) AND from a differ page opening a nested or edit tab — and a
+    // differ page is itself an about:blank, where `location.origin` is the string
+    // 'null' while the effective origin is the inherited one. Passing 'null'
+    // throws SyntaxError and the new tab never gets its params. `window.origin`
+    // reports the effective origin in both contexts, and is what the differ's own
+    // listener compares the sender against, so the two halves agree by
+    // construction.
+    newWindow.postMessage(msg, window.origin);
     console.debug('opening differ...done');
     return true;
 }

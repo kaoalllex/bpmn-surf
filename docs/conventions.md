@@ -8,6 +8,7 @@
 - ⚠️ Vanilla JavaScript only (ES6+): no TypeScript, frameworks, bundlers, or build step
 - ⚠️ Do not add new runtime dependencies; dev dependencies (`package.json#devDependencies`) — only with the user's approval (currently: `jsdom` and `@playwright/test` for tests, `esbuild` for minifying inside `sync:libs`, and the library packages themselves)
 - ⚠️ A library's error message may quote the input it choked on — moddle-xml renders a failed import as `unparsable content <a raw slice of the document> detected`. Never log such an error verbatim: the FEAT-0024 feedback report ships the console tail, and the diagram must never reach it. Reduce it first (`ConsoleLog.describeImportError`)
+- ⚠️ The differ page is itself an `about:blank`, so **`location.origin` there is the string `'null'`** while the effective origin is the opener's, inherited. Use `window.origin` for any origin check or `postMessage` target — `openDiffer` runs both from the content script (a real origin) and from a differ page opening a nested/edit tab, and `'null'` as a target origin throws. A test on an http page cannot see this (`differ-open-handshake.spec.js` covers both contexts on purpose)
 - ⚠️ Chrome Manifest V3
 - ⚠️ Preserve existing behavior, UX, and backward compatibility
 - ⚠️ If the user asks you to **come up with/propose something yourself** (names, codes, schema, structure, format) — first show the proposal and wait for confirmation, and only then do the work that depends on it (so as not to do it in vain)

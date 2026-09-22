@@ -270,6 +270,32 @@ describe('ConsoleLog: the ring and its tail', () => {
         assert.ok(scope.ConsoleLog.tail().text.includes('[unloggable argument]'));
     });
 
+    it('renders an error-like object that fails instanceof Error', () => {
+        // A DOMException, and anything thrown across realms — the differ page's
+        // scripts are injected by its opener — can fail that test and then come
+        // out as `{}`, which is what an unhandled rejection said in a real report.
+        const scope = ringScope();
+        const crossRealm = {
+            name: 'SyntaxError',
+            message: "Invalid target origin 'null' in a call to 'postMessage'",
+            stack: "SyntaxError: Invalid target origin 'null'\n    at openDiffer (src/core/utils.js:218:15)"
+        };
+        scope.window.console.warn('the rejection reason was:', crossRealm);
+        const { text } = scope.ConsoleLog.tail();
+        // Not JSON: that shape would also contain the message and the frame, so
+        // asserting on those alone cannot tell the two renderings apart.
+        assert.ok(!text.includes('{"name"'), text);
+        assert.ok(text.includes("SyntaxError: Invalid target origin 'null'"), text);
+        assert.ok(text.includes('at openDiffer (src/core/utils.js:218:15)'), text);
+    });
+
+    it('does not mistake an ordinary payload with a message field for an error', () => {
+        const scope = ringScope();
+        scope.window.console.debug('posting:', { id: 'msg_bpmn', message: 'hello' });
+        const { text } = scope.ConsoleLog.tail();
+        assert.ok(text.includes('{"id":"msg_bpmn","message":"hello"}'), text);
+    });
+
     it('renders a Map and a Set instead of an empty object', () => {
         const scope = ringScope();
         scope.window.console.debug('changed handler keys (2):',

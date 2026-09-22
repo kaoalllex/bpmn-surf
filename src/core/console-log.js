@@ -183,11 +183,24 @@ class ConsoleLog {
         }
     }
 
+    // Duck-typed, not `instanceof Error`: a DOMException, and anything thrown
+    // across realms — the differ page's scripts are injected by the opener — can
+    // fail that test and then render as `{}` through JSON.stringify, which is
+    // what an unhandled rejection looked like in a real report. Requiring a
+    // stack, or both a name and a message, keeps an ordinary `{ message }`
+    // payload out.
+    static #isErrorLike(arg) {
+        return arg instanceof Error
+            || (Boolean(arg) && typeof arg === 'object'
+                && (typeof arg.stack === 'string'
+                    || (typeof arg.name === 'string' && typeof arg.message === 'string')));
+    }
+
     static #formatArg(arg) {
         let text;
         let limit = ConsoleLog.MAX_ARG_CHARS;
         try {
-            if (arg instanceof Error) {
+            if (ConsoleLog.#isErrorLike(arg)) {
                 // Every frame is prefixed with chrome-extension://<32-char id>/,
                 // which is 52 characters of nothing — about a quarter of the
                 // budget over four frames. The repo-relative path is what a

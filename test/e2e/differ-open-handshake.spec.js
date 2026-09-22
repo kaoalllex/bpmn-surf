@@ -7,6 +7,7 @@
 // params message is pinned here rather than only reasoned about.
 const { test, expect } = require('@playwright/test');
 
+// Case one: called from the content script, i.e. from a page with a real origin.
 test('openDiffer addresses the params message to this origin, not to everyone', async ({ page }) => {
     await page.goto('/test/e2e/harness/differ-harness.html');
     await page.addScriptTag({ url: '/src/core/utils.js' });
@@ -66,4 +67,67 @@ test('a differ tab accepts the message its opener addressed to it', async ({ pag
     expect(received).not.toBeNull();
     expect(received.id).toBe('msg_test');
     expect(received.sender).toBe(received.own);
+});
+
+// Case two, and the one that actually broke: openDiffer is ALSO called from a
+// differ page — diving into a Call Activity, opening the editor — and a differ
+// page is itself an `about:blank`, where `location.origin` is the string 'null'.
+// Addressing the message to that throws SyntaxError, the new tab never gets its
+// params, and it sits blank. A test on an http page cannot see this, which is
+// exactly how the bug shipped; do not "simplify" this one onto the harness page.
+test('openDiffer works from a differ page too, where location.origin is "null"', async ({ page }) => {
+    await page.goto('/test/e2e/harness/differ-harness.html');
+
+    const result = await page.evaluate(async () => {
+        const differTab = window.open('about:blank');
+        // The two core files, injected the way openDiffer injects them.
+        for (const src of ['/src/core/utils.js', '/src/core/console-log.js']) {
+            await new Promise((resolve, reject) => {
+                const element = differTab.document.createElement('script');
+                element.src = src;
+                element.onload = resolve;
+                element.onerror = reject;
+                differTab.document.head.appendChild(element);
+            });
+        }
+        const json = await differTab.eval(`(async () => {
+            loadScripts = async () => {};
+            const opened = [];
+            const realOpen = window.open;
+            let child = null;
+            window.open = (...args) => {
+                child = realOpen(...args);
+                const realPost = child.postMessage.bind(child);
+                child.postMessage = (message, targetOrigin) => {
+                    opened.push({ targetOrigin, id: message.id });
+                    realPost(message, targetOrigin);
+                };
+                return child;
+            };
+            const result = { locationOrigin: location.origin, origin: window.origin };
+            try {
+                result.ok = await openDiffer(
+                    { fileName: 'process.bpmn' }, null, 'msg_test', (name) => '/' + name);
+            } catch (error) {
+                result.threw = error.name + ': ' + error.message;
+            } finally {
+                window.open = realOpen;
+                if (child) child.close();
+            }
+            result.opened = opened;
+            return JSON.stringify(result);
+        })()`);
+        differTab.close();
+        return JSON.parse(json);
+    });
+
+    // The context this test exists for.
+    expect(result.locationOrigin).toBe('null');
+    expect(result.origin).not.toBe('null');
+
+    expect(result.threw).toBeUndefined();
+    expect(result.ok).toBe(true);
+    expect(result.opened).toHaveLength(1);
+    expect(result.opened[0].id).toBe('msg_test');
+    expect(result.opened[0].targetOrigin).toBe(result.origin);
 });
