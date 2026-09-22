@@ -349,6 +349,29 @@ describe('console log ring (FEAT-0024)', () => {
         assert.ok(!text.includes('245139'), text);
     });
 
+    it('survives an argument that throws while being stringified', () => {
+        // The proxy sits in front of every console.* call on the page, so a
+        // hostile argument must not turn a log call into an exception.
+        const scope = ringScope();
+        const hostile = {
+            toJSON() { throw new scope.window.Error('toJSON boom'); },
+            toString() { throw new scope.window.Error('toString boom'); }
+        };
+        assert.doesNotThrow(() => scope.window.console.warn('bad arg incoming', hostile));
+        assert.ok(scope.getConsoleLogTail().text.includes('[unloggable argument]'));
+    });
+
+    it('renders a Map and a Set instead of an empty object', () => {
+        const scope = ringScope();
+        scope.window.console.debug('changed handler keys (2):',
+            new Map([['topic:pay', 'Pay.java'], ['topic:ship', 'Ship.java']]));
+        scope.window.console.debug('tags:', new Set(['a', 'b']));
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.includes('{"topic:pay":"Pay.java","topic:ship":"Ship.java"}'), text);
+        assert.ok(text.includes('["a","b"]'), text);
+        assert.ok(!text.includes('{}'), text);
+    });
+
     it('records uncaught errors that never reach console.*', () => {
         const scope = ringScope();
         scope.window.dispatchEvent(new scope.window.ErrorEvent('error', { message: 'uncaught boom' }));
@@ -431,5 +454,40 @@ describe('library-origin log lines (FEAT-0024)', () => {
         assert.equal(isPromotedSignal({ level: 'info', fromLibrary: false }), true);
         assert.equal(isPromotedSignal({ level: 'uncaught', fromLibrary: false }), true);
         assert.equal(isPromotedSignal({ level: 'debug', fromLibrary: false }), false);
+    });
+});
+
+describe('describeImportError (FEAT-0024)', () => {
+    const { describeImportError } = createScope();
+
+    // Verbatim from bpmn-js: a parse that dies on a text node quotes that text.
+    const leaky = new Error('unparsable content Pay supplier ACME under contract '
+        + '44-19/b, account 40817810099910004312, approver a.ivanov detected\n'
+        + '\tline: 0\n\tcolumn: 172\n\tnested error: unexpected end of file');
+
+    it('drops the quoted document and keeps what locates the failure', () => {
+        const described = describeImportError(leaky);
+        assert.ok(!described.includes('ACME'), described);
+        assert.ok(!described.includes('40817810099910004312'), described);
+        assert.ok(!described.includes('a.ivanov'), described);
+        assert.ok(!described.includes('unparsable content'), described);
+        assert.equal(described, 'Error: line 0, column 172 — unexpected end of file');
+    });
+
+    it('drops a quoted tag name too', () => {
+        const described = describeImportError(new Error(
+            'unparsable content <bpmn:serviceTask id="PaySupplier"> detected; this may '
+            + 'indicate an invalid BPMN 2.0 diagram file\n\tline: 0\n\tcolumn: 129\n'
+            + '\tnested error: closing tag mismatch'));
+        assert.ok(!described.includes('bpmn:serviceTask'), described);
+        assert.ok(!described.includes('PaySupplier'), described);
+        assert.equal(described, 'Error: line 0, column 129 — closing tag mismatch');
+    });
+
+    it('withholds everything when the shape is not recognised', () => {
+        // A library upgrade may reword the message; nothing matched must leak nothing.
+        const described = describeImportError(new Error('totally new wording quoting <secret/>'));
+        assert.ok(!described.includes('secret'), described);
+        assert.equal(described, 'import failed; details withheld — they can quote the document');
     });
 });

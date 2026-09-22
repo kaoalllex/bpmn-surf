@@ -29,6 +29,12 @@ class FeedbackReport {
     // clear of the cliff — the log is what gets trimmed to fit.
     static MAX_URL_LENGTH = 7000;
 
+    // The log is the only part buildUrl can shed, so everything else must be
+    // bounded here or the budget is not a budget: a branch name is whatever the
+    // repository allows. Generous enough that nothing real is touched.
+    static MAX_CELL_CHARS = 200;
+    static MAX_LINK_CHARS = 500;
+
     static buildTitle(context) {
         return `[differ] ${context.fileName || 'diagram'}`;
     }
@@ -60,10 +66,11 @@ class FeedbackReport {
             // Addressed to whoever is about to press Submit, so it is a comment:
             // GitHub's new-issue form shows it plainly, and the published issue
             // does not carry a privacy notice nobody needs any more.
-            '<!-- The diagram file itself is never attached. The log above can still',
-            '     contain file paths, branch names, your host and identifiers from the',
-            '     diagram (process and element ids, topic names) — review it, and edit',
-            '     or delete anything you would rather not share. -->'
+            '<!-- No diagram content is included. Everything above can still identify',
+            '     your work: your host, the project path, branch names and commit ids,',
+            '     the merge request, file paths and links, and names from the diagram',
+            '     (process and element ids, topic and message names). Review it, and',
+            '     edit or delete anything you would rather not share. -->'
         ].join('\n');
     }
 
@@ -181,13 +188,27 @@ class FeedbackReport {
 
     static #side(label, url) {
         return url
-            ? `${FeedbackReport.#cell(label)} — ${url}`
+            ? `${FeedbackReport.#cell(label)} — ${FeedbackReport.#link(url)}`
             : `${FeedbackReport.#cell(label)} — n/a (file absent on this side)`;
+    }
+
+    // A truncated link is a broken link, but a link long enough to matter here
+    // would cost the whole report a 414.
+    static #link(url) {
+        return FeedbackReport.#clamp(String(url), FeedbackReport.MAX_LINK_CHARS);
     }
 
     // A pipe would break the markdown table row; the values are short labels and
     // refs, so escaping the separator is all that is needed.
     static #cell(value) {
-        return value == null ? '—' : String(value).replace(/\|/g, '\\|');
+        if (value == null) {
+            return '—';
+        }
+        return FeedbackReport.#clamp(
+            String(value).replace(/\|/g, '\\|'), FeedbackReport.MAX_CELL_CHARS);
+    }
+
+    static #clamp(text, limit) {
+        return text.length > limit ? `${text.slice(0, limit)}…` : text;
     }
 }

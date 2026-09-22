@@ -171,22 +171,35 @@ function collapseLibraryFrames(stack) {
 function formatLogArg(arg) {
     let text;
     let limit = CONSOLE_MAX_ARG_CHARS;
-    if (arg instanceof Error) {
-        // Every frame is prefixed with chrome-extension://<32-char id>/, which is
-        // 52 characters of nothing — about a quarter of the budget over four
-        // frames. The repo-relative path is what a reader needs.
-        text = collapseLibraryFrames((arg.stack || `${arg.name}: ${arg.message}`)
-            .replace(/chrome-extension:\/\/[a-z]+\//g, ''));
-        limit = CONSOLE_MAX_ERROR_CHARS;
-    } else if (typeof arg === 'string') {
-        text = arg;
-    } else {
-        try {
-            const json = JSON.stringify(arg);
-            text = json === undefined ? String(arg) : json;
-        } catch (error) {
-            text = String(arg);
+    try {
+        if (arg instanceof Error) {
+            // Every frame is prefixed with chrome-extension://<32-char id>/, which is
+            // 52 characters of nothing — about a quarter of the budget over four
+            // frames. The repo-relative path is what a reader needs.
+            text = collapseLibraryFrames((arg.stack || `${arg.name}: ${arg.message}`)
+                .replace(/chrome-extension:\/\/[a-z]+\//g, ''));
+            limit = CONSOLE_MAX_ERROR_CHARS;
+        } else if (typeof arg === 'string') {
+            text = arg;
+        } else {
+            // Tag-based, not instanceof: a Map built in another realm is still a
+            // Map, and JSON.stringify renders either one as '{}' — which is how a
+            // line reporting a Map's contents came out saying nothing at all.
+            const tag = Object.prototype.toString.call(arg);
+            if (tag === '[object Map]') {
+                text = JSON.stringify(Object.fromEntries(arg));
+            } else if (tag === '[object Set]') {
+                text = JSON.stringify(Array.from(arg));
+            } else {
+                const json = JSON.stringify(arg);
+                text = json === undefined ? String(arg) : json;
+            }
         }
+    } catch (error) {
+        // This runs inside the console proxy, so nothing an argument does may
+        // escape: a throwing toString/toJSON/getter would otherwise turn an
+        // ordinary log call into an uncaught exception at its own call site.
+        text = '[unloggable argument]';
     }
     return text.length > limit
         ? `${text.slice(0, limit)}…(+${plural(text.length - limit, 'char')})`
@@ -333,6 +346,34 @@ function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
         text = text.slice(-maxChars);
     }
     return { text, omitted: picked.length ? picked[0].index : consoleRing.length };
+}
+
+// A failed diagram import must never be logged verbatim. moddle-xml renders the
+// parser's complaint as `unparsable content <slice> detected`, and that slice is
+// a raw substring of the user's document — it shortens it only when the slice
+// looks like a tag, so a parse that dies on a text node quotes the text. The
+// line would also be the most durable one in a feedback report (level `error`,
+// call site in our own code, so never shed), and the report promises to carry no
+// diagram content (FEAT-0024).
+//
+// A whitelist, not a redaction: keep the position and the parser's own reason,
+// which cannot be document text, and drop the rest. If a library upgrade changes
+// the shape, nothing matches and nothing leaks.
+function describeImportError(error) {
+    const message = String((error && error.message) || error);
+    const parts = [];
+    const position = message.match(/line:\s*(\d+)[\s\S]*?column:\s*(\d+)/);
+    if (position) {
+        parts.push(`line ${position[1]}, column ${position[2]}`);
+    }
+    const reason = message.match(/nested error:\s*([^\n]{0,80})/);
+    if (reason) {
+        parts.push(reason[1].trim());
+    }
+    if (!parts.length) {
+        return 'import failed; details withheld — they can quote the document';
+    }
+    return `${(error && error.name) || 'Error'}: ${parts.join(' — ')}`;
 }
 
 // What is safe to log about the params a differ tab was opened with. The raw

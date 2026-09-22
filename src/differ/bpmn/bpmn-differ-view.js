@@ -552,7 +552,9 @@ class BpmnDifferView {
         const rightGroup = this.#group();
         rightGroup.appendChild(this.#createHidePropsButton());
         this.#feedbackButton = this.#button({
-            icon: '💬', title: BpmnDifferView.FEEDBACK_TITLE,
+            icon: '💬',
+            title: BpmnDifferView.FEEDBACK_TITLE,
+            ariaLabel: BpmnDifferView.FEEDBACK_TITLE,
             onClick: () => this.#callbacks.onFeedback()
         });
         rightGroup.appendChild(this.#feedbackButton);
@@ -564,10 +566,10 @@ class BpmnDifferView {
         const flagFailure = () => {
             this.#feedbackButton.classList.add('differ-feedback-alert');
             this.#feedbackButton.title = BpmnDifferView.FEEDBACK_ALERT_TITLE;
+            this.#feedbackButton.setAttribute('aria-label', BpmnDifferView.FEEDBACK_ALERT_TITLE);
         };
         window.addEventListener('error', flagFailure);
         window.addEventListener('unhandledrejection', flagFailure);
-
 
         //--- close group (destructive, separated)
         const closeGroup = this.#group();

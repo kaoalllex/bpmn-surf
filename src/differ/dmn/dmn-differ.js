@@ -210,7 +210,7 @@ class DmnDiffer {
             // const { warnings } = result;
             // console.debug('dmn schema loaded succesfully', warnings);
         } catch (err) {
-            console.error('dmn loading error', err);
+            console.error('dmn loading error', describeImportError(err));
             return;
         }
         this.#switchToViewTableMode();

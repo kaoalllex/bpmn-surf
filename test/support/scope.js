@@ -140,7 +140,7 @@ const EXPORTED_NAMES = [
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
     'findPropertiesGroupHeader',
     'appendTimeToConsoleLogs', 'getConsoleLogTail', 'describeDifferParams',
-    'callSiteFromStack', 'isPromotedSignal'
+    'callSiteFromStack', 'isPromotedSignal', 'describeImportError'
 ];
 
 // Creates a fresh isolated scope per test file (or per test, if needed):

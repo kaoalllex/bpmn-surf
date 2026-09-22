@@ -557,7 +557,7 @@ class BpmnDiffer {
             // const { warnings } = result;
             // console.debug('bpmn schema loaded succesfully', warnings);
         } catch (err) {
-            console.error('bpmn schema loading error', err);
+            console.error('bpmn schema loading error', describeImportError(err));
             return;
         }
 

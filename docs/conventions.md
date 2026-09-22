@@ -7,6 +7,7 @@
 - ⚠️ The shared differ-page classes (`DifferParams`, `DiagramVersions`, `BranchIndicator`, `DiffType`) are used by both the BPMN and the DMN differ — before renaming/changing them, Grep across all js files
 - ⚠️ Vanilla JavaScript only (ES6+): no TypeScript, frameworks, bundlers, or build step
 - ⚠️ Do not add new runtime dependencies; dev dependencies (`package.json#devDependencies`) — only with the user's approval (currently: `jsdom` and `@playwright/test` for tests, `esbuild` for minifying inside `sync:libs`, and the library packages themselves)
+- ⚠️ A library's error message may quote the input it choked on — moddle-xml renders a failed import as `unparsable content <a raw slice of the document> detected`. Never log such an error verbatim: the FEAT-0024 feedback report ships the console tail, and the diagram must never reach it. Reduce it first (`utils.js#describeImportError`)
 - ⚠️ Chrome Manifest V3
 - ⚠️ Preserve existing behavior, UX, and backward compatibility
 - ⚠️ If the user asks you to **come up with/propose something yourself** (names, codes, schema, structure, format) — first show the proposal and wait for confirmation, and only then do the work that depends on it (so as not to do it in vain)

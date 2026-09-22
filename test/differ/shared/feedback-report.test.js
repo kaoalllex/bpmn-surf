@@ -126,8 +126,12 @@ describe('FeedbackReport.buildBody', () => {
 
     it('addresses the privacy notice to the submitter, not to the published issue', () => {
         // A comment: plainly visible in GitHub's new-issue form, gone once posted.
-        assert.ok(body.includes('<!-- The diagram file itself is never attached.'), body);
-        assert.ok(body.includes('identifiers from the'), body);
+        assert.ok(body.includes('<!-- No diagram content is included.'), body);
+        // It must name what is really there, not a comfortable subset.
+        for (const named of ['your host', 'branch names and commit ids',
+            'the merge request', 'file paths and links', 'process and element ids']) {
+            assert.ok(body.includes(named), `the notice does not mention ${named}`);
+        }
         assert.ok(body.trimEnd().endsWith('-->'), body);
     });
 
@@ -170,6 +174,18 @@ describe('FeedbackReport.buildUrl', () => {
         // The warnings outlive the debug chatter: they are what a reader needs.
         assert.ok(body.includes('n45'), 'the last warn line must survive');
         assert.ok(!body.includes('n1 '), 'early debug lines should be gone');
+    });
+
+    it('stays inside the budget even when the context itself is pathological', () => {
+        // The log is the only part buildUrl can shed, so a branch name of any
+        // length must not be able to blow the budget on its own.
+        const url = FeedbackReport.buildUrl(FEEDBACK_URL, {
+            ...context,
+            sourceLabel: 'x'.repeat(8000),
+            sourceUrl: 'https://host/' + 'y'.repeat(8000),
+            hostUrl: 'https://' + 'z'.repeat(8000)
+        }, emptyLog);
+        assert.ok(url.length <= FeedbackReport.MAX_URL_LENGTH, 'length ' + url.length);
     });
 
     it('still produces a usable URL when the log cannot fit at all', () => {

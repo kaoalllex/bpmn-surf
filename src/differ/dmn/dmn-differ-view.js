@@ -147,7 +147,7 @@ class DmnDifferView {
         return group;
     }
 
-    // opts: { text, icon, title, danger, strong, minWidth, disabled, onClick }
+    // opts: { text, icon, title, ariaLabel, danger, strong, minWidth, disabled, onClick }
     #button(opts) {
         const button = document.createElement('button');
         button.className = DmnDifferView.BTN_CLASS + ' differ-btn'
@@ -157,6 +157,11 @@ class DmnDifferView {
         button.textContent = opts.icon || opts.text;
         if (opts.title) {
             button.title = opts.title;
+        }
+        // An icon button's text content is a glyph, so it needs a spelled-out
+        // accessible name of its own.
+        if (opts.ariaLabel) {
+            button.setAttribute('aria-label', opts.ariaLabel);
         }
         if (opts.minWidth) {
             button.style.minWidth = opts.minWidth + 'px';
@@ -242,7 +247,9 @@ class DmnDifferView {
         //--- feedback (FEAT-0024): report this exact diff, context prefilled
         const feedbackGroup = this.#group();
         this.#feedbackButton = this.#button({
-            icon: '💬', title: DmnDifferView.FEEDBACK_TITLE,
+            icon: '💬',
+            title: DmnDifferView.FEEDBACK_TITLE,
+            ariaLabel: DmnDifferView.FEEDBACK_TITLE,
             onClick: () => this.#callbacks.onFeedback()
         });
         feedbackGroup.appendChild(this.#feedbackButton);
@@ -254,10 +261,10 @@ class DmnDifferView {
         const flagFailure = () => {
             this.#feedbackButton.classList.add('differ-feedback-alert');
             this.#feedbackButton.title = DmnDifferView.FEEDBACK_ALERT_TITLE;
+            this.#feedbackButton.setAttribute('aria-label', DmnDifferView.FEEDBACK_ALERT_TITLE);
         };
         window.addEventListener('error', flagFailure);
         window.addEventListener('unhandledrejection', flagFailure);
-
 
         //--- close group (destructive, separated)
         const closeGroup = this.#group();

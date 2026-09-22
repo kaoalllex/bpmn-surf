@@ -195,6 +195,41 @@ same way — panel toggle · feedback · close. Two e2e specs updated to locate 
 `registries.test.js` gained a duplicate-path guard after this work introduced one that
 every existing check happily ignored.
 
+An independent review of the finished branch (two agents, one on correctness, one on the
+privacy claim alone) found four real defects, all fixed here and each pinned by a test
+observed failing:
+
+- **The report could carry the diagram after all.** bpmn-js/dmn-js render a failed import
+  as `unparsable content <slice> detected`, where the slice is a raw substring of the
+  user's file — shortened only when it looks like a tag, so a parse dying on a text node
+  quoted the text. Both orchestrators logged that error verbatim, and the line was the
+  most durable one in a report (level `error`, call site in our own code, so never shed).
+  `describeImportError` now keeps only the position and the parser's own reason, by
+  whitelist: if a library upgrade rewords the message, nothing matches and nothing leaks.
+  Reproduced against real bpmn-js before fixing, and guarded end to end.
+- **The console proxy could throw.** `formatLogArg` fell back to `String(arg)` when
+  `JSON.stringify` threw; an argument whose `toString` also throws made an ordinary
+  `console.warn` raise at its own call site — and the proxy now sits in front of every
+  log call on the page.
+- **The URL budget was not enforced.** Only log lines were ever shed, so a long branch
+  name pushed the URL past the limit with nothing left to trim (measured: 9268 against a
+  7000 limit). The context fields are now bounded, which is what makes the budget real.
+- **A `Map` logged as `{}`.** `changed handler keys (7): {}` had been saying nothing;
+  tagged rendering fixes it for Maps and Sets in any realm.
+
+Also fixed from that review: the 💬 button had no `aria-label` although the same diff
+introduced that rule for the properties toggle, and the body's notice named a comfortable
+subset of what the report carries — it now names commit ids, the merge request, the
+project path and the links as well. One finding was declined: the badge wiring duplicated
+between the two views, which the reviewer itself judged not worth an abstraction — the
+view classes are parallel by design.
+
+**Recorded correction to the decisions above:** "the extension itself sends nothing" is
+true of the extension, but the body travels *in the URL*, so github.com receives the whole
+context table and log in the GET the click issues — before the user reads or edits
+anything. The issue form is a preview of what gets **published**, not of what reaches
+GitHub.
+
 **Dropped, not deferred:** surface 3 (empty/error state — see above), `mailto:` (the
 GitHub issue form is the preview and the private-report argument died with the move to a
 public tracker), and the cross-scope console tail via `window.opener` (needs its own

@@ -31,6 +31,7 @@ labels: ''
 
 <!-- Optional. The 💬 button attaches the tail of the differ tab's console. -->
 
-<!-- The diagram file itself is never attached automatically. A log can still
-     contain file paths, branch names, your host and identifiers from the diagram
-     (process and element ids, topic names) — review it before submitting. -->
+<!-- No diagram content is filled in automatically. What is can still identify
+     your work: your host, the project path, branch names and commit ids, file
+     paths and links, and names from the diagram (process and element ids, topic
+     and message names) — review it before submitting. -->
