@@ -492,7 +492,11 @@ async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc) {
         params: params
     }
     console.debug('sending message...');
-    newWindow.postMessage(msg, '*');
+    // Addressed, not broadcast: the params carry the diagram — including the
+    // user's local file in local-file mode. The tab is an about:blank this page
+    // just opened, so it inherits this origin; the differ's own listener already
+    // checks the sender's origin, and this closes the other half.
+    newWindow.postMessage(msg, window.location.origin);
     console.debug('opening differ...done');
     return true;
 }
