@@ -224,6 +224,13 @@ project path and the links as well. One finding was declined: the badge wiring d
 between the two views, which the reviewer itself judged not worth an abstraction — the
 view classes are parallel by design.
 
+A fifth defect came out of a real report afterwards, and only because the report was read
+arithmetically: a `warn` that the second tier must have promoted was missing from it. The
+character budget in `getConsoleLogTail` trimmed from the front of the selection — which is
+exactly where promoted signals sit, being older than the recent window by definition — so
+any tail long enough to hit 4 KB silently undid the promotion and kept recent chatter in
+its place. It now sheds non-signal entries first, and marks what it removed.
+
 **Recorded correction to the decisions above:** "the extension itself sends nothing" is
 true of the extension, but the body travels *in the URL*, so github.com receives the whole
 context table and log in the GET the click issues — before the user reads or edits

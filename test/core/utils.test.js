@@ -372,6 +372,30 @@ describe('console log ring (FEAT-0024)', () => {
         assert.ok(!text.includes('{}'), text);
     });
 
+    it('keeps a promoted signal when the character budget bites, shedding chatter instead', () => {
+        // The budget used to trim from the front of the selection, which is
+        // exactly where promoted signals sit — they are older than the recent
+        // window by definition — so a long tail silently undid the second tier.
+        const scope = ringScope();
+        const warn = (message) => scope.window.console.warn(message);
+        const debug = (message) => scope.window.console.debug(message);
+
+        warn('cannot blob-search the process file for Call1');
+        for (let i = 0; i < 40; i++) {
+            debug('old chatter ' + i);
+        }
+        for (let i = 0; i < 45; i++) {
+            debug('recent chatter ' + 'x'.repeat(100) + ' ' + i);
+        }
+
+        const { text } = scope.getConsoleLogTail();
+        assert.ok(text.length <= 4000, 'length ' + text.length);
+        assert.ok(text.includes('cannot blob-search the process file for Call1'), text);
+        // The newest line is still there, so the trimming took the middle.
+        assert.ok(text.includes('recent chatter'), text);
+        assert.ok(/… \d+ lines? skipped/.test(text), text);
+    });
+
     it('records uncaught errors that never reach console.*', () => {
         const scope = ringScope();
         scope.window.dispatchEvent(new scope.window.ErrorEvent('error', { message: 'uncaught boom' }));

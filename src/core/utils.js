@@ -339,7 +339,13 @@ function getConsoleLogTail({ maxLines = 50, maxChars = 4000 } = {}) {
         .filter(({ entry, index }) => index >= recentFrom || isPromotedSignal(entry));
 
     while (picked.length > 1 && renderConsoleLines(picked).length > maxChars) {
-        picked.shift();
+        // Shed the narrative before the signals. Shifting blindly from the front
+        // discarded exactly what the second tier had promoted — promoted entries
+        // are by definition older than the recent window, so they sit at the
+        // front — and left recent chatter in their place. What goes is marked, so
+        // the gap is visible rather than silent.
+        const droppable = picked.findIndex(({ entry }) => !isPromotedSignal(entry));
+        picked.splice(droppable >= 0 ? droppable : 0, 1);
     }
     let text = renderConsoleLines(picked);
     if (text.length > maxChars) {
