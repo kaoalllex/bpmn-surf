@@ -678,6 +678,18 @@ class BpmnDiffer {
     // the file in the exact shown version. A side with no repo ref (local file
     // used as the source), or where the file is absent (new/deleted in the MR),
     // yields url:null → an inactive, non-link path (the blob URL would 404 there).
+    #feedbackColoringState() {
+        if (!this.#editSession) {
+            return null;
+        }
+        if (this.#editSession.coloringPaused) {
+            return FeedbackReport.COLORING_PAUSED;
+        }
+        return this.#editSession.coloringEnabled
+            ? FeedbackReport.COLORING_ON
+            : FeedbackReport.COLORING_OFF;
+    }
+
     // FEAT-0024: open a GitHub issue prefilled with this diff's context and the
     // tail of this tab's console. Nothing is sent — the user sees the whole body
     // in GitHub's own form and edits or abandons it there.
@@ -688,6 +700,8 @@ class BpmnDiffer {
             hostUrl: this.#params.platform.hostUrl,
             changeRequestId: this.#params.changeRequestId,
             editSide: this.#isEditMode() ? this.#params.editSide : null,
+            editDirty: Boolean(this.#editSession && this.#editSession.isDirty()),
+            editColoring: this.#feedbackColoringState(),
             fileName: this.#params.fileName,
             fileType: 'BPMN',
             sourceKind: FeedbackReport.sourceKindFor(this.#params),

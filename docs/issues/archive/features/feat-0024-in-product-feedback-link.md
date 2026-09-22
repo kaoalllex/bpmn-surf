@@ -132,6 +132,14 @@ one misleading row: a branch view has no second side (now one `Version` row, not
 `Compared` row claiming a missing file), a local-file comparison is present but has no
 repository URL (now named as a local file), and only an added/deleted file in a merge
 request is genuinely "absent on this side".
+
+An `Edit session` row was added for the same reason, after an edit-mode report came back
+with a log that stopped at boot: the whole edit subsystem writes to the console exactly
+once, in a `catch`. The row says whether the diagram was touched and whether the diff
+colouring is on, off or **paused** — paused meaning a recompute failed and the colours on
+screen are the last good ones, which is precisely when a user reports that the diff is
+wrong. A row rather than log lines, because the recompute runs on every change and a line
+per recompute would push the rest of the session out of the budget.
 The budget is on the **whole URL** (7000 chars, GitHub 414s around 8 KB), so the log
 sheds lines until it fits — debug chatter first, wherever it sits, because a warning or
 a stack trace is worth more to a reader than the debug line before it. Both markers are

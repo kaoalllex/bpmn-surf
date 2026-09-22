@@ -55,6 +55,27 @@ describe('FeedbackReport.buildBody', () => {
 
     it('leaves view mode unannotated — it is the default', () => {
         assert.ok(!body.includes('edit mode'), body);
+        assert.ok(!body.includes('| Edit session |'), body);
+    });
+
+    it('reports the edit session, since nothing about editing reaches the log', () => {
+        const editing = { ...context, editSide: 'source', editDirty: true, editColoring: 'on' };
+        assert.ok(FeedbackReport.buildBody(editing, emptyLog)
+            .includes('| Edit session | edited, colouring on |'),
+            FeedbackReport.buildBody(editing, emptyLog));
+
+        const untouched = { ...editing, editDirty: false, editColoring: 'off' };
+        assert.ok(FeedbackReport.buildBody(untouched, emptyLog)
+            .includes('| Edit session | untouched, colouring off |'),
+            FeedbackReport.buildBody(untouched, emptyLog));
+    });
+
+    it('spells out a paused colouring, which is why a diff can look wrong', () => {
+        const paused = { ...context, editSide: 'target', editDirty: true, editColoring: 'paused' };
+        const out = FeedbackReport.buildBody(paused, emptyLog);
+        assert.ok(out.includes(
+            '| Edit session | edited, colouring paused — the colours on screen are the last good ones |'),
+            out);
     });
 
     it('says a file is absent only when it really is — a side that exists but has no file', () => {

@@ -18,6 +18,13 @@ class FeedbackReport {
     static SOURCE_LOCAL_FILE = 'local-file';
     static SOURCE_NONE = 'none';
 
+    // How the edit session's diff colouring stands. `paused` means a recompute
+    // failed and the colours on screen are the last good ones — the one state a
+    // reader must know about before believing a complaint that the diff is wrong.
+    static COLORING_ON = 'on';
+    static COLORING_OFF = 'off';
+    static COLORING_PAUSED = 'paused';
+
     // GitHub answers 414 to a prefilled issue URL somewhere around 8 KB. Stay
     // clear of the cliff — the log is what gets trimmed to fit.
     static MAX_URL_LENGTH = 7000;
@@ -44,6 +51,7 @@ class FeedbackReport {
             `| Page | ${FeedbackReport.#pageDescription(context)} |`,
             `| File | ${FeedbackReport.#cell(context.fileName)} (${FeedbackReport.#cell(context.fileType)}) |`,
             ...FeedbackReport.#comparisonRows(context),
+            ...FeedbackReport.#editRow(context),
             '',
             '## Console log',
             '',
@@ -136,6 +144,20 @@ class FeedbackReport {
             return FeedbackReport.SOURCE_LOCAL_FILE;
         }
         return sourceRef ? FeedbackReport.SOURCE_REF : FeedbackReport.SOURCE_NONE;
+    }
+
+    // Nothing in the edit subsystem writes to the console on a normal session, so
+    // without this the log of an edit-mode report stops at boot and says nothing
+    // about the editing. A row is bounded, unlike a line per recompute.
+    static #editRow(context) {
+        if (!context.editSide) {
+            return [];
+        }
+        const edits = context.editDirty ? 'edited' : 'untouched';
+        const coloring = context.editColoring === FeedbackReport.COLORING_PAUSED
+            ? 'colouring paused — the colours on screen are the last good ones'
+            : `colouring ${FeedbackReport.#cell(context.editColoring)}`;
+        return [`| Edit session | ${edits}, ${coloring} |`];
     }
 
     static #comparisonRows(context) {

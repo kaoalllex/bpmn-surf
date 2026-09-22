@@ -163,4 +163,24 @@ test('BPMN edit mode: the report says which side is being edited', async ({ page
 
     const { body } = await pressFeedback(page);
     expect(body).toContain('**edit mode**, editing the source side');
+    // Nothing in the edit subsystem logs, so this row is all a reader gets
+    // about the editing itself.
+    expect(body).toContain('| Edit session | untouched, colouring on |');
+});
+
+test('BPMN edit mode: the report notices that the diagram was edited', async ({ page }) => {
+    const { defaultBpmnParams } = require('./support/boot-differ.js');
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: defaultBpmnParams({ mode: 'edit', editSide: 'source' }) });
+
+    // Rename a task through the modeler — that is what puts a command on the stack.
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        modeler.get('modeling').updateProperties(
+            modeler.get('elementRegistry').get('Task_1'), { name: 'Renamed by the test' });
+    });
+    await expect(page.locator('.edit-diff-changed')).toHaveCount(1, { timeout: 5000 });
+
+    const { body } = await pressFeedback(page);
+    expect(body).toContain('| Edit session | edited, colouring on |');
 });
