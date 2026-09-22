@@ -30,7 +30,7 @@ class DmnDiffer {
     }
 
     async show() {
-        console.debug('diff params: ', this.#rawParams);
+        console.debug('diff params:', ConsoleLog.describeDifferParams(this.#rawParams));
         this.#init();
         console.debug('init done');
 
@@ -86,7 +86,8 @@ class DmnDiffer {
         this.#tabNavigator.registerTab(this.#params.identityKey());
         this.#view = new DmnDifferView(this.#params, this.#branchIndicator, this.#viewport, {
             onDownload: () => this.#downloadShownBranchFile(),
-            onSwitchBranch: () => this.#switchBranch()
+            onSwitchBranch: () => this.#switchBranch(),
+            onFeedback: () => this.#openFeedbackIssue()
         });
         // Back navigation (FEAT-0005, the DMN direction of FEAT-0023): dive out to
         // the diagram we came from, plus a picker of any BPMN diagram that calls
@@ -209,7 +210,7 @@ class DmnDiffer {
             // const { warnings } = result;
             // console.debug('dmn schema loaded succesfully', warnings);
         } catch (err) {
-            console.error('dmn loading error', err);
+            console.error('dmn loading error', ConsoleLog.describeImportError(err));
             return;
         }
         this.#switchToViewTableMode();
@@ -228,6 +229,26 @@ class DmnDiffer {
     // the file in the exact shown version. A side with no repo ref (local file
     // used as the source), or where the file is absent (new/deleted in the MR),
     // yields url:null → an inactive, non-link path (the blob URL would 404 there).
+    // FEAT-0024: open a GitHub issue prefilled with this diff's context and the
+    // tail of this tab's console. Nothing is sent — the user sees the whole body
+    // in GitHub's own form and edits or abandons it there.
+    #openFeedbackIssue() {
+        const url = FeedbackReport.buildUrl(FEEDBACK_URL, {
+            extensionVersion: this.#params.extensionVersion,
+            platformKind: this.#params.platform.kind,
+            hostUrl: this.#params.platform.hostUrl,
+            changeRequestId: this.#params.changeRequestId,
+            fileName: this.#params.fileName,
+            fileType: 'DMN',
+            sourceKind: FeedbackReport.sourceKindFor(this.#params),
+            sourceLabel: this.#params.sourceLabel,
+            sourceUrl: this.#shownFileFor(false).url,
+            targetLabel: this.#params.targetLabel,
+            targetUrl: this.#shownFileFor(true).url
+        }, ConsoleLog.tail());
+        window.open(url, '_blank', 'noopener');
+    }
+
     #shownFileFor(targetSide) {
         const ref = targetSide ? this.#params.targetRef : this.#params.sourceRef;
         const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
@@ -239,9 +260,14 @@ class DmnDiffer {
     // Commit/ref of the decision version currently shown (for resolving the BPMN
     // files that call this decision, FEAT-0005).
     #getShownRef() {
-        return this.#branchIndicator.isTargetBranchShown()
-            ? this.#params.targetRef
-            : this.#params.sourceRef;
+        if (this.#branchIndicator.isTargetBranchShown()) {
+            return this.#params.targetRef;
+        }
+        // A local file has no ref in the repository (BUG-0033), so lookups against
+        // it fall back to the version it is being compared with. Returning null
+        // here builds `ref=null` URLs that 404, and only some of the consumers
+        // guard against it — this is the one place they all pass through.
+        return this.#params.sourceRef || this.#params.targetRef;
     }
 
     // The DMN XML of the version currently shown.
@@ -329,7 +355,7 @@ class DmnDiffer {
 }
 
 function main() {
-    appendTimeToConsoleLogs();
+    ConsoleLog.install();
 
     window.addEventListener('message', async function (msg) {
         // console.debug('message received', msg);

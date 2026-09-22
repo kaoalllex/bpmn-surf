@@ -94,6 +94,14 @@ class EditSession {
         return this.#coloringEnabled;
     }
 
+    // True while a recompute has failed and the colours on screen are the last
+    // good ones rather than the current diff — the state the ⚠ toggle shows, and
+    // worth naming in a feedback report (FEAT-0024): it is exactly when the user
+    // is looking at stale colouring and would say the diff is wrong.
+    get coloringPaused() {
+        return this.#coloringPaused;
+    }
+
     // Nothing but the user's own actions ever reaches the command stack in edit
     // mode (the diff is markers, not setColor), so this is an honest dirty flag.
     isDirty() {

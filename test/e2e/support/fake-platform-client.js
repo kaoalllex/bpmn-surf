@@ -13,6 +13,9 @@ class FakePlatformClient {
         this._searchHits = searchHits;
         this._changedFiles = changedFiles;
         this._contentByRefPath = contentByRefPath;
+        // Every searchCode call, so a spec can assert WHICH ref was queried
+        // (BUG-0033: a local-file comparison used to pass null).
+        this.searchCalls = [];
     }
 
     rawFileUrl(ref, filePath) {
@@ -33,6 +36,7 @@ class FakePlatformClient {
     }
 
     async searchCode(ref, term, options = {}) {
+        this.searchCalls.push({ ref, term });
         return this._searchHits;
     }
 

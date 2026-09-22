@@ -41,6 +41,29 @@ describe('registries: referenced files exist on disk', () => {
     }
 });
 
+describe('registries: no registry lists the same path twice', () => {
+    // A duplicate loads the file twice in one global scope, which throws on the
+    // second `const`/`class` declaration — and every existence check above still
+    // passes, so nothing else here would notice.
+    const cases = [
+        ['manifest content_scripts', contentScripts],
+        ['manifest web_accessible_resources', webAccessibleResources],
+        ['utils.js#loadScripts', loadScripts],
+        ['scope.js#SCOPE_FILES', scopeFiles]
+    ];
+    for (const [label, entries] of cases) {
+        it(`${label} has no duplicates`, () => {
+            const seen = new Set();
+            const duplicates = entries.filter(entry => {
+                const isDuplicate = seen.has(entry);
+                seen.add(entry);
+                return isDuplicate;
+            });
+            assert.deepEqual(duplicates, [], `${label} lists these more than once: ${duplicates}`);
+        });
+    }
+});
+
 describe('registries: content-scope files are all registered in content_scripts', () => {
     // Content scripts run on GitLab pages: everything under src/content/ plus
     // the cross-scope core files. Each must be listed in manifest content_scripts.

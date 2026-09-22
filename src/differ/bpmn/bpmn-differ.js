@@ -69,7 +69,7 @@ class BpmnDiffer {
     }
 
     async show() {
-        console.debug('diff params: ', this.#rawParams);
+        console.debug('diff params:', ConsoleLog.describeDifferParams(this.#rawParams));
         this.#init();
         console.debug('init done');
 
@@ -342,6 +342,7 @@ class BpmnDiffer {
             onSwitchBranch: () => this.#switchBranch(),
             onToggleHighlight: () => this.#toggleHighlight(),
             onOpenEditor: () => this.#openEditor(),
+            onFeedback: () => this.#openFeedbackIssue(),
             onUndo: () => this.#bpmnJS.get('commandStack').undo(),
             onRedo: () => this.#bpmnJS.get('commandStack').redo(),
             onToggleEditColoring: () => this.#editSession.setColoringEnabled(
@@ -556,7 +557,7 @@ class BpmnDiffer {
             // const { warnings } = result;
             // console.debug('bpmn schema loaded succesfully', warnings);
         } catch (err) {
-            console.error('bpmn schema loading error', err);
+            console.error('bpmn schema loading error', ConsoleLog.describeImportError(err));
             return;
         }
 
@@ -677,6 +678,41 @@ class BpmnDiffer {
     // the file in the exact shown version. A side with no repo ref (local file
     // used as the source), or where the file is absent (new/deleted in the MR),
     // yields url:null → an inactive, non-link path (the blob URL would 404 there).
+    #feedbackColoringState() {
+        if (!this.#editSession) {
+            return null;
+        }
+        if (this.#editSession.coloringPaused) {
+            return FeedbackReport.COLORING_PAUSED;
+        }
+        return this.#editSession.coloringEnabled
+            ? FeedbackReport.COLORING_ON
+            : FeedbackReport.COLORING_OFF;
+    }
+
+    // FEAT-0024: open a GitHub issue prefilled with this diff's context and the
+    // tail of this tab's console. Nothing is sent — the user sees the whole body
+    // in GitHub's own form and edits or abandons it there.
+    #openFeedbackIssue() {
+        const url = FeedbackReport.buildUrl(FEEDBACK_URL, {
+            extensionVersion: this.#params.extensionVersion,
+            platformKind: this.#params.platform.kind,
+            hostUrl: this.#params.platform.hostUrl,
+            changeRequestId: this.#params.changeRequestId,
+            editSide: this.#isEditMode() ? this.#params.editSide : null,
+            editDirty: Boolean(this.#editSession && this.#editSession.isDirty()),
+            editColoring: this.#feedbackColoringState(),
+            fileName: this.#params.fileName,
+            fileType: 'BPMN',
+            sourceKind: FeedbackReport.sourceKindFor(this.#params),
+            sourceLabel: this.#params.sourceLabel,
+            sourceUrl: this.#shownFileFor(false).url,
+            targetLabel: this.#params.targetLabel,
+            targetUrl: this.#shownFileFor(true).url
+        }, ConsoleLog.tail());
+        window.open(url, '_blank', 'noopener');
+    }
+
     #shownFileFor(targetSide) {
         const ref = targetSide ? this.#params.targetRef : this.#params.sourceRef;
         const path = targetSide ? this.#params.targetFilePath : this.#params.filePath;
@@ -688,9 +724,14 @@ class BpmnDiffer {
     // Commit/ref of the diagram version currently shown (for opening handler code
     // and for resolving a Call Activity's called process file).
     #getShownRef() {
-        return this.#branchIndicator.isTargetBranchShown()
-            ? this.#params.targetRef
-            : this.#params.sourceRef;
+        if (this.#branchIndicator.isTargetBranchShown()) {
+            return this.#params.targetRef;
+        }
+        // A local file has no ref in the repository (BUG-0033), so lookups against
+        // it fall back to the version it is being compared with. Returning null
+        // here builds `ref=null` URLs that 404, and only some of the consumers
+        // guard against it — this is the one place they all pass through.
+        return this.#params.sourceRef || this.#params.targetRef;
     }
 
     // FEAT-0031: edit mode lifts the BUG-0011/0014/0015 mutes for THIS tab only.
@@ -903,7 +944,7 @@ class BpmnDiffer {
 }
 
 function main() {
-    appendTimeToConsoleLogs();
+    ConsoleLog.install();
 
     window.addEventListener('message', async function (msg) {
         // console.debug('message received', msg);

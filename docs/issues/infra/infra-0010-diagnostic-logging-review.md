@@ -37,7 +37,7 @@ report should be enough to identify the cause without a guessing round-trip:
 
 - The shape of the warning: the term searched, how many hits came back, and the limit —
   enough for the next reader of the log to suspect truncation without re-running anything.
-  `console.warn` is timestamped on the differ page (`utils.js#appendTimeToConsoleLogs`),
+  `console.warn` is timestamped on the differ page (`ConsoleLog.install` (was `utils.js#appendTimeToConsoleLogs`)),
   so it lands in what users paste.
 - Raising the page size is a separate, evidence-driven decision — see the `per_page` note
   in [BUG-0028]; the warning is what produces that evidence.

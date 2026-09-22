@@ -15,7 +15,7 @@ const projectInfo = {
 };
 
 describe('DiffParamsBuilder.buildDiffParams', () => {
-    const builder = new DiffParamsBuilder();
+    const builder = new DiffParamsBuilder('1.2.0');
     const params = builder.buildDiffParams({
         projectInfo: projectInfo,
         sourceRef: 'mr-sha',
@@ -51,6 +51,10 @@ describe('DiffParamsBuilder.buildDiffParams', () => {
         assert.deepEqual(params.camundaBpmnModdle, { moddle: true });
     });
 
+    it('carries the extension version for the differ-page feedback report', () => {
+        assert.equal(params.extensionVersion, '1.2.0');
+    });
+
     it('does not leak GitLab-specific field names onto the neutral surface', () => {
         for (const leaked of ['projectUrl', 'projectHostUrl', 'projectId', 'mrCommitId', 'mrBranchName', 'mrIid', 'branchCommitId']) {
             assert.ok(!(leaked in params), `unexpected flat field: ${leaked}`);
@@ -59,7 +63,7 @@ describe('DiffParamsBuilder.buildDiffParams', () => {
 });
 
 describe('DiffParamsBuilder.buildBranchParams', () => {
-    const builder = new DiffParamsBuilder();
+    const builder = new DiffParamsBuilder('1.2.0');
     const params = builder.buildBranchParams({
         projectInfo: projectInfo,
         targetRef: 'feature/y',

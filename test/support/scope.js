@@ -22,6 +22,7 @@ const ROOT = path.join(__dirname, '..', '..');
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
     'src/core/utils.js',
+    'src/core/console-log.js',
     'src/differ/shared/diff-type.js',
     'src/differ/bpmn/condition-formatter.js',
     'src/differ/bpmn/bpmn-xml-comparator.js',
@@ -41,6 +42,7 @@ const SCOPE_FILES = [
     'src/differ/shared/branch-indicator.js',
     'src/differ/shared/differ-loading-overlay.js',
     'src/differ/shared/differ-empty-state.js',
+    'src/differ/shared/feedback-report.js',
     'src/differ/navigation/call-activity-locator.js',
     'src/differ/navigation/decision-locator.js',
     'src/differ/navigation/caller-locator.js',
@@ -118,6 +120,7 @@ const EXPORTED_NAMES = [
     'BpmnDifferView',
     'DifferLoadingOverlay',
     'DifferEmptyState',
+    'FeedbackReport',
     'SingleEntryCache',
     'MasterCommitManager',
     'GitLabUrlParser',
@@ -136,7 +139,9 @@ const EXPORTED_NAMES = [
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
-    'findPropertiesGroupHeader'
+    'findPropertiesGroupHeader', 'plural',
+    // the console ring subsystem (console-log.js)
+    'ConsoleLog'
 ];
 
 // Creates a fresh isolated scope per test file (or per test, if needed):

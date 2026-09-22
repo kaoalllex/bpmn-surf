@@ -138,23 +138,9 @@ function requireDefined(arg, argName) {
     return arg;
 }
 
-function appendTimeToConsoleLogs() {
-    const formatter = new Intl.DateTimeFormat('en', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-        hour12: false,
-        fractionalSecondDigits: 3
-    });
-    const handler = {
-        apply: function (target, thisArg, argArray) {
-            const ts = formatter.format(new Date());
-            target.apply(console, [`${ts}:`, ...argArray]);
-        }
-    };
-
-    console.debug = new Proxy(console.debug, handler);
-    console.info = new Proxy(console.info, handler);
-    console.warn = new Proxy(console.warn, handler);
-    console.error = new Proxy(console.error, handler);
+// `1 line` / `2 lines`. The log markers are read by a human in every report.
+function plural(count, word) {
+    return `${count} ${word}${count === 1 ? '' : 's'}`;
 }
 
 function parseXml(xml) {
@@ -217,7 +203,19 @@ async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc) {
         params: params
     }
     console.debug('sending message...');
-    newWindow.postMessage(msg, '*');
+    // Addressed, not broadcast: the params carry the diagram — including the
+    // user's local file in local-file mode. The new tab is an about:blank this
+    // page just opened, so it inherits this page's origin.
+    //
+    // `window.origin`, NOT `location.origin`: this runs from the content script
+    // (a real origin) AND from a differ page opening a nested or edit tab — and a
+    // differ page is itself an about:blank, where `location.origin` is the string
+    // 'null' while the effective origin is the inherited one. Passing 'null'
+    // throws SyntaxError and the new tab never gets its params. `window.origin`
+    // reports the effective origin in both contexts, and is what the differ's own
+    // listener compares the sender against, so the two halves agree by
+    // construction.
+    newWindow.postMessage(msg, window.origin);
     console.debug('opening differ...done');
     return true;
 }
@@ -244,7 +242,9 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js', doc, getResourceUrlByNameFunc);
 
     await addStylesheet('src/differ/styles.css', doc, getResourceUrlByNameFunc);
+    await addScript('src/core/config.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/utils.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/core/console-log.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/diff-type.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/condition-formatter.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/canvas-viewport.js', doc, getResourceUrlByNameFunc);
@@ -281,6 +281,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/differ/shared/differ-loading-overlay.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-empty-state.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/differ-tab-navigator.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/feedback-report.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/bpmn-differ-view.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/navigation/back-navigator.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/dmn/dmn-table-viewport.js', doc, getResourceUrlByNameFunc);

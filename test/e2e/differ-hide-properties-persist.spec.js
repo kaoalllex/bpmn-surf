@@ -15,17 +15,17 @@ test('persists Hide across reload and shows non-collapsed content afterwards', a
     await bootBpmnDiffer(page);
 
     // Hide → persisted.
-    await page.getByRole('button', { name: 'Hide properties' }).click();
+    await page.getByRole('button', { name: 'Hide the properties panel' }).click();
     const stored = await page.evaluate((k) => localStorage.getItem(k), HIDDEN_KEY);
     expect(stored).toBe('1');
 
-    // Reload: the panel loads hidden, the toggle reads "Show properties".
+    // Reload: the panel loads hidden, the toggle reads "Show the properties panel".
     await bootBpmnDiffer(page);
-    await expect(page.getByRole('button', { name: 'Show properties' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Show the properties panel' })).toBeVisible();
     await expect(page.locator(PROPS_ID)).toBeHidden();
 
     // BUG-0023: Show → real, non-collapsed content.
-    await page.getByRole('button', { name: 'Show properties' }).click();
+    await page.getByRole('button', { name: 'Show the properties panel' }).click();
     const props = page.locator(PROPS_ID);
     await expect(props).toBeVisible();
     await expect(page.locator('.bio-properties-panel')).toBeVisible();

@@ -26,14 +26,14 @@ class App {
         this.#moddleManager = new CamundaBpmnModdleManager();
         this.#pageReloader = new PageReloader();
         this.#fileTypeDetector = new FileTypeDetector();
-        this.#diffParamsBuilder = new DiffParamsBuilder();
+        this.#diffParamsBuilder = new DiffParamsBuilder(chrome.runtime.getManifest().version);
     }
 
     /**
      * Initializes the application
      */
     init() {
-        appendTimeToConsoleLogs();
+        ConsoleLog.install();
 
         // try to start immediately (in case of direct page load)
         this.#handleStart(null, 'immediately');

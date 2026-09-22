@@ -22,10 +22,26 @@ class BpmnDifferView {
     // freshly opened differ tab (BUG-0018). Stored globally, like the width.
     static PROPS_HIDDEN_KEY = 'bpmnDiffer.propsHidden';
 
+    // Toolbar glyphs and labels that are read from more than one place; the
+    // single-use ones stay inline at the button that carries them.
+    //
     // U+1F58C LOWER LEFT PAINTBRUSH — default text presentation, so it stays
     // monochrome next to the other toolbar glyphs. The on/off state is the
     // pressed look, not a second glyph (FEAT-0031).
     static COLORING_ICON = '\u{1F58C}';
+    // The properties toggle shows the panel's CURRENT state (the way ☼/☀ does):
+    // the filled half is where the panel is — on the right when it is up, and
+    // swung over to the left (i.e. gone from the right) when it is not.
+    static PROPS_SHOWN_ICON = '◨';
+    static PROPS_HIDDEN_ICON = '◧';
+    // Its label names the ACTION, and doubles as the accessible name — an icon
+    // button has none of its own.
+    static PROPS_HIDE_LABEL = 'Hide the properties panel';
+    static PROPS_SHOW_LABEL = 'Show the properties panel';
+    // The 💬 button's two states: the plain invitation, and the nudge after this
+    // tab hit a failure the user may not have noticed (FEAT-0024).
+    static FEEDBACK_TITLE = 'Report a problem or send feedback';
+    static FEEDBACK_ALERT_TITLE = 'Something went wrong — report it';
 
     #params;
     #branchIndicator;
@@ -35,6 +51,7 @@ class BpmnDifferView {
     #propsCell = null;
     #splitterCell = null;
     #hidePropsButton = null;
+    #feedbackButton = null;
     #isPropsCellHidden = false;
     #viewport = null;
     #changesTableView = null;
@@ -53,7 +70,7 @@ class BpmnDifferView {
     #editColoringPaused = false;
 
     // callbacks: { onDownload, onSwitchBranch, onToggleHighlight, onOpenEditor,
-    //   onUndo, onRedo, onToggleEditColoring }
+    //   onFeedback, onUndo, onRedo, onToggleEditColoring }
     constructor(params, branchIndicator, callbacks) {
         this.#params = params;
         this.#branchIndicator = branchIndicator;
@@ -319,7 +336,12 @@ class BpmnDifferView {
         this.#isPropsCellHidden = hidden;
         this.#propsCell.style.display = hidden ? 'none' : '';
         this.#splitterCell.style.display = hidden ? 'none' : '';
-        this.#hidePropsButton.textContent = hidden ? 'Show properties' : 'Hide properties';
+        this.#hidePropsButton.textContent = hidden
+            ? BpmnDifferView.PROPS_HIDDEN_ICON
+            : BpmnDifferView.PROPS_SHOWN_ICON;
+        const label = hidden ? BpmnDifferView.PROPS_SHOW_LABEL : BpmnDifferView.PROPS_HIDE_LABEL;
+        this.#hidePropsButton.title = label;
+        this.#hidePropsButton.setAttribute('aria-label', label);
     }
 
     // mousedown on the splitter → track mousemove on document → resize the
@@ -359,7 +381,7 @@ class BpmnDifferView {
         return group;
     }
 
-    // opts: { text, icon, title, danger, strong, minWidth, disabled, onClick }
+    // opts: { text, icon, title, ariaLabel, danger, strong, minWidth, disabled, onClick }
     #button(opts) {
         const button = document.createElement('button');
         button.className = BpmnDifferView.BTN_CLASS + ' differ-btn'
@@ -369,6 +391,11 @@ class BpmnDifferView {
         button.textContent = opts.icon || opts.text;
         if (opts.title) {
             button.title = opts.title;
+        }
+        // An icon button's text content is a glyph, so it needs a spelled-out
+        // accessible name of its own.
+        if (opts.ariaLabel) {
+            button.setAttribute('aria-label', opts.ariaLabel);
         }
         if (opts.minWidth) {
             button.style.minWidth = opts.minWidth + 'px';
@@ -459,10 +486,10 @@ class BpmnDifferView {
 
         if (this.#isEditMode()) {
             // Edit mode splits the right half into one group per job, so the bar
-            // reads left to right as zoom | colour | history | panel: the zoom group
-            // closes here, the colouring group carries the toggle AND the swatches
-            // the colour control appends into it, and "Hide properties" keeps its
-            // place last, with only the exits to its right (FEAT-0031).
+            // reads left to right as zoom | colour | history (FEAT-0031): the zoom
+            // group closes here, and the colouring group carries the toggle AND the
+            // swatches the colour control appends into it. The panel toggle and the
+            // exits follow in the shared right-hand group below.
             toolbar.appendChild(viewGroup);
 
             // The "colour the edits" toggle replaces ☼ — it governs the same idea
@@ -496,9 +523,6 @@ class BpmnDifferView {
             historyGroup.appendChild(this.#redoButton);
             toolbar.appendChild(historyGroup);
 
-            const propsGroup = this.#group();
-            propsGroup.appendChild(this.#createHidePropsButton());
-            toolbar.appendChild(propsGroup);
         } else {
             const highlightButton = this.#button({
                 icon: '☼',
@@ -518,12 +542,35 @@ class BpmnDifferView {
                 onClick: () => this.#callbacks.onOpenEditor()
             });
             viewGroup.appendChild(this.#editButton);
-            viewGroup.appendChild(this.#createHidePropsButton());
             toolbar.appendChild(viewGroup);
         }
 
         //--- back navigation (FEAT-0023), only when there is somewhere to go back
         this.#appendBackNavigator(toolbar);
+
+        //--- right-hand group: the panel toggle and feedback (FEAT-0024). Both
+        //    modes end here, so the toggle sits in the same place either way.
+        const rightGroup = this.#group();
+        rightGroup.appendChild(this.#createHidePropsButton());
+        this.#feedbackButton = this.#button({
+            icon: '💬',
+            title: BpmnDifferView.FEEDBACK_TITLE,
+            ariaLabel: BpmnDifferView.FEEDBACK_TITLE,
+            onClick: () => this.#callbacks.onFeedback()
+        });
+        rightGroup.appendChild(this.#feedbackButton);
+        toolbar.appendChild(rightGroup);
+
+        // Uncaught failures are the ones the user may never see in the console —
+        // badge the button so the report happens at the moment of friction. Not
+        // console.error: dmn-js emits one on every load (INFRA-0001).
+        const flagFailure = () => {
+            this.#feedbackButton.classList.add('differ-feedback-alert');
+            this.#feedbackButton.title = BpmnDifferView.FEEDBACK_ALERT_TITLE;
+            this.#feedbackButton.setAttribute('aria-label', BpmnDifferView.FEEDBACK_ALERT_TITLE);
+        };
+        window.addEventListener('error', flagFailure);
+        window.addEventListener('unhandledrejection', flagFailure);
 
         //--- close group (destructive, separated)
         const closeGroup = this.#group();
@@ -548,8 +595,9 @@ class BpmnDifferView {
 
     #createHidePropsButton() {
         const button = this.#button({
-            text: 'Hide properties',
-            minWidth: 140,
+            icon: BpmnDifferView.PROPS_SHOWN_ICON,
+            title: BpmnDifferView.PROPS_HIDE_LABEL,
+            ariaLabel: BpmnDifferView.PROPS_HIDE_LABEL,
             onClick: () => {
                 const hidden = !this.#isPropsCellHidden;
                 this.#applyPropsHidden(hidden);
