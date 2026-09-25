@@ -33,7 +33,7 @@ Reproduction:
 
 The locator code (`handler-locator.js`) searches with two terms:
 1. `#searchSubscriptionLocation` → `ExternalTaskSubscription("<topic>")` (a literal with quotes/parens);
-2. fallback `#searchExternalTaskBeanLocation` → `class <Topic-capitalized>` (for this
+2. fallback `#searcha class-name annotationLocation` → `class <Topic-capitalized>` (for this
    project a guaranteed miss — the class is named `<Step>Task`, not like the topic).
 
 ### What was verified

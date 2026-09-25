@@ -81,12 +81,30 @@ It works in an `rsync`ed copy of the tree (never the repo — a crash would leav
 
 There is no CI pipeline yet (see docs/git-workflow.md, the "CI" section) — the only protection against red tests in master is the local run before push.
 
+## Live harness (`test/e2e/live/`)
+
+Scripts that drive the real extension in a real browser against the public test
+sandbox — see `test/e2e/live/README.md`. Not tests: outside `npm test` and
+`playwright test`, never in CI, since they talk to gitlab.com.
+
+Use them for anything that depends on GitLab's own markup or on timing, which is
+where the diff button keeps breaking (the button showing for the wrong file, or
+blinking). `node test/e2e/live/mr-button.mjs 2` prints two regression numbers —
+button state changes and rebuilds over 10s; on a healthy run they are 0 and 1.
+`capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
+per-user "Show one file at a time" preference; without it everything runs
+anonymously.
+
+`popup-screens.mjs` is the exception that needs no network: it renders every
+popup screen with a stubbed `chrome.*` and reports height and overflow.
+
 ## Manual checking
 
 There are no integration auto-tests. Checking is manual: load the unpacked extension via `chrome://extensions` (Developer mode → Load unpacked) and check it on a GitLab MR / file page. Before committing, mentally verify that the script order and behavior are not broken.
 
 - ⚠️ **After every code change, reload the extension in `chrome://extensions/` (the reload icon on its card) before checking** — otherwise the loaded extension keeps the old code and you verify against stale code, drawing a false conclusion. Reloading also orphans content scripts in tabs opened earlier: a click there throws `Extension context invalidated` (handled gracefully — the user is asked to refresh the page), so reload the GitLab tab too after reloading the extension.
 - Quick syntax check: `for f in *.js; do node --check "$f"; done`
+- Before checking the MR diff button by hand, try `test/e2e/live/mr-button.mjs` first — it answers the common questions without a single click
 - After changes in the shared differ-page classes (`differ-params.js`, `diagram-versions.js`, `branch-indicator.js`, `diff-type.js`, `utils.js`) **be sure to check both the BPMN and the DMN diff**
 - Differ-page checklist: diff highlighting, switch branch, highlight on/off, the change table + clicking a row, sequenceFlow conditions in the properties panel, zoom/pan/fit, hide properties, download, dive-in into a Call Activity, branch-only mode (without an MR), the 💬 feedback button (the prefilled issue opens, its body has no XML)
 - View-only invariants (after any change that restricts interaction): editing stays disabled, **yet** mouse selection + Ctrl/Cmd+C copy still work on a canvas label and on a properties-panel field value (regression class BUG-0011 → BUG-0014 → BUG-0015)

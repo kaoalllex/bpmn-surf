@@ -28,7 +28,7 @@ Currently the whole feature is tied to the topic string: `Map<topic, {filePath, 
 - `topic:<topic>` — external task (as now);
 - `class:<SimpleName>` — delegate (both `camunda:class` and `delegateExpression`).
 
-`camunda:class="com.foo.Bar"` → `class:Bar`. `delegateExpression="${bar}"` → bean `bar` → by the Spring convention (bean name = class name lowercased) class `Bar` → `class:Bar`. A changed file `Bar.kt`/`Bar.java` declaring `class Bar` → `class:Bar`. All three converge on `class:Bar` — we reuse the existing search `class <Name>` (`#searchExternalTaskBeanLocation`).
+`camunda:class="com.foo.Bar"` → `class:Bar`. `delegateExpression="${bar}"` → bean `bar` → by the Spring convention (bean name = class name lowercased) class `Bar` → `class:Bar`. A changed file `Bar.kt`/`Bar.java` declaring `class Bar` → `class:Bar`. All three converge on `class:Bar` — we reuse the existing search `class <Name>` (`#searcha class-name annotationLocation`).
 
 ### Changes by file
 
@@ -46,8 +46,8 @@ Currently the whole feature is tied to the topic string: `Map<topic, {filePath, 
 - `#HANDLER_FILE_EXTENSIONS` (line 25): `['.kt', '.java']`. The subscription regexp is already language-agnostic; `class <Name>` works in Java too.
 - `findChangedHandlers` (128-150): for each changed handler file collect keys = topic keys (`extractHandlerTopics`, as now) ∪ class keys. Add a static `extractDeclaredClassNames(content)` (regex `\bclass\s+([A-Za-z_]\w*)`) → `class:<Name>`. Over-collecting is safe: `class:Foo` yields a badge only if there is an element on the schema with the delegate `Foo`.
 - `resolveLocation(topic, ref)` (157-174) → `resolveLocation(key, ref)`, a dispatcher by prefix:
-  - `topic:` → as now (`#searchSubscriptionLocation || #searchExternalTaskBeanLocation`);
-  - `class:` → the new `#searchClassDeclarationLocation(className, ref)` — this is `#searchExternalTaskBeanLocation` (296-318) without the requirement of the `@ExternalTaskBean` annotation (we take the first hit in the handler file). Refactoring: extract a common private search by `class <Name>` with an optional preference for the annotation.
+  - `topic:` → as now (`#searchSubscriptionLocation || #searcha class-name annotationLocation`);
+  - `class:` → the new `#searchClassDeclarationLocation(className, ref)` — this is `#searcha class-name annotationLocation` (296-318) without the requirement of the `a class-name annotation` annotation (we take the first hit in the handler file). Refactoring: extract a common private search by `class <Name>` with an optional preference for the annotation.
 - Update the header (lines 4-22): delegates are supported; keep only the note about transitivity ([FEAT-0015]).
 - (Optional, beyond the minimal scope) rename the class `ExternalTaskHandlerLocator` → `HandlerLocator` (affects `test/support/scope.js`, `bpmn-differ.js`, the tests). Can be deferred, updating only the doc comment.
 
@@ -81,7 +81,7 @@ An MR with a change to: (a) an external task `.kt` — regression; (b) a `camund
 The generalized handler path was implemented — the task is closed. A namespaced key `topic:<topic>` | `class:<SimpleName>` was introduced, on which both the highlighting and the opening of the code (FEAT-0004) are based:
 
 - `handler-navigator.js`: `#getExternalTopic` → `#getHandlerKey(elem)` — builds the key from the BO: external task → `topic:`; `camunda:delegateExpression="${bean}"` → `class:<Bean capitalized>`; `camunda:class` → `class:<SimpleName>` (delegateExpression is checked before class; via the locator's static helpers). The attributes are read with `bo.get('camunda:class')` / `bo.get('camunda:delegateExpression')` (`class` is reserved). Delegate tasks now also get an on-demand badge on selection.
-- `handler-locator.js`: `#HANDLER_FILE_EXTENSIONS` += `.java`; `extractDeclaredClassNames` (regex `\bclass\s+<Name>`) + `extractHandlerKeys` (topic keys ∪ class keys); the static key helpers `simpleClassName` / `classKeyFromClassName` / `classKeyFromDelegateExpression` / `termFromKey`; `findChangedHandlers` collects namespaced keys; `resolveLocation(key, ref)` — a dispatcher by prefix; `#searchExternalTaskBeanLocation` and the new `#searchClassDeclarationLocation` were reduced to a common `#searchClassLocation(className, ref, preferAnnotation)`.
+- `handler-locator.js`: `#HANDLER_FILE_EXTENSIONS` += `.java`; `extractDeclaredClassNames` (regex `\bclass\s+<Name>`) + `extractHandlerKeys` (topic keys ∪ class keys); the static key helpers `simpleClassName` / `classKeyFromClassName` / `classKeyFromDelegateExpression` / `termFromKey`; `findChangedHandlers` collects namespaced keys; `resolveLocation(key, ref)` — a dispatcher by prefix; `#searcha class-name annotationLocation` and the new `#searchClassDeclarationLocation` were reduced to a common `#searchClassLocation(className, ref, preferAnnotation)`.
 - Tests: `isHandlerFile` for `.java`; covered `extractDeclaredClassNames`, `extractHandlerKeys`, `simpleClassName`, `classKeyFromClassName`, `classKeyFromDelegateExpression` (incl. `${...}`/`#{...}`, complex expressions → null), `termFromKey`. The navigator side (`#getHandlerKey`) on the bpmn-js BO — a manual check. All 278 tests green.
 
 Limitations (documented in the `handler-locator.js` header): a non-standard delegate bean, a complex `delegateExpression` expression, collisions of simple class names between packages; transitive analysis — [FEAT-0015]. The class `ExternalTaskHandlerLocator` was renamed to `HandlerLocator` — the name reflects support for both external tasks and delegates (affected `handler-navigator.js`, `bpmn-differ.js`, `test/support/scope.js`, the tests, `docs/architecture.md`).

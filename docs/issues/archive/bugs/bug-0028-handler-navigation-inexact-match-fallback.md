@@ -22,7 +22,7 @@ returned page, the Catalog handler is opened instead.
 
 - Affected code: `handler-locator.js`, the `item = exactMatch || …[0]` fallback in
   `#searchSubscriptionLocation` (topic search) and `#searchClassLocation`
-  (`class:` keys and `@ExternalTaskBean`).
+  (`class:` keys and `a class-name annotation`).
 - Reported from the field on `PrepareItem.bpmn` — the same diagram and the same topic
   pair as [BUG-0027]. That report turned out to be the **released v1.1.0 build**, which
   predates the [BUG-0027] fix (tag `v1.1.0` = commit `7be7f22`, fix = `322a330`), so it
