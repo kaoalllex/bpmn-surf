@@ -8,6 +8,14 @@
  * by the DOM-based provider and its merged-MR commit resolver.
  */
 class GitLabDomScraper {
+    // Last path resolved from the rapid-diffs DOM, and the page it belongs to.
+    // Rapid diffs mounts and unmounts <diff-file> elements as the reader scrolls,
+    // so the same page answers "one diagram" and "nothing here" seconds apart. An
+    // empty DOM therefore means "not rendered right now", not "not in this diff",
+    // and reporting it as nothing made the button blink (BUG-0036).
+    #lastRapidDiffsPath = null;
+    #lastRapidDiffsPage = null;
+
     async findSelectedFilePath() {
         console.debug('finding selected file path...');
 
@@ -16,6 +24,16 @@ class GitLabDomScraper {
         // ~1.5s doWithAttempts wait the legacy lookup below would otherwise incur.
         if (document.querySelector('diff-file')) {
             return this.#findSelectedFilePathInRapidDiffs();
+        }
+
+        // Not a single file element in the DOM. On a rapid-diffs page that means
+        // they are all unmounted at this scroll position, not that the diff is
+        // empty — so the previous answer still stands. Falling through to the
+        // legacy lookup would answer null and yank the button (BUG-0036), and pay
+        // ~1.5s of polling for it.
+        if (this.#lastRapidDiffsPath && this.#lastRapidDiffsPage === window.location.pathname) {
+            console.debug('no diff-file rendered right now, keeping: ' + this.#lastRapidDiffsPath);
+            return this.#lastRapidDiffsPath;
         }
 
         return await this.#findSelectedFilePathLegacy();
@@ -170,8 +188,7 @@ class GitLabDomScraper {
 
         // Explicit selection via URL hash wins
         if (selectedPath) {
-            console.debug('selected file path (rapid diffs, by hash): ' + selectedPath);
-            return selectedPath;
+            return this.#rememberRapidDiffsPath(selectedPath, 'by hash');
         }
 
         // Fallback: exactly one bpmn/dmn file in the diff -> use it without explicit selection
@@ -179,12 +196,24 @@ class GitLabDomScraper {
             p => p.endsWith(FILE_TYPE_BPMN.extension) || p.endsWith(FILE_TYPE_DMN.extension)
         );
         if (diagramFiles.length === 1) {
-            console.debug('selected file path (rapid diffs, single diagram): ' + diagramFiles[0]);
-            return diagramFiles[0];
+            return this.#rememberRapidDiffsPath(diagramFiles[0], 'single diagram');
         }
 
-        console.debug('cannot determine selected file path in rapid diffs');
+        console.debug(`cannot determine selected file path in rapid diffs (${files.length} file(s) rendered)`);
+        this.#forgetRapidDiffsPath();
         return null;
+    }
+
+    #rememberRapidDiffsPath(path, how) {
+        console.debug(`selected file path (rapid diffs, ${how}): ${path}`);
+        this.#lastRapidDiffsPath = path;
+        this.#lastRapidDiffsPage = window.location.pathname;
+        return path;
+    }
+
+    #forgetRapidDiffsPath() {
+        this.#lastRapidDiffsPath = null;
+        this.#lastRapidDiffsPage = null;
     }
 
     #extractRapidDiffFilePath(diffFile) {

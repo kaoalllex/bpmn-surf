@@ -23,7 +23,7 @@ class GitLabUIRepoProvider extends UIRepoProvider {
     // #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
     #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = '#fileHolder > div.js-file-title.file-title-flex-parent > div.file-actions.gl-flex.gl-flex-wrap.gl-gap-3 > div';
 
-    addButton({ fileType, buttonType, needToSelectLocalFile, onButtonClickFunc }) {
+    addButton({ fileType, buttonType, needToSelectLocalFile, filePath, onButtonClickFunc }) {
         this.reset();
 
         const parentContainerSelectors = buttonType === UI_BUTTON_TYPE.DIFF
@@ -35,6 +35,11 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         const buttonContainer = document.createElement('div');
         buttonContainer.id = this.#buttonId;
         buttonContainer.className = 'gl-display-flex';
+        // On the container, because that is the element #buttonId identifies and
+        // the one buttonFilePath() reads back.
+        if (filePath) {
+            buttonContainer.dataset.bpmnSurfFilePath = filePath;
+        }
 
         const button = document.createElement('button');
         button.id = this.#buttonId + '-btn';
@@ -98,6 +103,11 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
     isButtonPresent() {
         return document.getElementById(this.#buttonId) !== null;
+    }
+
+    buttonFilePath() {
+        const button = document.getElementById(this.#buttonId);
+        return (button && button.dataset.bpmnSurfFilePath) || null;
     }
 
     #getButtonText(fileType, buttonType) {
