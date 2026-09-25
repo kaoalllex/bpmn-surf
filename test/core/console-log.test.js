@@ -406,6 +406,25 @@ describe('ConsoleLog.describeDifferParams', () => {
         assert.equal(described.extensionVersion, '1.2.0');
     });
 
+    it('keeps a branch ref whole and shortens only a sha (BUG-0034)', () => {
+        const described = ConsoleLog.describeDifferParams({
+            ...rawParams,
+            sourceRef: null,
+            targetRef: 'main/order-service/src/main/resources/bpmn/order'
+        });
+        // Truncating this to 'main/ord' is what hid a mis-parsed ref.
+        assert.equal(described.targetRef, 'main/order-service/src/main/resources/bpmn/order');
+        assert.equal(described.sourceRef, null);
+        assert.equal(
+            ConsoleLog.describeDifferParams({ ...rawParams, targetRef: 'release/1.2' }).targetRef,
+            'release/1.2'
+        );
+        assert.equal(
+            ConsoleLog.describeDifferParams({ ...rawParams, targetRef: '0123456789abcdef0123456789abcdef01234567' }).targetRef,
+            '01234567'
+        );
+    });
+
     it('drops the moddle descriptor and the local diagram content', () => {
         const serialised = JSON.stringify(ConsoleLog.describeDifferParams(rawParams));
         assert.ok(!serialised.includes('camunda:FormField'), serialised);

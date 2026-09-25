@@ -49,13 +49,19 @@ class GitLabPlatformClient extends PlatformClient {
         }
         const content = await this.#load(url, false);
         if (!content) {
+            console.debug(`blob search for '${term}' at ref '${ref}': no response`);
             return [];
         }
-        return JSON.parse(content).map(item => ({
+        const items = JSON.parse(content).map(item => ({
             path: item.path,
             line: item.startline,
             snippet: item.data
         }));
+        // The count and the ref together separate "nothing matches" from "the ref
+        // is wrong" — an empty result otherwise looks the same either way, and
+        // every locator above reports only that it found nothing.
+        console.debug(`blob search for '${term}' at ref '${ref}': ${items.length} hit(s)`);
+        return items;
     }
 
     prDiffsUrl(changeId) {

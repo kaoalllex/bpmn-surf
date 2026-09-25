@@ -163,49 +163,72 @@ describe('GitLabUrlParser.getBranchFileType', () => {
 });
 
 describe('GitLabUrlParser.extractBranchCommitIdAndFilePath', () => {
-    it('extracts the ref and project-anchored file path (first regex)', () => {
+    it('splits a root-level file at the single slash', () => {
         const { parser } = createParser();
         const res = parser.extractBranchCommitIdAndFilePath(
-            'https://x/g/proj/-/blob/master/proj/process.bpmn', 'proj', null);
-        assert.deepEqual({ ...res }, { branchCommitId: 'master', filePath: 'proj/process.bpmn' });
+            'https://x/g/proj/-/blob/master/process.bpmn', null);
+        assert.deepEqual({ ...res }, { branchCommitId: 'master', filePath: 'process.bpmn' });
     });
 
-    it('uses the DOM hint as the ref when the path is not project-anchored', () => {
+    it('keeps the whole directory path when the file is nested (BUG-0034)', () => {
         const { parser } = createParser();
         const res = parser.extractBranchCommitIdAndFilePath(
-            'https://x/g/proj/-/blob/feature/x/dir/process.bpmn', 'proj', 'feature/x');
-        assert.deepEqual({ ...res }, { branchCommitId: 'feature/x', filePath: 'dir/process.bpmn' });
+            'https://x/g/proj/-/blob/main/order-service/src/main/resources/bpmn/order/OrderMain.bpmn', null);
+        assert.deepEqual({ ...res }, {
+            branchCommitId: 'main',
+            filePath: 'order-service/src/main/resources/bpmn/order/OrderMain.bpmn'
+        });
     });
 
-    it('falls back to the default ref alternation when no hint is given', () => {
+    it('resolves a branch whose name is not in any hardcoded list', () => {
         const { parser } = createParser();
         const res = parser.extractBranchCommitIdAndFilePath(
-            'https://x/g/proj/-/blob/master/dir/process.bpmn', 'proj', null);
-        assert.equal(res.branchCommitId, 'master');
+            'https://x/g/proj/-/blob/renovate-bot/dir/sub/a.bpmn', null);
+        assert.equal(res.branchCommitId, 'renovate-bot');
+        assert.equal(res.filePath, 'dir/sub/a.bpmn');
+    });
+
+    it('uses the page ref selector for a slashed ref', () => {
+        const { parser } = createParser();
+        const res = parser.extractBranchCommitIdAndFilePath(
+            'https://x/g/proj/-/blob/release/1.2/dir/process.bpmn', 'release/1.2');
+        assert.deepEqual({ ...res }, { branchCommitId: 'release/1.2', filePath: 'dir/process.bpmn' });
+    });
+
+    it('ignores a hint that does not prefix the url tail', () => {
+        const { parser } = createParser();
+        const res = parser.extractBranchCommitIdAndFilePath(
+            'https://x/g/proj/-/blob/main/dir/process.bpmn', 'some-other-branch');
+        assert.equal(res.branchCommitId, 'main');
         assert.equal(res.filePath, 'dir/process.bpmn');
     });
 
-    it('matches the commit SHA exactly without swallowing a deep path (no hint, path not project-anchored)', () => {
+    it('matches the commit SHA exactly without swallowing a deep path', () => {
         const { parser } = createParser();
         const sha = '0123456789abcdef0123456789abcdef01234567';
         const res = parser.extractBranchCommitIdAndFilePath(
-            `https://x/g/proj/-/blob/${sha}/business/module-a/src/main/resources/bpmn/dir/a.bpmn`, 'proj', null);
+            `https://x/g/proj/-/blob/${sha}/business/module-a/src/main/resources/bpmn/dir/a.bpmn`, null);
         assert.equal(res.branchCommitId, sha);
         assert.equal(res.filePath, 'business/module-a/src/main/resources/bpmn/dir/a.bpmn');
     });
 
-    it('strips query parameters from the file path', () => {
+    it('strips query parameters and the fragment from the file path', () => {
         const { parser } = createParser();
         const res = parser.extractBranchCommitIdAndFilePath(
-            'https://x/g/proj/-/blob/master/proj/a.bpmn?plain=1', 'proj', null);
-        assert.equal(res.filePath, 'proj/a.bpmn');
+            'https://x/g/proj/-/blob/master/dir/a.bpmn?ref_type=heads#L10', null);
+        assert.equal(res.filePath, 'dir/a.bpmn');
     });
 
     it('returns null when the url is not a blob url', () => {
         const { parser } = createParser();
         assert.equal(
-            parser.extractBranchCommitIdAndFilePath('https://x/g/proj/-/merge_requests/5/diffs', 'proj', null),
+            parser.extractBranchCommitIdAndFilePath('https://x/g/proj/-/merge_requests/5/diffs', null),
             null
         );
+    });
+
+    it('returns null when the blob url carries no file path', () => {
+        const { parser } = createParser();
+        assert.equal(parser.extractBranchCommitIdAndFilePath('https://x/g/proj/-/blob/main', null), null);
     });
 });

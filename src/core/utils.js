@@ -44,12 +44,16 @@ async function loadFileContent(
 
         console.debug(`response status: ${response.status}, load time: ${durationMs.toFixed(1)} ms`);
 
+        // The reasons below stay bare: the catch block below wraps every throw
+        // with the url and the elapsed time, so repeating the url here put it
+        // into the same log line three times and pushed the rest of the message
+        // past the feedback report's budget.
         if (response.status === 404) {
-            if (throwIf404) throw new Error('File not found: ' + fileUrl);
+            if (throwIf404) throw new Error('file not found (404)');
             return null;
         }
         if (!response.ok) {
-            throw new Error(`Cannot load file content from ${fileUrl} (status ${response.status})`);
+            throw new Error(`unexpected status ${response.status}`);
         }
 
         const content = await response.text();
@@ -243,6 +247,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
 
     await addStylesheet('src/differ/styles.css', doc, getResourceUrlByNameFunc);
     await addScript('src/core/config.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/core/handler-annotations.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/utils.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/console-log.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/diff-type.js', doc, getResourceUrlByNameFunc);
