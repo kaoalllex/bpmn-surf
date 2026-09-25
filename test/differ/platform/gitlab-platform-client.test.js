@@ -52,12 +52,20 @@ describe('GitLabPlatformClient URL builders', () => {
         );
     });
 
-    it('builds a code-search page URL, url-encoding the term and ref', () => {
+    it('builds a code-search page URL at /search with a project_id (BUG-0038)', () => {
+        // <project>/-/search 404s; the project-scoped page is <host>/search.
         assert.equal(
             client.searchPageUrl('calledElement="Some Process"', 'feature/x'),
-            'https://gitlab.example/group/proj/-/search' +
-            '?search=calledElement%3D%22Some%20Process%22&scope=blobs&ref=feature%2Fx'
+            'https://gitlab.example/search' +
+            '?search=calledElement%3D%22Some+Process%22&project_id=42&scope=blobs' +
+            '&repository_ref=feature%2Fx'
         );
+    });
+
+    it('omits the ref from the search page URL when there is none', () => {
+        const url = client.searchPageUrl('topicName', null);
+        assert.ok(!url.includes('repository_ref'), url);
+        assert.ok(url.startsWith('https://gitlab.example/search?search=topicName'), url);
     });
 
     it('builds the MR diffs URL', () => {

@@ -276,7 +276,7 @@ describe('HandlerLocator URL builders', () => {
     it('builds a blob search page URL', () => {
         assert.equal(
             locator.blobSearchPageUrl('my-topic', 'main'),
-            'https://gitlab.example/group/proj/-/search?search=my-topic&scope=blobs&ref=main'
+            'https://gitlab.example/search?search=my-topic&project_id=42&scope=blobs&repository_ref=main'
         );
     });
 });

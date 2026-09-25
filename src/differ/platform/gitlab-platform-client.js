@@ -33,9 +33,20 @@ class GitLabPlatformClient extends PlatformClient {
         return `${this.#projectUrl}/-/blob/${ref}/${filePath}${anchor}`;
     }
 
+    // GitLab's project-scoped search lives at <host>/search with a project_id,
+    // NOT at <project>/-/search — that path 404s for a signed-in user, which
+    // made every "search in the repository" fallback a dead end (BUG-0038). The
+    // ref parameter is called repository_ref there.
     searchPageUrl(term, ref) {
-        return `${this.#projectUrl}/-/search?search=${encodeURIComponent(term)}` +
-            `&scope=blobs&ref=${encodeURIComponent(ref)}`;
+        const params = new URLSearchParams({
+            search: term,
+            project_id: String(this.#projectId),
+            scope: 'blobs'
+        });
+        if (ref) {
+            params.set('repository_ref', ref);
+        }
+        return `${this.#projectHostUrl}/search?${params}`;
     }
 
     // GitLab Advanced Search (blobs) at a ref. The response items

@@ -2,7 +2,7 @@
 id: FEAT-0035
 title: Configurable handler annotations, and a settings file to hand to a team
 priority: medium
-status: in-progress
+status: done
 ---
 
 ## Statement
@@ -103,3 +103,11 @@ Review pass on the same change:
 - Rendered all four screens in Playwright with a stubbed `chrome.*`: no page
   errors, no horizontal overflow, tallest screen 549px (a Chrome popup scrolls
   past ~600px).
+
+### 2026-09-25 · claude-opus-5 · `b3519b0` (branch `feature/handler-annotations-and-diff-button-fixes`)
+
+Committed and opened as PR #4. All four popup screens were rendered and checked
+for overflow; the export/import round trip is covered by unit tests through the
+real `parseSettingsExport`.
+
+Closed.

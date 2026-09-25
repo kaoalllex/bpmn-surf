@@ -77,16 +77,14 @@ describe('DecisionCallerLocator.blobSearchPageUrl', () => {
     it('builds a decisionRef blob search page URL', () => {
         assert.equal(
             locator.blobSearchPageUrl('ScoreCar', 'main'),
-            'https://gitlab.example/group/proj/-/search' +
-            '?search=decisionRef%3D%22ScoreCar%22&scope=blobs&ref=main'
+            'https://gitlab.example/search?search=decisionRef%3D%22ScoreCar%22&project_id=42&scope=blobs&repository_ref=main'
         );
     });
 
     it('url-encodes the decision id and ref', () => {
         assert.equal(
             locator.blobSearchPageUrl('Some Decision', 'feature/x'),
-            'https://gitlab.example/group/proj/-/search' +
-            '?search=decisionRef%3D%22Some%20Decision%22&scope=blobs&ref=feature%2Fx'
+            'https://gitlab.example/search?search=decisionRef%3D%22Some+Decision%22&project_id=42&scope=blobs&repository_ref=feature%2Fx'
         );
     });
 });

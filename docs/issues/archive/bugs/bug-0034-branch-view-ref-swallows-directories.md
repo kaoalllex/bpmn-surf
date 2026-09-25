@@ -2,7 +2,7 @@
 id: BUG-0034
 title: In branch view the ref swallows the directory path, so every ref-scoped lookup 404s
 priority: high
-status: in-progress
+status: done
 ---
 
 ## Statement
@@ -84,3 +84,10 @@ MR !11 touching it, so the layout that used to work by accident stays covered
 next to the nested diagrams.
 
 Not committed: the working tree carries the change, the commit is the human's call.
+
+### 2026-09-25 · claude-opus-5 · `dcfadfc` (branch `feature/handler-annotations-and-diff-button-fixes`)
+
+Committed and opened as PR #4. The remaining slashed-ref case is [BUG-0035],
+which is a different defect (a stale DOM selector), not unfinished work here.
+
+Closed.
