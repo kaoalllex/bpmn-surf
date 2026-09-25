@@ -175,7 +175,9 @@ class DmnDiffer {
         if (this.#versions.branchXml) {
             this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
         } else {
-            console.debug('file not exists in target branch');
+            console.debug(this.#params.sourceRef || this.#params.localFileContent
+                ? 'file not present in the target version'
+                : 'branch view: nothing to compare with');
         }
     }
 
@@ -189,7 +191,9 @@ class DmnDiffer {
         if (this.#versions.mrXml) {
             this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);
         } else {
-            console.debug('file not exists in MR branch');
+            console.debug(this.#params.sourceRef || this.#params.localFileContent
+                ? 'file not present in the source version'
+                : 'branch view: nothing to compare with');
         }
     }
 

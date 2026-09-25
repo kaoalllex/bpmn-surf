@@ -405,7 +405,7 @@ class BpmnDiffer {
             console.debug('using local file context as mr');
             this.#versions.useLocalFileContentAsMr();
         } else {
-            console.debug('mr commit id or localFileContent is undefined');
+            console.debug('no source version: branch view shows one version');
         }
 
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
@@ -500,7 +500,9 @@ class BpmnDiffer {
         if (diff) {
             this.#paintDiffs(diff, DiffType.REMOVE);
         } else {
-            console.debug('file not exists in MR branch');
+            console.debug(this.#params.sourceRef || this.#params.localFileContent
+                ? 'file not present in the source version'
+                : 'branch view: nothing to compare with');
         }
     }
 
@@ -520,7 +522,9 @@ class BpmnDiffer {
         if (diff) {
             this.#paintDiffs(diff, DiffType.ADD);
         } else {
-            console.debug('file not exists in target branch');
+            console.debug(this.#params.sourceRef || this.#params.localFileContent
+                ? 'file not present in the target version'
+                : 'branch view: nothing to compare with');
         }
     }
 
