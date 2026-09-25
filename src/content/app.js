@@ -130,6 +130,16 @@ class App {
                 this.#uiRepoProvider.reset();
             }
         } catch (error) {
+            // Reloading the extension orphans the content scripts already running
+            // in open tabs: chrome.runtime dies and the next chrome.* call throws
+            // "Extension context invalidated". #openDiffer already recognises that
+            // on click; here it used to surface as a bare stack trace in the log,
+            // which reads like a defect in the page flow rather than a stale tab.
+            if (!chrome.runtime?.id) {
+                console.info('bpmn-surf was reloaded; this tab still runs the old ' +
+                    'content script. Refresh the page (F5) to get the buttons back.');
+                return;
+            }
             console.error('Error in #handleStart:', error);
         }
     }
