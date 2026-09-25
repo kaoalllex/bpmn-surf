@@ -21,6 +21,7 @@ const ROOT = path.join(__dirname, '..', '..');
 // that are not part of loadScripts.
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
+    'src/core/handler-annotations.js',
     'src/core/utils.js',
     'src/core/console-log.js',
     'src/differ/shared/diff-type.js',
@@ -78,8 +79,10 @@ const SCOPE_FILES = [
     'src/content/file-type-detector.js',
     'src/content/diff-params-builder.js',
     'src/content/page-reloader.js',
-    // popup / service-worker scope: pure helpers, no chrome.* (FEAT-0033).
-    'src/hosts/host-patterns.js'
+    // popup / service-worker scope: pure helpers, no chrome.* (FEAT-0033/0035).
+    // settings.js must follow host-patterns.js: parseSettingsExport() uses it.
+    'src/hosts/host-patterns.js',
+    'src/core/settings.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().
@@ -91,6 +94,8 @@ const EXPORTED_NAMES = [
     'FileTypeDetector',
     'detectPlatformKind', 'PLATFORM_KIND',
     'normalizeHostPattern', 'userOriginsFrom',
+    'DEFAULT_HANDLER_ANNOTATIONS', 'normalizeHandlerAnnotations', 'isDefaultHandlerAnnotations',
+    'buildSettingsExport', 'parseSettingsExport', 'SETTINGS_EXPORT_FORMAT',
     'PlatformClient',
     'GitLabPlatformClient',
     'GitHubPlatformClient',

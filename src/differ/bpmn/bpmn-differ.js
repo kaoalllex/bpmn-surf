@@ -322,7 +322,7 @@ class BpmnDiffer {
         // Register this tab in the cross-tab registry so any other tab navigating
         // to the same diagram reuses it instead of opening a duplicate (BUG-0017).
         this.#tabNavigator.registerTab(this.#params.identityKey());
-        this.#handlerLocator = new HandlerLocator(this.#platformClient);
+        this.#handlerLocator = new HandlerLocator(this.#platformClient, this.#params.handlerAnnotations);
         // FEAT-0027: locate where a message-catching element is woken up in code,
         // by the message name (correlateMessage / publishMessage).
         this.#correlationLocator = new CorrelationLocator(this.#platformClient);

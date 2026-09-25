@@ -19,6 +19,9 @@
             ],
             "js": [
                 "src/core/config.js",
+                "src/core/handler-annotations.js",
+                "src/hosts/host-patterns.js",
+                "src/core/settings.js",
                 "src/core/models.js",
                 "src/core/utils.js",
                 "src/core/console-log.js",
@@ -61,7 +64,8 @@
         "service_worker": "src/background/service-worker.js"
     },
     "permissions": [
-        "scripting"
+        "scripting",
+        "storage"
     ],
     "optional_host_permissions": [
         "https://*/*"
@@ -71,6 +75,7 @@
             "resources": [
                 "src/content/main.js",
                 "src/core/config.js",
+                "src/core/handler-annotations.js",
                 "src/core/utils.js",
                 "src/core/console-log.js",
                 "src/differ/shared/diff-type.js",
