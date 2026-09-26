@@ -22,9 +22,9 @@ class DiffParamsBuilder {
     /**
      * Params for diff mode (Merge Request: source ref vs target ref).
      */
-    buildDiffParams({ projectInfo, sourceRef, sourceLabel, targetRef, targetLabel, changeRequestId, filePath, fileName, camundaBpmnModdle }) {
+    buildDiffParams({ projectInfo, sourceRef, sourceLabel, targetRef, targetLabel, changeRequestId, filePath, fileName, camundaBpmnModdle, handlerAnnotations }) {
         return {
-            ...this.#commonParams(projectInfo, targetRef, targetLabel, filePath, fileName, camundaBpmnModdle),
+            ...this.#commonParams(projectInfo, targetRef, targetLabel, filePath, fileName, camundaBpmnModdle, handlerAnnotations),
             sourceRef: sourceRef,
             sourceLabel: sourceLabel,
             changeRequestId: changeRequestId
@@ -36,15 +36,15 @@ class DiffParamsBuilder {
      * There is no MR target branch here, so the displayed label falls back to the
      * ref taken from the page URL (usually a readable branch name already).
      */
-    buildBranchParams({ projectInfo, targetRef, filePath, fileName, camundaBpmnModdle }) {
+    buildBranchParams({ projectInfo, targetRef, filePath, fileName, camundaBpmnModdle, handlerAnnotations }) {
         return {
-            ...this.#commonParams(projectInfo, targetRef, targetRef, filePath, fileName, camundaBpmnModdle),
+            ...this.#commonParams(projectInfo, targetRef, targetRef, filePath, fileName, camundaBpmnModdle, handlerAnnotations),
             sourceRef: null,
             sourceLabel: null
         };
     }
 
-    #commonParams(projectInfo, targetRef, targetLabel, filePath, fileName, camundaBpmnModdle) {
+    #commonParams(projectInfo, targetRef, targetLabel, filePath, fileName, camundaBpmnModdle, handlerAnnotations) {
         return {
             platform: this.#platform(projectInfo),
             targetRef: targetRef,
@@ -52,6 +52,9 @@ class DiffParamsBuilder {
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle,
+            // The differ page has no chrome.*, so the configured annotation names
+            // ride along with the params (FEAT-0035), like extensionVersion.
+            handlerAnnotations: handlerAnnotations,
             extensionVersion: this.#extensionVersion
         };
     }

@@ -322,7 +322,7 @@ class BpmnDiffer {
         // Register this tab in the cross-tab registry so any other tab navigating
         // to the same diagram reuses it instead of opening a duplicate (BUG-0017).
         this.#tabNavigator.registerTab(this.#params.identityKey());
-        this.#handlerLocator = new HandlerLocator(this.#platformClient);
+        this.#handlerLocator = new HandlerLocator(this.#platformClient, this.#params.handlerAnnotations);
         // FEAT-0027: locate where a message-catching element is woken up in code,
         // by the message name (correlateMessage / publishMessage).
         this.#correlationLocator = new CorrelationLocator(this.#platformClient);
@@ -405,7 +405,7 @@ class BpmnDiffer {
             console.debug('using local file context as mr');
             this.#versions.useLocalFileContentAsMr();
         } else {
-            console.debug('mr commit id or localFileContent is undefined');
+            console.debug('no source version: branch view shows one version');
         }
 
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
@@ -500,7 +500,9 @@ class BpmnDiffer {
         if (diff) {
             this.#paintDiffs(diff, DiffType.REMOVE);
         } else {
-            console.debug('file not exists in MR branch');
+            console.debug(this.#params.sourceRef || this.#params.localFileContent
+                ? 'file not present in the source version'
+                : 'branch view: nothing to compare with');
         }
     }
 
@@ -520,7 +522,9 @@ class BpmnDiffer {
         if (diff) {
             this.#paintDiffs(diff, DiffType.ADD);
         } else {
-            console.debug('file not exists in target branch');
+            console.debug(this.#params.sourceRef || this.#params.localFileContent
+                ? 'file not present in the target version'
+                : 'branch view: nothing to compare with');
         }
     }
 

@@ -7,6 +7,7 @@
 </head>
 <body>
     <header class="pu-header">
+        <button type="button" class="pu-back hidden" id="backBtn" aria-label="Back">&#8249;</button>
         <span class="pu-logo" aria-hidden="true">
             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
                 <path d="M408,452 Q515,576 620,584" fill="none" stroke="currentColor" stroke-width="96" stroke-linecap="round"/>
@@ -14,25 +15,50 @@
                 <rect x="590" y="556" width="208" height="208" rx="58" fill="none" stroke="currentColor" stroke-width="96"/>
             </svg>
         </span>
-        <span class="pu-title">bpmn-surf</span>
+        <span class="pu-title" id="headerTitle">bpmn-surf</span>
     </header>
 
-    <main class="pu-hero">
-        <span class="pu-hero-label">Version</span>
-        <span class="pu-version" id="currentVersion">—</span>
-    </main>
+    <!-- ==== Home ==== -->
+    <div class="pu-view" data-view="home">
+        <main class="pu-hero">
+            <span class="pu-hero-label">Version</span>
+            <span class="pu-version" id="currentVersion">—</span>
+            <a href="#" id="feedbackLink" class="pu-feedback-link" target="_blank" rel="noopener">Leave feedback</a>
+        </main>
 
-    <section class="pu-sites">
-        <h2 class="pu-section-title">
-            Sites
-            <span class="pu-help" tabindex="0" role="button" aria-describedby="sitesTip">?</span>
-            <span class="pu-tip" id="sitesTip" role="tooltip">
-                Chrome asks you to allow access to the site you add. Tabs that are already
-                open need a reload before the buttons appear there. A site you remove here
-                can stay listed in chrome://extensions &#8594; Site access — that record is
-                Chrome's own, the extension no longer runs there.
-            </span>
-        </h2>
+        <nav class="pu-menu">
+            <button type="button" class="pu-menu-item" data-open="sites">
+                <span class="pu-menu-text">
+                    <span class="pu-menu-label">Sites</span>
+                    <span class="pu-menu-sub" id="sitesSummary">&nbsp;</span>
+                </span>
+                <span class="pu-menu-chevron" aria-hidden="true">&#8250;</span>
+            </button>
+            <button type="button" class="pu-menu-item" data-open="annotations">
+                <span class="pu-menu-text">
+                    <span class="pu-menu-label">External task handler annotations</span>
+                    <span class="pu-menu-sub" id="annSummary">&nbsp;</span>
+                </span>
+                <span class="pu-menu-chevron" aria-hidden="true">&#8250;</span>
+            </button>
+            <button type="button" class="pu-menu-item" data-open="file">
+                <span class="pu-menu-text">
+                    <span class="pu-menu-label">Settings file</span>
+                    <span class="pu-menu-sub">Export or import everything above</span>
+                </span>
+                <span class="pu-menu-chevron" aria-hidden="true">&#8250;</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ==== Sites ==== -->
+    <div class="pu-view hidden" data-view="sites">
+        <p class="pu-hint">
+            Where the extension runs. Chrome asks you to allow each site you add, and
+            tabs that are already open need a reload before the buttons appear. A site
+            you remove can stay listed in chrome://extensions &#8594; Site access —
+            that record is Chrome's own, the extension no longer runs there.
+        </p>
         <ul class="pu-site-list" id="siteList"></ul>
         <form class="pu-add" id="addHostForm">
             <input type="text" id="hostInput" class="pu-input" placeholder="gitlab.mycompany.com"
@@ -40,14 +66,67 @@
             <button type="submit" class="pu-primary">Add</button>
         </form>
         <div class="pu-error hidden" id="hostError"></div>
-    </section>
+    </div>
 
-    <section class="pu-feedback">
-        <a href="#" id="feedbackLink" class="pu-feedback-link" target="_blank" rel="noopener">Leave feedback</a>
-    </section>
+    <!-- ==== Handler annotations ==== -->
+    <div class="pu-view hidden" data-view="annotations">
+        <p class="pu-hint">
+            How this project marks the class serving an external task, so the diagram
+            can link to it. Delegates need no annotation and always work.
+        </p>
+        <div class="pu-warn hidden" id="annWarning">
+            Both lists are empty — external tasks will not link to their handler code.
+        </div>
+
+        <h3 class="pu-subtitle">Topic in the annotation</h3>
+        <p class="pu-hint pu-hint-tight">
+            <code>@ExternalTaskSubscription("validateOrder")</code> &#8594; topic
+            <code>validateOrder</code>.
+        </p>
+        <ul class="pu-site-list" id="topicAnnList"></ul>
+        <form class="pu-add" id="addTopicAnnForm">
+            <input type="text" id="topicAnnInput" class="pu-input" placeholder="ExternalTaskSubscription"
+                   autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button type="submit" class="pu-primary">Add</button>
+        </form>
+
+        <h3 class="pu-subtitle">Topic from the class name</h3>
+        <p class="pu-hint pu-hint-tight">
+            <code>@YourAnnotation class ReserveStockHandler</code> &#8594; topic
+            <code>reserveStockHandler</code>: the annotation names no topic, the
+            framework lower-cases the class name's first letter. Stock Camunda has
+            nothing like this — add a name only if your framework does.
+        </p>
+        <ul class="pu-site-list" id="classAnnList"></ul>
+        <form class="pu-add" id="addClassAnnForm">
+            <input type="text" id="classAnnInput" class="pu-input" placeholder="AnnotationName"
+                   autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button type="submit" class="pu-primary">Add</button>
+        </form>
+        <div class="pu-error hidden" id="annError"></div>
+    </div>
+
+    <!-- ==== Settings file ==== -->
+    <div class="pu-view hidden" data-view="file">
+        <p class="pu-hint">
+            Export writes the sites and the annotations to a JSON file you can hand to a
+            colleague. Importing applies the annotations at once; the sites still need
+            Chrome's permission, so a button appears for you to allow them.
+        </p>
+        <div class="pu-add">
+            <button type="button" class="pu-primary pu-grow" id="exportBtn">Export</button>
+            <button type="button" class="pu-primary pu-grow" id="importBtn">Import</button>
+            <input type="file" id="importInput" accept="application/json,.json" class="hidden">
+        </div>
+        <button type="button" class="pu-primary pu-wide hidden" id="grantImportedBtn"></button>
+        <div class="pu-error hidden" id="ioError"></div>
+        <div class="pu-note hidden" id="ioNote"></div>
+    </div>
 
     <script src="../core/config.js"></script>
     <script src="../hosts/host-patterns.js"></script>
+    <script src="../core/handler-annotations.js"></script>
+    <script src="../core/settings.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

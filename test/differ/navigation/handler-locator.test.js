@@ -80,7 +80,18 @@ class B
     });
 });
 
-describe('HandlerLocator.extractExternalTaskBeanTopics', () => {
+// The class-name style is opt-in (FEAT-0035); these cases configure it.
+const WRAP = { topic: ['ExternalTaskSubscription'], className: ['ExternalTaskBean'] };
+
+describe('HandlerLocator.extractClassNameTopics', () => {
+    it('is off unless a class-name annotation is configured', () => {
+        const content = '@ExternalTaskBean\nclass ScoreCarDelegate {}';
+        assert.deepEqual(Array.from(HandlerLocator.extractClassNameTopics(content)), []);
+        assert.deepEqual(
+            Array.from(HandlerLocator.extractClassNameTopics(content, WRAP)),
+            ['scoreCarDelegate']);
+    });
+
     it('derives the topic from the class name with a lower-cased first letter', () => {
         const content = `
 @Component
@@ -90,7 +101,7 @@ class CorrectItemABTestDelegate(
 ) : AbstractDelegate() {
 `;
         assert.deepEqual(
-            Array.from(HandlerLocator.extractExternalTaskBeanTopics(content)),
+            Array.from(HandlerLocator.extractClassNameTopics(content, WRAP)),
             ['correctItemABTestDelegate']
         );
     });
@@ -101,7 +112,7 @@ class CorrectItemABTestDelegate(
 class FooBarDelegate : AbstractDelegate()
 `;
         assert.deepEqual(
-            Array.from(HandlerLocator.extractExternalTaskBeanTopics(content)),
+            Array.from(HandlerLocator.extractClassNameTopics(content, WRAP)),
             ['fooBarDelegate']
         );
     });
@@ -113,7 +124,7 @@ class FooBarDelegate : AbstractDelegate()
 open class FooDelegate
 `;
         assert.deepEqual(
-            Array.from(HandlerLocator.extractExternalTaskBeanTopics(content)),
+            Array.from(HandlerLocator.extractClassNameTopics(content, WRAP)),
             ['fooDelegate']
         );
     });
@@ -121,7 +132,7 @@ open class FooDelegate
     it('matches the annotation without a leading @ (e.g. inside a search snippet)', () => {
         const content = 'ExternalTaskBean\nclass SnippetDelegate';
         assert.deepEqual(
-            Array.from(HandlerLocator.extractExternalTaskBeanTopics(content)),
+            Array.from(HandlerLocator.extractClassNameTopics(content, WRAP)),
             ['snippetDelegate']
         );
     });
@@ -134,21 +145,21 @@ class AlphaDelegate
 class BetaDelegate
 `;
         assert.deepEqual(
-            Array.from(HandlerLocator.extractExternalTaskBeanTopics(content)),
+            Array.from(HandlerLocator.extractClassNameTopics(content, WRAP)),
             ['alphaDelegate', 'betaDelegate']
         );
     });
 
     it('returns an empty array when there is no @ExternalTaskBean', () => {
         assert.deepEqual(
-            Array.from(HandlerLocator.extractExternalTaskBeanTopics('class Plain')),
+            Array.from(HandlerLocator.extractClassNameTopics('class Plain', WRAP)),
             []
         );
     });
 
     it('returns an empty array for empty or null content', () => {
-        assert.deepEqual(Array.from(HandlerLocator.extractExternalTaskBeanTopics('')), []);
-        assert.deepEqual(Array.from(HandlerLocator.extractExternalTaskBeanTopics(null)), []);
+        assert.deepEqual(Array.from(HandlerLocator.extractClassNameTopics('', WRAP)), []);
+        assert.deepEqual(Array.from(HandlerLocator.extractClassNameTopics(null, WRAP)), []);
     });
 });
 
@@ -161,7 +172,7 @@ class ExplicitTask
 class DerivedDelegate
 `;
         assert.deepEqual(
-            Array.from(HandlerLocator.extractHandlerTopics(content)),
+            Array.from(HandlerLocator.extractHandlerTopics(content, WRAP)),
             ['explicit-topic', 'derivedDelegate']
         );
     });
@@ -265,7 +276,7 @@ describe('HandlerLocator URL builders', () => {
     it('builds a blob search page URL', () => {
         assert.equal(
             locator.blobSearchPageUrl('my-topic', 'main'),
-            'https://gitlab.example/group/proj/-/search?search=my-topic&scope=blobs&ref=main'
+            'https://gitlab.example/search?search=my-topic&project_id=42&scope=blobs&repository_ref=main'
         );
     });
 });
@@ -342,14 +353,19 @@ class ExplicitTask
         );
     });
 
-    it('derives both a topic key (from @ExternalTaskBean) and a class key', () => {
+    it('derives both a topic key (from a class-name annotation) and a class key', () => {
         const content = `
 @ExternalTaskBean
 class FooDelegate
 `;
         assert.deepEqual(
-            Array.from(HandlerLocator.extractHandlerKeys(content)),
+            Array.from(HandlerLocator.extractHandlerKeys(content, WRAP)),
             ['topic:fooDelegate', 'class:FooDelegate']
+        );
+        // Without that annotation configured only the class key remains.
+        assert.deepEqual(
+            Array.from(HandlerLocator.extractHandlerKeys(content)),
+            ['class:FooDelegate']
         );
     });
 

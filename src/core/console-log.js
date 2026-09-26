@@ -159,8 +159,8 @@ class ConsoleLog {
             platform: rawParams.platform && rawParams.platform.kind,
             host: rawParams.platform && rawParams.platform.hostUrl,
             changeRequestId: rawParams.changeRequestId,
-            sourceRef: shortenCommitId(rawParams.sourceRef),
-            targetRef: shortenCommitId(rawParams.targetRef),
+            sourceRef: ConsoleLog.#describeRef(rawParams.sourceRef),
+            targetRef: ConsoleLog.#describeRef(rawParams.targetRef),
             filePath: rawParams.filePath,
             targetFilePath: rawParams.targetFilePath,
             mode: rawParams.mode,
@@ -168,6 +168,14 @@ class ConsoleLog {
             localFile: Boolean(rawParams.localFileContent),
             extensionVersion: rawParams.extensionVersion
         };
+    }
+
+    // A ref is shortened only when it is a commit sha. A branch name means
+    // something in every character, and truncating it hid the very mis-parse the
+    // line exists to reveal: a ref wrongly glued to the directory path showed up
+    // as 'main/ord' (BUG-0034).
+    static #describeRef(ref) {
+        return /^[0-9a-fA-F]{7,40}$/.test(ref || '') ? shortenCommitId(ref) : ref;
     }
 
     // The rendered line keeps the level in its text

@@ -33,9 +33,20 @@ class GitLabPlatformClient extends PlatformClient {
         return `${this.#projectUrl}/-/blob/${ref}/${filePath}${anchor}`;
     }
 
+    // GitLab's project-scoped search lives at <host>/search with a project_id,
+    // NOT at <project>/-/search — that path 404s for a signed-in user, which
+    // made every "search in the repository" fallback a dead end (BUG-0038). The
+    // ref parameter is called repository_ref there.
     searchPageUrl(term, ref) {
-        return `${this.#projectUrl}/-/search?search=${encodeURIComponent(term)}` +
-            `&scope=blobs&ref=${encodeURIComponent(ref)}`;
+        const params = new URLSearchParams({
+            search: term,
+            project_id: String(this.#projectId),
+            scope: 'blobs'
+        });
+        if (ref) {
+            params.set('repository_ref', ref);
+        }
+        return `${this.#projectHostUrl}/search?${params}`;
     }
 
     // GitLab Advanced Search (blobs) at a ref. The response items
@@ -49,13 +60,19 @@ class GitLabPlatformClient extends PlatformClient {
         }
         const content = await this.#load(url, false);
         if (!content) {
+            console.debug(`blob search for '${term}' at ref '${ref}': no response`);
             return [];
         }
-        return JSON.parse(content).map(item => ({
+        const items = JSON.parse(content).map(item => ({
             path: item.path,
             line: item.startline,
             snippet: item.data
         }));
+        // The count and the ref together separate "nothing matches" from "the ref
+        // is wrong" — an empty result otherwise looks the same either way, and
+        // every locator above reports only that it found nothing.
+        console.debug(`blob search for '${term}' at ref '${ref}': ${items.length} hit(s)`);
+        return items;
     }
 
     prDiffsUrl(changeId) {

@@ -151,7 +151,7 @@ class GitLabRepoProviderBase extends RepoProvider {
     extractBranchCommitIdAndFilePath() {
         const branchCommitId = this.domScraper.findBranchCommitIdText();
         return this.urlParser.extractBranchCommitIdAndFilePath(
-            window.location.href, this.projectInfo.name, branchCommitId);
+            window.location.href, branchCommitId);
     }
 
     // A whole-change diff is labelled by the MR branch names. Subclasses that

@@ -43,6 +43,11 @@ class DifferParams {
 
         this.camundaBpmnModdle = params.camundaBpmnModdle;
 
+        // FEAT-0035: which annotations mark an external-task handler. Absent in a
+        // tab opened before the field existed and in the e2e harness, where the
+        // normalizer supplies the shipped default.
+        this.handlerAnnotations = normalizeHandlerAnnotations(params.handlerAnnotations);
+
         // FEAT-0024: the differ page has no chrome.*, so the version the feedback
         // report quotes travels in the params. Undefined in a tab opened before
         // the field existed, and in the e2e harness.
@@ -138,6 +143,7 @@ class DifferParams {
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: this.camundaBpmnModdle,
+            handlerAnnotations: this.handlerAnnotations,
             extensionVersion: this.extensionVersion,
             ...extra
         };
@@ -169,6 +175,7 @@ class DifferParams {
             fileName: this.fileName,
             extensionVersion: this.extensionVersion,
             camundaBpmnModdle: this.camundaBpmnModdle,
+            handlerAnnotations: this.handlerAnnotations,
             mode: DifferParams.MODE_EDIT,
             editSide: editSide
         };

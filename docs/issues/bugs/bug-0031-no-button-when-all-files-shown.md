@@ -51,5 +51,33 @@ button; the other two are fixed and that task is closed.
 
 ## Work log
 
+### 2026-09-25 · claude-opus-5 · no code change
+
+Re-checked on the test sandbox; the symptom is narrower than "no button at all",
+because `findSelectedFilePath` has since grown a rapid-diffs branch with a
+fallback of "exactly one diagram in the whole MR":
+
+- MR !2 (one `.bpmn` among several other files) — the button **is** shown, and
+  permanently, whatever the reader is looking at. The fallback fired.
+- MR !3 (one `.bpmn` + one `.dmn`) — no button, because the fallback wants
+  exactly one diagram and there are two.
+
+So the statement above still holds wherever an MR has zero or several diagrams;
+with exactly one it now shows a button that follows the MR rather than the file.
+That makes the prescribed fix — a button per diagram file block — the right one
+either way, and adds a cheaper middle ground: while a single toolbar button
+remains, name the file on it, so a permanent button at least says what it opens.
+
+Unrelated to [BUG-0036] (a stale button after switching files), which was found
+in the same session and is fixed.
+
+Useful for whoever picks this up: the diff anchor is `sha1(<file path>)` — element
+ids on the live page match it exactly, and `HandlerLocator#mrFileDiffUrl` already
+relies on it. So "which diagrams are in this MR" needs no DOM at all: the changes
+API lists them (already fetched and cached for the handler badges) and each one's
+anchor is computable. That leaves only "where to attach a button per file", which
+can hang off `#<sha1>`. [REFAC-0016] proposes exactly this move for the selected-
+file lookup; doing it first makes this task mostly a placement problem.
+
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->

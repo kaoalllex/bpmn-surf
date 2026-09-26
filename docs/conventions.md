@@ -55,6 +55,7 @@ Stored data must survive extension updates (a Chrome Web Store install auto-upda
 - Read with defaults merged over the stored value: `{ ...DEFAULTS, ...stored }`. Adding a field is then free — old data reads as is
 - Never rename a key or rename/retype a field in place. If that becomes unavoidable, migrate the stored value in `runtime.onInstalled` (`reason: 'update'`)
 - Do not store what Chrome already keeps (e.g. granted host permissions) — a second copy only drifts
+- Today the only stored key is `settings` (FEAT-0035), holding `handlerAnnotations`. Values the differ page needs travel there in the differ params, not through storage — that tab has no `chrome.*`
 
 ## Default assumptions
 

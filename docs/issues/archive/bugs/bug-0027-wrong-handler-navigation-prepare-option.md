@@ -71,7 +71,7 @@ const candidates = annotatedItems.length > 0 ? annotatedItems : handlerItems;
 
 This fix was applied to **both** methods:
 - `#searchSubscriptionLocation` — for topic-based handler search
-- `#searchClassLocation` — for class-name-based handler search (used by `@ExternalTaskBean`)
+- `#searchClassLocation` — for class-name-based handler search (used by `a class-name annotation`)
 
 ### Fix 2: Improve `matchesExactTopic` and `matchesExactClassName` regexes
 
@@ -108,14 +108,14 @@ in the search results, regardless of whether it was the correct match.
 
 **Changes made:**
 1. Fixed `#searchSubscriptionLocation` to use `.filter()` for all annotated items
-2. Fixed `#searchClassLocation` with the same pattern (for `@ExternalTaskBean` handlers)
+2. Fixed `#searchClassLocation` with the same pattern (for `a class-name annotation` handlers)
 3. Improved `matchesExactTopic()` regex to use paired quotes with backreference
 4. Added `matchesExactClassName()` for exact class name matching
 
 **Tests added:**
 - 6 integration tests in `HandlerLocator with real GitLab search results (BUG-0027)`
 - 1 regression test for `searchSubscriptionLocation` with multiple annotated files
-- 1 regression test for `searchClassLocation` with multiple `@ExternalTaskBean` classes
+- 1 regression test for `searchClassLocation` with multiple `a class-name annotation` classes
 - 7 unit tests for `matchesExactTopic()` and `matchesExactClassName()`
 
 **Verification:**

@@ -112,36 +112,58 @@ class GitLabUrlParser {
     }
 
     /**
-     * Extracts branch/commit id and file path from a branch blob URL.
+     * Splits a blob URL's `/-/blob/<ref>/<path>` tail into the ref and the file
+     * path.
+     *
+     * The split is genuinely ambiguous: a ref may itself contain slashes
+     * (release/1.2), and nothing in the URL marks where it ends. Only the page's
+     * own ref selector knows for sure, so that hint wins whenever it is present;
+     * without it the ref is assumed to be a single segment, which is right for
+     * every unslashed branch, tag and sha.
+     *
+     * It used to guess instead, from a list of branch names (master, develop,
+     * feature/*, bugfix/*) with a greedy catch-all behind them. The catch-all
+     * matched slashes, so for any other branch it swallowed the directories and
+     * left only the file name: `main/a/b/c.bpmn` parsed as ref `main/a/b` and
+     * path `c.bpmn`. The diagram still rendered (raw URLs re-join the two), but
+     * every ref-scoped API call — code search, repository tree — was issued with
+     * a ref that does not exist, which is what broke dive-in and handler
+     * navigation for any diagram outside the repository root.
+     *
      * @param {string} href full page URL
-     * @param {string} projectName project name (used to anchor the first regex)
      * @param {string|null} branchCommitIdHint branch/commit id read from the page, if any
      * @returns {{branchCommitId: string, filePath: string}|null}
      */
-    extractBranchCommitIdAndFilePath(href, projectName, branchCommitIdHint) {
-        let branchCommitId = branchCommitIdHint;
-
-        let regex = `\/-\/blob\/([0-9a-zA-Z-_./]+)\/(${projectName}\/.*)`;
-        let match = href.match(regex);
-        if (!match || match.length < 3) {
-            if (!branchCommitId) {
-                // hex-SHA alternative goes before the greedy catch-all so a commit
-                // ref is matched exactly and does not swallow the deep file path
-                branchCommitId = 'master|develop|feature\/[0-9a-zA-Z-_.]+|bugfix\/[0-9a-zA-Z-_.]+|[0-9a-fA-F]{7,40}|[0-9a-zA-Z-_./]+';
-            }
-            regex = `\/-\/blob\/(` + branchCommitId + `)\/(.*)`;
-            match = href.match(regex);
-            if (!match || match.length < 3) {
-                console.warn('cannot extract branch commit id and bpmn file path by regex from url: ' + href);
-                return null;
-            }
+    extractBranchCommitIdAndFilePath(href, branchCommitIdHint) {
+        const marker = '/-/blob/';
+        const markerIndex = href.indexOf(marker);
+        if (markerIndex === -1) {
+            console.warn('cannot extract branch commit id and file path: not a blob url: ' + href);
+            return null;
         }
 
-        const filePath = match[2].split('?')[0];
+        const tail = href.substring(markerIndex + marker.length).split('?')[0].split('#')[0];
+        const firstSlash = tail.indexOf('/');
+        if (firstSlash <= 0) {
+            console.warn('cannot extract branch commit id and file path: no file path in url: ' + href);
+            return null;
+        }
 
-        return {
-            branchCommitId: match[1],
-            filePath: filePath
+        const split = (ref, source) => {
+            console.debug(`branch ref '${ref}' resolved by ${source}; file path '${tail.substring(ref.length + 1)}'`);
+            return { branchCommitId: ref, filePath: tail.substring(ref.length + 1) };
         };
+
+        // The ref selector is the only source that can state a slashed ref.
+        if (branchCommitIdHint && tail.startsWith(branchCommitIdHint + '/')) {
+            return split(branchCommitIdHint, 'the page ref selector');
+        }
+
+        const firstSegment = tail.substring(0, firstSlash);
+        if (/^[0-9a-fA-F]{7,40}$/.test(firstSegment)) {
+            return split(firstSegment, 'its commit-sha shape');
+        }
+
+        return split(firstSegment, 'the first url segment');
     }
 }

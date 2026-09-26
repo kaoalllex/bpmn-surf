@@ -28,8 +28,59 @@ body {
 
 .hidden { display: none !important; }
 
+/* ---- Views: one screen at a time, so nothing has to be squeezed in ---- */
+.pu-menu { display: flex; flex-direction: column; gap: 6px; }
+
+.pu-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    text-align: left;
+    color: var(--pu-fg);
+    background: var(--pu-panel);
+    border: 1px solid var(--pu-border);
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+}
+.pu-menu-item:hover { border-color: var(--pu-accent); }
+
+.pu-menu-text { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.pu-menu-label { font-weight: 600; }
+.pu-menu-sub { font-size: 11.5px; color: var(--pu-muted); overflow-wrap: anywhere; }
+.pu-menu-chevron { font-size: 18px; line-height: 1; color: var(--pu-muted); }
+
+.pu-back {
+    padding: 0 6px 0 0;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--pu-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.pu-back:hover { color: var(--pu-accent); }
+
+.pu-hint {
+    margin: 0 0 12px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--pu-muted);
+}
+.pu-hint-tight { margin-bottom: 8px; }
+.pu-hint code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    color: var(--pu-fg);
+}
+
+.pu-grow { flex: 1; }
+
 /* ---- Header: logo + wordmark ---- */
 .pu-header {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -51,6 +102,11 @@ body {
     font-weight: 700;
     font-size: 20px;
     letter-spacing: 0.2px;
+    /* A screen title can be longer than the brand: let it wrap rather than
+       widen the popup or clip. */
+    min-width: 0;
+    font-size: clamp(15px, 4.6vw, 20px);
+    line-height: 1.2;
 }
 
 /* ---- Hero: big version + emblem ---- */
@@ -90,7 +146,7 @@ button {
 button:hover { background: var(--pu-accent-dim); }
 
 /* ---- Sites: the hosts the extension runs on (FEAT-0033) ---- */
-.pu-sites { padding: 0 18px 4px; }
+.pu-view { padding: 0 18px 14px; }
 
 .pu-section-title {
     position: relative;
@@ -103,48 +159,6 @@ button:hover { background: var(--pu-accent-dim); }
     letter-spacing: 1.2px;
     color: var(--pu-muted);
 }
-
-/* A `?` badge with its own tooltip: the hint is long and needed once, and a
-   native title attribute renders nothing inside an extension popup window. */
-.pu-help {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    margin-left: 6px;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--pu-muted);
-    border: 1px solid var(--pu-border);
-    border-radius: 50%;
-    cursor: help;
-}
-.pu-help:hover,
-.pu-help:focus { color: var(--pu-accent); border-color: var(--pu-accent); outline: none; }
-
-.pu-tip {
-    display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    z-index: 2;
-    padding: 8px 10px;
-    font-size: 11.5px;
-    font-weight: 400;
-    line-height: 1.45;
-    letter-spacing: normal;
-    text-transform: none;
-    color: var(--pu-fg);
-    background: var(--pu-panel);
-    border: 1px solid var(--pu-border);
-    border-radius: 6px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-.pu-help:hover + .pu-tip,
-.pu-help:focus + .pu-tip { display: block; }
 
 .pu-site-list { list-style: none; margin: 0 0 10px; padding: 0; }
 
@@ -199,11 +213,8 @@ button:hover { background: var(--pu-accent-dim); }
 .pu-error { margin-top: 6px; font-size: 12px; color: #F2A0A0; }
 
 /* ---- Feedback link (AdGuard "How to enhance protection" slot) ---- */
-.pu-feedback {
-    padding: 14px 18px 18px;
-    text-align: center;
-    border-top: 1px solid var(--pu-border);
-}
+.pu-hero .pu-feedback-link { margin-top: 10px; }
+
 .pu-feedback-link {
     color: var(--pu-accent);
     text-decoration: underline;
@@ -212,3 +223,36 @@ button:hover { background: var(--pu-accent-dim); }
     font-size: 14px;
 }
 .pu-feedback-link:hover { color: #6BB0F2; }
+
+.pu-subtitle {
+    margin: 10px 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pu-muted);
+}
+
+.pu-site-empty {
+    font-size: 12px;
+    color: var(--pu-muted);
+    font-style: italic;
+}
+
+.pu-site-empty .pu-site-host { font-style: italic; }
+
+.pu-wide { width: 100%; margin-top: 8px; }
+
+.pu-note { margin-top: 6px; font-size: 12px; color: var(--pu-muted); }
+
+
+.pu-warn {
+    margin: 0 0 12px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--pu-fg);
+    background: rgba(242, 160, 160, 0.10);
+    border: 1px solid rgba(242, 160, 160, 0.45);
+    border-radius: 6px;
+}

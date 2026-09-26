@@ -27,6 +27,51 @@ describe('GitLabDomScraper.findSelectedFilePath — legacy UI', () => {
     });
 });
 
+const diffFile = (path, id) =>
+    `<diff-file${id ? ` id="${id}"` : ''} data-file-data='${JSON.stringify({ new_path: path })}'></diff-file>`;
+
+describe('GitLabDomScraper.findSelectedFilePath — rapid diffs', () => {
+    it('picks the file the url hash points at', async () => {
+        const { scope, scraper } = createScraper();
+        scope.document.body.innerHTML = diffFile('a.bpmn', 'f1') + diffFile('b.bpmn', 'f2');
+        scope.window.location.hash = '#f2';
+        assert.equal(await scraper.findSelectedFilePath(), 'b.bpmn');
+    });
+
+    it('falls back to the only diagram in the diff', async () => {
+        const { scope, scraper } = createScraper();
+        scope.document.body.innerHTML = diffFile('Service.java') + diffFile('a.bpmn');
+        assert.equal(await scraper.findSelectedFilePath(), 'a.bpmn');
+    });
+
+    it('keeps the last answer while no file element is rendered (BUG-0036)', async () => {
+        const { scope, scraper } = createScraper();
+        scope.document.body.innerHTML = diffFile('a.bpmn');
+        assert.equal(await scraper.findSelectedFilePath(), 'a.bpmn');
+
+        // Rapid diffs unmounts file elements as the reader scrolls. An empty DOM
+        // says "not rendered now", not "not in this diff" — answering null here
+        // is what made the button blink.
+        scope.document.body.innerHTML = '';
+        assert.equal(await scraper.findSelectedFilePath(), 'a.bpmn');
+    });
+
+    it('does drop the answer once rendered files hold no diagram', async () => {
+        const { scope, scraper } = createScraper();
+        scope.document.body.innerHTML = diffFile('a.bpmn');
+        assert.equal(await scraper.findSelectedFilePath(), 'a.bpmn');
+
+        scope.document.body.innerHTML = diffFile('Service.java');
+        assert.equal(await scraper.findSelectedFilePath(), null);
+    });
+
+    it('returns null when several diagrams are rendered and none is selected', async () => {
+        const { scope, scraper } = createScraper();
+        scope.document.body.innerHTML = diffFile('a.bpmn') + diffFile('b.dmn');
+        assert.equal(await scraper.findSelectedFilePath(), null);
+    });
+});
+
 describe('GitLabDomScraper.findBranchCommitIdText', () => {
     // Production reads .innerText (a Chrome feature jsdom does not implement),
     // so the text node is attached as an explicit innerText property here.

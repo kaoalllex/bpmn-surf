@@ -76,16 +76,14 @@ describe('CallerLocator.blobSearchPageUrl', () => {
     it('builds a calledElement blob search page URL', () => {
         assert.equal(
             locator.blobSearchPageUrl('PrepareItem', 'main'),
-            'https://gitlab.example/group/proj/-/search' +
-            '?search=calledElement%3D%22PrepareItem%22&scope=blobs&ref=main'
+            'https://gitlab.example/search?search=calledElement%3D%22PrepareItem%22&project_id=42&scope=blobs&repository_ref=main'
         );
     });
 
     it('url-encodes the process id and ref', () => {
         assert.equal(
             locator.blobSearchPageUrl('Some Process', 'feature/x'),
-            'https://gitlab.example/group/proj/-/search' +
-            '?search=calledElement%3D%22Some%20Process%22&scope=blobs&ref=feature%2Fx'
+            'https://gitlab.example/search?search=calledElement%3D%22Some+Process%22&project_id=42&scope=blobs&repository_ref=feature%2Fx'
         );
     });
 });

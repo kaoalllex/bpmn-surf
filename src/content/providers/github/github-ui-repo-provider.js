@@ -24,6 +24,8 @@ class GitHubUIRepoProvider extends UIRepoProvider {
         return false;
     }
 
+    buttonFilePath() { return null; }
+
     isButtonPresent() {
         return false;
     }

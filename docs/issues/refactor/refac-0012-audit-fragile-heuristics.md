@@ -43,7 +43,7 @@ Known candidates (a starting point, the list to be extended during the audit):
 - Resolving the target-version commit for a merged MR (historically went through the DOM —
   see [REFAC-0008]) — check for residual heuristics.
 - `HandlerLocator` — matching handlers by **simple** class name rather than FQN
-  (collisions of `class:Bar`); deriving the topic from the class name for `@ExternalTaskBean`;
+  (collisions of `class:Bar`); deriving the topic from the class name for `a class-name annotation`;
   deriving bean→class by the default Spring convention
   (`src/differ/navigation/handler-locator.js`, see its header comment about
   known limitations). The heuristics are deliberate — there should be at least a log on ambiguity.

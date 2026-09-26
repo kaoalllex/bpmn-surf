@@ -71,15 +71,12 @@ class App {
      */
     #observeDomChanges() {
         const observer = new MutationObserver(() => {
-            if (this.#uiRepoProvider.isButtonPresent()) {
-                return;
-            }
             if (this.#domRetriggerTimer) {
                 clearTimeout(this.#domRetriggerTimer);
             }
-            this.#domRetriggerTimer = setTimeout(() => {
+            this.#domRetriggerTimer = setTimeout(async () => {
                 this.#domRetriggerTimer = null;
-                if (this.#uiRepoProvider.isButtonPresent()) {
+                if (await this.#isButtonUpToDate()) {
                     return;
                 }
                 this.#handleStart(null, 'after dom change');
@@ -116,19 +113,33 @@ class App {
             return;
         }
 
-        this.#uiRepoProvider.reset();
-
+        // No unconditional reset() here any more: removing and re-adding an
+        // identical button is a DOM change, and the observer that called us reacts
+        // to DOM changes — a self-feeding loop that also made the button blink
+        // (BUG-0036). Each handler below removes the button only once it knows
+        // there should not be one.
         try {
             const isProviderInitialized = await this.#repoProvider.init();
             if (!isProviderInitialized) {
+                this.#uiRepoProvider.reset();
                 return;
             }
 
             const changeViewHandled = await this.#handleChangeView();
-            if (!changeViewHandled) {
-                await this.#handleBranchView();
+            if (!changeViewHandled && !(await this.#handleBranchView())) {
+                this.#uiRepoProvider.reset();
             }
         } catch (error) {
+            // Reloading the extension orphans the content scripts already running
+            // in open tabs: chrome.runtime dies and the next chrome.* call throws
+            // "Extension context invalidated". #openDiffer already recognises that
+            // on click; here it used to surface as a bare stack trace in the log,
+            // which reads like a defect in the page flow rather than a stale tab.
+            if (!chrome.runtime?.id) {
+                console.info('bpmn-surf was reloaded; this tab still runs the old ' +
+                    'content script. Refresh the page (F5) to get the buttons back.');
+                return;
+            }
             console.error('Error in #handleStart:', error);
         }
     }
@@ -148,6 +159,35 @@ class App {
         await this.#repoProvider.initChangeInfo();
         await this.#addDiffButton();
         return true;
+    }
+
+    // A button already on the page used to end the check here, so switching to
+    // another file left the previous one's button in place: the observer saw the
+    // change and bailed, and only an unrelated click (mouseup -> full re-run)
+    // rebuilt it (BUG-0036). The button now also has to belong to the file the
+    // page currently shows.
+    async #isButtonUpToDate() {
+        if (!this.#uiRepoProvider.isButtonPresent()) {
+            return false;
+        }
+        const shownPath = await this.#shownFilePath();
+        return !!shownPath && shownPath === this.#uiRepoProvider.buttonFilePath();
+    }
+
+    // The file the page is showing right now, asked in the way that fits the page:
+    // the selected diff on an MR, the blob path in branch view. Null when it
+    // cannot be told — including before any successful provider init, where the
+    // getters throw.
+    async #shownFilePath() {
+        try {
+            if (await this.#repoProvider.isChangeViewActive()) {
+                return await this.#repoProvider.findSelectedFilePath();
+            }
+            const branchFile = this.#repoProvider.extractBranchCommitIdAndFilePath();
+            return branchFile ? branchFile.filePath : null;
+        } catch (error) {
+            return null;
+        }
     }
 
     /**
@@ -174,12 +214,18 @@ class App {
         const filePath = await this.#repoProvider.findSelectedFilePath();
         if (!filePath) {
             console.debug('file not selected');
+            this.#uiRepoProvider.reset();
             return;
         }
 
         const fileType = this.#fileTypeDetector.detect(filePath);
         if (!fileType) {
             console.debug('selected file is neither bpmn nor dmn');
+            this.#uiRepoProvider.reset();
+            return;
+        }
+        if (filePath === this.#uiRepoProvider.buttonFilePath()) {
+            console.debug('button already belongs to ' + filePath);
             return;
         }
         console.debug(`selected file is ${fileType.name}`);
@@ -219,7 +265,7 @@ class App {
             diffSideLabels
         );
 
-        this.#addButton(fileType, UI_BUTTON_TYPE.DIFF, params, false);
+        this.#addButton(fileType, UI_BUTTON_TYPE.DIFF, params, false, filePath);
     }
 
     /**
@@ -235,6 +281,10 @@ class App {
         }
 
         const { branchCommitId, filePath } = res;
+        if (filePath === this.#uiRepoProvider.buttonFilePath()) {
+            console.debug('button already belongs to ' + filePath);
+            return;
+        }
         const fileName = getFileNameFromPath(filePath);
 
         console.debug(
@@ -248,7 +298,7 @@ class App {
             filePath,
             fileName
         );
-        this.#addButton(fileType, UI_BUTTON_TYPE.BRANCH, params, true);
+        this.#addButton(fileType, UI_BUTTON_TYPE.BRANCH, params, true, filePath);
     }
 
     /**
@@ -267,7 +317,8 @@ class App {
             changeRequestId: this.#repoProvider.getChangeInfo().iid,
             filePath: filePath,
             fileName: fileName,
-            camundaBpmnModdle: camundaBpmnModdle
+            camundaBpmnModdle: camundaBpmnModdle,
+            handlerAnnotations: await loadHandlerAnnotations()
         });
     }
 
@@ -283,7 +334,8 @@ class App {
             targetRef: branchCommitId,
             filePath: filePath,
             fileName: fileName,
-            camundaBpmnModdle: camundaBpmnModdle
+            camundaBpmnModdle: camundaBpmnModdle,
+            handlerAnnotations: await loadHandlerAnnotations()
         });
     }
 
@@ -291,12 +343,13 @@ class App {
      * Adds button via UI provider
      * @private
      */
-    #addButton(fileType, buttonType, params, needToSelectLocalFile) {
+    #addButton(fileType, buttonType, params, needToSelectLocalFile, filePath) {
         const msgId = this.#getMessageId(fileType);
         this.#uiRepoProvider.addButton({
             fileType: fileType,
             buttonType: buttonType,
             needToSelectLocalFile: needToSelectLocalFile,
+            filePath: filePath,
             onButtonClickFunc: (extParams) => this.#openDiffer(buttonType, params, extParams, msgId)
         });
     }

@@ -4,13 +4,17 @@
 // A service task is linked to its code by a namespaced "handler key" so the
 // same machinery serves both implementation kinds:
 //  - topic:<topic>     — external task; the BPMN states the topic via
-//                        camunda:topic. Two declaration styles are recognised:
-//     - @ExternalTaskSubscription("<topic>") — the topic is stated explicitly;
-//     - @ExternalTaskBean — no topic is stated; the framework derives it from
-//       the annotated class name by lower-casing its first letter (e.g. class
-//       CorrectItemABTestDelegate -> topic "correctItemABTestDelegate").
-//       The annotation's arguments (e.g. retriesTimeout) are optional and never
-//       carry the topic.
+//                        camunda:topic. Two declaration styles are recognised,
+//                        both configurable by annotation name (FEAT-0035, see
+//                        core/handler-annotations.js):
+//     - a topic annotation states it explicitly — @ExternalTaskSubscription("<topic>"),
+//       the stock Camunda form, on by default;
+//     - a class-name annotation states nothing, and the framework derives the
+//       topic from the annotated class name by lower-casing its first letter
+//       (@Something class CorrectItemABTestDelegate -> topic
+//       "correctItemABTestDelegate"). No stock Camunda annotation works this way,
+//       so this style is off until a name is configured. The annotation's own
+//       arguments are optional and never carry the topic.
 //  - class:<SimpleName> — classic delegate; the BPMN references it via
 //     camunda:class="com.foo.Bar" (-> class:Bar) or
 //     camunda:delegateExpression="${bar}" (Spring bean `bar` -> class Bar by
@@ -33,17 +37,23 @@ class HandlerLocator {
     // File extensions treated as handler sources (Kotlin and Java).
     static #HANDLER_FILE_EXTENSIONS = ['.kt', '.java'];
 
-    // Matches @ExternalTaskSubscription("topic"), tolerating whitespace/newlines
-    // and an optional named argument (value = "..." / topicName = "...").
-    static #SUBSCRIPTION_TOPIC_REGEX =
-        /@?ExternalTaskSubscription\s*\(\s*(?:[A-Za-z_]+\s*=\s*)?"([^"]+)"/g;
+    // Matches a topic annotation — @ExternalTaskSubscription("topic") and any
+    // other name the user configured — tolerating whitespace/newlines and an
+    // optional named argument (value = "..." / topicName = "...").
+    static #topicAnnotationRegex(names) {
+        return new RegExp(
+            `@?(?:${names.join('|')})\\s*\\(\\s*(?:[A-Za-z_]+\\s*=\\s*)?"([^"]+)"`, 'g');
+    }
 
-    // Matches @ExternalTaskBean (with optional arguments) followed by the class
-    // it annotates, capturing the class name. Tolerates other annotations/modifiers
-    // (e.g. @Component, open) between the annotation and the `class` keyword. The
-    // topic is later derived from the captured class name, not from the arguments.
-    static #WRAP_TO_EXTERNAL_TASK_REGEX =
-        /@?ExternalTaskBean\b\s*(?:\([^)]*\))?[\s\S]*?\bclass\s+([A-Za-z_][A-Za-z0-9_]*)/g;
+    // Matches a class-name annotation (with optional arguments) followed by the
+    // class it annotates, capturing the class name. Tolerates other annotations /
+    // modifiers (e.g. @Component, open) between the annotation and the `class`
+    // keyword. The topic is later derived from the captured class name, not from
+    // the arguments.
+    static #classNameAnnotationRegex(names) {
+        return new RegExp(
+            `@?(?:${names.join('|')})\\b\\s*(?:\\([^)]*\\))?[\\s\\S]*?\\bclass\\s+([A-Za-z_][A-Za-z0-9_]*)`, 'g');
+    }
 
     // Matches a class declaration, capturing the class name. Language-agnostic
     // (Kotlin `class Foo`, Java `public final class Foo`); used to derive
@@ -59,25 +69,33 @@ class HandlerLocator {
     static #DELEGATE_BEAN_REGEX = /^\s*[#$]\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\s*$/;
 
     #client;
+    #annotations;
 
     // Cache of resolveLocation() results, keyed by `${ref}\n${key}`.
     #locationCache = new Map();
 
-    constructor(client) {
+    // `annotations` is the user's configured annotation names (FEAT-0035),
+    // { topic: [...], className: [...] }; omitted, it is the shipped default —
+    // @ExternalTaskSubscription only.
+    constructor(client, annotations) {
         this.#client = client;
+        this.#annotations = normalizeHandlerAnnotations(annotations);
     }
 
     /**
-     * Extracts all external-task topics declared via @ExternalTaskSubscription
-     * in the given source file content.
+     * Extracts all external-task topics stated as a string argument of a topic
+     * annotation (@ExternalTaskSubscription("t") and any configured alias).
+     * @param {string} fileContent
+     * @param {{topic: string[]}} [annotations] configured names; default if omitted
      * @returns {string[]} topics (possibly empty)
      */
-    static extractSubscriptionTopics(fileContent) {
-        const topics = [];
-        if (!fileContent) {
-            return topics;
+    static extractSubscriptionTopics(fileContent, annotations) {
+        const names = normalizeHandlerAnnotations(annotations).topic;
+        if (!fileContent || names.length === 0) {
+            return [];
         }
-        const regex = new RegExp(HandlerLocator.#SUBSCRIPTION_TOPIC_REGEX);
+        const topics = [];
+        const regex = HandlerLocator.#topicAnnotationRegex(names);
         let match;
         while ((match = regex.exec(fileContent)) !== null) {
             topics.push(match[1]);
@@ -86,17 +104,20 @@ class HandlerLocator {
     }
 
     /**
-     * Extracts the topics of all @ExternalTaskBean-annotated classes in the
-     * given source file content. The topic of such a handler is its class name
-     * with a lower-cased first letter.
+     * Extracts the topics of all classes carrying a class-name annotation (off
+     * by default — see handler-annotations.js). The topic of such a handler is
+     * its class name with a lower-cased first letter.
+     * @param {string} fileContent
+     * @param {{className: string[]}} [annotations] configured names; default if omitted
      * @returns {string[]} topics (possibly empty)
      */
-    static extractExternalTaskBeanTopics(fileContent) {
-        const topics = [];
-        if (!fileContent) {
-            return topics;
+    static extractClassNameTopics(fileContent, annotations) {
+        const names = normalizeHandlerAnnotations(annotations).className;
+        if (!fileContent || names.length === 0) {
+            return [];
         }
-        const regex = new RegExp(HandlerLocator.#WRAP_TO_EXTERNAL_TASK_REGEX);
+        const topics = [];
+        const regex = HandlerLocator.#classNameAnnotationRegex(names);
         let match;
         while ((match = regex.exec(fileContent)) !== null) {
             topics.push(HandlerLocator.#topicFromClassName(match[1]));
@@ -105,19 +126,18 @@ class HandlerLocator {
     }
 
     /**
-     * All external-task topics declared in a source file, regardless of style
-     * (@ExternalTaskSubscription or @ExternalTaskBean).
+     * All external-task topics declared in a source file, in either style.
      * @returns {string[]} topics (possibly empty)
      */
-    static extractHandlerTopics(fileContent) {
+    static extractHandlerTopics(fileContent, annotations) {
         return [
-            ...HandlerLocator.extractSubscriptionTopics(fileContent),
-            ...HandlerLocator.extractExternalTaskBeanTopics(fileContent)
+            ...HandlerLocator.extractSubscriptionTopics(fileContent, annotations),
+            ...HandlerLocator.extractClassNameTopics(fileContent, annotations)
         ];
     }
 
-    // The topic the framework derives from a @ExternalTaskBean class name:
-    // the class name with a lower-cased first letter.
+    // The topic a framework derives from an annotated class name: the class name
+    // with a lower-cased first letter.
     static #topicFromClassName(className) {
         return className.charAt(0).toLowerCase() + className.slice(1);
     }
@@ -147,9 +167,9 @@ class HandlerLocator {
      * every declared external task and class:<Name> for every declared class.
      * @returns {string[]} keys (possibly empty)
      */
-    static extractHandlerKeys(fileContent) {
+    static extractHandlerKeys(fileContent, annotations) {
         const keys = [];
-        for (const topic of HandlerLocator.extractHandlerTopics(fileContent)) {
+        for (const topic of HandlerLocator.extractHandlerTopics(fileContent, annotations)) {
             keys.push(`topic:${topic}`);
         }
         for (const className of HandlerLocator.extractDeclaredClassNames(fileContent)) {
@@ -292,7 +312,7 @@ class HandlerLocator {
         }));
 
         handlerChanges.forEach(({ filePath, diffType }, i) => {
-            for (const key of HandlerLocator.extractHandlerKeys(contents[i])) {
+            for (const key of HandlerLocator.extractHandlerKeys(contents[i], this.#annotations)) {
                 handlers.set(key, { filePath, diffType });
             }
         });
@@ -391,10 +411,10 @@ class HandlerLocator {
     }
 
     async #searchHandlerLocation(topic, ref) {
-        // @ExternalTaskSubscription is the primary style; @ExternalTaskBean is
+        // The topic-carrying style is the primary one; the class-name style is
         // the fallback for projects that derive the topic from the class name.
         const location = (await this.#searchSubscriptionLocation(topic, ref))
-            || (await this.#searchExternalTaskBeanLocation(topic, ref));
+            || (await this.#searchClassNameAnnotationLocation(topic, ref));
         if (!location) {
             console.info(`handler source not found for topic '${topic}'`);
         }
@@ -402,6 +422,9 @@ class HandlerLocator {
     }
 
     async #searchSubscriptionLocation(topic, ref) {
+        if (this.#annotations.topic.length === 0) {
+            return null;
+        }
         // Search the bare topic string, not `ExternalTaskSubscription("<topic>")`:
         // GitLab Advanced Search (Elasticsearch) treats " ( ) as query operators,
         // so the punctuated form silently returns [] on such instances (BUG-0013),
@@ -416,10 +439,11 @@ class HandlerLocator {
             return null;
         }
 
-        // Filter to ALL hits whose snippet contains the subscription annotation
-        // (not just the first one). This is critical: .find() would return the
-        // first annotated file, which may be wrong (BUG-0027).
-        const annotatedItems = handlerItems.filter(i => i.snippet && i.snippet.includes('ExternalTaskSubscription'));
+        // Filter to ALL hits whose snippet contains one of the configured topic
+        // annotations (not just the first one). This is critical: .find() would
+        // return the first annotated file, which may be wrong (BUG-0027).
+        const annotatedItems = handlerItems.filter(i =>
+            i.snippet && this.#annotations.topic.some(name => i.snippet.includes(name)));
 
         // Among the annotated candidates (or all if none annotated), find one
         // whose snippet declares the exact topic (not a longer name containing it).
@@ -447,25 +471,31 @@ class HandlerLocator {
         };
     }
 
-    async #searchExternalTaskBeanLocation(topic, ref) {
+    async #searchClassNameAnnotationLocation(topic, ref) {
+        // Off unless the user configured a class-name annotation (FEAT-0035):
+        // without one, every class whose name matches the topic would be offered
+        // as the handler, which is a guess rather than a resolution.
+        if (this.#annotations.className.length === 0) {
+            return null;
+        }
         // The topic is the class name with a lower-cased first letter, so the
         // class name is the topic with its first letter capitalised. Prefer a
-        // hit whose snippet shows the @ExternalTaskBean annotation (avoids
-        // matching an unrelated class of the same name).
+        // hit whose snippet shows one of those annotations (avoids matching an
+        // unrelated class of the same name).
         const className = capitalizeFirstLetter(topic);
-        return this.#searchClassLocation(className, ref, 'ExternalTaskBean');
+        return this.#searchClassLocation(className, ref, this.#annotations.className);
     }
 
     // Locates the delegate class for a class:<Name> key — the same class-search
-    // as #searchExternalTaskBeanLocation but without an annotation to prefer.
+    // as #searchClassNameAnnotationLocation but without an annotation to prefer.
     async #searchClassDeclarationLocation(className, ref) {
         return this.#searchClassLocation(className, ref, null);
     }
 
     // Locates the handler file declaring `class <className>`. When
-    // preferAnnotation is given, hits whose snippet shows that annotation win
-    // over other classes; otherwise the first handler-file hit.
-    async #searchClassLocation(className, ref, preferAnnotation) {
+    // preferAnnotations is given, hits whose snippet shows one of them win over
+    // other classes; otherwise the first handler-file hit.
+    async #searchClassLocation(className, ref, preferAnnotations) {
         const term = `class ${className}`;
         const items = await this.#client.searchCode(ref, term);
 
@@ -475,11 +505,12 @@ class HandlerLocator {
         }
 
         // Filter to ALL hits whose snippet shows the preferred annotation
-        // (e.g. @ExternalTaskBean). Using .filter() instead of .find() is
+        // (a configured class-name annotation). Using .filter() instead of .find() is
         // critical: .find() would return only the first annotated file, which
         // may be wrong if multiple classes have the same annotation (BUG-0027).
-        const preferredItems = preferAnnotation
-            ? handlerItems.filter(i => i.snippet && i.snippet.includes(preferAnnotation))
+        const preferredItems = preferAnnotations
+            ? handlerItems.filter(i =>
+                i.snippet && preferAnnotations.some(name => i.snippet.includes(name)))
             : [];
 
         // Among the preferred candidates (or all if none preferred), find one

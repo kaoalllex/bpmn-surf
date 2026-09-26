@@ -22,9 +22,10 @@ class UIRepoProvider {
      * @param {FileType} options.fileType file type (bpmn or dmn)
      * @param {string} options.buttonType button type: UI_BUTTON_TYPE.DIFF or UI_BUTTON_TYPE.BRANCH
      * @param {boolean} options.needToSelectLocalFile whether to show the local file selector
+     * @param {string} options.filePath the file the button was built for
      * @param {Function} options.onButtonClickFunc click handler
      */
-    addButton({ fileType, buttonType, needToSelectLocalFile, onButtonClickFunc }) {
+    addButton({ fileType, buttonType, needToSelectLocalFile, filePath, onButtonClickFunc }) {
         throw new Error('addButton() must be implemented');
     }
 
@@ -50,5 +51,15 @@ class UIRepoProvider {
      */
     isButtonPresent() {
         throw new Error('isButtonPresent() must be implemented');
+    }
+
+    /**
+     * The file path the currently shown button was built for, or null when there
+     * is no button. Lets the caller tell "the button is there" from "the button
+     * is there for the file now on screen".
+     * @returns {string|null}
+     */
+    buttonFilePath() {
+        throw new Error('buttonFilePath() must be implemented');
     }
 }
