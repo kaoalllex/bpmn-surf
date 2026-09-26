@@ -314,3 +314,63 @@ describe('BpmnXmlComparator non-executable process', () => {
         assert.equal(result.nodeIdToDiffsMap.size, 0);
     });
 });
+
+// cancelActivity flips a boundary event between interrupting/non-interrupting. The
+// properties panel has no field for it (only an icon and the header text change),
+// so it is treated like a type change: no property group, header gets painted instead.
+describe('BpmnXmlComparator boundary event cancelActivity', () => {
+    const withBoundaryEvent = (xml, cancelActivity) => xml.replace(
+        '<bpmn:endEvent id="EndEvent_1" name="End">',
+        `<bpmn:boundaryEvent id="Boundary_1" cancelActivity="${cancelActivity}" attachedToRef="Task_1">` +
+        '<bpmn:timerEventDefinition id="TimerDef_1" />' +
+        '</bpmn:boundaryEvent>' +
+        '<bpmn:endEvent id="EndEvent_1" name="End">'
+    );
+
+    it('highlights the header, not a property group, when cancelActivity changes', () => {
+        const result = compare(withBoundaryEvent(base, 'false'), withBoundaryEvent(base, 'true'));
+        assert.deepEqual(Array.from(result.typeChangedIds), ['Boundary_1']);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Boundary_1']);
+        assert.equal(result.nodeIdToDiffsMap.get('Boundary_1'), undefined);
+    });
+
+    it('reports no change when cancelActivity is the same', () => {
+        const result = compare(withBoundaryEvent(base, 'true'), withBoundaryEvent(base, 'true'));
+        assert.deepEqual(Array.from(result.typeChangedIds), []);
+        assert.deepEqual(Array.from(result.changedShapeIds), []);
+    });
+});
+
+// A modeler re-save can reorder an element's children without changing anything
+// semantically. Positional comparison would then pair unrelated tags and report a
+// false change with no named property (the element goes blue with nothing to show).
+describe('BpmnXmlComparator reordered children (non-extensionElements)', () => {
+    const reordered = base.replace(
+        '<bpmn:startEvent id="StartEvent_1" name="Start">\n      <bpmn:outgoing>Flow_1</bpmn:outgoing>\n    </bpmn:startEvent>\n    <bpmn:userTask id="Task_1" name="Review request">\n      <bpmn:incoming>Flow_1</bpmn:incoming>\n      <bpmn:outgoing>Flow_2</bpmn:outgoing>\n    </bpmn:userTask>',
+        '<bpmn:startEvent id="StartEvent_1" name="Start">\n      <bpmn:outgoing>Flow_1</bpmn:outgoing>\n    </bpmn:startEvent>\n    <bpmn:userTask id="Task_1" name="Review request">\n      <bpmn:outgoing>Flow_2</bpmn:outgoing>\n      <bpmn:incoming>Flow_1</bpmn:incoming>\n    </bpmn:userTask>'
+    );
+
+    it('ignores reordering of connector children with no semantic change', () => {
+        assert.notEqual(reordered, base);
+        assert.deepEqual(Array.from(compare(reordered, base).changedShapeIds), []);
+    });
+
+    // A newer Camunda Modeler regenerates a child's auto id even when the modeler
+    // only reordered it (observed on a real MR: a boundaryEvent's timerEventDefinition
+    // moved and got a fresh id). The child is otherwise byte-for-byte identical, so
+    // this must not count as a change either — same as an element's own id never does.
+    it('ignores reordering of a non-connector child whose own auto id was also regenerated', () => {
+        const reorderedWithNewChildId = base
+            .replace(
+                '<bpmn:endEvent id="EndEvent_1" name="End">\n      <bpmn:incoming>Flow_2</bpmn:incoming>\n    </bpmn:endEvent>',
+                '<bpmn:endEvent id="EndEvent_1" name="End">\n      ' +
+                '<bpmn:timerEventDefinition id="TimerDef_1" />\n      <bpmn:incoming>Flow_2</bpmn:incoming>\n    </bpmn:endEvent>'
+            );
+        const other = base.replace(
+            '<bpmn:endEvent id="EndEvent_1" name="End">\n      <bpmn:incoming>Flow_2</bpmn:incoming>\n    </bpmn:endEvent>',
+            '<bpmn:endEvent id="EndEvent_1" name="End">\n      ' +
+            '<bpmn:incoming>Flow_2</bpmn:incoming>\n      <bpmn:timerEventDefinition id="TimerDef_2" />\n    </bpmn:endEvent>'
+        );
+        assert.deepEqual(Array.from(compare(reorderedWithNewChildId, other).changedShapeIds), []);
+    });
+});

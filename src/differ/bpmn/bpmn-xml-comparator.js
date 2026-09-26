@@ -26,6 +26,10 @@ class BpmnXmlComparator {
     static #WHITESPACE_CHAR = /\s/;
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
+    // No property group to highlight, but the panel's header text does change
+    // (e.g. "Timer boundary event" -> "Timer boundary event (non interrupting)"),
+    // so the header itself gets the 'changed' colour, the same way a type change does.
+    static #HEADER_DIFF_PROPERTY_GROUP = '_header_';
 
 
     /**
@@ -142,7 +146,10 @@ class BpmnXmlComparator {
         ['bpmn:outputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:inputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
 
-        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP]
+        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+
+        // No dedicated field in the panel, but it does change the header text
+        ['bpmn:boundaryEvent/cancelActivity', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
     ]);
 
     #changedMessages = [];
@@ -157,7 +164,8 @@ class BpmnXmlComparator {
      *   nodeIdToDiffsMap (id -> [property group names]),
      *   nodeIdToConditions (id -> [my condition, other condition]),
      *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}])),
-     *   typeChangedIds (ids whose element type differs between the versions)
+     *   typeChangedIds (ids whose element type differs between the versions,
+     *     or whose panel header text changes for another reason, e.g. cancelActivity)
      * }
      */
     compare(myXml, otherXml) {
@@ -218,6 +226,12 @@ class BpmnXmlComparator {
                         const diffPropGroup = this.#findDiffPropertyGroup(diff);
                         if (diffPropGroup) {
                             if (diffPropGroup === BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP) {
+                                continue;
+                            }
+                            if (diffPropGroup === BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP) {
+                                if (!result.typeChangedIds.includes(id)) {
+                                    result.typeChangedIds.push(id);
+                                }
                                 continue;
                             }
                             const diffsInMap = result.nodeIdToDiffsMap.get(id);
@@ -423,10 +437,12 @@ class BpmnXmlComparator {
             return diffs;
         }
 
-        if (nodeA.tagName === 'bpmn:extensionElements' && this.#hasPositionalTagMismatch(nodeA, nodeB)) {
-            // Extension elements are an unordered list: when an entry is replaced
-            // (child count unchanged), positional comparison pairs unrelated entries
-            // and yields nameless diffs, losing property groups for panel highlighting
+        if (this.#hasPositionalTagMismatch(nodeA, nodeB)) {
+            // Children are logically an unordered set (e.g. a modeler re-saving the
+            // file reorders them, or an extensionElements entry gets replaced with
+            // child count unchanged): positional comparison would pair unrelated
+            // nodes and yield nameless diffs, losing property groups for panel
+            // highlighting (and, with no real content change, a false positive).
             const childrenDiffs = this.#findChildrenDiffs(nodeA, nodeB);
             return this.#concatDiffs(diffs, childrenDiffs);
         }
@@ -645,13 +661,13 @@ class BpmnXmlComparator {
             if (findForNode.nodeType === Node.TEXT_NODE || this.#isNodeConnector(findForNode)) {
                 continue;
             }
-            const findForNodeText = markupOf(findForNode);
+            const findForNodeText = this.#markupIgnoringId(findForNode);
             let found = false;
             for (const findWhereNode of findWhereNodes) {
                 if (findWhereNode.nodeType === Node.TEXT_NODE) {
                     continue; // text has no markup to match against
                 }
-                const findWhereNodeText = markupOf(findWhereNode);
+                const findWhereNodeText = this.#markupIgnoringId(findWhereNode);
                 if (findForNodeText === findWhereNodeText) {
                     found = true;
                     break;
@@ -661,6 +677,17 @@ class BpmnXmlComparator {
                 diffNodes.push(findForNode);
             }
         }
+    }
+
+    // Same idea as #getAttributesDiffs skipping 'id': a modeler can regenerate an
+    // element's own auto id (moving it, or just re-saving with a newer version)
+    // without changing anything semantic. markupOf() is otherwise exact, so a
+    // reordered child that is byte-for-byte identical except for its own id (or a
+    // descendant's) would still be reported as "different", losing its property
+    // group for panel highlighting (it maps to no group, since nothing about it
+    // actually changed).
+    #markupIgnoringId(node) {
+        return markupOf(node).replace(/ id="[^"]*"/g, '');
     }
 
     #compareNodesAttributes(nodeA, nodeB) {
