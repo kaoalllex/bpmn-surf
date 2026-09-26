@@ -46,6 +46,23 @@ class UIRepoProvider {
     }
 
     /**
+     * Disables the button (if present) without removing it, so a click during a
+     * re-check (the button may turn out to belong to a file no longer on screen)
+     * does nothing instead of opening a stale diff.
+     */
+    disableButton() {
+        throw new Error('disableButton() must be implemented');
+    }
+
+    /**
+     * Re-enables the button (if present). A no-op when the button was just
+     * rebuilt by addButton(), which always starts out enabled.
+     */
+    enableButton() {
+        throw new Error('enableButton() must be implemented');
+    }
+
+    /**
      * Checks whether the plugin's button is currently present in the page.
      * @returns {boolean}
      */

@@ -144,3 +144,27 @@ describe('GitLabUIRepoProvider.addButton — DIFF', () => {
         assert.equal(diffButton(scope.document), undefined);
     });
 });
+
+describe('GitLabUIRepoProvider disable/enable', () => {
+    it('disables and re-enables the button in place, without removing it', () => {
+        const scope = createScope();
+        scope.document.body.innerHTML = gitlabComHeaderMarkup();
+        const provider = addDiffButton(scope, scope.FILE_TYPE_BPMN);
+
+        provider.disableButton();
+        assert.equal(diffButton(scope.document).disabled, true);
+
+        provider.enableButton();
+        assert.equal(diffButton(scope.document).disabled, false);
+        assert.ok(diffButton(scope.document), 'button should still be the same element, not rebuilt');
+    });
+
+    it('does nothing (and does not throw) when there is no button', () => {
+        const scope = createScope();
+        scope.document.body.innerHTML = gitlabComHeaderMarkup();
+        const provider = new scope.GitLabUIRepoProvider();
+
+        assert.doesNotThrow(() => provider.disableButton());
+        assert.doesNotThrow(() => provider.enableButton());
+    });
+});

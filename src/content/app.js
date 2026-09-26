@@ -113,11 +113,15 @@ class App {
             return;
         }
 
-        // No unconditional reset() here any more: removing and re-adding an
-        // identical button is a DOM change, and the observer that called us reacts
-        // to DOM changes — a self-feeding loop that also made the button blink
-        // (BUG-0036). Each handler below removes the button only once it knows
-        // there should not be one.
+        // Disabled (not removed) for the duration of this re-check: removing and
+        // re-adding an identical button is a DOM change, and the observer that
+        // called us reacts to DOM changes — a self-feeding loop that also made the
+        // button blink (BUG-0036). Disabling only flips a property, which that
+        // observer (childList/subtree, no `attributes`) never sees, so it cannot
+        // retrigger itself over it. A button that turns out to still be current is
+        // re-enabled in `finally`; one that isn't gets rebuilt fresh (and already
+        // enabled) or removed by the handlers below.
+        this.#uiRepoProvider.disableButton();
         try {
             const isProviderInitialized = await this.#repoProvider.init();
             if (!isProviderInitialized) {
@@ -141,6 +145,8 @@ class App {
                 return;
             }
             console.error('Error in #handleStart:', error);
+        } finally {
+            this.#uiRepoProvider.enableButton();
         }
     }
 
@@ -367,6 +373,20 @@ class App {
         // valid context).
         if (!chrome.runtime?.id) {
             alert('bpmn-surf was updated or reloaded. Please refresh this page (F5) to continue.');
+            return;
+        }
+
+        // The button carries a closure over the file it was built for. GitLab can
+        // finish switching the visible file well before our own re-check notices
+        // (the debounced DOM-change observer waits for the DOM to go quiet, which
+        // measured over a second on a real MR, while a fresh lookup of the shown
+        // file already agreed with GitLab after ~500ms) — disableButton() during
+        // our own re-check (#doStart) narrows that window but does not close it.
+        // A last check right here, against the file the page shows *right now*,
+        // is what actually stops a fast click from opening the previous file.
+        const shownPath = await this.#shownFilePath();
+        if (shownPath && shownPath !== params.filePath) {
+            console.debug(`stale button click ignored: page now shows ${shownPath}, button was for ${params.filePath}`);
             return;
         }
 

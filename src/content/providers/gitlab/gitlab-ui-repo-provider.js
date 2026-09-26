@@ -84,6 +84,23 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         removeElement(this.#buttonId);
     }
 
+    // Toggling `disabled` is not a childList mutation, so the DOM-change observer
+    // that rebuilds the button never sees it and cannot retrigger itself over it
+    // (BUG-0036 was about exactly that kind of self-feeding loop).
+    disableButton() {
+        const button = document.getElementById(this.#buttonId + '-btn');
+        if (button) {
+            button.disabled = true;
+        }
+    }
+
+    enableButton() {
+        const button = document.getElementById(this.#buttonId + '-btn');
+        if (button) {
+            button.disabled = false;
+        }
+    }
+
     #findFirstMatch(selectors) {
         for (const selector of selectors) {
             const elem = document.querySelector(selector);
