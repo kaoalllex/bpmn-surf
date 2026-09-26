@@ -69,8 +69,9 @@ class PropertiesPanelHighlighter {
         }
     }
 
-    // A replaced element type has no property group of its own: the panel shows the
-    // type in its header, so that is what gets the 'changed' colour.
+    // A replaced element type (or an attribute with no property group of its own but
+    // whose header text does change, e.g. cancelActivity) has nothing else to point
+    // to: the panel shows it in the header, so that is what gets the 'changed' colour.
     async #highlightElementType(elementId) {
         const typeElem = await doWithAttempts(() =>
             document.querySelector('.bio-properties-panel-header-type'));
