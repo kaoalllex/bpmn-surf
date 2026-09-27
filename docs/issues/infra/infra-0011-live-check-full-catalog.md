@@ -32,6 +32,10 @@ The areas to add:
 - The harness scripts live in `test/e2e/live/`. Offline differ checks already
   exist as Layer-2 specs (`docs/testing.md`). The catalog should point to those
   instead of duplicating them, and keep to what only a live run shows.
+- The skill now routes differ-only changes to the Layer-2 specs (they run the real
+  bpmn-js and properties panel offline), so for the differ areas above a live entry
+  should only cover what reaches GitLab at run time: file fetching, blob search
+  (handler badges, correlation), the dive-in file lookup, switch branch.
 - Related: [INFRA-0008] (automated Layer-3 e2e), which would move part of this
   into CI.
 
@@ -39,3 +43,10 @@ The areas to add:
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-27 · claude-opus-5-5 · branch `fix/loop-characteristics-panel-highlight`
+
+Reviewed the skill on a differ-only fix (BUG-0042): the catalog had nothing for it and
+no pointer to where such a change is checked. Added the "does this change need a live
+run?" routing section; the change itself was verified by a new Layer-2 case in
+`differ-edit-prop-group.spec.js`. The catalog is still buttons-only.
