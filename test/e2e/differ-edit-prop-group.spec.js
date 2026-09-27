@@ -111,6 +111,44 @@ test('replacing the element type paints the type in the panel header', async ({ 
     await expect(headerType).toHaveCSS('background-color', 'rgb(136, 136, 255)', { timeout: 5000 });
 });
 
+// The type line is a block as wide as the whole label column, and the name
+// below is pulled up into it (margin-top: -6px), so a painted type used to spill
+// right, past its text, and down under the name.
+test('the painted type hugs its text and stays clear of the name below it', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({ mode: 'edit', editSide: 'source', targetRef: 'mr-sha' }),
+        fixtures: { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': BASE_BPMN } }
+    });
+
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        const registry = modeler.get('elementRegistry');
+        modeler.get('bpmnReplace').replaceElement(registry.get('Task_1'), { type: 'bpmn:ServiceTask' });
+        modeler.get('modeling').updateProperties(registry.get('Task_1'), { name: 'A name much longer than the type line' });
+        modeler.get('selection').select(registry.get('Task_1'));
+    });
+    const headerType = page.locator('.bio-properties-panel-header-type');
+    await expect(headerType).toHaveCSS('background-color', 'rgb(136, 136, 255)', { timeout: 5000 });
+
+    const box = await page.evaluate(() => {
+        const type = document.querySelector('.bio-properties-panel-header-type');
+        const range = document.createRange();
+        range.selectNodeContents(type);
+        const label = document.querySelector('.bio-properties-panel-header-label');
+        const labelRange = document.createRange();
+        labelRange.selectNodeContents(label);
+        return {
+            type: type.getBoundingClientRect().toJSON(),
+            text: range.getBoundingClientRect().toJSON(),
+            labelText: labelRange.getBoundingClientRect().toJSON()
+        };
+    });
+    expect(box.type.left).toBeGreaterThanOrEqual(box.text.left - 6);
+    expect(box.type.right).toBeLessThanOrEqual(box.text.right + 6);
+    expect(box.type.bottom).toBeLessThanOrEqual(box.labelText.top + 0.5);
+});
+
 // Extension properties is a list group like the mappings: the panel labels each entry by
 // its name, so an added entry gets its own colour and not only the group header.
 test('added extension properties are painted individually', async ({ page }) => {
