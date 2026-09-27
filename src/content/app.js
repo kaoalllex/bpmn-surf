@@ -15,6 +15,9 @@ class App {
     // The MR diffs view the per-file buttons were built for: its URL key and the
     // refs every button's diff uses. Null until resolved, or when not on one.
     #changeView = null;
+    // Set when the URL moved on while a change view was being resolved: the
+    // flow runs once more for the new URL as soon as the current run ends.
+    #rerunRequested = false;
 
     #repoProvider;
     #uiRepoProvider;
@@ -103,6 +106,10 @@ class App {
         } finally {
             this.#isStartHandling = false;
         }
+        if (this.#rerunRequested) {
+            this.#rerunRequested = false;
+            this.#handleStart(null, 'url changed while resolving');
+        }
     }
 
     async #doStart(event) {
@@ -159,10 +166,18 @@ class App {
         if (!this.#isChangeViewCurrent()) {
             // The buttons carry the refs of the view they were built for; another
             // MR, version or commit selection needs every one rebuilt.
+            const key = App.#changeViewKey();
             this.#changeView = null;
             this.#uiRepoProvider.removeFileButtons();
             await this.#repoProvider.initChangeInfo();
-            this.#changeView = await this.#resolveChangeView();
+            const changeView = await this.#resolveChangeView(key);
+            if (key !== App.#changeViewKey()) {
+                // The providers read the URL at every step, so refs resolved
+                // across a URL change may mix both views: resolve again.
+                this.#rerunRequested = true;
+                return true;
+            }
+            this.#changeView = changeView;
         }
         if (this.#changeView) {
             this.#syncFileButtons();
@@ -218,12 +233,12 @@ class App {
 
     /**
      * Resolves what every file's diff shares: the refs and side labels.
+     * @param {string} key the change view URL the resolution started for
      * @returns {Promise<Object|null>} null when the source commit is not known yet
      *     (a page reload is attempted, as before)
      * @private
      */
-    async #resolveChangeView() {
-        const key = App.#changeViewKey();
+    async #resolveChangeView(key) {
         const sourceCommitId = await this.#repoProvider.getSourceCommitId();
         if (!sourceCommitId) {
             this.#pageReloader.attemptReload();
@@ -275,14 +290,26 @@ class App {
         if (this.#extensionWasReloaded()) {
             return;
         }
-        const params = await this.#buildDiffParams(
-            filePath,
-            getFileNameFromPath(filePath),
-            changeView.sourceCommitId,
-            changeView.targetCommitId,
-            changeView.diffSideLabels
-        );
-        return this.#openDiffer(UI_BUTTON_TYPE.DIFF, params, null, this.#getMessageId(fileType));
+        // The URL can change in place (a commit picked) without touching the
+        // DOM, so no re-sync has rebuilt this button yet: its refs are the old
+        // view's. Rebuild instead of opening them.
+        if (changeView.key !== App.#changeViewKey()) {
+            console.debug('stale change view on click, rebuilding the buttons');
+            this.#handleStart(null, 'click on a stale change view');
+            return;
+        }
+        try {
+            const params = await this.#buildDiffParams(
+                filePath,
+                getFileNameFromPath(filePath),
+                changeView.sourceCommitId,
+                changeView.targetCommitId,
+                changeView.diffSideLabels
+            );
+            await this.#openDiffer(UI_BUTTON_TYPE.DIFF, params, null, this.#getMessageId(fileType));
+        } catch (error) {
+            console.error('cannot open the diff of ' + filePath, error);
+        }
     }
 
     /**

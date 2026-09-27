@@ -82,7 +82,10 @@ const SCOPE_FILES = [
     // popup / service-worker scope: pure helpers, no chrome.* (FEAT-0033/0035).
     // settings.js must follow host-patterns.js: parseSettingsExport() uses it.
     'src/hosts/host-patterns.js',
-    'src/core/settings.js'
+    'src/core/settings.js',
+    // App last: it builds on every content-script class above.
+    'src/content/camunda-bpmn-moddle-manager.js',
+    'src/content/app.js'
 ];
 
 // Global names extracted from the loaded scope and returned by createScope().
@@ -140,6 +143,7 @@ const EXPORTED_NAMES = [
     'FallbackRepoProvider',
     'createRepoProvider', 'createUIRepoProvider',
     'PageReloader',
+    'App',
     // utils.js functions under test
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
