@@ -35,7 +35,7 @@ A separate class of tests — not "the logic of class X", but **invariants of th
 - `message-id.test.js` — the postMessage id matching between scopes (`App.MESSAGES.BPMN_ID`/`DMN_ID` ↔ `BpmnDiffer.MSG_ID`/`DmnDiffer.MSG_ID`).
 - `source-layout.test.js` — uniqueness of basename across all of `src/` (the mirror layout rests on this) and the rule "every `src/**/*.js` either has a mirror test, or is listed in `UNTESTED_BY_DESIGN` with a reason". The `UNTESTED_BY_DESIGN` list must **shrink**: after adding a test, remove the entry (otherwise the stale check will fail). A new src file forces a deliberate decision — write a test or record why not.
 
-Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (including the mapping of diffs to properties-panel groups and the documented blind spots: arrow retarget, rebinding of incoming/outgoing, the `default` attribute), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.findSelectedFilePath` (legacy `[data-path]` markup and rapid diffs `<diff-file>`), `GitLabRepoProviderBase` (init + project id resolution with cache), `GitLabUrlParser`, `GitLabDomScraper`, `MergedMrCommitResolver` (resolution with collaborator injection — without `fetch`/`localStorage`), `SingleEntryCache`, `GitLabApiRepoProvider`, `GitLabUIRepoProvider.addButton` (button containers for self-managed and gitlab.com), `FallbackRepoProvider` (selection/delegation), `PageReloader` (the attempt-counter contract — `location.reload` is a no-op in jsdom, the observable counter in `sessionStorage` is checked), the pure functions of `utils.js`, `ConsoleLog` (`test/core/console-log.test.js` — the ring, the two-tier tail, the cycle collapsing, and what it refuses to log), plus the structural invariants (see above).
+Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (including the mapping of diffs to properties-panel groups and the documented blind spots: arrow retarget, rebinding of incoming/outgoing, the `default` attribute), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.getSourceCommitId` (commits.json, then the page's `diff_head_sha`), `GitLabRepoProviderBase` (init + project id resolution with cache), `GitLabUrlParser`, `GitLabDomScraper`, `MergedMrCommitResolver` (resolution with collaborator injection — without `fetch`/`localStorage`), `SingleEntryCache`, `GitLabApiRepoProvider`, `GitLabUIRepoProvider` (per-file buttons on rapid and legacy markup — placement, idempotency, recycled blocks; the branch split button and its menu), `FallbackRepoProvider` (selection/delegation), `App` (the MR change-view flow over stub providers: refs resolved across a URL change are not used, a click on a view the URL has left is not opened, a failing click is logged), `PageReloader` (the attempt-counter contract — `location.reload` is a no-op in jsdom, the observable counter in `sessionStorage` is checked), the pure functions of `utils.js`, `ConsoleLog` (`test/core/console-log.test.js` — the ring, the two-tier tail, the cycle collapsing, and what it refuses to log), plus the structural invariants (see above).
 
 The GitLab DOM markup in the provider tests (`gitlab-repo-provider.test.js`, `gitlab-ui-repo-provider.test.js`) we build right in the test with small helpers — it is trivial and parameterizable; we keep fixture files only for complex third-party DOM (`dmn-table.html`, `properties-panel.html`).
 
@@ -89,8 +89,10 @@ sandbox — see `test/e2e/live/README.md`. Not tests: outside `npm test` and
 
 Use them for anything that depends on GitLab's own markup or on timing, which is
 where the diff button keeps breaking (the button showing for the wrong file, or
-blinking). `node test/e2e/live/mr-button.mjs 2` prints two regression numbers —
-button state changes and rebuilds over 10s; on a healthy run they are 0 and 1.
+blinking). `mr-button.mjs <iid>` checks that every diagram block carries exactly
+one correct button and that none churn; `branch-button.mjs` covers the blob
+view. The scenarios and the procedure live in the `live-check` project skill
+(`.claude/skills/live-check/SKILL.md`).
 `capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
 per-user "Show one file at a time" preference; without it everything runs
 anonymously.
@@ -104,7 +106,7 @@ There are no integration auto-tests. Checking is manual: load the unpacked exten
 
 - ⚠️ **After every code change, reload the extension in `chrome://extensions/` (the reload icon on its card) before checking** — otherwise the loaded extension keeps the old code and you verify against stale code, drawing a false conclusion. Reloading also orphans content scripts in tabs opened earlier: a click there throws `Extension context invalidated` (handled gracefully — the user is asked to refresh the page), so reload the GitLab tab too after reloading the extension.
 - Quick syntax check: `for f in *.js; do node --check "$f"; done`
-- Before checking the MR diff button by hand, try `test/e2e/live/mr-button.mjs` first — it answers the common questions without a single click
+- Before checking the buttons by hand, run the `live-check` skill's catalog: it answers the common questions without a single click
 - After changes in the shared differ-page classes (`differ-params.js`, `diagram-versions.js`, `branch-indicator.js`, `diff-type.js`, `utils.js`) **be sure to check both the BPMN and the DMN diff**
 - Differ-page checklist: diff highlighting, switch branch, highlight on/off, the change table + clicking a row, sequenceFlow conditions in the properties panel, zoom/pan/fit, hide properties, download, dive-in into a Call Activity, branch-only mode (without an MR), the 💬 feedback button (the prefilled issue opens, its body has no XML)
 - View-only invariants (after any change that restricts interaction): editing stays disabled, **yet** mouse selection + Ctrl/Cmd+C copy still work on a canvas label and on a properties-panel field value (regression class BUG-0011 → BUG-0014 → BUG-0015)

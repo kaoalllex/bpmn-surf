@@ -60,10 +60,6 @@ class FallbackRepoProvider extends RepoProvider {
         return await this.#requireActive().getBranchFileType();
     }
 
-    async findSelectedFilePath() {
-        return await this.#requireActive().findSelectedFilePath();
-    }
-
     async initChangeInfo() {
         return await this.#requireActive().initChangeInfo();
     }

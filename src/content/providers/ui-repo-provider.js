@@ -17,15 +17,15 @@ class UIRepoProvider {
     }
 
     /**
-     * Adds a button to the page.
+     * Adds the branch (blob) view button: open the diagram, or diff it against a
+     * local file. The change view uses syncFileButtons() instead.
      * @param {Object} options button parameters
      * @param {FileType} options.fileType file type (bpmn or dmn)
-     * @param {string} options.buttonType button type: UI_BUTTON_TYPE.DIFF or UI_BUTTON_TYPE.BRANCH
-     * @param {boolean} options.needToSelectLocalFile whether to show the local file selector
      * @param {string} options.filePath the file the button was built for
-     * @param {Function} options.onButtonClickFunc click handler
+     * @param {Function} options.onButtonClickFunc click handler; receives extParams
+     *     ({ localFileContent, sourceLabel }) when a local file was picked
      */
-    addButton({ fileType, buttonType, needToSelectLocalFile, filePath, onButtonClickFunc }) {
+    addButton({ fileType, filePath, onButtonClickFunc }) {
         throw new Error('addButton() must be implemented');
     }
 
@@ -46,23 +46,6 @@ class UIRepoProvider {
     }
 
     /**
-     * Disables the button (if present) without removing it, so a click during a
-     * re-check (the button may turn out to belong to a file no longer on screen)
-     * does nothing instead of opening a stale diff.
-     */
-    disableButton() {
-        throw new Error('disableButton() must be implemented');
-    }
-
-    /**
-     * Re-enables the button (if present). A no-op when the button was just
-     * rebuilt by addButton(), which always starts out enabled.
-     */
-    enableButton() {
-        throw new Error('enableButton() must be implemented');
-    }
-
-    /**
      * Checks whether the plugin's button is currently present in the page.
      * @returns {boolean}
      */
@@ -78,5 +61,23 @@ class UIRepoProvider {
      */
     buttonFilePath() {
         throw new Error('buttonFilePath() must be implemented');
+    }
+
+    /**
+     * Keeps one diff button on every diagram file the change view shows,
+     * attached to that file's own block. Safe to call on every DOM change:
+     * blocks that already carry the right button are left untouched.
+     * @param {Function} describeFile (filePath) => ({ fileType, onButtonClickFunc }) for
+     *     a file that gets a button, or null for one that does not
+     */
+    syncFileButtons(describeFile) {
+        throw new Error('syncFileButtons() must be implemented');
+    }
+
+    /**
+     * Removes every per-file button (e.g. before rebuilding them for other refs).
+     */
+    removeFileButtons() {
+        throw new Error('removeFileButtons() must be implemented');
     }
 }

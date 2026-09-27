@@ -2,7 +2,7 @@
 id: BUG-0031
 title: No diff button when the MR shows all files at once ("Show one file at a time" unchecked)
 priority: high
-status: open
+status: done
 ---
 
 ## Statement
@@ -81,3 +81,35 @@ file lookup; doing it first makes this task mostly a placement problem.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-27 · claude-opus-5-5 · branch `fix/per-file-diff-button`
+
+Fixed by attaching the button to the file instead of guessing a selected file.
+Every bpmn/dmn file block of the MR diff now carries its own `[icon] Schema diff` /
+`Decision diff` button before its ⋮ menu. This works in both diff modes and in both
+UIs (rapid diffs on gitlab.com, the legacy Vue diffs that self-managed serves).
+The MR-header button is gone, and so is the whole "which file is selected" lookup:
+`findSelectedFilePath`, the remembered rapid-diffs path, the single-diagram
+fallback, the `doWithAttempts` poll, disable/enable and the stale-click guard.
+
+It also resolves the report of 2026-09-27. With rapid diffs, the previous file's
+button stayed clickable for about a second after another file was picked:
+[BUG-0041] only disabled it while the re-check ran. Now the button lives inside
+its own file's block. A CSS rule hides it while rapid diffs greys the old file
+out (`.rd-app-diffs-list-loading-overlay[data-loading="true"]`).
+
+Measured before the change: the rapid-diffs tree marks the new file active in
+~20 ms, the old `<diff-file>` is replaced at ~520–620 ms, and the legacy UI
+removes the old block at once.
+
+Verified with the new `live-check` skill's matrix. It covers both diff modes ×
+both UIs × inline/side-by-side, across a modified diagram next to code, added,
+deleted, renamed, dmn, bpmn + dmn, merged, many files (30) and code only. It also
+covers the walk through the file tree (no visible button during the grey-out)
+and the branch view.
+
+Found along the way: the accent (`.bpmn-surf-btn-accent`) never applied on current
+GitLab. GitLab's `.gl-button.gl-button.btn-default` outranks a single class, so
+the buttons looked native-grey. The accent now redefines GitLab's
+`--gl-button-default-primary-*` variables on our button, with a lighter variant
+under `html.gl-dark`.

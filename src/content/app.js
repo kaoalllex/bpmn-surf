@@ -12,6 +12,12 @@ class App {
 
     #isStartHandling = false;
     #domRetriggerTimer = null;
+    // The MR diffs view the per-file buttons were built for: its URL key and the
+    // refs every button's diff uses. Null until resolved, or when not on one.
+    #changeView = null;
+    // Set when the URL moved on while a change view was being resolved: the
+    // flow runs once more for the new URL as soon as the current run ends.
+    #rerunRequested = false;
 
     #repoProvider;
     #uiRepoProvider;
@@ -55,28 +61,30 @@ class App {
     }
 
     /**
-     * Re-runs the flow when GitLab finishes (re)rendering the MR diff content.
+     * Keeps the buttons in step with what GitLab renders.
      *
-     * GitLab lazily renders the diff of the selected file: in "show one file at a
-     * time" mode, clicking a file swaps the diff DOM asynchronously. When that
-     * render takes longer than findSelectedFilePath()'s ~1.5s detection budget,
-     * the mouseup that selected the file finds no [data-path]/<diff-file> element
-     * and gives up — so the button only appears on a second manual click
-     * (BUG-0003). A debounced MutationObserver catches the late render and retries.
+     * On an MR diffs view whose refs are resolved, every mutation batch re-syncs
+     * the per-file buttons at once: GitLab mounts file blocks lazily (and the
+     * legacy UI unmounts them again as the reader scrolls). The sync is a no-op
+     * when every block already has its button, so our own insertions cannot keep
+     * the observer firing.
      *
-     * No self-trigger loop: the button lives in the stable MR header, not inside
-     * the diff content, and we skip retries while it is already present — so our
-     * own insertions/resets never keep the observer firing.
+     * Anywhere else the full flow is re-run once the DOM goes quiet, which also
+     * catches a late render of the blob view (BUG-0003).
      * @private
      */
     #observeDomChanges() {
         const observer = new MutationObserver(() => {
+            if (this.#isChangeViewCurrent()) {
+                this.#syncFileButtons();
+                return;
+            }
             if (this.#domRetriggerTimer) {
                 clearTimeout(this.#domRetriggerTimer);
             }
-            this.#domRetriggerTimer = setTimeout(async () => {
+            this.#domRetriggerTimer = setTimeout(() => {
                 this.#domRetriggerTimer = null;
-                if (await this.#isButtonUpToDate()) {
+                if (this.#isButtonUpToDate()) {
                     return;
                 }
                 this.#handleStart(null, 'after dom change');
@@ -98,6 +106,10 @@ class App {
         } finally {
             this.#isStartHandling = false;
         }
+        if (this.#rerunRequested) {
+            this.#rerunRequested = false;
+            this.#handleStart(null, 'url changed while resolving');
+        }
     }
 
     async #doStart(event) {
@@ -113,15 +125,6 @@ class App {
             return;
         }
 
-        // Disabled (not removed) for the duration of this re-check: removing and
-        // re-adding an identical button is a DOM change, and the observer that
-        // called us reacts to DOM changes — a self-feeding loop that also made the
-        // button blink (BUG-0036). Disabling only flips a property, which that
-        // observer (childList/subtree, no `attributes`) never sees, so it cannot
-        // retrigger itself over it. A button that turns out to still be current is
-        // re-enabled in `finally`; one that isn't gets rebuilt fresh (and already
-        // enabled) or removed by the handlers below.
-        this.#uiRepoProvider.disableButton();
         try {
             const isProviderInitialized = await this.#repoProvider.init();
             if (!isProviderInitialized) {
@@ -145,8 +148,6 @@ class App {
                 return;
             }
             console.error('Error in #handleStart:', error);
-        } finally {
-            this.#uiRepoProvider.enableButton();
         }
     }
 
@@ -162,33 +163,42 @@ class App {
         }
 
         console.debug('diffs tab is active');
-        await this.#repoProvider.initChangeInfo();
-        await this.#addDiffButton();
+        if (!this.#isChangeViewCurrent()) {
+            // The buttons carry the refs of the view they were built for; another
+            // MR, version or commit selection needs every one rebuilt.
+            const key = App.#changeViewKey();
+            this.#changeView = null;
+            this.#uiRepoProvider.removeFileButtons();
+            await this.#repoProvider.initChangeInfo();
+            const changeView = await this.#resolveChangeView(key);
+            if (key !== App.#changeViewKey()) {
+                // The providers read the URL at every step, so refs resolved
+                // across a URL change may mix both views: resolve again.
+                this.#rerunRequested = true;
+                return true;
+            }
+            this.#changeView = changeView;
+        }
+        if (this.#changeView) {
+            this.#syncFileButtons();
+        }
         return true;
     }
 
-    // A button already on the page used to end the check here, so switching to
-    // another file left the previous one's button in place: the observer saw the
-    // change and bailed, and only an unrelated click (mouseup -> full re-run)
-    // rebuilt it (BUG-0036). The button now also has to belong to the file the
-    // page currently shows.
-    async #isButtonUpToDate() {
+    // Whether the branch-view button still belongs to the file on screen. A
+    // button that stayed after switching files was BUG-0036.
+    #isButtonUpToDate() {
         if (!this.#uiRepoProvider.isButtonPresent()) {
             return false;
         }
-        const shownPath = await this.#shownFilePath();
+        const shownPath = this.#branchFilePath();
         return !!shownPath && shownPath === this.#uiRepoProvider.buttonFilePath();
     }
 
-    // The file the page is showing right now, asked in the way that fits the page:
-    // the selected diff on an MR, the blob path in branch view. Null when it
-    // cannot be told — including before any successful provider init, where the
-    // getters throw.
-    async #shownFilePath() {
+    // The blob path the branch view shows, or null when it cannot be told
+    // (including before a successful provider init, where the getter throws).
+    #branchFilePath() {
         try {
-            if (await this.#repoProvider.isChangeViewActive()) {
-                return await this.#repoProvider.findSelectedFilePath();
-            }
             const branchFile = this.#repoProvider.extractBranchCommitIdAndFilePath();
             return branchFile ? branchFile.filePath : null;
         } catch (error) {
@@ -211,36 +221,28 @@ class App {
         return true;
     }
 
+    // The URL a resolved change view belongs to. The hash is left out: the legacy
+    // UI writes the picked file there, which changes no refs.
+    static #changeViewKey() {
+        return window.location.origin + window.location.pathname + window.location.search;
+    }
+
+    #isChangeViewCurrent() {
+        return !!this.#changeView && this.#changeView.key === App.#changeViewKey();
+    }
+
     /**
-     * Adds button to display diff in Merge Request
+     * Resolves what every file's diff shares: the refs and side labels.
+     * @param {string} key the change view URL the resolution started for
+     * @returns {Promise<Object|null>} null when the source commit is not known yet
+     *     (a page reload is attempted, as before)
+     * @private
      */
-    async #addDiffButton() {
-        console.debug('adding show diff button...');
-
-        const filePath = await this.#repoProvider.findSelectedFilePath();
-        if (!filePath) {
-            console.debug('file not selected');
-            this.#uiRepoProvider.reset();
-            return;
-        }
-
-        const fileType = this.#fileTypeDetector.detect(filePath);
-        if (!fileType) {
-            console.debug('selected file is neither bpmn nor dmn');
-            this.#uiRepoProvider.reset();
-            return;
-        }
-        if (filePath === this.#uiRepoProvider.buttonFilePath()) {
-            console.debug('button already belongs to ' + filePath);
-            return;
-        }
-        console.debug(`selected file is ${fileType.name}`);
-
-        const fileName = getFileNameFromPath(filePath);
+    async #resolveChangeView(key) {
         const sourceCommitId = await this.#repoProvider.getSourceCommitId();
         if (!sourceCommitId) {
             this.#pageReloader.attemptReload();
-            return;
+            return null;
         }
 
         console.debug('mr commit id: ' + sourceCommitId);
@@ -263,15 +265,51 @@ class App {
 
         const diffSideLabels = await this.#repoProvider.getDiffSideLabels(sourceCommitId, targetCommitId);
 
-        const params = await this.#buildDiffParams(
-            filePath,
-            fileName,
-            sourceCommitId,
-            targetCommitId,
-            diffSideLabels
-        );
+        // The params are built on click; loading the moddle there the first time
+        // would delay the differ tab, so warm its cache now.
+        await this.#moddleManager.load();
 
-        this.#addButton(fileType, UI_BUTTON_TYPE.DIFF, params, false, filePath);
+        return { key, sourceCommitId, targetCommitId, diffSideLabels };
+    }
+
+    #syncFileButtons() {
+        const changeView = this.#changeView;
+        this.#uiRepoProvider.syncFileButtons(filePath => {
+            const fileType = this.#fileTypeDetector.detect(filePath);
+            if (!fileType) {
+                return null;
+            }
+            return {
+                fileType: fileType,
+                onButtonClickFunc: () => this.#openFileDiff(changeView, filePath, fileType)
+            };
+        });
+    }
+
+    async #openFileDiff(changeView, filePath, fileType) {
+        if (this.#extensionWasReloaded()) {
+            return;
+        }
+        // The URL can change in place (a commit picked) without touching the
+        // DOM, so no re-sync has rebuilt this button yet: its refs are the old
+        // view's. Rebuild instead of opening them.
+        if (changeView.key !== App.#changeViewKey()) {
+            console.debug('stale change view on click, rebuilding the buttons');
+            this.#handleStart(null, 'click on a stale change view');
+            return;
+        }
+        try {
+            const params = await this.#buildDiffParams(
+                filePath,
+                getFileNameFromPath(filePath),
+                changeView.sourceCommitId,
+                changeView.targetCommitId,
+                changeView.diffSideLabels
+            );
+            await this.#openDiffer(UI_BUTTON_TYPE.DIFF, params, null, this.#getMessageId(fileType));
+        } catch (error) {
+            console.error('cannot open the diff of ' + filePath, error);
+        }
     }
 
     /**
@@ -304,7 +342,12 @@ class App {
             filePath,
             fileName
         );
-        this.#addButton(fileType, UI_BUTTON_TYPE.BRANCH, params, true, filePath);
+        const msgId = this.#getMessageId(fileType);
+        this.#uiRepoProvider.addButton({
+            fileType: fileType,
+            filePath: filePath,
+            onButtonClickFunc: (extParams) => this.#openDiffer(UI_BUTTON_TYPE.BRANCH, params, extParams, msgId)
+        });
     }
 
     /**
@@ -345,19 +388,17 @@ class App {
         });
     }
 
-    /**
-     * Adds button via UI provider
-     * @private
-     */
-    #addButton(fileType, buttonType, params, needToSelectLocalFile, filePath) {
-        const msgId = this.#getMessageId(fileType);
-        this.#uiRepoProvider.addButton({
-            fileType: fileType,
-            buttonType: buttonType,
-            needToSelectLocalFile: needToSelectLocalFile,
-            filePath: filePath,
-            onButtonClickFunc: (extParams) => this.#openDiffer(buttonType, params, extParams, msgId)
-        });
+    // After the extension is reloaded/updated, content scripts injected into
+    // already-open tabs are orphaned: chrome.runtime is dead and any chrome.*
+    // call (e.g. getURL) throws "Extension context invalidated". The orphaned
+    // script cannot revive itself, so ask the user to reload the page (a fresh
+    // content script then gets a valid context).
+    #extensionWasReloaded() {
+        if (chrome.runtime?.id) {
+            return false;
+        }
+        alert('bpmn-surf was updated or reloaded. Please refresh this page (F5) to continue.');
+        return true;
     }
 
     /**
@@ -365,29 +406,19 @@ class App {
      * @private
      */
     async #openDiffer(buttonType, params, extParams, msgId) {
-        // After the extension is reloaded/updated, content scripts injected into
-        // already-open tabs are orphaned: chrome.runtime is dead and any chrome.*
-        // call below (e.g. getURL) throws "Extension context invalidated". The
-        // orphaned script cannot revive itself, so detect the dead context up front
-        // and ask the user to reload the page (a fresh content script then gets a
-        // valid context).
-        if (!chrome.runtime?.id) {
-            alert('bpmn-surf was updated or reloaded. Please refresh this page (F5) to continue.');
+        if (this.#extensionWasReloaded()) {
             return;
         }
 
-        // The button carries a closure over the file it was built for. GitLab can
-        // finish switching the visible file well before our own re-check notices
-        // (the debounced DOM-change observer waits for the DOM to go quiet, which
-        // measured over a second on a real MR, while a fresh lookup of the shown
-        // file already agreed with GitLab after ~500ms) — disableButton() during
-        // our own re-check (#doStart) narrows that window but does not close it.
-        // A last check right here, against the file the page shows *right now*,
-        // is what actually stops a fast click from opening the previous file.
-        const shownPath = await this.#shownFilePath();
-        if (shownPath && shownPath !== params.filePath) {
-            console.debug(`stale button click ignored: page now shows ${shownPath}, button was for ${params.filePath}`);
-            return;
+        // The branch button carries a closure over the blob it was built for, and
+        // GitLab can switch the blob before our debounced re-check rebuilds it. A
+        // per-file MR button cannot be stale: it lives inside its own file's block.
+        if (buttonType === UI_BUTTON_TYPE.BRANCH) {
+            const shownPath = this.#branchFilePath();
+            if (shownPath && shownPath !== params.filePath) {
+                console.debug(`stale button click ignored: page now shows ${shownPath}, button was for ${params.filePath}`);
+                return;
+            }
         }
 
         let finalParams = extParams ? { ...params, ...extParams } : params;

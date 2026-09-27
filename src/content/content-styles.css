@@ -8,15 +8,94 @@
    It is applied on top of GitLab's own button classes, overriding only the
    border/text/hover tone — no full style override (theme-conflict risk). The
    tone is the single brand accent, mirroring .differ-update-indicator. The
-   secondary "Diff with local" button is intentionally left un-accented. */
+   caret of the branch view's split button carries the accent too; its menu
+   item does not. */
+/* Current GitLab colours buttons through --gl-button-* variables, from rules
+   (.gl-button.gl-button.btn-default) that outrank a single class. Redefining
+   the variables on our button wins regardless of specificity; the plain
+   declarations cover GitLab versions that predate them. */
 .bpmn-surf-btn-accent {
-    border-color: hsl(212, 73%, 46%);
-    color: hsl(212, 73%, 46%);
+    --bpmn-surf-accent: hsl(212, 73%, 46%);
+    --bpmn-surf-accent-strong: hsl(212, 73%, 40%);
+    --bpmn-surf-accent-soft: hsl(212, 73%, 96%);
+    --gl-button-default-primary-foreground-color-default: var(--bpmn-surf-accent);
+    --gl-button-default-primary-border-color-default: var(--bpmn-surf-accent);
+    --gl-button-default-primary-foreground-color-hover: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-border-color-hover: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-background-color-hover: var(--bpmn-surf-accent-soft);
+    --gl-button-default-primary-foreground-color-focus: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-border-color-focus: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-background-color-focus: var(--bpmn-surf-accent-soft);
+    --gl-button-default-primary-foreground-color-active: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-border-color-active: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-background-color-active: var(--bpmn-surf-accent-soft);
+    border-color: var(--bpmn-surf-accent);
+    color: var(--bpmn-surf-accent);
     font-weight: 600;
 }
 
 .bpmn-surf-btn-accent:hover {
-    border-color: hsl(212, 73%, 40%);
-    background-color: hsl(212, 73%, 96%);
-    color: hsl(212, 73%, 40%);
+    border-color: var(--bpmn-surf-accent-strong);
+    background-color: var(--bpmn-surf-accent-soft);
+    color: var(--bpmn-surf-accent-strong);
+}
+
+/* GitLab marks its dark theme with html.gl-dark (also when it follows the
+   system theme): the light-theme accent is too dark there, and its pale hover
+   background would flash. */
+html.gl-dark .bpmn-surf-btn-accent {
+    --bpmn-surf-accent: hsl(212, 85%, 68%);
+    --bpmn-surf-accent-strong: hsl(212, 90%, 76%);
+    --bpmn-surf-accent-soft: hsla(212, 73%, 50%, 0.18);
+}
+
+/* The bpmn-surf icon before the label of our accented buttons. */
+.bpmn-surf-btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Rapid diffs keeps the previous file on screen, greyed out, for about half a
+   second after another file is picked, and marks that with data-loading on
+   its overlay. A button there would open the file the reader just left, so it
+   stays hidden until the new file's block (with its own button) replaces it. */
+.rd-app-diffs-list:has(> .rd-app-diffs-list-loading-overlay[data-loading="true"]) .bpmn-surf-file-btn {
+    visibility: hidden;
+}
+
+/* The branch-view split button's menu ("Diff with local file…", UX-0010).
+   GitLab's own CSS variables first, so it follows the light/dark theme. */
+.bpmn-surf-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1000;
+    min-width: max-content;
+    padding: 4px 0;
+    background: var(--gl-dropdown-background-color, var(--gl-background-color-overlap, #fff));
+    border: 1px solid var(--gl-dropdown-border-color, var(--gl-border-color-default, #dcdcde));
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.bpmn-surf-menu[hidden] {
+    display: none;
+}
+
+.bpmn-surf-menu-item {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    border: 0;
+    background: none;
+    text-align: left;
+    color: var(--gl-text-color-default, inherit);
+    font: inherit;
+    cursor: pointer;
+}
+
+.bpmn-surf-menu-item:hover,
+.bpmn-surf-menu-item:focus-visible {
+    background: var(--gl-dropdown-option-background-color-unselected-hover, rgba(0, 0, 0, 0.06));
 }

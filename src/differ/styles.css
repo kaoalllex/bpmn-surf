@@ -585,6 +585,19 @@ body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-open-fee
     pointer-events: none;
 }
 
+/* The element-type line of the panel header ("USER TASK") takes the 'changed'
+   colour when the type was replaced. The library draws it as a block as wide as
+   the whole label column, on a 21px line box around 14px of text, and pulls
+   the name below 6px up into that box — so the colour spilled right of the
+   text and under the name. Fit the box to its text; the margins give back the
+   height the line box had, so nothing moves. */
+.bio-properties-panel-header-type {
+    width: fit-content;
+    max-width: 100%;
+    line-height: 14px;
+    margin: 3px 0 4px;
+}
+
 th {
     background: #eee;
 }

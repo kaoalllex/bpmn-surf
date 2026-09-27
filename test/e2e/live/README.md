@@ -12,7 +12,8 @@ gitlab.com, so they are as available as it is.
 
 | Script | What it answers |
 |--------|-----------------|
-| `mr-button.mjs [iid]` | Does the button appear for the right file, say the right thing, and stay put? Counts rebuilds and state flips over 10s |
+| `mr-button.mjs <iid> [--legacy] [--parallel] [--walk] [--click] [--shots <dir>]` | Does every rendered diagram block carry exactly one button, for its own file, with the right label, and none on other files? No churn while idle. `--legacy` = the legacy diffs UI (what self-managed serves), `--parallel` = side-by-side, `--walk` = click every file in the tree and check that no button is visible while rapid diffs greys out the previous file, `--click` = the differ tab opens, `--shots` = header screenshots |
+| `branch-button.mjs <ref> <path> [--shots <dir>]` | The blob-view split button: placement beside GitLab's button groups, the main button and the "Diff with local file…" menu both open the differ, Escape closes the menu |
 | `file-selection.mjs [iid]` | What GitLab does to the URL when a file is picked — the measurement behind [REFAC-0016] |
 | `capture-login.mjs` | One-time sign-in, so the others run as you instead of anonymously |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
@@ -52,11 +53,14 @@ directory.
 
 ## Reading the output
 
-`mr-button.mjs` prints the rendered `diff-file` elements with `sha1(path)` beside
-each id. They match: that is GitLab's anchor scheme, and [REFAC-0016] and
-[BUG-0031] both build on it.
+Both runners print `RESULT: OK` or the failing checks and exit non-zero on a
+failure. `mr-button.mjs` also prints `button insertions/removals over 5s idle`,
+which is 0 on a healthy run: anything else means the sync fights the page (the
+self-feeding loop of [BUG-0036] showed up as exactly that).
 
-The two numbers at the end are the regression guards. On a healthy run against
-MR !2 they are `button state changes over 10s: 0` and `button rebuilds: 1`. Before
-[BUG-0036] was fixed the same run gave a flip every two seconds and a rebuild
-every 600ms.
+The legacy diffs UI — what self-managed GitLab serves — is available on
+gitlab.com too: append `?rapid_diffs_disabled=true` to an MR diffs URL (that is
+what `--legacy` does). `?rapid_diffs=false` does *not* switch it.
+
+File blocks are anchored by `sha1(path)` in both UIs (element ids); the
+`HandlerLocator#mrFileDiffUrl` deep link relies on it.

@@ -40,7 +40,6 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/background/service-worker.js',
     'src/popup/popup.js',
     // orchestrators / DOM+lib glue
-    'src/content/app.js',
     'src/differ/bpmn/diff-highlighter.js',
     'src/differ/bpmn/canvas-viewport.js',
     'src/differ/bpmn/changes-table-view.js',

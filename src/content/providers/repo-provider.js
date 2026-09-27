@@ -47,14 +47,6 @@ class RepoProvider {
     }
 
     /**
-     * Finds the selected file in MR diff
-     * @returns {Promise<string|null>} file path or null
-     */
-    async findSelectedFilePath() {
-        throw new Error('findSelectedFilePath() must be implemented');
-    }
-
-    /**
      * Initializes change (MR/PR) information
      * @returns {Promise<void>}
      */

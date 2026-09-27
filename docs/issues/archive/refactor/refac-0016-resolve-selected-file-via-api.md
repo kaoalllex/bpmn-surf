@@ -2,7 +2,7 @@
 id: REFAC-0016
 title: Take the MR's file list from the API instead of from the rendered diff
 priority: high
-status: open
+status: done
 ---
 
 ## Statement
@@ -96,3 +96,11 @@ request in the common case.
 Related: [BUG-0031], [BUG-0036], [REFAC-0012] (audit of fragile heuristics).
 
 ## Work log
+
+### 2026-09-27 · claude-opus-5-5 · branch `fix/per-file-diff-button`
+
+Closed as superseded, without the proposed change. The per-file diff button
+lives inside each file's block ([BUG-0031]), so nothing asks "which file is
+selected" or "which diagrams does this MR hold" any more. Neither the DOM nor
+the changes API is needed for that. `findSelectedFilePath` and its rapid-diffs
+memory are deleted.
