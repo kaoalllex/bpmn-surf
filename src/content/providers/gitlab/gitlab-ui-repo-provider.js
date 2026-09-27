@@ -24,81 +24,93 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         return platformKind === PLATFORM_KIND.GITLAB;
     }
 
-    // Several GitLab versions render the MR header differently, so we try a list
-    // of candidate selectors and use the first one that matches.
-    // #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS legacy: '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-tabs-holder.js-tabs-affix > div > div';
-    #SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS = [
-        // GitLab self-managed (gitlab.example.com): sticky header is a direct child of issuable-details
-        '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.gl-flex.gl-justify-between.gl-relative.is-merge-request.js-tabs-affix > div',
-        // GitLab.com: sticky header is nested inside .merge-request-sticky-header-wrapper
-        '#content-body > div.merge-request > div.merge-request-details.issuable-details > div.merge-request-sticky-header-wrapper > div.merge-request-sticky-header.gl-border-b > div.merge-request-tabs-container.is-merge-request.js-tabs-affix > div',
-        // Tolerant fallback: any MR tabs container, regardless of header wrapper nesting.
-        // Deliberately without .is-merge-request: GitLab adds that class only when the
-        // user's "Layout width" preference is Fixed, so with Fluid layout it is absent.
-        '#content-body div.merge-request-tabs-container.js-tabs-affix > div'
-    ];
+    // The blob header's actions. Our container goes first among them, beside
+    // GitLab's own button groups: inside the first group (the viewer switcher)
+    // the menu caret and Blame would be glued together.
+    #BRANCH_BTN_PARENT_CONTAINER_SELECTOR = '#fileHolder > div.js-file-title .file-actions';
 
-    // #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = 'div.gl-display-flex.gl-flex-wrap.file-actions';
-    #SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR = '#fileHolder > div.js-file-title.file-title-flex-parent > div.file-actions.gl-flex.gl-flex-wrap.gl-gap-3 > div';
+    static #CHEVRON_SVG =
+        '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg>';
 
-    addButton({ fileType, buttonType, needToSelectLocalFile, filePath, onButtonClickFunc }) {
+    // The open menu's document listeners, so closing (or reset) can take them off.
+    #openMenu = null;
+
+    addButton({ fileType, filePath, onButtonClickFunc }) {
         this.reset();
 
-        const parentContainerSelectors = buttonType === UI_BUTTON_TYPE.DIFF
-            ? this.#SHOW_DIFF_BTN_PARENT_CONTAINER_SELECTORS
-            : [this.#SHOW_BRANCH_BTN_PARENT_CONTAINER_SELECTOR];
-
-        const appendAtTheEnd = buttonType === UI_BUTTON_TYPE.DIFF;
-
-        const buttonContainer = document.createElement('div');
-        buttonContainer.id = this.#buttonId;
-        buttonContainer.className = 'gl-display-flex';
-        // On the container, because that is the element #buttonId identifies and
-        // the one buttonFilePath() reads back.
-        if (filePath) {
-            buttonContainer.dataset.bpmnSurfFilePath = filePath;
-        }
-
-        const button = document.createElement('button');
-        button.id = this.#buttonId + '-btn';
-        // Main entry-point button — accented as bpmn-surf's (UX-0009). The accent
-        // class lives in the content-script stylesheet (content-styles.css) and
-        // overrides only border/text/hover on top of GitLab's native classes.
-        button.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50 bpmn-surf-btn-accent';
-        button.textContent = this.#getButtonText(fileType, buttonType);
-        button.addEventListener('mouseup', onButtonClickFunc);
-        buttonContainer.appendChild(button);
-
-        if (needToSelectLocalFile) {
-            const fileInput = document.createElement('input');
-            fileInput.id = this.#buttonId + '-input';
-            fileInput.type = 'file';
-            fileInput.accept = fileType.extension;
-            fileInput.style.display = 'none';
-            fileInput.addEventListener('change', (event) => this.#localFileSelected(event, onButtonClickFunc));
-            buttonContainer.appendChild(fileInput);
-
-            const button2 = document.createElement('button');
-            button2.id = this.#buttonId + '-btn2';
-            button2.className = 'gl-md-display-block btn gl-button btn-default gl-rounded-base gl-bg-gray-50 gl-ml-3';
-            button2.textContent = 'Diff with local';
-            button2.addEventListener('mouseup', () => { fileInput.click(); });
-            buttonContainer.appendChild(button2);
-        }
-
-        const parentContainer = this.#findFirstMatch(parentContainerSelectors);
+        const parentContainer = document.querySelector(this.#BRANCH_BTN_PARENT_CONTAINER_SELECTOR);
         if (!parentContainer) {
-            console.error('Cannot find button parent container by selectors', parentContainerSelectors);
+            console.error('Cannot find button parent container by selector', this.#BRANCH_BTN_PARENT_CONTAINER_SELECTOR);
             return;
         }
-        if (appendAtTheEnd) {
-            parentContainer.appendChild(buttonContainer);
-        } else {
-            parentContainer.prepend(buttonContainer);
-        }
+
+        const container = document.createElement('div');
+        container.id = this.#buttonId;
+        container.className = 'gl-relative gl-flex';
+        // On the container, because that is the element #buttonId identifies and
+        // the one buttonFilePath() reads back.
+        container.dataset.bpmnSurfFilePath = filePath;
+
+        const button = this.#createAccentButton('btn-md', this.#getButtonText(fileType, UI_BUTTON_TYPE.BRANCH));
+        button.id = this.#buttonId + '-btn';
+        button.addEventListener('click', () => onButtonClickFunc());
+
+        const caret = document.createElement('button');
+        caret.type = 'button';
+        caret.id = this.#buttonId + '-caret';
+        caret.className = 'btn gl-button btn-default btn-md btn-icon bpmn-surf-btn-accent';
+        caret.title = 'More bpmn-surf actions';
+        caret.setAttribute('aria-label', 'More bpmn-surf actions');
+        caret.setAttribute('aria-haspopup', 'menu');
+        caret.setAttribute('aria-expanded', 'false');
+        caret.innerHTML = GitLabUIRepoProvider.#CHEVRON_SVG;
+
+        const group = document.createElement('div');
+        group.className = 'gl-button-group btn-group';
+        group.setAttribute('role', 'group');
+        group.append(button, caret);
+
+        const fileInput = document.createElement('input');
+        fileInput.id = this.#buttonId + '-input';
+        fileInput.type = 'file';
+        fileInput.accept = fileType.extension;
+        fileInput.style.display = 'none';
+        fileInput.addEventListener('change', (event) => this.#localFileSelected(event, onButtonClickFunc));
+
+        const menu = document.createElement('div');
+        menu.id = this.#buttonId + '-menu';
+        menu.className = 'bpmn-surf-menu';
+        menu.setAttribute('role', 'menu');
+        menu.hidden = true;
+
+        const localItem = document.createElement('button');
+        localItem.type = 'button';
+        localItem.id = this.#buttonId + '-local';
+        localItem.className = 'bpmn-surf-menu-item';
+        localItem.setAttribute('role', 'menuitem');
+        localItem.textContent = 'Diff with local file…';
+        localItem.addEventListener('click', () => {
+            this.#closeMenu();
+            fileInput.click();
+        });
+        menu.appendChild(localItem);
+
+        caret.addEventListener('click', () => {
+            if (menu.hidden) {
+                this.#openMenuOf(container, caret, menu);
+            } else {
+                this.#closeMenu();
+            }
+        });
+
+        container.append(group, menu, fileInput);
+        parentContainer.prepend(container);
     }
 
     reset() {
+        this.#closeMenu();
         removeElement(this.#buttonId);
     }
 
@@ -129,16 +141,6 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         for (const button of document.querySelectorAll('.' + GitLabUIRepoProvider.#FILE_BUTTON_CLASS)) {
             button.remove();
         }
-    }
-
-    #findFirstMatch(selectors) {
-        for (const selector of selectors) {
-            const elem = document.querySelector(selector);
-            if (elem) {
-                return elem;
-            }
-        }
-        return null;
     }
 
     #fileBlockPath(block) {
@@ -204,6 +206,36 @@ class GitLabUIRepoProvider extends UIRepoProvider {
             return fileType === FILE_TYPE_BPMN ? 'View schema' : 'View decision';
         }
         throw new Error(`Unexpected buttonType: ${buttonType}`);
+    }
+
+    #openMenuOf(container, caret, menu) {
+        const onMouseDown = (event) => {
+            if (!container.contains(event.target)) {
+                this.#closeMenu();
+            }
+        };
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                this.#closeMenu();
+            }
+        };
+        document.addEventListener('mousedown', onMouseDown, true);
+        document.addEventListener('keydown', onKeyDown, true);
+        this.#openMenu = { caret, menu, onMouseDown, onKeyDown };
+        menu.hidden = false;
+        caret.setAttribute('aria-expanded', 'true');
+    }
+
+    #closeMenu() {
+        const open = this.#openMenu;
+        if (!open) {
+            return;
+        }
+        this.#openMenu = null;
+        document.removeEventListener('mousedown', open.onMouseDown, true);
+        document.removeEventListener('keydown', open.onKeyDown, true);
+        open.menu.hidden = true;
+        open.caret.setAttribute('aria-expanded', 'false');
     }
 
     #localFileSelected(event, onButtonClickFunc) {

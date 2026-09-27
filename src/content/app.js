@@ -315,7 +315,12 @@ class App {
             filePath,
             fileName
         );
-        this.#addButton(fileType, UI_BUTTON_TYPE.BRANCH, params, true, filePath);
+        const msgId = this.#getMessageId(fileType);
+        this.#uiRepoProvider.addButton({
+            fileType: fileType,
+            filePath: filePath,
+            onButtonClickFunc: (extParams) => this.#openDiffer(UI_BUTTON_TYPE.BRANCH, params, extParams, msgId)
+        });
     }
 
     /**
@@ -353,21 +358,6 @@ class App {
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle,
             handlerAnnotations: await loadHandlerAnnotations()
-        });
-    }
-
-    /**
-     * Adds button via UI provider
-     * @private
-     */
-    #addButton(fileType, buttonType, params, needToSelectLocalFile, filePath) {
-        const msgId = this.#getMessageId(fileType);
-        this.#uiRepoProvider.addButton({
-            fileType: fileType,
-            buttonType: buttonType,
-            needToSelectLocalFile: needToSelectLocalFile,
-            filePath: filePath,
-            onButtonClickFunc: (extParams) => this.#openDiffer(buttonType, params, extParams, msgId)
         });
     }
 
