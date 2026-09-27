@@ -21,7 +21,7 @@
  *
  * It extends GitLabRepoProviderBase to reuse the genuinely DOM/URL-bound parts
  * that have no API equivalent (project-id resolution, MR-page/branch-view
- * detection, selected-file lookup, branch-file URL parsing) and implements only
+ * detection, branch-file URL parsing) and implements only
  * the MR parameter resolution using the API.
  *
  * Fallback is coarse and lives in the provider chain (FallbackRepoProvider):

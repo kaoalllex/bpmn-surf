@@ -2,7 +2,7 @@
  * Common GitLab provider base: the "keeper" logic shared by both the DOM/
  * heuristic provider (GitLabRepoProvider) and the API provider
  * (GitLabApiRepoProvider) — page/URL detection, project-id resolution and the
- * branch-file lookup that have no API equivalent.
+ * branch-file lookup, none of which has an API equivalent.
  *
  * It deliberately does NOT implement the change-info / commit-resolution
  * methods: those differ between the DOM and API paths and are provided by the

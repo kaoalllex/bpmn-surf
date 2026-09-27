@@ -283,6 +283,18 @@ describe('GitLabUIRepoProvider.addButton — branch view', () => {
         assert.equal(calls, 1);
     });
 
+    it('closes the menu when the main button is clicked while it is open', () => {
+        const scope = createScope();
+        scope.document.body.innerHTML = blobHeaderMarkup();
+        addBranchButton(scope);
+
+        byId(scope, '-caret').click();
+        byId(scope, '-btn').click();
+
+        assert.equal(byId(scope, '-menu').hidden, true);
+        assert.equal(byId(scope, '-caret').getAttribute('aria-expanded'), 'false');
+    });
+
     it('keeps "Diff with local file…" in a closed menu under the caret', () => {
         const scope = createScope();
         scope.document.body.innerHTML = blobHeaderMarkup();

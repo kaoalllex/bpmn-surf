@@ -55,7 +55,12 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
         const button = this.#createAccentButton('btn-md', this.#getButtonText(fileType, UI_BUTTON_TYPE.BRANCH));
         button.id = this.#buttonId + '-btn';
-        button.addEventListener('click', () => onButtonClickFunc());
+        button.addEventListener('click', () => {
+            // A click inside our container does not count as "outside", so the
+            // open menu would otherwise stay up behind the differ tab.
+            this.#closeMenu();
+            onButtonClickFunc();
+        });
 
         const caret = document.createElement('button');
         caret.type = 'button';
