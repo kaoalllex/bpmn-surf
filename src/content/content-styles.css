@@ -10,16 +10,43 @@
    tone is the single brand accent, mirroring .differ-update-indicator. The
    caret of the branch view's split button carries the accent too; its menu
    item does not. */
+/* Current GitLab colours buttons through --gl-button-* variables, from rules
+   (.gl-button.gl-button.btn-default) that outrank a single class. Redefining
+   the variables on our button wins regardless of specificity; the plain
+   declarations cover GitLab versions that predate them. */
 .bpmn-surf-btn-accent {
-    border-color: hsl(212, 73%, 46%);
-    color: hsl(212, 73%, 46%);
+    --bpmn-surf-accent: hsl(212, 73%, 46%);
+    --bpmn-surf-accent-strong: hsl(212, 73%, 40%);
+    --bpmn-surf-accent-soft: hsl(212, 73%, 96%);
+    --gl-button-default-primary-foreground-color-default: var(--bpmn-surf-accent);
+    --gl-button-default-primary-border-color-default: var(--bpmn-surf-accent);
+    --gl-button-default-primary-foreground-color-hover: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-border-color-hover: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-background-color-hover: var(--bpmn-surf-accent-soft);
+    --gl-button-default-primary-foreground-color-focus: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-border-color-focus: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-background-color-focus: var(--bpmn-surf-accent-soft);
+    --gl-button-default-primary-foreground-color-active: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-border-color-active: var(--bpmn-surf-accent-strong);
+    --gl-button-default-primary-background-color-active: var(--bpmn-surf-accent-soft);
+    border-color: var(--bpmn-surf-accent);
+    color: var(--bpmn-surf-accent);
     font-weight: 600;
 }
 
 .bpmn-surf-btn-accent:hover {
-    border-color: hsl(212, 73%, 40%);
-    background-color: hsl(212, 73%, 96%);
-    color: hsl(212, 73%, 40%);
+    border-color: var(--bpmn-surf-accent-strong);
+    background-color: var(--bpmn-surf-accent-soft);
+    color: var(--bpmn-surf-accent-strong);
+}
+
+/* GitLab marks its dark theme with html.gl-dark (also when it follows the
+   system theme): the light-theme accent is too dark there, and its pale hover
+   background would flash. */
+html.gl-dark .bpmn-surf-btn-accent {
+    --bpmn-surf-accent: hsl(212, 85%, 68%);
+    --bpmn-surf-accent-strong: hsl(212, 90%, 76%);
+    --bpmn-surf-accent-soft: hsla(212, 73%, 50%, 0.18);
 }
 
 /* The bpmn-surf icon before the label of our accented buttons. */
