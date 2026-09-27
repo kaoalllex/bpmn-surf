@@ -18,7 +18,6 @@ class GitHubRepoProvider extends RepoProvider {
     getProjectInfo() { this.#notImplemented(); }
     async isChangeViewActive() { this.#notImplemented(); }
     async getBranchFileType() { this.#notImplemented(); }
-    async findSelectedFilePath() { this.#notImplemented(); }
     async initChangeInfo() { this.#notImplemented(); }
     getChangeInfo() { this.#notImplemented(); }
     getChangeBranchNames() { this.#notImplemented(); }
