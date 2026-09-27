@@ -166,6 +166,30 @@ describe('BpmnXmlComparator property group: Multi-instance', () => {
         assert.deepEqual(Array.from(result.changedShapeIds), ['MultiTask_1']);
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance', 'Multi-instance'] });
     });
+
+    it('detects added/removed multiInstanceLoopCharacteristics', () => {
+        const plain = variant(
+            '\n      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item" />',
+            '');
+        assert.deepEqual(mapToObject(compare(base, plain).nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
+        assert.deepEqual(mapToObject(compare(plain, base).nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
+    });
+
+    it('detects added multiInstanceLoopCharacteristics on a subprocess', () => {
+        const plain = variant(
+            '\n      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems" camunda:elementVariable="subItem" />',
+            '');
+        assert.deepEqual(mapToObject(compare(base, plain).nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
+    });
+
+    it('marks an added standard loop as changed with no property group (the panel has none)', () => {
+        const changed = variant(
+            '<bpmn:outgoing>Flow_to_gateway</bpmn:outgoing>\n',
+            '<bpmn:outgoing>Flow_to_gateway</bpmn:outgoing>\n      <bpmn:standardLoopCharacteristics />\n');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['ServiceTask_1']);
+        assert.equal(result.nodeIdToDiffsMap.size, 0);
+    });
 });
 
 describe('BpmnXmlComparator subprocess comparison rules', () => {

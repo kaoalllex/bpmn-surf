@@ -76,6 +76,8 @@ class BpmnXmlComparator {
         ['camunda:asyncBefore', 'Asynchronous continuations'],
         ['camunda:asyncAfter', 'Asynchronous continuations'],
 
+        // the whole element added/removed (the multi-instance marker toggled)
+        ['bpmn:multiInstanceLoopCharacteristics', 'Multi-instance'],
         ['camunda:collection', 'Multi-instance'],
         ['camunda:elementVariable', 'Multi-instance'],
         ['bpmn:loopCardinality', 'Multi-instance'],
@@ -142,6 +144,7 @@ class BpmnXmlComparator {
         // Properties to be ignored because there is no property group to highlight
         ['bpmn:terminateEventDefinition', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:multiInstanceLoopCharacteristics/isSequential', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
+        ['bpmn:standardLoopCharacteristics', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:boundaryEvent/attachedToRef', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:outputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:inputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
