@@ -226,3 +226,27 @@ test('a recompute after deselecting paints nothing in the root panel', async ({ 
     expect(warnings).toEqual([]);
     expect(await paintedHeaders(page)).toEqual([]);
 });
+
+// Toggling the multi-instance marker adds or removes the whole loopCharacteristics
+// element, which used to map to no group: the canvas went blue, the panel said nothing.
+test('adding the multi-instance marker paints the Multi-instance group', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({ mode: 'edit', editSide: 'source', targetRef: 'mr-sha' }),
+        fixtures: { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': BASE_BPMN } }
+    });
+
+    // What the replace menu's "Parallel multi instance" toggle does
+    await page.evaluate(() => {
+        const modeler = window.__bpmnDifferModeler;
+        const element = modeler.get('elementRegistry').get('Task_1');
+        modeler.get('modeling').updateProperties(element, {
+            loopCharacteristics: modeler.get('moddle').create('bpmn:MultiInstanceLoopCharacteristics')
+        });
+    });
+    await expect(page.locator('svg .djs-element[data-element-id="Task_1"]'))
+        .toHaveClass(/edit-diff-changed/, { timeout: 5000 });
+    await page.locator('svg .djs-element[data-element-id="Task_1"]').click();
+
+    await expect.poll(() => paintedHeaders(page)).toEqual(['Multi-instance']);
+});
