@@ -2,7 +2,7 @@
 id: UX-0010
 title: "Show diff with local" as a dropdown next to the main schema/decision button
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -53,3 +53,15 @@ Behavior of the local-file flow itself must not change — only how it is reache
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-27 · claude-opus-5-5 · branch `fix/per-file-diff-button`
+
+Done as specified: `View schema` / `View decision` is now a split button. Its
+caret menu holds one item, "Diff with local file…", which opens the existing
+hidden file input; the local-file flow itself is unchanged. The menu closes on
+outside mousedown, `Escape` and item choice, and `reset()` removes its document
+listeners (pinned by a unit test).
+
+Also fixed on the way: the container used to be prepended *inside* GitLab's
+`.js-blob-viewer-switcher` button group, which glued our secondary button to
+"Blame". It now stands first among `.file-actions`' children.

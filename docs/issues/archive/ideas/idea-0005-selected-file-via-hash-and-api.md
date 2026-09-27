@@ -2,7 +2,7 @@
 id: IDEA-0005
 title: Detect the selected MR file via location.hash + GitLab API instead of scraping the diff DOM
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -53,3 +53,9 @@ its root, and reduce the dependency on GitLab's fragile diff markup.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-09-27 · claude-opus-5-5 · branch `fix/per-file-diff-button`
+
+Closed as superseded, for the same reason as [REFAC-0016]: with the button inside
+each file's block ([BUG-0031]) there is no selected file to detect, by hash or
+otherwise.
