@@ -13,6 +13,22 @@ A hands-on check of the **real extension** in a real Chromium, signed in, agains
 timing and per-user preferences. It needs Claude, the signed-in profile and
 gitlab.com, so it is never a CI gate.
 
+## First: does this change need a live run?
+
+Only what touches **GitLab's page** does. The differ tab takes nothing from GitLab
+but two XML files: the comparator, the painters, the properties panel, the changes
+table, search and edit mode all run the same in the offline Layer-2 harness, with the
+real bpmn-js and properties panel (`docs/testing.md`, `test/e2e/*.spec.js`).
+
+| The change is in | Check it with |
+|---|---|
+| `src/content/` — buttons, file detection, placement, SPA navigation | the catalog below |
+| the differ (`src/differ/`) | the Layer-2 spec of that area (`differ-edit-*`, `differ-prop-group-*`, `differ-highlight-*`, `dmn-*`…): add a case that fails without the fix. For a diagram from a report, pull it first (`gitlab-test-project` skill, "From report to repro") |
+| `src/popup/` | `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) and the screenshots |
+
+Asked for a live check of a differ-only change: say so, run the Layer-2 spec, and
+report that as the check, not an empty live run.
+
 ## Prerequisites
 
 1. Signed-in profile: `node test/e2e/live/diff-mode.mjs` prints `signed in as: …`.
