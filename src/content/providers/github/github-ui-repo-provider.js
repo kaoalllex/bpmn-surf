@@ -28,6 +28,14 @@ class GitHubUIRepoProvider extends UIRepoProvider {
         // No button to enable.
     }
 
+    syncFileButtons() {
+        // No per-file buttons on GitHub yet.
+    }
+
+    removeFileButtons() {
+        // Nothing was inserted, so nothing to remove.
+    }
+
     isOwnButtonClick() {
         return false;
     }

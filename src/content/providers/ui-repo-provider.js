@@ -79,4 +79,22 @@ class UIRepoProvider {
     buttonFilePath() {
         throw new Error('buttonFilePath() must be implemented');
     }
+
+    /**
+     * Keeps one diff button on every diagram file the change view shows,
+     * attached to that file's own block. Safe to call on every DOM change:
+     * blocks that already carry the right button are left untouched.
+     * @param {Function} describeFile (filePath) => ({ fileType, onButtonClickFunc }) for
+     *     a file that gets a button, or null for one that does not
+     */
+    syncFileButtons(describeFile) {
+        throw new Error('syncFileButtons() must be implemented');
+    }
+
+    /**
+     * Removes every per-file button (e.g. before rebuilding them for other refs).
+     */
+    removeFileButtons() {
+        throw new Error('removeFileButtons() must be implemented');
+    }
 }

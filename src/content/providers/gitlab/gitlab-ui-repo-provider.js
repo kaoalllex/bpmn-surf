@@ -2,6 +2,24 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
     #buttonId = 'btn_77844bf3d4e842caa0d88194431197c0';
 
+    // A file block of either diff UI: rapid diffs (<diff-file>, gitlab.com) or the
+    // legacy Vue diffs (self-managed; gitlab.com serves it with ?rapid_diffs_disabled=true).
+    static #FILE_BLOCK_SELECTOR = 'diff-file, .diff-file.file-holder[data-path]';
+    // The block's own header controls (stats, Viewed, comment, ⋮). The legacy
+    // diff body can hold other .file-actions, hence the :scope anchor.
+    static #FILE_ACTIONS_SELECTOR = '.rd-diff-file-info, :scope > .js-file-title .file-actions';
+    static #FILE_BUTTON_CLASS = 'bpmn-surf-file-btn';
+
+    // icons/icon-small.svg, inlined: an <img> of the packaged file would need a
+    // web_accessible_resources entry just for this.
+    static #ICON_SVG =
+        '<svg width="16" height="16" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect width="1024" height="1024" rx="229" ry="229" fill="#0E2438"/>' +
+        '<path d="M408,452 Q515,576 620,584" fill="none" stroke="#4A9CEC" stroke-width="96" stroke-linecap="round"/>' +
+        '<rect x="226" y="266" width="208" height="208" rx="58" fill="#0E2438" stroke="#4A9CEC" stroke-width="96"/>' +
+        '<rect x="590" y="556" width="208" height="208" rx="58" fill="#0E2438" stroke="#4A9CEC" stroke-width="96"/>' +
+        '</svg>';
+
     isAvailable(platformKind) {
         return platformKind === PLATFORM_KIND.GITLAB;
     }
@@ -84,6 +102,35 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         removeElement(this.#buttonId);
     }
 
+    syncFileButtons(describeFile) {
+        for (const block of document.querySelectorAll(GitLabUIRepoProvider.#FILE_BLOCK_SELECTOR)) {
+            const actions = block.querySelector(GitLabUIRepoProvider.#FILE_ACTIONS_SELECTOR);
+            if (!actions) {
+                continue;
+            }
+            const filePath = this.#fileBlockPath(block);
+            const existing = actions.querySelector(`:scope > .${GitLabUIRepoProvider.#FILE_BUTTON_CLASS}`);
+            if (existing && existing.dataset.bpmnSurfFilePath === filePath) {
+                continue;
+            }
+            if (existing) {
+                existing.remove();
+            }
+            const file = filePath ? describeFile(filePath) : null;
+            if (file) {
+                // Before the last control, GitLab's ⋮ menu: anchored to the right
+                // edge, the button sits at the same spot on every file.
+                actions.insertBefore(this.#createFileButton(filePath, file), actions.lastElementChild);
+            }
+        }
+    }
+
+    removeFileButtons() {
+        for (const button of document.querySelectorAll('.' + GitLabUIRepoProvider.#FILE_BUTTON_CLASS)) {
+            button.remove();
+        }
+    }
+
     // Toggling `disabled` is not a childList mutation, so the DOM-change observer
     // that rebuilds the button never sees it and cannot retrigger itself over it
     // (BUG-0036 was about exactly that kind of self-feeding loop).
@@ -111,11 +158,50 @@ class GitLabUIRepoProvider extends UIRepoProvider {
         return null;
     }
 
+    #fileBlockPath(block) {
+        if (block.tagName !== 'DIFF-FILE') {
+            return block.getAttribute('data-path');
+        }
+        try {
+            const data = JSON.parse(block.getAttribute('data-file-data'));
+            return data.new_path || data.old_path || null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    #createFileButton(filePath, { fileType, onButtonClickFunc }) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `${GitLabUIRepoProvider.#FILE_BUTTON_CLASS} gl-flex gl-items-center gl-mr-3`;
+        wrapper.dataset.bpmnSurfFilePath = filePath;
+
+        const button = this.#createAccentButton('btn-sm', this.#getButtonText(fileType, UI_BUTTON_TYPE.DIFF));
+        button.addEventListener('click', (event) => {
+            // The legacy file header toggles the file open/closed on a click.
+            event.stopPropagation();
+            onButtonClickFunc();
+        });
+        wrapper.appendChild(button);
+        return wrapper;
+    }
+
+    #createAccentButton(sizeClass, text) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `btn gl-button btn-default ${sizeClass} bpmn-surf-btn-accent bpmn-surf-btn-with-icon`;
+        button.innerHTML = GitLabUIRepoProvider.#ICON_SVG;
+        const label = document.createElement('span');
+        label.textContent = text;
+        button.appendChild(label);
+        return button;
+    }
+
     isOwnButtonClick(event) {
-        if (!event || !event.target || !event.target.id) {
+        const target = event && event.target;
+        if (!target || typeof target.closest !== 'function') {
             return false;
         }
-        return event.target.id.startsWith(this.#buttonId);
+        return !!target.closest(`[id^="${this.#buttonId}"], .${GitLabUIRepoProvider.#FILE_BUTTON_CLASS}`);
     }
 
     isButtonPresent() {

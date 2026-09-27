@@ -20,3 +20,18 @@
     background-color: hsl(212, 73%, 96%);
     color: hsl(212, 73%, 40%);
 }
+
+/* The bpmn-surf icon before the label of our accented buttons. */
+.bpmn-surf-btn-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Rapid diffs keeps the previous file on screen, greyed out, for about half a
+   second after another file is picked, and marks that with data-loading on
+   its overlay. A button there would open the file the reader just left, so it
+   stays hidden until the new file's block (with its own button) replaces it. */
+.rd-app-diffs-list:has(> .rd-app-diffs-list-loading-overlay[data-loading="true"]) .bpmn-surf-file-btn {
+    visibility: hidden;
+}
