@@ -538,8 +538,13 @@ class BpmnDiffer {
         this.#view.setEditButtonEnabled(true);
 
         const currentSelectedElemId = this.#getCurrentSelectedElementId();
+        const canvas = this.#bpmnJS.get('canvas');
+        const rootId = canvas.getRootElement()?.id;
+        const viewbox = canvas.viewbox();
 
         await this.#importXml(bpmnXml);
+
+        this.#restoreDrilledRoot(canvas, rootId, viewbox);
 
         // The elementRegistry is recreated on every import, so re-index the
         // freshly shown version for the search panel.
@@ -553,6 +558,21 @@ class BpmnDiffer {
         // Overlays are dropped on import, so re-add the persistent "changed
         // handler" badges for the freshly imported diagram version.
         this.#handlerNavigator.refreshChangedBadges();
+    }
+
+    // A drill-down into a collapsed subprocess is a root of its own, and the import
+    // resets the canvas to the process root. Keep the user in that subprocess (same
+    // viewbox) when this version has it too; otherwise stay on the process root.
+    #restoreDrilledRoot(canvas, rootId, viewbox) {
+        const root = rootId && this.#elementRegistry.get(rootId);
+        if (!root || root === canvas.getRootElement()) {
+            return;
+        }
+        // The drill-down remembers the viewbox of the root being left and restores it
+        // on the way back up: let that be the fitted process, not the subprocess view.
+        canvas.zoom('fit-viewport');
+        canvas.setRootElement(root);
+        canvas.viewbox(viewbox);
     }
 
     async #importXml(bpmnXml) {
@@ -613,11 +633,15 @@ class BpmnDiffer {
         }
         this.#diffHighlighter.setDiffElementIds([
             ...diff.missingShapeIds, ...diff.missingRowIds,
-            ...diff.changedShapeIds, ...diff.changedRowIds
+            ...diff.changedShapeIds, ...diff.changedRowIds,
+            ...diff.subProcessWithChangesIds.filter(id => !diff.changedShapeIds.includes(id))
         ]);
 
         this.#diffHighlighter.paint(diffTypeForMissing, diff.missingShapeIds, diff.missingRowIds);
         this.#diffHighlighter.paint(DiffType.CHANGE, diff.changedShapeIds, diff.changedRowIds);
+        // Stroke only (the row colour): containing a change is not a change of the
+        // subprocess itself, so it keeps its own fill and stays out of the changes table.
+        this.#diffHighlighter.paint(DiffType.CHANGE, [], diff.subProcessWithChangesIds);
 
         // FEAT-0031: edit mode renders no changes table (see BpmnDifferView#build),
         // but the canvas colouring above must still run — it is colour layer 3.

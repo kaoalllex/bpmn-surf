@@ -5,6 +5,11 @@ class BpmnXmlComparator {
     static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
     static #MESSAGE_TAG_NAME = 'bpmn:message';
     static #ESCALATION_TAG_NAME = 'bpmn:escalation';
+    // Children that describe the subprocess itself, not the flow inside it
+    static #SUBPROCESS_OWN_CHILD_TAG_NAMES = [
+        'bpmn:multiInstanceLoopCharacteristics',
+        'bpmn:extensionElements'
+    ];
 
     static #ROW_TAG_NAMES = [
         'bpmn:sequenceFlow',
@@ -168,7 +173,9 @@ class BpmnXmlComparator {
      *   nodeIdToConditions (id -> [my condition, other condition]),
      *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}])),
      *   typeChangedIds (ids whose element type differs between the versions,
-     *     or whose panel header text changes for another reason, e.g. cancelActivity)
+     *     or whose panel header text changes for another reason, e.g. cancelActivity),
+     *   subProcessWithChangesIds (subprocesses that are not changed themselves
+     *     but contain an added, removed or changed element at any depth)
      * }
      */
     compare(myXml, otherXml) {
@@ -184,9 +191,7 @@ class BpmnXmlComparator {
         // nothing about what is worth comparing. A file whose only process is not
         // executable (the properties panel can clear the flag) still has to be diffed,
         // and a file with no process at all yields an empty diff instead of throwing.
-        const myProcessNodes = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PROCESS_TAG_NAME));
-        const myProcessNode = myProcessNodes.find(elem => elem.getAttribute('isExecutable') === 'true')
-            ?? myProcessNodes[0];
+        const myProcessNode = this.#findMainProcessNode(myDoc);
         const myNodesWithIdAttr = myProcessNode ? myProcessNode.querySelectorAll('[id]') : [];
 
         const result = {
@@ -198,7 +203,8 @@ class BpmnXmlComparator {
             nodeIdToDiffsMap: new Map(),
             nodeIdToConditions: new Map(),
             nodeIdToMappingChanges: new Map(),
-            typeChangedIds: []
+            typeChangedIds: [],
+            subProcessWithChangesIds: []
         };
 
         for (const myNode of myNodesWithIdAttr) {
@@ -270,7 +276,48 @@ class BpmnXmlComparator {
             }
         }
 
+        result.subProcessWithChangesIds = this.#findSubProcessesWithChanges(myDoc, otherDoc, result);
+
         return result;
+    }
+
+    #findMainProcessNode(doc) {
+        const processNodes = Array.from(doc.getElementsByTagName(BpmnXmlComparator.#PROCESS_TAG_NAME));
+        return processNodes.find(elem => elem.getAttribute('isExecutable') === 'true') ?? processNodes[0];
+    }
+
+    // Subprocess children are compared on their own (see #compareNodes), so a change
+    // inside never flags the subprocess itself, and a collapsed one would give no sign
+    // of it. Collects the enclosing subprocesses of every differing element instead:
+    // the shown side's added/changed ones and the elements only the other side has.
+    #findSubProcessesWithChanges(myDoc, otherDoc, result) {
+        const ids = new Set();
+        const differingIds = [
+            ...result.missingShapeIds, ...result.missingRowIds,
+            ...result.changedShapeIds, ...result.changedRowIds
+        ];
+        for (const id of differingIds) {
+            this.#addSubProcessAncestorIds(myDoc.getElementById(id), ids);
+        }
+        const otherProcessNode = this.#findMainProcessNode(otherDoc);
+        for (const otherNode of otherProcessNode ? otherProcessNode.querySelectorAll('[id]') : []) {
+            if (!this.#isFormFieldProperty(otherNode) && !myDoc.getElementById(otherNode.getAttribute('id'))) {
+                this.#addSubProcessAncestorIds(otherNode, ids);
+            }
+        }
+        // An added/removed subprocess already carries its own colour, and an ancestor
+        // only the other side has is not on the shown diagram.
+        return Array.from(ids).filter(id =>
+            myDoc.getElementById(id) && !result.missingShapeIds.includes(id));
+    }
+
+    #addSubProcessAncestorIds(node, ids) {
+        for (let child = node, parent = node.parentNode; parent; child = parent, parent = parent.parentNode) {
+            if (parent.nodeType === Node.ELEMENT_NODE && this.#isSubProcess(parent)
+                && !BpmnXmlComparator.#SUBPROCESS_OWN_CHILD_TAG_NAMES.includes(child.tagName)) {
+                ids.add(parent.getAttribute('id'));
+            }
+        }
     }
 
     #findDiffPropertyGroup(diff) {
@@ -432,11 +479,10 @@ class BpmnXmlComparator {
 
         if (this.#isSubProcess(nodeA)) {
             // Do not compare children of subprocesses (they will be compared separately)
-            // except 'multiInstanceLoopCharacteristics' and 'extensionElements' nodes
-            const milcDiffs = this.#compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:multiInstanceLoopCharacteristics');
-            diffs = this.#concatDiffs(diffs, milcDiffs);
-            const extDiffs = this.#compareChildNodesWithTagName(nodeA, nodeB, 'bpmn:extensionElements');
-            diffs = this.#concatDiffs(diffs, extDiffs);
+            // except the subprocess's own nodes
+            for (const tagName of BpmnXmlComparator.#SUBPROCESS_OWN_CHILD_TAG_NAMES) {
+                diffs = this.#concatDiffs(diffs, this.#compareChildNodesWithTagName(nodeA, nodeB, tagName));
+            }
             return diffs;
         }
 

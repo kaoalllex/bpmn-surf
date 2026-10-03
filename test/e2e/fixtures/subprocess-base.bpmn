@@ -12,8 +12,14 @@
       </bpmn:startEvent>
       <bpmn:userTask id="InnerTask_1" name="Issue UZ">
         <bpmn:incoming>InnerFlow_1</bpmn:incoming>
+        <bpmn:outgoing>InnerFlow_2</bpmn:outgoing>
       </bpmn:userTask>
+      <bpmn:subProcess id="CollapsedSub_1" name="Sign UZ">
+        <bpmn:incoming>InnerFlow_2</bpmn:incoming>
+        <bpmn:userTask id="DeepTask_1" name="Sign document" />
+      </bpmn:subProcess>
       <bpmn:sequenceFlow id="InnerFlow_1" sourceRef="InnerStart_1" targetRef="InnerTask_1" />
+      <bpmn:sequenceFlow id="InnerFlow_2" sourceRef="InnerTask_1" targetRef="CollapsedSub_1" />
     </bpmn:subProcess>
     <bpmn:endEvent id="EndEvent_1" name="End">
       <bpmn:incoming>Flow_2</bpmn:incoming>
@@ -39,6 +45,13 @@
         <di:waypoint x="316" y="220" />
         <di:waypoint x="380" y="220" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="CollapsedSub_1_di" bpmnElement="CollapsedSub_1" isExpanded="false">
+        <dc:Bounds x="530" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="InnerFlow_2_di" bpmnElement="InnerFlow_2">
+        <di:waypoint x="480" y="220" />
+        <di:waypoint x="530" y="220" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
         <dc:Bounds x="720" y="202" width="36" height="36" />
       </bpmndi:BPMNShape>
@@ -50,6 +63,13 @@
         <di:waypoint x="650" y="220" />
         <di:waypoint x="720" y="220" />
       </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CollapsedSub_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_CollapsedSub_1" bpmnElement="CollapsedSub_1">
+      <bpmndi:BPMNShape id="DeepTask_1_di" bpmnElement="DeepTask_1">
+        <dc:Bounds x="160" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

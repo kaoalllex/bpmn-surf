@@ -2,7 +2,7 @@
 id: BUG-0010
 title: Subprocess is not highlighted when only a nested element changed
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -45,3 +45,37 @@ from the top, not only on the leaf.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-03 · claude-opus-5-5 · branch `fix/bug-0010-subprocess-highlight`
+
+Root cause confirmed: `#compareNodes` skips subprocess children (they are compared on
+their own), so only the leaf reached `changedShapeIds`, and `DiffHighlighter` paints
+exactly that list. Fix:
+
+- `BpmnXmlComparator#compare` returns `subProcessWithChangesIds` — every enclosing
+  `bpmn:subProcess` (any depth) of an added/removed/changed element. Removed children
+  are found in the other document; ancestors only the other side has, ancestors that
+  are themselves added/removed, and the subprocess's own `extensionElements` /
+  `multiInstanceLoopCharacteristics` nodes do not count. `changedShapeIds` and
+  `nodeIdToDiffsMap` are unchanged, so the leaf keeps its own fill (the 188314a/3b35624
+  regression) and the changes table / properties panel do not list the subprocess.
+- `BpmnDiffer#paintDiffs` paints them with the CHANGE stroke only (blue border and
+  label, own fill kept — `setColor({stroke})` leaves the fill alone) and adds them to
+  the ☼ highlight. Works for collapsed subprocesses (the shape on the parent plane) and
+  after drill-down (the leaf is painted by id on its own plane).
+- DMN unaffected: comparator and highlighter are BPMN-only, `DiffType` is not changed.
+- Tests: the unit test that pinned the bug was reworked (leaf still the only changed
+  shape + the new field), cases added for nesting, added/removed children, an added
+  subprocess, a changed-and-containing subprocess and the subprocess's own nodes; the
+  Layer-2 pin `differ-subprocess-bug-0010.spec.js` became
+  `differ-highlight-subprocess.spec.js` (a collapsed subprocess inside an expanded one,
+  including drill-down).
+- Sandbox: `order-service/.../order/QesApplication.bpmn` on `main` and MR !15
+  (`test/subprocess-child-changes`) with child-only changes — renamed leaf in an expanded
+  subprocess, renamed leaf in a nested collapsed one, a child added to and one removed
+  from collapsed subprocesses, plus an untouched control subprocess.
+
+Not done (out of scope): edit mode (`EditSession.setMrDiff`) does not mark containing
+subprocesses; `bpmn:transaction` / `bpmn:adHocSubProcess` are not treated as
+subprocesses (the comparator never did — their children are compared as part of them,
+so they are flagged changed themselves).

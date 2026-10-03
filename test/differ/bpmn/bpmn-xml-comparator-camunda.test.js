@@ -214,14 +214,17 @@ describe('BpmnXmlComparator subprocess comparison rules', () => {
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { SubProcess_1: ['Execution listeners'] });
     });
 
-    it('flags a changed inner element but not the enclosing subprocess', () => {
+    // BUG-0010: the leaf stays the only changed shape (its own highlight must not be
+    // lost again), the enclosing subprocess is reported separately as containing changes.
+    it('flags a changed inner element and marks the enclosing subprocess as containing changes', () => {
         const changed = variant('name="Inner task"', 'name="Inner task renamed"');
         const result = compare(changed, base);
         assert.deepEqual(Array.from(result.changedShapeIds), ['SubTask_1']);
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { SubTask_1: ['General'] });
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), ['SubProcess_1']);
     });
 
-    it('detects an element added inside a subprocess without flagging the subprocess', () => {
+    it('detects an element added inside a subprocess and marks the subprocess as containing changes', () => {
         const changed = variant(
             '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n',
             '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n' +
@@ -229,6 +232,66 @@ describe('BpmnXmlComparator subprocess comparison rules', () => {
         const result = compare(changed, base);
         assert.deepEqual(Array.from(result.missingShapeIds), ['SubTask_2']);
         assert.deepEqual(Array.from(result.changedShapeIds), []);
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), ['SubProcess_1']);
+    });
+
+    it('marks the subprocess on the side that lost a child', () => {
+        const withExtraChild = variant(
+            '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n',
+            '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n' +
+            '      <bpmn:serviceTask id="SubTask_2" name="Inner task two" />\n');
+        const result = compare(base, withExtraChild);
+        assert.deepEqual(Array.from(result.missingShapeIds), []);
+        assert.deepEqual(Array.from(result.changedShapeIds), []);
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), ['SubProcess_1']);
+    });
+
+    it('marks every enclosing subprocess of a deeply nested change', () => {
+        const nested = variant(
+            '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n',
+            '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n' +
+            '      <bpmn:subProcess id="InnerSubProcess_1">\n' +
+            '        <bpmn:task id="DeepTask_1" name="Deep task" />\n' +
+            '      </bpmn:subProcess>\n');
+        const result = compare(nested.replace('name="Deep task"', 'name="Deep task renamed"'), nested);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['DeepTask_1']);
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds).sort(), ['InnerSubProcess_1', 'SubProcess_1']);
+    });
+
+    it('does not mark a subprocess that is itself added', () => {
+        const changed = variant(
+            '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n',
+            '      <bpmn:sequenceFlow id="Flow_sub_end" sourceRef="SubTask_1" targetRef="SubEndEvent_1" />\n' +
+            '      <bpmn:subProcess id="InnerSubProcess_1">\n' +
+            '        <bpmn:task id="DeepTask_1" name="Deep task" />\n' +
+            '      </bpmn:subProcess>\n');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.missingShapeIds).sort(), ['DeepTask_1', 'InnerSubProcess_1']);
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), ['SubProcess_1']);
+    });
+
+    it('marks a subprocess that is changed itself and also contains a change', () => {
+        const changed = variant('name="Sub process one"', 'name="Sub process renamed"')
+            .replace('name="Inner task"', 'name="Inner task renamed"');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds).sort(), ['SubProcess_1', 'SubTask_1']);
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), ['SubProcess_1']);
+    });
+
+    it('does not count the subprocess\'s own multi-instance node as a change inside it', () => {
+        const withMilcId = variant(
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems"',
+            '<bpmn:multiInstanceLoopCharacteristics id="SubMilc_1" camunda:asyncBefore="true" camunda:collection="subItems"');
+        const result = compare(withMilcId.replace('camunda:collection="subItems"', 'camunda:collection="otherItems"'), withMilcId);
+        assert.ok(Array.from(result.changedShapeIds).includes('SubProcess_1'));
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), []);
+    });
+
+    it('marks no subprocess when nothing inside one changed', () => {
+        const changed = variant('name="Sub process one"', 'name="Sub process renamed"');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['SubProcess_1']);
+        assert.deepEqual(Array.from(result.subProcessWithChangesIds), []);
     });
 });
 
