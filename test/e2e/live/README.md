@@ -18,7 +18,7 @@ gitlab.com, so they are as available as it is.
 | `search-page.mjs [--shots <dir>]` | Does GitLab still serve the "search in the repository" fallback URL that `GitLabPlatformClient#searchPageUrl` builds — 200, scoped to the project, honouring a ref with a slash? Picks its sample file from the sandbox at run time |
 | `capture-login.mjs` | One-time sign-in, so the others run as you instead of anonymously |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
-| `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots. Needs no network |
+| `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots; also submits `github.com` and reports the refusal and that no permission was requested. Needs no network |
 
 ## Signing in
 

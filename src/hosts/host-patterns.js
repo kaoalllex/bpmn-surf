@@ -39,6 +39,18 @@ function normalizeHostPattern(input) {
     return HOSTNAME_PATTERN.test(hostname) ? `https://${hostname}/*` : null;
 }
 
+// GitHub support is unfinished (REFAC-0004): on github.com the content scripts
+// would load only to fail, so the host is refused until that work lands.
+const UNSUPPORTED_HOSTNAMES = new Set(['github.com', 'www.github.com']);
+
+/**
+ * @param {string} pattern a normalizeHostPattern() result
+ * @returns {boolean} true for a host the extension must not be enabled on
+ */
+function isUnsupportedHost(pattern) {
+    return UNSUPPORTED_HOSTNAMES.has(String(pattern).replace(/^https:\/\//, '').replace(/\/\*$/, ''));
+}
+
 /**
  * The hosts the user added: the granted origins minus the ones the manifest
  * declares itself (gitlab.com stays declarative — its scripts are injected by

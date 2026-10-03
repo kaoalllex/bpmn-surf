@@ -99,7 +99,9 @@ per-user "Show one file at a time" preference; without it everything runs
 anonymously.
 
 `popup-screens.mjs` is the exception that needs no network: it renders every
-popup screen with a stubbed `chrome.*` and reports height and overflow.
+popup screen with a stubbed `chrome.*` and reports height and overflow, then
+submits `github.com` on the Sites screen and reports the refusal message and
+the number of permission requests (must be 0).
 
 ## Manual checking
 

@@ -96,7 +96,7 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'detectPlatformKind', 'PLATFORM_KIND',
-    'normalizeHostPattern', 'userOriginsFrom',
+    'normalizeHostPattern', 'userOriginsFrom', 'isUnsupportedHost',
     'DEFAULT_HANDLER_ANNOTATIONS', 'normalizeHandlerAnnotations', 'isDefaultHandlerAnnotations',
     'buildSettingsExport', 'parseSettingsExport', 'SETTINGS_EXPORT_FORMAT',
     'PlatformClient',

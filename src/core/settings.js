@@ -79,7 +79,7 @@ function parseSettingsExport(text) {
     const hosts = [];
     for (const entry of (Array.isArray(parsed.hosts) ? parsed.hosts : [])) {
         const pattern = normalizeHostPattern(String(entry || ''));
-        if (pattern) {
+        if (pattern && !isUnsupportedHost(pattern)) {
             hosts.push(pattern);
         }
     }

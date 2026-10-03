@@ -148,6 +148,10 @@ els.addHostForm.addEventListener('submit', event => {
         showError('Enter an https host, for example gitlab.mycompany.com');
         return;
     }
+    if (isUnsupportedHost(pattern)) {
+        showError('GitHub is not supported yet — bpmn-surf works with GitLab: gitlab.com and self-managed instances');
+        return;
+    }
     showError('');
     // Chrome grants the permission only while the user gesture is live, so the
     // request must be issued in this same task — nothing is awaited before it.
