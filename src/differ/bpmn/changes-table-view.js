@@ -130,7 +130,7 @@ class ChangesTableView {
 
         const cellProps = document.createElement('th');
         cellProps.style.width = '100%';
-        cellProps.appendChild(document.createTextNode('Propepties'));
+        cellProps.appendChild(document.createTextNode('Properties'));
         row.appendChild(cellProps);
     }
 
