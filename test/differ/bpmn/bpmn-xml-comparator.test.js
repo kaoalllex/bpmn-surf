@@ -223,6 +223,18 @@ describe('BpmnXmlComparator.compare', () => {
 // and a repository file can be reindented by any editor. Indentation is not a change.
 const compact = (xml) => xml.replace(/>\s+</g, '><');
 
+describe('BpmnXmlComparator property group: User assignment', () => {
+    for (const attr of ['assignee', 'candidateGroups', 'candidateUsers', 'dueDate', 'followUpDate', 'priority']) {
+        it(`maps camunda:${attr} to User assignment`, () => {
+            const changed = base.replace(
+                '<bpmn:userTask id="Task_1" name="Review request">',
+                `<bpmn:userTask id="Task_1" name="Review request" camunda:${attr}="x">`);
+            const result = compare(changed, base);
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Task_1: ['User assignment'] });
+        });
+    }
+});
+
 describe('BpmnXmlComparator document indentation', () => {
     it('finds no diffs between a compact document and its indented twin', () => {
         const result = compare(compact(base), base);

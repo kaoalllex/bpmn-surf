@@ -488,6 +488,38 @@ describe('BpmnXmlComparator property group: Timer', () => {
             TimerEventDefinition_1: ['Timer']
         });
     });
+
+    for (const [type, value] of [['timeCycle', 'R3/PT10H'], ['timeDate', '2026-01-01T00:00:00Z']]) {
+        it(`detects a timer switched to ${type}`, () => {
+            const changed = variant(
+                '<bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P5D</bpmn:timeDuration>',
+                `<bpmn:${type} xsi:type="bpmn:tFormalExpression">${value}</bpmn:${type}>`);
+            const result = compare(changed, base);
+            // One diff for the removed timeDuration, one for the added element
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+                TimerEvent_1: ['Timer', 'Timer'],
+                TimerEventDefinition_1: ['Timer', 'Timer']
+            });
+        });
+    }
+
+    it('keeps Timer on the event when another child changes alongside the timer', () => {
+        // A child added to the event sends it down the set-based path, which reports
+        // the whole changed timerEventDefinition rather than its timeDuration
+        const changed = variant(
+            '<bpmn:incoming>Flow_to_timer</bpmn:incoming>\n      <bpmn:outgoing>Flow_to_conditional</bpmn:outgoing>\n' +
+            '      <bpmn:timerEventDefinition id="TimerEventDefinition_1">\n' +
+            '        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P5D</bpmn:timeDuration>',
+            '<bpmn:documentation>Wait</bpmn:documentation>\n' +
+            '      <bpmn:incoming>Flow_to_timer</bpmn:incoming>\n      <bpmn:outgoing>Flow_to_conditional</bpmn:outgoing>\n' +
+            '      <bpmn:timerEventDefinition id="TimerEventDefinition_1">\n' +
+            '        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P10D</bpmn:timeDuration>');
+        const result = compare(changed, base);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            TimerEvent_1: ['Documentation', 'Timer', 'Timer'],
+            TimerEventDefinition_1: ['Timer']
+        });
+    });
 });
 
 describe('BpmnXmlComparator property group: Condition (conditional event)', () => {

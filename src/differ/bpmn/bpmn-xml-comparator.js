@@ -124,11 +124,21 @@ class BpmnXmlComparator {
         ['camunda:executionListener', 'Execution listeners'],
         ['camunda:executionListener/delegateExpression', 'Execution listeners'],
 
+        ['bpmn:timerEventDefinition', 'Timer'],
         ['bpmn:timeDuration', 'Timer'],
+        ['bpmn:timeCycle', 'Timer'],
+        ['bpmn:timeDate', 'Timer'],
 
         ['calledElement', 'Called element'],
         ['businessKey', 'Called element'],
         ['bpmn:callActivity/camunda:calledElementBinding', 'Called element'],
+
+        ['camunda:assignee', 'User assignment'],
+        ['camunda:candidateGroups', 'User assignment'],
+        ['camunda:candidateUsers', 'User assignment'],
+        ['camunda:dueDate', 'User assignment'],
+        ['camunda:followUpDate', 'User assignment'],
+        ['camunda:priority', 'User assignment'],
 
         ['camunda:jobPriority', 'Job execution'],
         ['camunda:failedJobRetryTimeCycle', 'Job execution'],
