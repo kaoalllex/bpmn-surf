@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { normalizeHostPattern, userOriginsFrom } = createScope();
+const { normalizeHostPattern, userOriginsFrom, isUnsupportedHost } = createScope();
 
 // Arrays built inside the vm realm carry that realm's prototype, so deepEqual
 // against a host array fails on identity — Array.from rebuilds them (docs/testing.md).
@@ -58,6 +58,20 @@ describe('normalizeHostPattern', () => {
         assert.equal(normalizeHostPattern('not a host'), null);
         assert.equal(normalizeHostPattern('https://'), null);
         assert.equal(normalizeHostPattern('gitlab_acme.com'), null);
+    });
+});
+
+describe('isUnsupportedHost', () => {
+    it('refuses github.com however it was typed', () => {
+        for (const input of ['github.com', 'www.github.com', 'GitHub.com', 'https://github.com/owner/repo/pull/7/files']) {
+            assert.equal(isUnsupportedHost(normalizeHostPattern(input)), true, input);
+        }
+    });
+
+    it('accepts gitlab.com, self-managed instances and look-alike hosts', () => {
+        for (const input of ['gitlab.com', 'gitlab.acme.com', 'gitlab', 'github.acme.com', 'notgithub.com']) {
+            assert.equal(isUnsupportedHost(normalizeHostPattern(input)), false, input);
+        }
     });
 });
 

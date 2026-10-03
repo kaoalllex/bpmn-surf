@@ -23,7 +23,7 @@ function stubChromeApis() {
         },
         permissions: {
             getAll: async () => ({ origins: ['https://gitlab.mycompany.com/*'] }),
-            request: async () => true,
+            request: async () => { window.permissionRequests = (window.permissionRequests || 0) + 1; return true; },
             remove: async () => true
         },
         storage: {
@@ -59,6 +59,18 @@ for (const [name, open] of [['home', null], ['sites', 'sites'], ['annotations', 
         await page.click('#backBtn');
     }
 }
+
+// github.com must be refused before Chrome is asked for the permission.
+await page.click('[data-open="sites"]');
+await page.fill('#hostInput', 'github.com');
+await page.click('#addHostForm button[type="submit"]');
+await page.waitForTimeout(150);
+const refusal = await page.evaluate(() => ({
+    error: document.getElementById('hostError').textContent,
+    requests: window.permissionRequests || 0
+}));
+console.log(`sites-github error="${refusal.error}"  permission-requests=${refusal.requests}`);
+await page.screenshot({ path: join(outDir, 'popup-sites-github.png'), fullPage: true });
 
 console.log(problems.length ? `page errors:\n${problems.join('\n')}` : 'no page errors');
 console.log(`screenshots in ${outDir}`);

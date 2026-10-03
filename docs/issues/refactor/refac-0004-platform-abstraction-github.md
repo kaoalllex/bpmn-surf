@@ -421,6 +421,14 @@ degrades gracefully; GitLab unchanged.
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
 
+### 2026-10-03 · claude-opus-5-5 · branch `fix/popup-github-host` ([BUG-0043])
+
+Not progress on this task — a guard while it is unfinished. The popup (FEAT-0033) let users grant
+github.com, where the App throws in `createUIRepoProvider` (no UI provider for kind `'github'`).
+`isUnsupportedHost` in `src/hosts/host-patterns.js` now refuses `github.com`/`www.github.com` in the
+popup and the settings import. **Subtask 2 must remove github.com from `UNSUPPORTED_HOSTNAMES`**
+(and its tests) when it flips the GitHub providers on.
+
 ### 2026-06-23 · claude-opus-4-8[1m] · step 1.4 (centralize platform detection)
 
 Implemented **step 1.4** — pure refactor, no behaviour change. New file
