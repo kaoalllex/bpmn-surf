@@ -29,6 +29,12 @@ class ConsoleLog {
     // which is usually the conclusion a report is about.
     static SIGNAL_LEVELS = new Set(['info', 'warn', 'error', 'uncaught', 'unhandled-rejection']);
 
+    // Library warnings that repeat in every session and say nothing about the
+    // user's problem: still printed, never recorded for a report. diagram-js
+    // deprecated ContextPad#getPad, yet bpmn-js and dmn-js still call it on every
+    // replace-menu open (INFRA-0004 — drop the entry once they stop).
+    static UNRECORDED_MESSAGES = [/ContextPad#getPad is deprecated/];
+
     static #ring = [];
     static #installed = false;
 
@@ -46,7 +52,9 @@ class ConsoleLog {
         const handlerFor = (level) => ({
             apply: function (target, thisArg, argArray) {
                 const ts = formatter.format(new Date());
-                ConsoleLog.#record(ts, level, argArray, ConsoleLog.callSite(new Error().stack));
+                if (!ConsoleLog.#isUnrecorded(argArray)) {
+                    ConsoleLog.#record(ts, level, argArray, ConsoleLog.callSite(new Error().stack));
+                }
                 target.apply(console, [`${ts}:`, ...argArray]);
             }
         });
@@ -99,9 +107,8 @@ class ConsoleLog {
         return { text, omitted: picked.length ? picked[0].index : ring.length };
     }
 
-    // A library's own complaints never earn that promotion. bpmn-js warns about a
-    // deprecated call on every context-pad click and dmn-js errors about its own
-    // build on every load (INFRA-0001): both repeat in every session, carry a
+    // A library's own complaints never earn that promotion. dmn-js errors about
+    // its own build on every load (INFRA-0001): it repeats in every session, carries a
     // minified stack nobody can read, and would crowd out the lines that differ
     // from one report to the next. A genuine library failure still reaches the
     // report — through the recent window, through our own catch-and-warn around
@@ -176,6 +183,16 @@ class ConsoleLog {
     // as 'main/ord' (BUG-0034).
     static #describeRef(ref) {
         return /^[0-9a-fA-F]{7,40}$/.test(ref || '') ? shortenCommitId(ref) : ref;
+    }
+
+    // Reads only strings and string messages: the proxy sits in front of every
+    // console.* call, and coercing an arbitrary argument can throw.
+    static #isUnrecorded(args) {
+        return args.some(arg => {
+            const text = typeof arg === 'string' ? arg
+                : (arg && typeof arg.message === 'string' ? arg.message : '');
+            return ConsoleLog.UNRECORDED_MESSAGES.some(pattern => pattern.test(text));
+        });
     }
 
     // The rendered line keeps the level in its text
