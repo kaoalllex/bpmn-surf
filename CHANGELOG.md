@@ -1,8 +1,8 @@
 # Changelog
 
 Format: one section per version, header `## <version>`. The latest are at the top.
-This file is the source of the "What's new" block in the update window (FEAT-0012) and
-a human-readable change history. Updated on release (the `release` skill).
+This file is the human-readable change history and the source of the GitHub release
+notes. Updated on release (the `release` skill).
 
 ## 1.2.0
 
