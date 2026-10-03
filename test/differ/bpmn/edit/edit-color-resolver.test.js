@@ -35,6 +35,17 @@ describe('EditColorResolver', () => {
         assert.equal(map.get('B').outlineOnly, false);
     });
 
+    it('ranks a stroke-only layer below every fill layer', () => {
+        // A subprocess that contains a change (stroke) and is changed itself
+        // (fill) must show the fill, whatever the layer order.
+        const map = EditColorResolver.resolve([
+            { ids: ['Sub'], diffType: DiffType.CHANGE, strokeOnly: true },
+            { ids: ['Sub', 'Other'], diffType: DiffType.ADD }
+        ]);
+        assert.equal(map.get('Sub').diffType, DiffType.ADD);
+        assert.equal(map.get('Sub').strokeOnly, false);
+    });
+
     it('returns an empty map for no layers (the toggle is off)', () => {
         assert.equal(EditColorResolver.resolve([]).size, 0);
     });

@@ -36,7 +36,8 @@ class EditXmlColorizer {
             if (!entry || entry.outlineOnly) {
                 continue;
             }
-            if (di.tagName === 'bpmndi:BPMNEdge') {
+            // A subprocess that only contains a change takes the stroke, as on screen.
+            if (di.tagName === 'bpmndi:BPMNEdge' || entry.strokeOnly) {
                 di.setAttribute('color:border-color', entry.diffType.rowColor);
                 di.setAttribute('bioc:stroke', entry.diffType.rowColor);
             } else {

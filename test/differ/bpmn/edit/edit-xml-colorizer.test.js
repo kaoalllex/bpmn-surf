@@ -38,6 +38,13 @@ describe('EditXmlColorizer', () => {
         assert.match(out, /Flow_1_di[^>]*bioc:stroke="#0000aa"/);
     });
 
+    it('strokes a shape that only contains a change, as the canvas does', () => {
+        const out = EditXmlColorizer.apply(XML, new Map([
+            ['Task_1', { diffType: DiffType.CHANGE, outlineOnly: false, strokeOnly: true }]]));
+        assert.match(out, /Task_1_di[^>]*color:border-color="#0000aa"/);
+        assert.doesNotMatch(out, /Task_1_di[^>]*background-color/);
+    });
+
     it('declares both colour namespaces on the root', () => {
         // bpmn-js emits these declarations only when the MODEL carries such
         // attributes; we add them after the export, so we must declare them

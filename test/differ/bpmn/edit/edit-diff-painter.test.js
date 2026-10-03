@@ -39,6 +39,15 @@ describe('EditDiffPainter', () => {
         assert.deepEqual([...canvas.markers.get('B')], ['edit-diff-changed']);
     });
 
+    it('strokes a subprocess that only contains a change, without the fill marker', () => {
+        const canvas = fakeCanvas();
+        const painter = new EditDiffPainter(canvas, fakeRegistry(['Sub']));
+        painter.paint(EditColorResolver.resolve([
+            { ids: ['Sub'], diffType: DiffType.CHANGE, strokeOnly: true }
+        ]));
+        assert.deepEqual([...canvas.markers.get('Sub')], ['edit-diff-changed-stroke']);
+    });
+
     it('adds the outline modifier for an explicitly coloured element', () => {
         const canvas = fakeCanvas();
         const painter = new EditDiffPainter(canvas, fakeRegistry(['A']));

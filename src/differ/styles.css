@@ -643,6 +643,15 @@ th {
     fill: #aa0000 !important;
 }
 
+/* A subprocess that contains a change but is not changed itself (BUG-0010): the
+   stroke and the label take the CHANGE row colour, the fill stays its own. */
+.djs-shape.edit-diff-changed-stroke .djs-visual > :first-child {
+    stroke: #0000aa !important;
+}
+.djs-shape.edit-diff-changed-stroke .djs-visual text {
+    fill: #0000aa !important;
+}
+
 .djs-element.edit-diff-outline .djs-outline {
     visibility: visible;
     stroke-width: 2px;

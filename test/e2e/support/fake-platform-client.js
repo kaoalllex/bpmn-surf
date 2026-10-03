@@ -7,18 +7,24 @@
 // into the harness page via a <script> tag, so it defines a global class.
 class FakePlatformClient {
     // { xmlByRef: { [ref]: xmlString }, searchHits: [...], changedFiles: [...],
-    //   contentByRefPath: { [`${ref}:${path}`]: contentString } }
-    constructor({ xmlByRef = {}, searchHits = [], changedFiles = [], contentByRefPath = {} } = {}) {
+    //   contentByRefPath: { [`${ref}:${path}`]: contentString },
+    //   httpRefs: [ref] — refs served from /fake-raw/<ref> instead of a data: URL,
+    //   so a spec can fail or delay them with page.route }
+    constructor({ xmlByRef = {}, searchHits = [], changedFiles = [], contentByRefPath = {}, httpRefs = [] } = {}) {
         this._xmlByRef = xmlByRef;
         this._searchHits = searchHits;
         this._changedFiles = changedFiles;
         this._contentByRefPath = contentByRefPath;
+        this._httpRefs = httpRefs;
         // Every searchCode call, so a spec can assert WHICH ref was queried
         // (BUG-0033: a local-file comparison used to pass null).
         this.searchCalls = [];
     }
 
     rawFileUrl(ref, filePath) {
+        if (this._httpRefs.includes(ref)) {
+            return `/fake-raw/${ref}`;
+        }
         // Per-(ref,path) content wins (handler source files differ from the diagram
         // XML at the same ref); otherwise fall back to the by-ref diagram XML — an
         // unknown ref → '' (the differ's "file absent" path). Backward compatible:
