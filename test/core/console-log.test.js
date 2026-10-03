@@ -258,6 +258,20 @@ describe('ConsoleLog: the ring and its tail', () => {
         assert.ok(!text.includes('245139'), text);
     });
 
+    it('prints but does not record the getPad deprecation bpmn-js repeats on every replace menu', () => {
+        const scope = createScope();
+        const printed = [];
+        scope.window.console.warn = (...args) => printed.push(args);
+        scope.ConsoleLog.install();
+        scope.window.console.warn(new scope.window.Error('ContextPad#getPad is deprecated and will be '
+            + 'removed in future library versions, cf. https://github.com/bpmn-io/diagram-js/pull/888'));
+        scope.window.console.warn('our own warning');
+        const { text } = scope.ConsoleLog.tail();
+        assert.equal(printed.length, 2);
+        assert.ok(!text.includes('getPad'), text);
+        assert.ok(text.includes('our own warning'), text);
+    });
+
     it('survives an argument that throws while being stringified', () => {
         // The proxy sits in front of every console.* call on the page, so a
         // hostile argument must not turn a log call into an exception.
@@ -366,7 +380,6 @@ describe('ConsoleLog: library-origin lines', () => {
     });
 
     it('never promotes a library line out of the recent window', () => {
-        // bpmn-js warns about a deprecated call on every context-pad click and
         // dmn-js errors about its own build on every load (INFRA-0001).
         assert.equal(ConsoleLog.isPromotedSignal({ level: 'warn', fromLibrary: true }), false);
         assert.equal(ConsoleLog.isPromotedSignal({ level: 'error', fromLibrary: true }), false);
