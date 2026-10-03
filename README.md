@@ -2,6 +2,12 @@
 
 Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas straight from a repository, follow call activities and decision references across files (and back), and review changes in merge requests.
 
+![A merge request diff in bpmn-surf: Schema diff, highlighted changes, the properties panel, Switch branch, diving into a call activity and jumping to the handler code](docs/media/demo.gif)
+
+Try it on the public [demo merge request](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
+once the extension is installed. The diffs work signed out. Jumping to handler code and to
+message correlation uses GitLab code search, which on gitlab.com needs a signed-in account.
+
 ## Requirements
 
 - Google Chrome
@@ -45,6 +51,10 @@ its own, the extension no longer runs there.
 - Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries
 - A changes table — click an entry to jump to its element
 
+![BPMN diff: added, changed and collapsed-subprocess highlights, with the changed property groups](docs/media/bpmn-diff.png)
+
+![DMN diff: changed cells and an added rule](docs/media/dmn-diff.png)
+
 **Browsing & navigation**
 
 - Viewing a BPMN schema or DMN decision from a repository file, without a diff — opened from a **View schema** / **View decision** button next to the file name
@@ -67,6 +77,8 @@ its own, the extension no longer runs there.
 - Canvas editing: palette, context pad, undo/redo — plus an editable properties panel (names, implementation, topics, conditions, In/Out mappings, Inputs/Outputs)
 - Edits are coloured against the version you started from (🟩 added, 🟦 changed), with a toggle to turn the colouring off, and manual colours for individual elements
 - Downloading the result as a single `.bpmn` file
+
+![Edit mode: the palette and an editable diagram, with a renamed task coloured](docs/media/edit-mode.png)
 
 **Versions & viewport**
 
