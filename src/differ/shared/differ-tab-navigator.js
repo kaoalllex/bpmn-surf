@@ -213,13 +213,13 @@ class DifferTabNavigator {
         }
     }
 
-    // Navigates the tab that opened this differ (the originating MR tab) to the
-    // given URL and brings it to the foreground, so opening a handler's MR diff
-    // returns to the already-open MR instead of spawning another tab. Returns
-    // false when no such tab is available (then the caller falls back to a new tab).
+    // Navigates the originating MR tab to the given URL and brings it to the
+    // foreground, so opening a handler's MR diff returns to the already-open MR
+    // instead of spawning another tab. Returns false when no such tab is available
+    // (then the caller falls back to a new tab).
     navigateOpenerTab(url) {
-        const opener = window.opener;
-        if (!opener || opener.closed) {
+        const opener = DifferTabNavigator.#originTab();
+        if (!opener) {
             return false;
         }
         try {
@@ -239,6 +239,26 @@ class DifferTabNavigator {
             opener.focus();
         }
         return true;
+    }
+
+    // The nearest ancestor tab that is not a differ. A differ reached by dive-in
+    // was opened by another differ, and navigating that one would replace the
+    // parent diagram with the GitLab page (BUG-0047). Differ tabs are the
+    // about:blank pages openDiffer creates.
+    static #originTab() {
+        let tab = window.opener;
+        while (tab && !tab.closed && DifferTabNavigator.#isDifferTab(tab)) {
+            tab = tab.opener;
+        }
+        return tab && !tab.closed ? tab : null;
+    }
+
+    static #isDifferTab(tab) {
+        try {
+            return tab.location.href === 'about:blank';
+        } catch (error) {
+            return false; // a cross-origin page is not one of ours
+        }
     }
 
     #getLinkOrScriptHref(resourceName) {
