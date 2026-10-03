@@ -2,7 +2,7 @@
 id: BUG-0038
 title: The "search in the repository" fallback link 404s
 priority: high
-status: in-progress
+status: done
 ---
 
 ## Statement
@@ -43,6 +43,25 @@ Affects every caller of `GitLabPlatformClient#searchPageUrl`: `CallActivityLocat
 raw-search link.
 
 ## Work log
+
+### 2026-10-03 · claude-opus-5-5 · branch `fix/correlation-search-fallback`
+
+The URL fix itself shipped in #4; the previous entry was never closed out.
+
+- `CorrelationNavigator` had no search link at all — it was dropped in FEAT-0027
+  because of this 404. Restored: "nothing usable", "only in tests" and a failed
+  search now end with "Search in GitLab" (`CorrelationLocator#blobSearchPageUrl`),
+  like the other navigators. A dynamic `${…}` name gets no link: there is no
+  literal to search. Layer-2 case in `differ-correlation-messages.spec.js`.
+- New live script `test/e2e/live/search-page.mjs`: the URL from the real client
+  answers 200 on gitlab.com at a slash branch (`feat/order-audit-step`, file
+  found), at `main` (not found) and without a ref. Added to the `live-check`
+  catalog.
+- Click-through in the real extension on the sandbox branch
+  `test/correlation-no-code` (a message no code correlates): the badge shows
+  "Could not pinpoint a correlation point. Search in GitLab", the link opens a
+  200 search page. The search ran at ref `test`, not the branch — that is
+  [BUG-0035], see its log.
 
 ### 2026-09-25 · claude-opus-5 · working tree
 

@@ -10,8 +10,8 @@
 //  - several results → a dropdown listing them as a flat list — the correlation
 //    points if any, else the weaker leads (constant declaration / config);
 //  - a dynamic name → an explanatory note plus any config hits;
-//  - a failed search or nothing usable → a short message. (No GitLab-search
-//    fallback link — the project search URL 404s on this instance.)
+//  - a failed search or nothing usable → a short message with a link to the
+//    project code search for the message name.
 //
 // Test references (unit and auto-tests, any language) are segregated by the
 // locator into a hidden `tests` group and never listed (a future setting may opt
@@ -103,13 +103,15 @@ class CorrelationNavigator {
             return;
         }
 
+        // Captured now: a selection change during the search resets #message.
+        const name = this.#message.name;
         this.#isSearching = true;
         this.#refreshBadge();
-        this.#locator.resolveCorrelations(this.#message.name, ref)
-            .then((result) => this.#handleResult(result, ref))
+        this.#locator.resolveCorrelations(name, ref)
+            .then((result) => this.#handleResult(result, name, ref))
             .catch((error) => {
                 console.warn('cannot resolve correlation sites', error);
-                this.#openMenu([this.#messageRow("Couldn't search the code.")]);
+                this.#openMenu([this.#searchFallbackRow("Couldn't search the code.", name, ref)]);
             })
             .finally(() => {
                 this.#isSearching = false;
@@ -117,7 +119,7 @@ class CorrelationNavigator {
             });
     }
 
-    #handleResult(result, ref) {
+    #handleResult(result, name, ref) {
         if (result.dynamic) {
             this.#openMenu(this.#renderDynamic(result, ref));
             return;
@@ -144,7 +146,7 @@ class CorrelationNavigator {
         const message = tests.length > 0
             ? 'Found references only in tests — hidden.'
             : 'Could not pinpoint a correlation point.';
-        this.#openMenu([this.#messageRow(message)]);
+        this.#openMenu([this.#searchFallbackRow(message, name, ref)]);
     }
 
     // Renders the badge as a spinner while a search is in flight, or as the ✉→
@@ -216,6 +218,21 @@ class CorrelationNavigator {
             this.#closeMenu();
             this.#openUrlFunc(this.#locator.blobFileUrl(hit.path, hit.line, ref));
         });
+        return row;
+    }
+
+    #searchFallbackRow(text, name, ref) {
+        const row = this.#messageRow(text);
+        const link = document.createElement('a');
+        link.className = 'differ-back-menu-link';
+        link.textContent = 'Search in GitLab';
+        link.href = '#';
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            this.#closeMenu();
+            this.#openUrlFunc(this.#locator.blobSearchPageUrl(name, ref));
+        });
+        row.appendChild(link);
         return row;
     }
 

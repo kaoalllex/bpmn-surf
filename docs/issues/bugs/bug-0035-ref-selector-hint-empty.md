@@ -41,3 +41,13 @@ Two ways out, in order of preference:
    / `FallbackRepoProvider` / `app.js`.
 
 ## Work log
+
+### 2026-10-03 · claude-opus-5-5 · observed during BUG-0038
+
+Seen live on the sandbox, blob view of `test/correlation-no-code/root-level.bpmn`:
+the differ took ref `test` and path `correlation-no-code/root-level.bpmn`. The
+diagram still loaded (GitLab's `/-/raw/` resolves the ambiguous path itself), but
+every navigation search ran at the nonexistent ref `test` — `blob search for
+'NoCodeCorrelation' at ref 'test': 0 hit(s)`, and the toolbar shows `Original ·
+test`. So on a slash branch the hint is not cosmetic: dive-in, handler badges and
+correlation all silently find nothing. The sandbox branch is kept as a repro.
