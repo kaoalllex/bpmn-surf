@@ -38,6 +38,15 @@ report that as the check, not an empty live run.
    nothing about the sandbox's contents is stable).
 3. **One script at a time** — they share one Chromium profile.
 
+## The demo project is not the sandbox
+
+`https://gitlab.com/kao.alllex/bpmn-surf-demo` is a **frozen showcase**: the store
+reviewer instructions, the README GIF and the screenshots depend on it. Live checks
+run on the sandbox. On the demo, run only the read-only scripts
+(`BPMN_SURF_PROJECT=<demo url>`) and `record-demo.mjs`. Never "create through the API what is missing" there. It
+is also where to answer "does it work signed out?" (`BPMN_SURF_ANONYMOUS=1`). The
+rules, the token and the MR lookup are in `test/e2e/live/README.md`, "The demo project".
+
 ## Rules
 
 - **Resolve, never assume.** List MRs (`$B/merge_requests?state=all`) and their
@@ -116,7 +125,9 @@ node test/e2e/live/search-page.mjs --shots <scratchpad>/live
 |---|---|
 | 200 at a slash branch, the default branch and no ref; the sample file found only at its branch | a code-results page of the sandbox, not a sign-in or error page |
 
-Signed out, GitLab redirects search to sign-in, so this needs the signed-in profile.
+Run it with the signed-in profile. GitLab used to redirect a signed-out search to
+sign-in. On 2026-10-03 a signed-out search scoped to the public demo project returned
+code results, but the code search *API* still answered 401.
 
 ### Other areas
 

@@ -6,13 +6,13 @@
 // cannot: the file-tree href carries `?file_path=<path>#<sha1(path)>`, but
 // clicking it leaves location.search and location.hash untouched (REFAC-0016).
 // Re-run it whenever GitLab's diff UI changes.
-import { SANDBOX, launchWithExtension, signedInAs } from './support.mjs';
+import { PROJECT, launchWithExtension, signedInAs } from './support.mjs';
 
 const mr = process.argv[2] || '2';
 const context = await launchWithExtension();
 const page = await context.newPage();
 
-await page.goto(`${SANDBOX}/-/merge_requests/${mr}/diffs`, { waitUntil: 'domcontentloaded' });
+await page.goto(`${PROJECT}/-/merge_requests/${mr}/diffs`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(9000);
 
 // File-level entries only: their anchor is the file's sha1, line anchors are not.

@@ -105,6 +105,13 @@ the navigation locators open. The scenarios and the procedure live in the
 per-user "Show one file at a time" preference; without it everything runs
 anonymously.
 
+`BPMN_SURF_PROJECT=<url>` points the scripts at another project, and
+`BPMN_SURF_ANONYMOUS=1` runs them in a throwaway profile, signed out. The other
+project in use is `gitlab.com/kao.alllex/bpmn-surf-demo`, a **frozen showcase**.
+The store reviewer instructions, the README GIF and the screenshots depend on it,
+so only read-only scripts and `record-demo.mjs` (which records that media) may
+run there. Its rules are in [`test/e2e/live/README.md`](../test/e2e/live/README.md#the-demo-project).
+
 `popup-screens.mjs` is the exception that needs no network: it renders every
 popup screen with a stubbed `chrome.*` and reports height and overflow, then
 submits `github.com` on the Sites screen and reports the refusal message and

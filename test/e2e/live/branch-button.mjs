@@ -9,7 +9,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { SANDBOX, launchWithExtension } from './support.mjs';
+import { PROJECT, launchWithExtension } from './support.mjs';
 
 const [ref, path] = process.argv.slice(2).filter(a => !a.startsWith('--'));
 if (!ref || !path) {
@@ -24,7 +24,7 @@ const fail = message => { failures++; console.log('  FAIL ' + message); };
 const context = await launchWithExtension();
 const page = await context.newPage();
 await page.setViewportSize({ width: 1500, height: 1000 });
-await page.goto(`${SANDBOX}/-/blob/${ref}/${path}`, { waitUntil: 'domcontentloaded' });
+await page.goto(`${PROJECT}/-/blob/${ref}/${path}`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(9000);
 
 const placement = await page.evaluate(id => {
@@ -57,7 +57,7 @@ await page.click(`#${ID}-btn`);
 if (!(await tab)) fail('main button: no differ tab'); else console.log('main button: differ tab opened');
 
 const local = join(mkdtempSync(join(tmpdir(), 'bpmn-surf-local-')), path.split('/').pop());
-writeFileSync(local, await page.evaluate(async u => (await fetch(u)).text(), `${SANDBOX}/-/raw/${ref}/${path}`));
+writeFileSync(local, await page.evaluate(async u => (await fetch(u)).text(), `${PROJECT}/-/raw/${ref}/${path}`));
 await page.click(`#${ID}-caret`);
 const chooser = page.waitForEvent('filechooser', { timeout: 5000 }).catch(() => null);
 await page.click(`#${ID}-local`);

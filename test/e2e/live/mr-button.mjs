@@ -15,7 +15,7 @@
 // account's preference — set it with diff-mode.mjs; this script never changes it.
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { SANDBOX, collectExtensionLog, launchWithExtension, signedInAs } from './support.mjs';
+import { PROJECT, collectExtensionLog, launchWithExtension, signedInAs } from './support.mjs';
 
 const args = process.argv.slice(2);
 const mr = args.find(a => /^\d+$/.test(a));
@@ -35,7 +35,7 @@ const log = collectExtensionLog(page, /button|change view|cannot|error/i);
 let failures = 0;
 const fail = message => { failures++; console.log('  FAIL ' + message); };
 
-await page.goto(`${SANDBOX}/-/merge_requests/${mr}/diffs${query ? '?' + query : ''}`, { waitUntil: 'domcontentloaded' });
+await page.goto(`${PROJECT}/-/merge_requests/${mr}/diffs${query ? '?' + query : ''}`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(9000);
 console.log(`MR !${mr}  ui=${legacy ? 'legacy' : 'rapid'}  view=${parallel ? 'side-by-side' : 'inline'}  signed in: ${await signedInAs(page) || 'no'}`);
 
