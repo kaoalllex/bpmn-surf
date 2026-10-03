@@ -1,23 +1,43 @@
+/**
+ * Semantic tokens, copied from `@bpmn-io/theme` to style the components
+ * according to this theme.
+ *
+ * Names and values of the tokens should stay intact with the `@bpmn-io/theme`
+ * source of truth, to ensure matching styles and allow overrides with an
+ * alternative theme.
+ */
+.bio-theme-parent {
+  --bio-surface-strong: hsl(225, 10%, 90%);
+  --bio-text-subtle: hsl(225, 10%, 35%);
+  --bio-text-subtlest: hsl(225, 10%, 55%);
+  --bio-border-subtle: hsl(225, 10%, 85%);
+  --bio-neutral: hsl(225, 10%, 35%);
+  --bio-neutral-hover: hsl(225, 10%, 30%);
+  --bio-shadow: hsla(0, 0%, 0%, 30%);
+  --bio-radius-lg: 4px;
+}
+
 .bio-properties-panel {
-  --color-grey-225-10-50: hsl(225, 10%, 50%);
+  /* the badge variables come from @bpmn-io/properties-panel, so these badges follow its own */
+  --select-template-background-color: var(--accent-badge-background-color);
+  --select-template-hover-background-color: var(--accent-badge-hover-background-color);
+  --select-template-fill-color: var(--accent-badge-fill-color);
+  --select-template-label-color: var(--accent-badge-color);
 
-  --select-template-background-color: var(--color-blue-205-100-50);
-  --select-template-hover-background-color: var(--color-blue-205-100-45);
-  --select-template-fill-color: var(--color-white);
-  --select-template-label-color: var(--color-white);
+  --unknown-template-background-color: var(--error-badge-background-color);
+  --unknown-template-hover-background-color: var(--error-badge-hover-background-color);
 
-  --unknown-template-background-color: var(--color-red-360-100-45);
-  --unknown-template-hover-background-color: var(--color-red-360-100-40);
+  --incompatible-template-background-color: var(--warning-badge-background-color);
+  --incompatible-template-hover-background-color: var(--warning-badge-hover-background-color);
+  --incompatible-template-fill-color: var(--warning-badge-color);
+  --incompatible-template-label-color: var(--warning-badge-color);
 
-  --incompatible-template-background-color: rgb(255, 131, 43);
-  --incompatible-template-hover-background-color: hsl(25, 100%, 50%);
-  --incompatible-template-fill-color: var(--color-grey-225-10-15);
-  --incompatible-template-label-color: var(--color-grey-225-10-15);
+  --select-template-information-text-color: var(--bio-text-subtlest);
 
-  --select-template-information-text-color: var(--color-grey-225-10-55);
+  --deprecated-template-hover-background-color: var(--bio-neutral-hover);
+  --deprecated-template-background-color: var(--bio-neutral);
 
-  --deprecated-template-hover-background-color: var(--color-grey-225-10-50);
-  --deprecated-template-background-color: var(--color-grey-225-10-55);
+  --surface-border-radius: var(--bio-radius-lg);
 }
 
 .bio-properties-panel-header-template-icon {
@@ -85,8 +105,8 @@
 
 .bio-properties-panel-template-not-found .bio-properties-panel-group-header-button {
   background-color: var(--unknown-template-background-color);
-  color: var(--select-template-label-color);
-  fill: var(--select-template-fill-color);
+  color: var(--error-badge-color);
+  fill: var(--error-badge-color);
 }
 
 .bio-properties-panel-template-not-found .bio-properties-panel-group-header-button:hover {
@@ -126,11 +146,11 @@
 
   --configuration-chooser-card-hover-background-color: var(--arrow-hover-background-color);
   --configuration-chooser-option-hover-background-color: var(--input-background-color);
-  --configuration-chooser-menu-button-hover-background-color: var(--color-grey-225-10-90);
-  --configuration-chooser-logo-background-color: var(--color-grey-225-10-90);
-  --configuration-chooser-subtitle-color: var(--color-grey-225-10-55);
-  --configuration-chooser-status-color: var(--color-grey-225-10-45);
-  --configuration-chooser-separator-color: var(--color-grey-225-10-85);
+  --configuration-chooser-menu-button-hover-background-color: var(--bio-surface-strong);
+  --configuration-chooser-logo-background-color: var(--bio-surface-strong);
+  --configuration-chooser-subtitle-color: var(--bio-text-subtlest);
+  --configuration-chooser-status-color: var(--bio-text-subtle);
+  --configuration-chooser-separator-color: var(--bio-border-subtle);
 }
 
 /* one card box shared across every state via .…-chooser-card; state modifiers
@@ -143,7 +163,7 @@
   margin-top: 4px;
   padding: 10px 12px;
   border: 1px solid var(--input-border-color);
-  border-radius: 4px;
+  border-radius: var(--surface-border-radius);
   background-color: var(--group-background-color);
   cursor: default;
   outline: none;
@@ -285,7 +305,7 @@
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--surface-border-radius);
 }
 
 .bio-properties-panel-configuration-chooser-menu:hover:not(:disabled) {
@@ -306,9 +326,9 @@
   right: 0;
   margin-top: 4px;
   border: 1px solid var(--input-border-color);
-  border-radius: 4px;
+  border-radius: var(--surface-border-radius);
   background-color: var(--group-background-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px var(--bio-shadow);
   overflow: hidden;
 }
 
@@ -377,9 +397,9 @@
   margin-top: 4px;
   min-width: 150px;
   border: 1px solid var(--input-border-color);
-  border-radius: 4px;
+  border-radius: var(--surface-border-radius);
   background-color: var(--group-background-color);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px var(--bio-shadow);
   overflow: hidden;
 }
 
