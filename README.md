@@ -2,11 +2,13 @@
 
 Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas straight from a repository, follow call activities and decision references across files (and back), and review changes in merge requests.
 
-![A merge request diff in bpmn-surf: Schema diff, highlighted changes, the properties panel, Switch branch, diving into a call activity and jumping to the handler code](docs/media/demo.gif)
+![A merge request in GitLab: Schema diff opens the diagram diff with added, changed and removed elements, the ☼ highlight, Switch branch and the changed property groups](docs/media/hero.gif)
 
 Try it on the public [demo merge request](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
-once the extension is installed. The diffs work signed out. Jumping to handler code and to
-message correlation uses GitLab code search, which on gitlab.com needs a signed-in account.
+once the extension is installed. The diffs, diving into called processes and a changed
+handler's diff work signed out. Jumping to an unchanged handler's code, to message
+correlation and to a called decision, and listing the callers of a diagram, use GitLab code
+search, which on gitlab.com needs a signed-in account.
 
 ## Requirements
 
@@ -40,20 +42,30 @@ updates and re-installs; remove it with the `×` next to it in the popup. Chrome
 showing a removed host under `chrome://extensions` → Details → Site access — that record is
 its own, the extension no longer runs there.
 
+The same popup sets which annotations mark external-task handlers, if your project uses
+something other than `@ExternalTaskSubscription`.
+
+![The popup: the Sites list with gitlab.com built in and a self-managed host added, and the handler annotation settings](docs/media/popup.png)
+
 ## Features
+
+The buttons appear only where there is a diagram: on `.bpmn` and `.dmn` files in a merge
+request, and on a diagram file in the repository.
+
+![The Schema diff and Decision diff buttons on diagram files of a merge request, none on a Kotlin file, and the View schema button with its menu on a repository file](docs/media/buttons.gif)
 
 **Comparing changes**
 
 - Visual diff of two BPMN/DMN versions in a merge request (MR branch vs. target branch), opened from a **Schema diff** / **Decision diff** button that appears on the MR page
 - Diff of a selected MR commit against its parent
-- Diff of a repository file against a local version (the **Diff with local** button)
+- Diff of a repository file against a local version (**Diff with local file…** in the menu of the **View schema** button)
 - Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified
 - Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries
 - A changes table — click an entry to jump to its element
 
-![BPMN diff: added, changed and collapsed-subprocess highlights, with the changed property groups](docs/media/bpmn-diff.png)
+![The changes table selects an element; the panel header marks a task's new type; a sequence-flow condition with only the changed lines highlighted](docs/media/details.gif)
 
-![DMN diff: changed cells and an added rule](docs/media/dmn-diff.png)
+![A collapsed subprocess outlined because a step inside changed; drilling in shows the added step](docs/media/subprocess.gif)
 
 **Browsing & navigation**
 
@@ -63,6 +75,10 @@ its own, the extension no longer runs there.
 - Jumping to the handler code of a service task (external task or delegate)
 - Jumping from a message-catching event/task to where its message is correlated in code
 
+![Handler badges: a handler changed in the merge request opens its diff there, an unchanged one opens its file; the message badge opens the code that correlates the message](docs/media/code.gif)
+
+![Diving into a call activity, whose changed handler opens its diff in the merge request; diving further down; the menu of every diagram that calls this one; and a business rule task opening its DMN decision with the merge request's changes](docs/media/diagrams.gif)
+
 **Reading a diagram**
 
 - A properties panel with element details, including readable sequence-flow conditions
@@ -71,6 +87,8 @@ its own, the extension no longer runs there.
 - Searching for an element on the canvas
 - A clear indication when a schema is absent in one of the versions
 
+![Ctrl/Cmd+F search stepping through the matches, then zooming in and fitting the view](docs/media/search.gif)
+
 **Editing a BPMN schema**
 
 - Opening the schema currently on screen in an **edit mode** (the **✎** button) — in a separate tab; nothing is ever written back to the repository
@@ -78,7 +96,9 @@ its own, the extension no longer runs there.
 - Edits are coloured against the version you started from (🟩 added, 🟦 changed), with a toggle to turn the colouring off, and manual colours for individual elements
 - Downloading the result as a single `.bpmn` file
 
-![Edit mode: the palette and an editable diagram, with a renamed task coloured](docs/media/edit-mode.png)
+![Edit mode: deleting an end event, appending a task, changing a task's type, renaming it, toggling the colouring, colouring a pool and downloading the result](docs/media/edit.gif)
+
+![The downloaded file compared with the branch through Diff with local file…: the edits are coloured, and Switch branch shows the deleted end event in red](docs/media/local.gif)
 
 **Versions & viewport**
 

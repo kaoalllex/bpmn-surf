@@ -19,7 +19,7 @@ gitlab.com, so they are as available as it is.
 | `search-page.mjs [--shots <dir>]` | Does GitLab still serve the "search in the repository" fallback URL that `GitLabPlatformClient#searchPageUrl` builds — 200, scoped to the project, honouring a ref with a slash? Picks its sample file from the sandbox at run time |
 | `capture-login.mjs` | One-time sign-in, so the others run as you instead of anonymously |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
-| `record-demo.mjs <iid> <outDir>` | Records the README GIF (`docs/media/demo.gif`), the store/README screenshots and the promo tile's diagram crop from the demo project's showcase MR: one paced tour with a visible pointer, video per tab, cut and joined with ffmpeg (must be on PATH). Signed-in profile, "Show one file at a time" on. GitLab's layout cookies are switched for the run and restored |
+| `record-demo.mjs <iid> <outDir> [--clip <name>,…] [--no-shots]` | Records the README GIFs (one per clip: `hero`, `buttons`, `details`, `subprocess`, `code`, `diagrams`, `search`, `edit`, `local`) and the five store screenshots from the demo project's showcase MR. Each clip is a paced tour with a visible pointer. Every tab records its own video, and ffmpeg (must be on PATH) cuts out and joins the on-screen spans. `--clip` re-records only the named clips (`local` reads the `edit` clip's download). Needs the signed-in profile and "Show one file at a time" on. GitLab's layout cookies are switched for the run and restored. When a clip breaks, every open tab is saved as `failed-<clip>-<n>.png` |
 | `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots; also submits `github.com` and reports the refusal and that no permission was requested. Needs no network |
 
 ## Environment
@@ -36,13 +36,24 @@ showcase**, not a test bed. Its links are published: the Chrome Web Store review
 instructions, the README GIF and the store/README screenshots all point at it or were
 recorded from it. The sandbox stays the mutable place for repros and new test material.
 
-It holds a small Camunda 7 order service: `OrderMain.bpmn` (a collapsed subprocess, a call
-activity into `Payment.bpmn`, a receive task waiting for `OrderPaid`), `PaymentRisk.dmn`,
-Kotlin `@ExternalTaskSubscription` handlers and a Kafka listener correlating `OrderPaid`.
+It holds a small Camunda 7 order service:
+- `OrderMain.bpmn`: a collapsed subprocess, a call activity into `Payment.bpmn`, and a
+  receive task waiting for `OrderPaid`;
+- `Payment.bpmn`: a business rule task on `PaymentRisk.dmn` and a call activity into
+  `ManualReview.bpmn`;
+- `SubscriptionRenewal.bpmn`: a second caller of `Payment.bpmn`, so the dive-out menu lists
+  two callers;
+- Kotlin `@ExternalTaskSubscription` handlers and a Kafka listener correlating `OrderPaid`.
+
 One merge request, **"Express checkout and stricter payment risk"** (branch
 `feature/express-checkout`), stays open forever. It changes every diff kind the extension
-shows: an added, a removed and a changed task, a sequence-flow condition, a step inside the
-collapsed subprocess, a property group (inputs/outputs), a handler, and a DMN cell and rule.
+shows:
+- an added, a removed and a changed task, and a task whose type changed;
+- a multi-line sequence-flow condition, where one line is added and one changed;
+- a step inside the collapsed subprocess;
+- property groups (inputs/outputs);
+- handlers, one of them behind a dive-in (`Payment.bpmn` → `ChargeCustomerHandler.kt`);
+- a DMN cell and rule.
 
 **Allowed:** reading it, read-only live scripts (button checks, opening the differ), and
 recording media.
@@ -53,11 +64,10 @@ only on the owner's explicit request, through the API, and is followed by re-rec
 media (`record-demo.mjs`) and re-checking the reviewer instructions signed out
 (`BPMN_SURF_ANONYMOUS=1`).
 
-After a re-recording, copy `demo.gif` and the screenshots `1-bpmn-diff`, `3-dmn-diff`
-and `4-edit-mode` into `docs/media/` (as `bpmn-diff.png`, `dmn-diff.png`, `edit-mode.png`).
-The five 1280×800 screenshots are the store's, and `tile-source.png` is the crop for the store
-promo tile. Store assets, including the tile's HTML composition, are kept with the owner's
-store notes, not in this repository.
+After a re-recording, copy the GIFs into `docs/media/` under the same names. The README's
+`popup.png` is the Sites and annotations screens of `popup-screens.mjs`, cropped and set side
+by side. The five 1280×800 screenshots are the store's. Store assets, including the promo
+tile and its own small diagram, are kept with the owner's store notes, not in this repository.
 
 The project access token (`~/.config/bpmn-surf-demo-token`, Maintainer, scope `api`) is
 only for content changes the owner asked for.
@@ -78,10 +88,12 @@ The first file of the MR is a Kotlin handler, so in "Show one file at a time" mo
 `mr-button.mjs` sees no diagram. Switch the mode off with `diff-mode.mjs off` for the run,
 then set it back.
 
-Signed out, the diff, the blob view and the call-activity dive-in work. Handler and
-correlation navigation need the code search API, which gitlab.com answers only for a
-signed-in user. Signed out, an unchanged handler opens GitLab's web search page, and
-correlation shows "Could not pinpoint a correlation point.".
+Signed out, these work: the diff, the blob view, the call-activity dive-in and a changed
+handler's MR diff. Anything that needs the code search API, which gitlab.com answers only
+for a signed-in user, does not. Signed out:
+- an unchanged handler and the decision badge open GitLab's web search page;
+- correlation shows "Could not pinpoint a correlation point.";
+- the callers menu says "Couldn't check the calling diagrams."
 
 ## Signing in
 
