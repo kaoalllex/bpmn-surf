@@ -226,7 +226,16 @@ class BpmnDiffer {
                 this.#view.setHistoryEnabled(commandStack.canUndo(), commandStack.canRedo()));
         }
 
-        await this.#loadVersions();
+        try {
+            await this.#loadVersions();
+        } catch (error) {
+            // loadFileContent has already retried once; a second failure would
+            // otherwise leave the loading spinner up for good.
+            console.error('cannot load the file', error);
+            this.#view.showEmptyState('Could not load the file. Reload the tab to try again.');
+            this.#view.setDownloadButtonEnabled(false);
+            return;
+        }
 
         if (!this.#versions.branchXml && !this.#versions.mrXml) {
             // File absent in both versions (BUG-0001): show a placeholder instead

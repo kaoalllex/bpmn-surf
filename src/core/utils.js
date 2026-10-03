@@ -24,7 +24,8 @@ async function loadFileContent(
     fileUrl,
     throwIf404 = true,
     timeoutMs = 10000,
-    forceReload = false
+    forceReload = false,
+    retries = 1
 ) {
     if (!forceReload && fileCache.has(fileUrl)) {
         console.debug('cache hit for:', fileUrl);
@@ -63,6 +64,14 @@ async function loadFileContent(
     } catch (error) {
         const durationMs = performance.now() - start;
 
+        // A request that hung (our abort) or dropped (fetch's TypeError) is usually
+        // a one-off on the server's side: the same request a moment later goes
+        // through. An HTTP error status is an answer, not a hiccup, and is not retried.
+        if (retries > 0 && (error.name === 'AbortError' || error.name === 'TypeError')) {
+            console.warn(`retrying ${fileUrl} after ${error.name} at ${durationMs.toFixed(0)} ms`);
+            clearTimeout(timer);
+            return loadFileContent(fileUrl, throwIf404, timeoutMs, forceReload, retries - 1);
+        }
         if (error.name === 'AbortError') {
             throw new Error(`Timeout fetching ${fileUrl} after ${durationMs.toFixed(0)} ms`);
         }
