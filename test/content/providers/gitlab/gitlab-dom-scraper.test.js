@@ -41,6 +41,24 @@ describe('GitLabDomScraper.findBranchCommitIdText', () => {
         assert.equal(scraper.findBranchCommitIdText(), 'master');
     });
 
+    it('reads the full ref from the ambiguous-ref modal data attribute (current gitlab.com)', () => {
+        const { scope, scraper } = createScraper();
+        scope.document.body.innerHTML = `<div id="js-ambiguous-ref-modal" data-ref="demo/bug-0035"></div>`;
+        assert.equal(scraper.findBranchCommitIdText(), 'demo/bug-0035');
+    });
+
+    it('prefers the older ref selector markups over the ambiguous-ref modal', () => {
+        const { scope, scraper } = createScraper();
+        appendRef(
+            scope,
+            `<div class="ref-selector"><span class="gl-dropdown-button-text"></span></div>
+             <div id="js-ambiguous-ref-modal" data-ref="other"></div>`,
+            '.gl-dropdown-button-text',
+            'feature/x'
+        );
+        assert.equal(scraper.findBranchCommitIdText(), 'feature/x');
+    });
+
     it('returns null when no ref selector is present', () => {
         const { scraper } = createScraper();
         assert.equal(scraper.findBranchCommitIdText(), null);

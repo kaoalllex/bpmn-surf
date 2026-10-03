@@ -82,9 +82,9 @@ class App {
             if (this.#domRetriggerTimer) {
                 clearTimeout(this.#domRetriggerTimer);
             }
-            this.#domRetriggerTimer = setTimeout(() => {
+            this.#domRetriggerTimer = setTimeout(async () => {
                 this.#domRetriggerTimer = null;
-                if (this.#isButtonUpToDate()) {
+                if (await this.#isButtonUpToDate()) {
                     return;
                 }
                 this.#handleStart(null, 'after dom change');
@@ -187,19 +187,19 @@ class App {
 
     // Whether the branch-view button still belongs to the file on screen. A
     // button that stayed after switching files was BUG-0036.
-    #isButtonUpToDate() {
+    async #isButtonUpToDate() {
         if (!this.#uiRepoProvider.isButtonPresent()) {
             return false;
         }
-        const shownPath = this.#branchFilePath();
+        const shownPath = await this.#branchFilePath();
         return !!shownPath && shownPath === this.#uiRepoProvider.buttonFilePath();
     }
 
     // The blob path the branch view shows, or null when it cannot be told
     // (including before a successful provider init, where the getter throws).
-    #branchFilePath() {
+    async #branchFilePath() {
         try {
-            const branchFile = this.#repoProvider.extractBranchCommitIdAndFilePath();
+            const branchFile = await this.#repoProvider.extractBranchCommitIdAndFilePath();
             return branchFile ? branchFile.filePath : null;
         } catch (error) {
             return null;
@@ -319,7 +319,7 @@ class App {
     async #addBranchButton(fileType) {
         console.debug(`adding show branch ${fileType.name} button...`);
 
-        const res = this.#repoProvider.extractBranchCommitIdAndFilePath();
+        const res = await this.#repoProvider.extractBranchCommitIdAndFilePath();
         if (!res) {
             return;
         }
@@ -414,7 +414,7 @@ class App {
         // GitLab can switch the blob before our debounced re-check rebuilds it. A
         // per-file MR button cannot be stale: it lives inside its own file's block.
         if (buttonType === UI_BUTTON_TYPE.BRANCH) {
-            const shownPath = this.#branchFilePath();
+            const shownPath = await this.#branchFilePath();
             if (shownPath && shownPath !== params.filePath) {
                 console.debug(`stale button click ignored: page now shows ${shownPath}, button was for ${params.filePath}`);
                 return;

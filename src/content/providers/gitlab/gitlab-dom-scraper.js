@@ -11,13 +11,18 @@
  */
 class GitLabDomScraper {
     /**
-     * Reads the branch/commit id text from the ref selector (two known markups).
+     * Reads the branch/commit id the page states. The two older ref selector
+     * markups (still served by self-managed GitLab) are tried first; current
+     * gitlab.com matches neither but keeps the full ref on the ambiguous-ref modal.
      * @returns {string|null}
      */
     findBranchCommitIdText() {
         let branchCommitId = this.#extractBranchCommitIdByDocSelectorCase1();
         if (!branchCommitId) {
             branchCommitId = this.#extractBranchCommitIdByDocSelectorCase2();
+        }
+        if (!branchCommitId) {
+            branchCommitId = this.#extractBranchCommitIdByAmbiguousRefModal();
         }
         return branchCommitId;
     }
@@ -129,5 +134,14 @@ class GitLabDomScraper {
         }
 
         return elem.innerText;
+    }
+
+    #extractBranchCommitIdByAmbiguousRefModal() {
+        const elem = document.querySelector('#js-ambiguous-ref-modal[data-ref]');
+        if (!elem) {
+            console.debug('cannot extract branch commit id by the ambiguous-ref modal: not found');
+            return null;
+        }
+        return elem.getAttribute('data-ref');
     }
 }
