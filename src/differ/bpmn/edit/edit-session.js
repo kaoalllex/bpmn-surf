@@ -77,7 +77,8 @@ class EditSession {
     setMrDiff(diff, diffTypeForMissing) {
         this.#mrLayers = [
             { ids: [...diff.missingShapeIds, ...diff.missingRowIds], diffType: diffTypeForMissing },
-            { ids: [...diff.changedShapeIds, ...diff.changedRowIds], diffType: DiffType.CHANGE }
+            { ids: [...diff.changedShapeIds, ...diff.changedRowIds], diffType: DiffType.CHANGE },
+            EditSession.#containsChangeLayer(diff)
         ];
         this.#repaint();
     }
@@ -157,7 +158,8 @@ class EditSession {
         this.#setColoringPaused(false);
         this.#myLayers = [
             { ids: [...diff.missingShapeIds, ...diff.missingRowIds], diffType: DiffType.ADD },
-            { ids: [...diff.changedShapeIds, ...diff.changedRowIds], diffType: DiffType.CHANGE }
+            { ids: [...diff.changedShapeIds, ...diff.changedRowIds], diffType: DiffType.CHANGE },
+            EditSession.#containsChangeLayer(diff)
         ];
         // The panel shows MY diff here, not the MR's — the groups the user changed.
         // PropertiesGroupExpander is deliberately NOT refreshed: re-opening groups
@@ -173,6 +175,11 @@ class EditSession {
             this.#onDiffUpdated();
         }
         this.#repaint();
+    }
+
+    // The subprocesses that contain a change without being changed themselves.
+    static #containsChangeLayer(diff) {
+        return { ids: diff.subProcessWithChangesIds || [], diffType: DiffType.CHANGE, strokeOnly: true };
     }
 
     #setColoringPaused(paused) {

@@ -6,6 +6,11 @@
 //   3. the MR diff, when opened from diff view        — painted by us
 //   4. a colour that came with the file               — lives in the model
 //
+// A layer flagged strokeOnly marks a subprocess that only CONTAINS a change: it
+// keeps its fill and takes the diff colour as its stroke, as in the diff view
+// (BUG-0010). Such layers rank below every fill layer, so a real change of the
+// subprocess itself always shows as a fill.
+//
 // Layers 1 and 4 are indistinguishable in the model and are meant to behave the
 // same, so they arrive here merged as `explicitlyColoredIds` — an element in that
 // set keeps its own colour and gets a dashed OUTLINE in the diff colour instead
@@ -16,19 +21,21 @@
 // marker layer (EditDiffPainter) and the exported XML (EditXmlColorizer), which
 // is what lets one toggle honestly govern both.
 class EditColorResolver {
-    // layers: [{ ids: string[], diffType: DiffType.* }, ...] — first match wins.
-    // Returns Map<elementId, { diffType, outlineOnly }>. An empty `layers` (the
-    // "colour the edits" toggle turned off) yields an empty map.
+    // layers: [{ ids: string[], diffType: DiffType.*, strokeOnly? }, ...] — first
+    // match wins. Returns Map<elementId, { diffType, outlineOnly, strokeOnly }>. An
+    // empty `layers` (the "colour the edits" toggle turned off) yields an empty map.
     static resolve(layers, explicitlyColoredIds = new Set()) {
         const result = new Map();
-        for (const layer of layers) {
+        const ordered = [...layers.filter(layer => !layer.strokeOnly), ...layers.filter(layer => layer.strokeOnly)];
+        for (const layer of ordered) {
             for (const id of layer.ids || []) {
                 if (result.has(id)) {
                     continue;
                 }
                 result.set(id, {
                     diffType: layer.diffType,
-                    outlineOnly: explicitlyColoredIds.has(id)
+                    outlineOnly: explicitlyColoredIds.has(id),
+                    strokeOnly: Boolean(layer.strokeOnly)
                 });
             }
         }

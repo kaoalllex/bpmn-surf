@@ -16,6 +16,8 @@ class EditDiffPainter {
         ['removed', 'edit-diff-removed']
     ]);
     static OUTLINE_MARKER = 'edit-diff-outline';
+    // A subprocess that contains a change: the diff colour as its stroke, no fill.
+    static STROKE_MARKER_SUFFIX = '-stroke';
 
     #canvas;
     #elementRegistry;
@@ -38,9 +40,12 @@ class EditDiffPainter {
             if (!element || !marker) {
                 continue;
             }
-            const markers = entry.outlineOnly
-                ? [marker, EditDiffPainter.OUTLINE_MARKER]
-                : [marker];
+            let markers = [marker];
+            if (entry.outlineOnly) {
+                markers = [marker, EditDiffPainter.OUTLINE_MARKER];
+            } else if (entry.strokeOnly) {
+                markers = [marker + EditDiffPainter.STROKE_MARKER_SUFFIX];
+            }
             for (const each of markers) {
                 this.#addMarker(element, each);
             }
