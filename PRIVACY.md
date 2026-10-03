@@ -59,7 +59,7 @@ are never written to storage.
   compared versions with their links (project path, branch names, commit ids),
   the edit mode state, and the last lines of the diff tab's console log, which
   can include file paths, links and names from the diagram (process and element
-  ids, topic and message names). Diagram content is never included. The
+  ids, topic and message names). The diagram file itself is never included. The
   "Leave feedback" link in the popup opens the issues list and sends nothing.
 
 Data is not sold, shared with anyone or used for anything other than showing
