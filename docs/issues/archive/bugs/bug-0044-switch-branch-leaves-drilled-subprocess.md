@@ -1,5 +1,5 @@
 ---
-id: BUG-0043
+id: BUG-0044
 title: Switch branch leaves the drilled-into subprocess for the root process
 priority: medium
 status: done
@@ -22,6 +22,12 @@ comparing a subprocess's contents meant drilling in again after every switch.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-03 · claude-opus-5-5 · branch `docs/renumber-bug-0044`
+
+Renumbered from BUG-0043: two parallel sessions took the same code, and
+[BUG-0043] is the popup github.com host. Commit `c57086c` (PR #11) still names
+this task BUG-0043.
 
 ### 2026-10-03 · claude-opus-5-5 · branch `fix/bug-0010-subprocess-highlight`
 
