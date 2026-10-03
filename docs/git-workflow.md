@@ -69,8 +69,9 @@ A build for an internal GitLab instance takes the host as an argument — `npm r
 
 ## CI
 
-- There is no CI pipeline (GitHub Actions workflow) in the project yet — this is groundwork for the future. The plan is for the pipeline to run the tests on PRs and master, and that a PR cannot be merged with a red pipeline. When the pipeline appears — update this file.
-- While there is no pipeline — a local test run before push is mandatory.
+- `.github/workflows/test.yml` runs the unit and Layer-2 e2e tests on every PR into master and on every push to master (details — `docs/testing.md`, the "CI" section). It does not build or package anything.
+- **A PR is merged only with a green CI run.** A red run is investigated and fixed, not re-run until it passes.
+- CI does not replace the local run: `npm test && npm run test:e2e` before push stays mandatory.
 
 ## Parallel work
 

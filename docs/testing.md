@@ -79,7 +79,14 @@ It works in an `rsync`ed copy of the tree (never the repo — a crash would leav
 
 ## CI
 
-There is no CI pipeline yet (see docs/git-workflow.md, the "CI" section) — the only protection against red tests in master is the local run before push.
+`.github/workflows/test.yml` runs on every pull request into master and every push to master: `npm ci`, `npm test`, then `npm run test:e2e` (Layer 2 in Chromium). A newer push to the same ref cancels the superseded run. On failure the run uploads `playwright-report/` as the `playwright-report` artifact (kept 7 days). There are no retries: a flaky test fails the run and stays visible. The live harness never runs in CI (see below).
+
+Run the same thing locally before pushing:
+
+```
+npx playwright install chromium   # first time only, and after a Playwright bump
+npm test && npm run test:e2e
+```
 
 ## Live harness (`test/e2e/live/`)
 
