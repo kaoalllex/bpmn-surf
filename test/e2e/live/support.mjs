@@ -7,7 +7,9 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-export const SANDBOX = 'https://gitlab.com/kao.alllex/bpmn-surf-test';
+// The sandbox unless BPMN_SURF_PROJECT names another project — the frozen
+// showcase, for one, whose rules differ (README.md, "The demo project").
+export const PROJECT = process.env.BPMN_SURF_PROJECT || 'https://gitlab.com/kao.alllex/bpmn-surf-test';
 
 // One browser profile, reused by every script here. NOT a saved storageState:
 // GitLab rotates its session cookie on use, so a frozen copy replayed from
@@ -15,8 +17,10 @@ export const SANDBOX = 'https://gitlab.com/kao.alllex/bpmn-surf-test';
 // the first time this harness signed in. A live profile rotates with it.
 export const PROFILE_DIR = join(homedir(), '.config', 'bpmn-surf-browser-profile');
 
+// BPMN_SURF_ANONYMOUS=1 ignores the signed-in profile: what a visitor without
+// a GitLab account sees, without signing the shared profile out.
 export function hasProfile() {
-    return existsSync(PROFILE_DIR);
+    return !process.env.BPMN_SURF_ANONYMOUS && existsSync(PROFILE_DIR);
 }
 
 /**
@@ -29,12 +33,12 @@ export function hasProfile() {
  * except for per-user preferences. Only one script at a time: Chromium locks the
  * profile directory.
  */
-export function launchWithExtension({ headless = true, withExtension = true } = {}) {
+export function launchWithExtension({ headless = true, withExtension = true, ...contextOptions } = {}) {
     const dir = hasProfile() ? PROFILE_DIR : mkdtempSync(join(tmpdir(), 'bpmn-surf-'));
     const args = withExtension
         ? [`--disable-extensions-except=${REPO_ROOT}`, `--load-extension=${REPO_ROOT}`]
         : [];
-    return chromium.launchPersistentContext(dir, { channel: 'chromium', headless, args });
+    return chromium.launchPersistentContext(dir, { channel: 'chromium', headless, args, ...contextOptions });
 }
 
 export function createProfileDir() {

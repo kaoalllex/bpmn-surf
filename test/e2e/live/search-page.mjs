@@ -16,7 +16,7 @@
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import { SANDBOX, launchWithExtension, signedInAs } from './support.mjs';
+import { PROJECT, launchWithExtension, signedInAs } from './support.mjs';
 
 const { GitLabPlatformClient } = createRequire(import.meta.url)('#scope').createScope();
 
@@ -26,7 +26,7 @@ const fail = message => { failures++; console.log('  FAIL ' + message); };
 
 const context = await launchWithExtension({ withExtension: false });
 const page = await context.newPage();
-await page.goto(SANDBOX, { waitUntil: 'domcontentloaded' });
+await page.goto(PROJECT, { waitUntil: 'domcontentloaded' });
 console.log('signed in as:', await signedInAs(page) || '(anonymous)');
 
 const sample = await page.evaluate(async (projectPath) => {
@@ -48,7 +48,7 @@ const sample = await page.evaluate(async (projectPath) => {
         }
     }
     return { projectId: project.id, defaultBranch: project.default_branch };
-}, new URL(SANDBOX).pathname.slice(1));
+}, new URL(PROJECT).pathname.slice(1));
 
 if (!sample.path) {
     console.log('  FAIL no branch with a slash adds a file absent from the default branch — create one through the API');
@@ -58,7 +58,7 @@ if (!sample.path) {
 const term = sample.path.split('/').pop().replace(/\.[^.]+$/, '');
 console.log(`term '${term}': ${sample.path} on '${sample.branch}', absent on '${sample.defaultBranch}'`);
 
-const client = new GitLabPlatformClient({ projectUrl: SANDBOX, hostUrl: new URL(SANDBOX).origin, projectId: sample.projectId });
+const client = new GitLabPlatformClient({ projectUrl: PROJECT, hostUrl: new URL(PROJECT).origin, projectId: sample.projectId });
 const cases = [
     { name: 'slash-ref', ref: sample.branch, expectHit: true },
     { name: 'default-ref', ref: sample.defaultBranch, expectHit: false },

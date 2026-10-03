@@ -7,7 +7,7 @@
 // nothing about the other, and the preference is server-side per account — so
 // testing both means changing an account setting. That is why setting it is an
 // explicit argument and never a side effect of a check.
-import { SANDBOX, hasProfile, launchWithExtension, signedInAs } from './support.mjs';
+import { PROJECT, hasProfile, launchWithExtension, signedInAs } from './support.mjs';
 
 const wanted = process.argv[2];
 if (wanted && !['on', 'off'].includes(wanted)) {
@@ -22,7 +22,7 @@ if (!hasProfile()) {
 
 const context = await launchWithExtension({ withExtension: false });
 const page = await context.newPage();
-await page.goto(`${SANDBOX}/-/merge_requests`, { waitUntil: 'domcontentloaded' });
+await page.goto(`${PROJECT}/-/merge_requests`, { waitUntil: 'domcontentloaded' });
 
 const username = await signedInAs(page);
 if (!username) {
