@@ -14,7 +14,15 @@
 #     npm run package                        # public build (gitlab.com only)
 #     npm run package -- gitlab.internal.example
 #
-# Requires the system `zip`. Output: dist/bpmn-surf-<version>.zip
+# `--store` builds the Chrome Web Store upload instead: the store wants
+# manifest.json at the zip root, while the default zip wraps everything in a
+# bpmn-surf/ folder that unpacks ready for "Load unpacked". A store build is
+# always public, so it takes no extra hosts:
+#
+#     npm run package -- --store
+#
+# Requires the system `zip`. Output: dist/bpmn-surf-<version>.zip,
+# or dist/bpmn-surf-<version>-store.zip with --store
 #
 set -euo pipefail
 
@@ -27,10 +35,24 @@ if [ -z "$version" ]; then
     exit 1
 fi
 
+store=false
+if [ "${1:-}" = "--store" ]; then
+    store=true
+    shift
+    if [ "$#" -gt 0 ]; then
+        echo "package: a store build is public, it takes no hosts: $*" >&2
+        exit 1
+    fi
+fi
+
 name="bpmn-surf"
 stage="dist/$name"
+zip_name="$name-$version.zip"
+if [ "$store" = true ]; then
+    zip_name="$name-$version-store.zip"
+fi
 
-rm -rf dist
+rm -rf "$stage" "dist/$zip_name"
 mkdir -p "$stage/icons"
 
 cp manifest.json "$stage/"
@@ -54,7 +76,11 @@ cp -R src "$stage/"
 cp -R libs "$stage/"
 cp icons/*.png "$stage/icons/"
 
-( cd dist && zip -rq "$name-$version.zip" "$name" -x '*.DS_Store' )
+if [ "$store" = true ]; then
+    ( cd "$stage" && zip -rq "../$zip_name" . -x '*.DS_Store' )
+else
+    ( cd dist && zip -rq "$zip_name" "$name" -x '*.DS_Store' )
+fi
 rm -rf "$stage"
 
-echo "Packaged dist/$name-$version.zip"
+echo "Packaged dist/$zip_name"

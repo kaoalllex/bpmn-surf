@@ -61,6 +61,7 @@ Distribution is via **releases** (a git tag + an attached zip asset), not via ar
 
 1. Bump the version on a branch via `/release` (`manifest.json` + a `CHANGELOG.md` entry) and merge it — see the `release` skill.
 2. On a fresh `master`, build the distribution zip with `npm run package` (`scripts/package.sh` reads the version from `manifest.json`), then create the `vX.Y.Z` release with `gh release create`, that zip attached and notes taken from the matching `CHANGELOG.md` section.
+3. For the Chrome Web Store, build the upload with `npm run package -- --store` → `dist/bpmn-surf-<version>-store.zip`. Same file set, but `manifest.json` sits at the zip root (the store requires it), while the release zip wraps everything in a `bpmn-surf/` folder that unpacks ready for "Load unpacked". A store build is always public and refuses extra hosts. Both zips can sit in `dist/` together — a build replaces only its own zip.
 
 Since [FEAT-0033] a self-hosted host is added from the extension popup, so a preconfigured build is no longer needed to reach an internal instance — the argument below only saves the user that one step.
 
