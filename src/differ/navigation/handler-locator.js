@@ -359,12 +359,14 @@ class HandlerLocator {
     /**
      * Repository-UI URL of the MR/PR diffs tab anchored to a given file, so a
      * handler changed in this MR opens showing exactly what changed (as if the
-     * file was clicked in the changes list). The anchor is the SHA-1 of the file
-     * path, matching GitLab's diff-file element id.
+     * file was clicked in the changes list). Built the way GitLab's own file tree
+     * links are: `?file_path=` picks the file in "one file at a time" mode, which
+     * ignores a bare anchor (BUG-0048), and the anchor — the SHA-1 of the path,
+     * GitLab's diff-file element id — scrolls to it when all files are shown.
      * @returns {Promise<string>}
      */
     async mrFileDiffUrl(filePath, mrIid) {
-        const base = this.#client.prDiffsUrl(mrIid);
+        const base = `${this.#client.prDiffsUrl(mrIid)}?file_path=${encodeURIComponent(filePath)}`;
         const anchor = await this.#sha1Hex(filePath);
         return anchor ? `${base}#${anchor}` : base;
     }
