@@ -613,11 +613,15 @@ class BpmnDiffer {
         }
         this.#diffHighlighter.setDiffElementIds([
             ...diff.missingShapeIds, ...diff.missingRowIds,
-            ...diff.changedShapeIds, ...diff.changedRowIds
+            ...diff.changedShapeIds, ...diff.changedRowIds,
+            ...diff.subProcessWithChangesIds.filter(id => !diff.changedShapeIds.includes(id))
         ]);
 
         this.#diffHighlighter.paint(diffTypeForMissing, diff.missingShapeIds, diff.missingRowIds);
         this.#diffHighlighter.paint(DiffType.CHANGE, diff.changedShapeIds, diff.changedRowIds);
+        // Stroke only (the row colour): containing a change is not a change of the
+        // subprocess itself, so it keeps its own fill and stays out of the changes table.
+        this.#diffHighlighter.paint(DiffType.CHANGE, [], diff.subProcessWithChangesIds);
 
         // FEAT-0031: edit mode renders no changes table (see BpmnDifferView#build),
         // but the canvas colouring above must still run — it is colour layer 3.
