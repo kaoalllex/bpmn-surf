@@ -24,9 +24,9 @@
 //
 // Designed-in limitations (not fought): a sender in another microservice/project
 // is out of scope (search is scoped to the current project); a dynamic name
-// (${...}) cannot be searched literally and degrades to config hits + a raw-search
-// link; a name that only exists in the Kafka payload at runtime is impossible to
-// find by static analysis.
+// (${...}) cannot be searched literally and degrades to config hits; a name that
+// only exists in the Kafka payload at runtime is impossible to find by static
+// analysis.
 class CorrelationLocator {
     // Element types that can WAIT for a message. A message StartEvent /
     // IntermediateCatchEvent / BoundaryEvent only qualifies when it actually
@@ -439,6 +439,14 @@ class CorrelationLocator {
      */
     blobFileUrl(filePath, line, ref) {
         return this.#client.blobFileUrl(ref, filePath, line);
+    }
+
+    /**
+     * URL of the repository's blob-search page for a message name at a ref — the
+     * "search in the repo" fallback when nothing usable was found.
+     */
+    blobSearchPageUrl(messageName, ref) {
+        return this.#client.searchPageUrl(messageName, ref);
     }
 
     // Fetches a source file's content at a ref (for Phase-2 same-file constant

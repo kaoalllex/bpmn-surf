@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const {
     bootBpmnDiffer, wireDiagnostics, defaultBpmnParams, MESSAGE_CORRELATION_BPMN
 } = require('./support/boot-differ');
+const { installOpenCapture, getOpenCalls } = require('./support/correlation-open-capture');
 
 const FIXTURES = { xmlByRef: { 'mr-sha': MESSAGE_CORRELATION_BPMN, 'base-sha': MESSAGE_CORRELATION_BPMN } };
 
@@ -39,7 +40,7 @@ test('reports when references are found only in tests', async ({ page }) => {
 
     await clickBadge(page, 'ReceiveTask_1');
 
-    await expect(page.locator('.correlation-menu .differ-back-menu-message')).toHaveText(
+    await expect(page.locator('.correlation-menu .differ-back-menu-message')).toContainText(
         'Found references only in tests — hidden.'
     );
 });
@@ -58,7 +59,21 @@ test('filters out sub-token hits whose snippet lacks the literal (BUG-0013)', as
 
     await clickBadge(page, 'ReceiveTask_1');
 
-    await expect(page.locator('.correlation-menu .differ-back-menu-message')).toHaveText(
+    await expect(page.locator('.correlation-menu .differ-back-menu-message')).toContainText(
         'Could not pinpoint a correlation point.'
     );
+});
+
+// BUG-0038: nothing usable found → the note offers the project code search for
+// the message name, the same fallback the other navigators give.
+test('offers the code search when nothing usable is found (BUG-0038)', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: defaultBpmnParams(), fixtures: FIXTURES });
+    await installOpenCapture(page);
+
+    await clickBadge(page, 'ReceiveTask_1');
+    await page.locator('.correlation-menu .differ-back-menu-link').click();
+
+    expect(await getOpenCalls(page)).toEqual(['http://localhost/search?term=OrderPlaced']);
+    await expect(page.locator('.correlation-menu')).toBeHidden();
 });
