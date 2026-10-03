@@ -78,6 +78,7 @@ its own, the extension no longer runs there.
 ## Links
 
 - [Issues](https://github.com/kaoalllex/bpmn-surf/issues) — bug reports and feature requests
+- [Privacy policy](PRIVACY.md) — what the extension reads, stores and sends
 
 ## Licence
 

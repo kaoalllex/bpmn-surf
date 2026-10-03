@@ -11,7 +11,7 @@ Chrome Extension (Manifest V3) for visually comparing BPMN 2.0 and DMN diagrams 
 
 ## Directory structure
 
-All application code is under `src/`; the root keeps only `manifest.json`, `CHANGELOG.md`, `libs/`, `icons/` (extension icons; placeholder in R1 of the bpmn-surf rebrand, UX-0009), `docs/`, `test/`, `scripts/`, `package*.json`. The layout reflects three script scopes: `core/` (shared), `content/` (the content script for GitLab pages), `differ/` (the separate differ tab), plus the extension context — `background/` (service worker) and `popup/` (the window opened from the extension icon), with `hosts/` shared by those two. File names are unique across the whole tree — in the table below the path is not duplicated, lookup is by name.
+All application code is under `src/`; the root keeps only `manifest.json`, `CHANGELOG.md`, `PRIVACY.md` (the Chrome Web Store privacy policy), `libs/`, `icons/` (extension icons; placeholder in R1 of the bpmn-surf rebrand, UX-0009), `docs/`, `test/`, `scripts/`, `package*.json`. The layout reflects three script scopes: `core/` (shared), `content/` (the content script for GitLab pages), `differ/` (the separate differ tab), plus the extension context — `background/` (service worker) and `popup/` (the window opened from the extension icon), with `hosts/` shared by those two. File names are unique across the whole tree — in the table below the path is not duplicated, lookup is by name.
 
 ```
 src/
