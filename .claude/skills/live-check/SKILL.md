@@ -102,6 +102,22 @@ for one `.bpmn` and one `.dmn`.
 | no churn while idle; none visible during the grey-out | header wraps no worse than GitLab's own layout |
 | differ tab opens; block not collapsed; split menu opens/closes | branch button beside Blame, not glued to it; menu readable |
 
+### Search fallback link
+
+Every navigation locator that gives up (dive-in, callers, handler badges,
+correlation) opens GitLab's code search. The URL format is pinned by unit tests;
+only a live run shows GitLab still answers it ([BUG-0038]: it once 404'd).
+
+```bash
+node test/e2e/live/search-page.mjs --shots <scratchpad>/live
+```
+
+| The runner asserts | You check in the screenshots |
+|---|---|
+| 200 at a slash branch, the default branch and no ref; the sample file found only at its branch | a code-results page of the sandbox, not a sign-in or error page |
+
+Signed out, GitLab redirects search to sign-in, so this needs the signed-in profile.
+
 ### Other areas
 
 Not catalogued yet — see [INFRA-0011].

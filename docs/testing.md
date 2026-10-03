@@ -91,8 +91,9 @@ Use them for anything that depends on GitLab's own markup or on timing, which is
 where the diff button keeps breaking (the button showing for the wrong file, or
 blinking). `mr-button.mjs <iid>` checks that every diagram block carries exactly
 one correct button and that none churn; `branch-button.mjs` covers the blob
-view. The scenarios and the procedure live in the `live-check` project skill
-(`.claude/skills/live-check/SKILL.md`).
+view; `search-page.mjs` checks that GitLab still serves the fallback search URL
+the navigation locators open. The scenarios and the procedure live in the
+`live-check` project skill (`.claude/skills/live-check/SKILL.md`).
 `capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
 per-user "Show one file at a time" preference; without it everything runs
 anonymously.

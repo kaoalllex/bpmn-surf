@@ -15,6 +15,7 @@ gitlab.com, so they are as available as it is.
 | `mr-button.mjs <iid> [--legacy] [--parallel] [--walk] [--click] [--shots <dir>]` | Does every rendered diagram block carry exactly one button, for its own file, with the right label, and none on other files? No churn while idle. `--legacy` = the legacy diffs UI (what self-managed serves), `--parallel` = side-by-side, `--walk` = click every file in the tree and check that no button is visible while rapid diffs greys out the previous file, `--click` = the differ tab opens, `--shots` = header screenshots |
 | `branch-button.mjs <ref> <path> [--shots <dir>]` | The blob-view split button: placement beside GitLab's button groups, the main button and the "Diff with local file…" menu both open the differ, Escape closes the menu |
 | `file-selection.mjs [iid]` | What GitLab does to the URL when a file is picked — the measurement behind [REFAC-0016] |
+| `search-page.mjs [--shots <dir>]` | Does GitLab still serve the "search in the repository" fallback URL that `GitLabPlatformClient#searchPageUrl` builds — 200, scoped to the project, honouring a ref with a slash? Picks its sample file from the sandbox at run time |
 | `capture-login.mjs` | One-time sign-in, so the others run as you instead of anonymously |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
 | `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots. Needs no network |
