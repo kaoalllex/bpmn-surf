@@ -59,7 +59,7 @@ class PlatformClient {
     }
 
     /**
-     * Human-facing URL of the MR/PR diffs page (a file anchor is appended by
+     * Human-facing URL of the MR/PR diffs page (the file query and anchor are appended by
      * the caller — see HandlerLocator.mrFileDiffUrl).
      * @returns {string}
      */
