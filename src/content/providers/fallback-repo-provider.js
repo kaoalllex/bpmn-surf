@@ -88,8 +88,8 @@ class FallbackRepoProvider extends RepoProvider {
         return this.#requireActive().getTargetFilePath(filePath);
     }
 
-    extractBranchCommitIdAndFilePath() {
-        return this.#requireActive().extractBranchCommitIdAndFilePath();
+    async extractBranchCommitIdAndFilePath() {
+        return await this.#requireActive().extractBranchCommitIdAndFilePath();
     }
 
     #requireActive() {

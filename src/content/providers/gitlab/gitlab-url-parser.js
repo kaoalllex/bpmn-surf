@@ -117,9 +117,10 @@ class GitLabUrlParser {
      *
      * The split is genuinely ambiguous: a ref may itself contain slashes
      * (release/1.2), and nothing in the URL marks where it ends. Only the page's
-     * own ref selector knows for sure, so that hint wins whenever it is present;
-     * without it the ref is assumed to be a single segment, which is right for
-     * every unslashed branch, tag and sha.
+     * own ref selector (or the repository API — GitLabRepoProviderBase resolves
+     * the hint there when the page states none) knows for sure, so that hint wins
+     * whenever it is present; without it the ref is assumed to be a single
+     * segment, which is right for every unslashed branch, tag and sha.
      *
      * It used to guess instead, from a list of branch names (master, develop,
      * feature/*, bugfix/*) with a greedy catch-all behind them. The catch-all
@@ -132,17 +133,16 @@ class GitLabUrlParser {
      *
      * @param {string} href full page URL
      * @param {string|null} branchCommitIdHint branch/commit id read from the page, if any
+     * @param {string} hintSource where the hint came from, for the log
      * @returns {{branchCommitId: string, filePath: string}|null}
      */
-    extractBranchCommitIdAndFilePath(href, branchCommitIdHint) {
-        const marker = '/-/blob/';
-        const markerIndex = href.indexOf(marker);
-        if (markerIndex === -1) {
+    extractBranchCommitIdAndFilePath(href, branchCommitIdHint, hintSource = 'the page ref selector') {
+        const tail = this.#blobTail(href);
+        if (tail === null) {
             console.warn('cannot extract branch commit id and file path: not a blob url: ' + href);
             return null;
         }
 
-        const tail = href.substring(markerIndex + marker.length).split('?')[0].split('#')[0];
         const firstSlash = tail.indexOf('/');
         if (firstSlash <= 0) {
             console.warn('cannot extract branch commit id and file path: no file path in url: ' + href);
@@ -154,9 +154,9 @@ class GitLabUrlParser {
             return { branchCommitId: ref, filePath: tail.substring(ref.length + 1) };
         };
 
-        // The ref selector is the only source that can state a slashed ref.
+        // Only the page or the repository can state a slashed ref.
         if (branchCommitIdHint && tail.startsWith(branchCommitIdHint + '/')) {
-            return split(branchCommitIdHint, 'the page ref selector');
+            return split(branchCommitIdHint, hintSource);
         }
 
         const firstSegment = tail.substring(0, firstSlash);
@@ -165,5 +165,29 @@ class GitLabUrlParser {
         }
 
         return split(firstSegment, 'the first url segment');
+    }
+
+    /**
+     * Every ref a blob URL could name: each prefix of its `/-/blob/` tail that
+     * still leaves a file path, shortest first.
+     * @param {string} href full page URL
+     * @returns {string[]}
+     */
+    blobRefCandidates(href) {
+        const tail = this.#blobTail(href);
+        if (tail === null || tail.indexOf('/') <= 0) {
+            return [];
+        }
+        const segments = tail.split('/');
+        return segments.slice(0, -1).map((_, i) => segments.slice(0, i + 1).join('/'));
+    }
+
+    #blobTail(href) {
+        const marker = '/-/blob/';
+        const markerIndex = href.indexOf(marker);
+        if (markerIndex === -1) {
+            return null;
+        }
+        return href.substring(markerIndex + marker.length).split('?')[0].split('#')[0];
     }
 }

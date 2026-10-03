@@ -144,10 +144,14 @@ class GitLabRepoProviderBase extends RepoProvider {
         return renameMap;
     }
 
-    extractBranchCommitIdAndFilePath() {
+    async extractBranchCommitIdAndFilePath() {
+        const href = window.location.href;
         const branchCommitId = this.domScraper.findBranchCommitIdText();
-        return this.urlParser.extractBranchCommitIdAndFilePath(
-            window.location.href, branchCommitId);
+        if (branchCommitId) {
+            return this.urlParser.extractBranchCommitIdAndFilePath(href, branchCommitId);
+        }
+        const apiRef = await this.#resolveBlobRef(href);
+        return this.urlParser.extractBranchCommitIdAndFilePath(href, apiRef, 'the repository api');
     }
 
     // A whole-change diff is labelled by the MR branch names. Subclasses that
@@ -175,6 +179,39 @@ class GitLabRepoProviderBase extends RepoProvider {
         const renameMap = GitLabRepoProviderBase.extractRenameMap(JSON.parse(content));
         this.#renameMaps.set(url, renameMap);
         return renameMap;
+    }
+
+    // Blob refs resolved by the API, cached per URL for the page lifetime: the
+    // DOM observer re-reads the shown path after every quiet mutation batch.
+    #blobRefs = new Map();
+
+    // The page states no ref, so ask the repository which prefix of the URL tail
+    // is one. Git forbids refs `a` and `a/b` from coexisting, so the shortest hit
+    // is the only one. The commits endpoint takes branches, tags and shas alike.
+    // ponytail: a short hex segment (`cafe/x/a.bpmn`) can hit as an abbreviated
+    // sha before the real branch; check the branches/tags endpoints first if it
+    // ever happens.
+    #resolveBlobRef(href) {
+        if (!this.#blobRefs.has(href)) {
+            const resolved = this.#probeBlobRef(href).catch(error => {
+                this.#blobRefs.delete(href);
+                console.warn('cannot resolve the branch ref via the api', error);
+                return null;
+            });
+            this.#blobRefs.set(href, resolved);
+        }
+        return this.#blobRefs.get(href);
+    }
+
+    async #probeBlobRef(href) {
+        const commitsUrl = `${this.projectInfo.hostUrl}/api/v4/projects/${this.projectInfo.id}/repository/commits/`;
+        for (const ref of this.urlParser.blobRefCandidates(href)) {
+            // The URL keeps the ref percent-encoded; the API needs it encoded once, `/` included.
+            if (await this.loadContent(commitsUrl + encodeURIComponent(decodeURIComponent(ref)), false)) {
+                return ref;
+            }
+        }
+        return null;
     }
 
     async #getProjectId() {

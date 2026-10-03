@@ -232,3 +232,19 @@ describe('GitLabUrlParser.extractBranchCommitIdAndFilePath', () => {
         assert.equal(parser.extractBranchCommitIdAndFilePath('https://x/g/proj/-/blob/main', null), null);
     });
 });
+
+describe('GitLabUrlParser.blobRefCandidates', () => {
+    it('lists every url-tail prefix that leaves a file path, shortest first', () => {
+        const { parser } = createParser();
+        assert.deepEqual(
+            [...parser.blobRefCandidates('https://x/g/proj/-/blob/demo/bug-0035/dir/a.bpmn?ref_type=heads#L1')],
+            ['demo', 'demo/bug-0035', 'demo/bug-0035/dir']
+        );
+    });
+
+    it('is empty when the url is not a blob url or carries no file path', () => {
+        const { parser } = createParser();
+        assert.deepEqual([...parser.blobRefCandidates('https://x/g/proj/-/merge_requests/5/diffs')], []);
+        assert.deepEqual([...parser.blobRefCandidates('https://x/g/proj/-/blob/main')], []);
+    });
+});

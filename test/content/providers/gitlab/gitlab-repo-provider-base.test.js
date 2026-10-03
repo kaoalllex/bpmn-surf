@@ -195,8 +195,60 @@ describe('GitLabRepoProviderBase.extractBranchCommitIdAndFilePath', () => {
             { url: 'https://gitlab.example.com/group/proj/-/blob/master/proj/process.bpmn' }
         );
         await provider.init();
-        const res = provider.extractBranchCommitIdAndFilePath();
+        const res = await provider.extractBranchCommitIdAndFilePath();
         assert.equal(res.branchCommitId, 'master');
         assert.equal(res.filePath, 'proj/process.bpmn');
+    });
+
+    const SLASH_BLOB_URL = 'https://gitlab.example.com/group/proj/-/blob/demo/bug-0035/order/OrderMain.bpmn';
+    const COMMITS_API = 'https://gitlab.example.com/api/v4/projects/42/repository/commits/';
+
+    // A provider on a blob page whose loader answers the project lookup and
+    // treats `existingRefs` as the refs the commits API knows (anything else 404s).
+    async function createBlobProvider(existingRefs, { failCommits = false } = {}) {
+        const scope = createScope({ url: SLASH_BLOB_URL });
+        const commitCalls = [];
+        const load = async (requestedUrl) => {
+            if (!requestedUrl.startsWith(COMMITS_API)) {
+                return JSON.stringify({ id: 42 });
+            }
+            commitCalls.push(requestedUrl.substring(COMMITS_API.length));
+            if (failCommits) {
+                throw new Error('unexpected status 500');
+            }
+            const ref = decodeURIComponent(requestedUrl.substring(COMMITS_API.length));
+            return existingRefs.includes(ref) ? JSON.stringify({ id: 'sha' }) : null;
+        };
+        const provider = new scope.GitLabRepoProviderBase(load);
+        await provider.init();
+        return { scope, provider, commitCalls };
+    }
+
+    it('resolves a slashed branch via the commits api when the page states no ref', async () => {
+        const { provider, commitCalls } = await createBlobProvider(['demo/bug-0035']);
+        const res = await provider.extractBranchCommitIdAndFilePath();
+        assert.deepEqual({ ...res }, { branchCommitId: 'demo/bug-0035', filePath: 'order/OrderMain.bpmn' });
+        assert.deepEqual(commitCalls, ['demo', 'demo%2Fbug-0035']);
+    });
+
+    it('probes the api once per page', async () => {
+        const { provider, commitCalls } = await createBlobProvider(['demo/bug-0035']);
+        await provider.extractBranchCommitIdAndFilePath();
+        await provider.extractBranchCommitIdAndFilePath();
+        assert.equal(commitCalls.length, 2);
+    });
+
+    it('falls back to the first url segment when the api fails', async () => {
+        const { provider } = await createBlobProvider([], { failCommits: true });
+        const res = await provider.extractBranchCommitIdAndFilePath();
+        assert.deepEqual({ ...res }, { branchCommitId: 'demo', filePath: 'bug-0035/order/OrderMain.bpmn' });
+    });
+
+    it('uses the page ref without calling the api', async () => {
+        const { scope, provider, commitCalls } = await createBlobProvider([]);
+        scope.document.body.innerHTML = `<div id="js-ambiguous-ref-modal" data-ref="demo/bug-0035"></div>`;
+        const res = await provider.extractBranchCommitIdAndFilePath();
+        assert.equal(res.branchCommitId, 'demo/bug-0035');
+        assert.deepEqual(commitCalls, []);
     });
 });

@@ -118,9 +118,9 @@ class RepoProvider {
 
     /**
      * Extracts commit and file path information from branch view URL
-     * @returns {Object|null} object with fields: branchCommitId, filePath or null
+     * @returns {Promise<Object|null>} object with fields: branchCommitId, filePath or null
      */
-    extractBranchCommitIdAndFilePath() {
+    async extractBranchCommitIdAndFilePath() {
         throw new Error('extractBranchCommitIdAndFilePath() must be implemented');
     }
 }
