@@ -9,8 +9,8 @@
 // pick files in the tree), and ffmpeg on PATH.
 //
 // Writes <outDir>/<clip>.gif for every clip in CLIPS (all of them unless --clip),
-// <outDir>/screenshots/*.png at 1280×800 (unless --no-shots), <outDir>/tile-source.png
-// and <outDir>/edited.bpmn (the edit clip's download, which the local-diff clip reads).
+// <outDir>/screenshots/*.png at 1280×800 (unless --no-shots) and <outDir>/edited.bpmn
+// (the edit clip's download, which the local-diff clip reads).
 //
 // Every tab records its own video, so a clip notes which tab is on screen and
 // when; ffmpeg then cuts those spans out and joins them. Tab loading falls
@@ -114,20 +114,42 @@ async function click(page, locator) {
 // A click that moves the story to another tab: linger on the target, click, and
 // cut away as soon as the ripple shows. Chromium greys the opener out while a new
 // tab attaches, and that must not reach the video. `land` waits for the tab the
-// click leads to (a new one, the MR tab, a parent) and returns it once rendered.
+// click leads to (a new one, the MR tab, a parent) and returns it once rendered;
+// it starts before the click, or a tab opened at once would be missed.
 async function clickAway(page, locator, land) {
     await glideTo(page, locator);
+    const landing = land();
     await pause(400);
     await page.mouse.down();
-    await page.mouse.up();
-    await pause(250);
+    await pause(150);                                         // the ripple
     onScreen(null);
-    const tab = await land();
-    await cursor(tab);
+    await page.mouse.up();
+    const tab = await landing;
     await tab.bringToFront();
+    await fitViewport(tab);
+    await cursor(tab);
     await pause(300);
     onScreen(tab);
     return tab;
+}
+// Back to a tab the story already visited. A tab that sent the MR tab elsewhere
+// can come back with a shorter viewport (a grey band in the video), so its size
+// is set again.
+async function backTo(tab) {
+    onScreen(null);
+    await tab.bringToFront();
+    await fitViewport(tab);
+    await cursor(tab);
+    await pause(300);
+    onScreen(tab);
+}
+// Setting the same size is a no-op, so nudge it first, then let the page repaint
+// at the restored size before it is filmed.
+async function fitViewport(tab) {
+    await tab.setViewportSize({ width: SIZE.width, height: SIZE.height - 1 });
+    await tab.setViewportSize(SIZE);
+    await tab.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await pause(500);
 }
 const toNewTab = (ready = differReady) => async () => {
     const tab = await context.waitForEvent('page', { timeout: 30000 });
@@ -142,7 +164,7 @@ const gitlabReady = async tab => {
     await tab.waitForLoadState('domcontentloaded');
     await tab.locator('.blob-content, .file-content, [data-testid="blob-content"], diff-file, .diff-file').first()
         .waitFor({ timeout: 30000 });
-    await pause(2500);
+    await pause(3000);                                        // GitLab scrolls to the anchored line
 };
 // A changed handler opens its diff in the MR tab, often by changing only the
 // hash, so wait for the URL itself rather than for a load.
@@ -162,7 +184,7 @@ const button = (tab, title) => tab.locator(`button[title="${title}"]`).first();
 async function fileRow(page, path) {
     const name = path.split('/').pop();
     await page.waitForFunction(n => [...document.querySelectorAll('a.file-row')].some(a => {
-        const found = a.textContent.replace(/[‎‏]/g, '').includes(n);
+        const found = a.textContent.replace(/[\u200e\u200f]/g, '').includes(n);
         if (found) a.dataset.demoRow = n;
         return found;
     }), name, { timeout: 20000 });
@@ -201,7 +223,7 @@ async function openBlob(ref, path) {
 
 // Cuts the clip's spans out of the per-tab videos and joins them into <name>.gif.
 // The clip's tabs are closed first: a video is complete only once its page is.
-async function finishClip(name, width) {
+async function finishClip(name, width, fps = width >= 1000 ? 12 : 10, colors = 128) {
     onScreen(null);
     const clipSpans = spans;
     spans = [];
@@ -220,9 +242,8 @@ async function finishClip(name, width) {
     writeFileSync(list, parts.map(p => `file '${p}'`).join('\n'));
     const mp4 = join(OUT, 'video', `${name}.mp4`);
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', mp4]);
-    const fps = width >= 1000 ? 12 : 10;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', mp4, '-vf',
-        `fps=${fps},scale=${width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
+        `fps=${fps},scale=${width}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=${colors}:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
         join(OUT, `${name}.gif`)]);
     const seconds = clipSpans.reduce((sum, s) => sum + (s.to - s.from), 0) / 1000;
     console.log(`${name}.gif: ${seconds.toFixed(1)} s in ${clipSpans.length} span(s)`);
@@ -254,15 +275,22 @@ const CLIPS = {
     async buttons() {
         const mr = await openMr(KOTLIN);
         onScreen(mr);
-        await pause(1800);                                    // a Kotlin file: no button
-        await click(mr, await fileRow(mr, BPMN));
-        await fileButton(mr, 'Schema diff').waitFor({ timeout: 20000 });
-        await glideTo(mr, fileButton(mr, 'Schema diff'));
-        await pause(1300);
-        await click(mr, await fileRow(mr, DMN));
-        await fileButton(mr, 'Decision diff').waitFor({ timeout: 20000 });
-        await glideTo(mr, fileButton(mr, 'Decision diff'));
-        await pause(1300);
+        await pause(1200);                                    // a Kotlin file: no button
+        // GitLab greys the diff out while the picked file loads: leave that out.
+        const pick = async (path, label) => {
+            await glideTo(mr, await fileRow(mr, path));
+            await mr.mouse.down();
+            await pause(150);                                 // the ripple
+            onScreen(null);
+            await mr.mouse.up();
+            await fileButton(mr, label).waitFor({ timeout: 20000 });
+            await pause(800);
+            onScreen(mr);
+            await glideTo(mr, fileButton(mr, label));
+            await pause(1200);
+        };
+        await pick(BPMN, 'Schema diff');
+        await pick(DMN, 'Decision diff');
         onScreen(null);
         const blob = await openBlob('main', BPMN);
         onScreen(blob);
@@ -272,7 +300,7 @@ const CLIPS = {
         await pause(1800);                                    // "Diff with local file…"
         await blob.keyboard.press('Escape');
         await pause(500);
-        await finishClip('buttons', 800);
+        await finishClip('buttons', 800, 8, 64);         // GitLab pages: busy, and heavy as GIF
     },
 
     // The detail of a change: the changes table, a condition, a type change.
@@ -282,12 +310,14 @@ const CLIPS = {
         await pause(1000);
         await click(diff, diff.getByRole('button', { name: 'Show changes' }));
         await pause(1300);
-        await click(diff, diff.locator('table.changes-table tbody tr', { hasText: 'CancelOrder' }).first());
+        await click(diff, diff.locator('table.changes-table tbody tr', { hasText: 'ApplyExpressShipping' }).first());
         await pause(1800);                                    // the row selects the element
         await click(diff, diff.getByRole('button', { name: 'Hide changes' }));
         await pause(600);
         await click(diff, element(diff, 'CancelOrder'));
-        await pause(2000);                                    // the type change in the panel header
+        await pause(500);
+        await glideTo(diff, diff.locator('.bio-properties-panel-header').first());
+        await pause(1800);                                    // the panel header marks the new type
         await click(diff, element(diff, 'Flow_yes'));
         await pause(2800);                                    // the condition, line by line
         await finishClip('details', 800);
@@ -314,51 +344,44 @@ const CLIPS = {
         await pause(1500);                                    // blue and grey </> badges
         await clickAway(diff, badge(diff, 'ValidateOrder', '.handler-link'), mrLands(mr));
         await pause(2400);                                    // its diff in this MR
-        onScreen(null);
-        await diff.bringToFront();
-        await pause(300);
-        onScreen(diff);
+        await backTo(diff);
         await click(diff, element(diff, 'NotifyCustomer'));
         await pause(700);
         await clickAway(diff, badge(diff, 'NotifyCustomer', '.handler-link'), toNewTab(gitlabReady));
         await pause(2200);                                    // the unchanged handler's file
-        onScreen(null);
-        await diff.bringToFront();
-        await pause(300);
-        onScreen(diff);
+        await backTo(diff);
         await click(diff, element(diff, 'AwaitPayment'));
         await pause(700);
         await clickAway(diff, badge(diff, 'AwaitPayment', '.correlation-link'), toNewTab(gitlabReady));
         await pause(2400);                                    // where OrderPaid is correlated
-        await finishClip('code', 800);
+        await finishClip('code', 800, 8, 64);
     },
 
     // Across diagrams: dive in twice, find every caller, open the DMN.
     async diagrams() {
         const { mr, diff } = await openDiff();
         onScreen(diff);
+        await pause(800);
         await click(diff, element(diff, 'Payment'));
         await pause(600);
         const payment = await clickAway(diff, badge(diff, 'Payment', '.dive-in-call-activity'), toNewTab());
         await pause(1000);
         await clickAway(payment, badge(payment, 'ChargeCustomer', '.handler-link'), mrLands(mr));
         await pause(2200);                                    // its handler's diff, in the same MR
-        onScreen(null);
-        await payment.bringToFront();
-        await pause(300);
-        onScreen(payment);
+        await backTo(payment);
         await click(payment, element(payment, 'ManualReview'));
         await pause(600);
         const review = await clickAway(payment, badge(payment, 'ManualReview', '.dive-in-call-activity'), toNewTab());
-        await pause(1500);
+        await pause(900);
         await clickAway(review, review.locator('.differ-back-group button').first(), async () => {
-            await pause(800);
+            await review.waitForEvent('close', { timeout: 30000 });
+            await pause(500);
             return payment;
         });
         await pause(600);
         await click(payment, payment.locator('.differ-back-caret'));
         await payment.locator('.differ-back-menu-item').nth(1).waitFor({ timeout: 30000 });
-        await pause(2200);                                    // every diagram that calls Payment
+        await pause(1700);                                    // every diagram that calls Payment
         await payment.keyboard.press('Escape');
         await click(payment, element(payment, 'AssessRisk'));
         await pause(600);
@@ -397,7 +420,13 @@ const CLIPS = {
         const { diff } = await openDiff();
         const edit = await clickAway(diff, button(diff, 'Edit this diagram in a new tab'), toNewTab());
         spans = spans.filter(s => s.page === edit);           // the clip starts in the editor
-        await pause(1000);
+        await pause(800);
+        // Shift the diagram left: the edits are on its right edge, where the context
+        // pad would otherwise slip under the properties panel. Zooming out instead
+        // would make the labels unreadable in the GIF.
+        await edit.mouse.move(SIZE.width / 3, SIZE.height - 100);
+        for (let i = 0; i < 3; i++) { await edit.mouse.wheel(60, 0); await pause(120); }
+        await pause(600);
         const pad = action => edit.locator(`.djs-context-pad .entry[data-action="${action}"]`).first();
         await click(edit, element(edit, 'OrderCancelled'));
         await pause(400);
@@ -430,15 +459,23 @@ const CLIPS = {
         await pause(400);
         await click(edit, button(edit, 'Colour the selection orange'));
         await pause(1300);
+        if (shotsWanted) {
+            onScreen(null);                                    // the screenshot is not part of the clip
+            await edit.mouse.click(SIZE.width / 3, SIZE.height - 60);
+            await pause(800);
+            await shot(edit, '5-edit-mode.png');
+            await cursor(edit);
+            onScreen(edit);
+        }
+        // The download carries the diff colours only while they are on; off, it
+        // holds just the edits and the pool's own colour, which the local-diff
+        // clip then compares cleanly.
+        await click(edit, button(edit, 'Colour the edits — on'));
+        await pause(700);
         const download = edit.waitForEvent('download', { timeout: 15000 });
         await click(edit, button(edit, 'Download the edited .bpmn'));
         await (await download).saveAs(EDITED);
         await pause(1200);
-        if (shotsWanted) {
-            await edit.mouse.click(SIZE.width / 3, SIZE.height - 60);
-            await pause(800);
-            await shot(edit, '5-edit-mode.png');
-        }
         await finishClip('edit', 800);
     },
 
@@ -451,14 +488,16 @@ const CLIPS = {
         await click(blob, blob.locator(`${BLOB_BUTTON}-caret`));
         await pause(700);
         const chooser = blob.waitForEvent('filechooser', { timeout: 10000 });
-        await clickAway(blob, blob.locator(`${BLOB_BUTTON}-local`), async () => {
+        const differ = await clickAway(blob, blob.locator(`${BLOB_BUTTON}-local`), async () => {
             const tab = context.waitForEvent('page', { timeout: 30000 });
             await (await chooser).setFiles(EDITED);
             const differ = await tab;
             await differReady(differ);
             return differ;
         });
-        await pause(3200);                                    // only the edits are coloured
+        await pause(2400);                                    // the edits, coloured
+        await click(differ, differ.getByRole('button', { name: 'Switch branch' }));
+        await pause(2200);                                    // the deleted end event, in red
         await finishClip('local', 800);
     }
 };
@@ -471,18 +510,21 @@ async function shot(page, name) {
     await pause(400);
     await page.screenshot({ path: join(OUT, 'screenshots', name) });
 }
+// A plain click at the element's centre: a connection's hit path is hidden, so
+// Playwright's own click() would wait for it to become visible.
+async function tap(page, locator) {
+    const box = await locator.boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+}
 async function screenshots() {
     const { diff } = await openDiff();
-    await diff.mouse.click(SIZE.width / 3, SIZE.height - 140);     // empty canvas: no selection
-    await pause(800);
-    await shot(diff, '../tile-source.png');
-    await element(diff, 'ValidateOrder').click();
+    await tap(diff, element(diff, 'ValidateOrder'));
     await pause(1500);
     await shot(diff, '1-bpmn-diff.png');
-    await element(diff, 'Flow_yes').click();
+    await tap(diff, element(diff, 'Flow_yes'));
     await pause(1500);
     await shot(diff, '2-condition.png');
-    await element(diff, 'Payment').click();
+    await tap(diff, element(diff, 'Payment'));
     await pause(800);
     await badge(diff, 'Payment', '.dive-in-call-activity').click();
     const payment = await toNewTab()();
@@ -492,7 +534,7 @@ async function screenshots() {
     await pause(800);
     await shot(payment, '3-callers.png');
     await payment.keyboard.press('Escape');
-    await element(payment, 'AssessRisk').click();
+    await tap(payment, element(payment, 'AssessRisk'));
     await pause(800);
     await badge(payment, 'AssessRisk', '.dive-in-call-activity').click();
     const dmn = await toNewTab()();
@@ -525,7 +567,10 @@ try {
             throw error;
         }
     }
-    if (shotsWanted) await screenshots();
+    if (shotsWanted) {
+        if (!wanted.includes('edit')) console.warn('screenshots/5-edit-mode.png comes from the edit clip: not refreshed');
+        await screenshots();
+    }
 } finally {
     await restoreLayout();
     await context.close();

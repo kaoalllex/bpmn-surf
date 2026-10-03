@@ -22,7 +22,7 @@ function stubChromeApis() {
             getManifest: () => ({ version: '0.0.0', content_scripts: [{ matches: ['https://gitlab.com/*'] }] })
         },
         permissions: {
-            getAll: async () => ({ origins: ['https://gitlab.mycompany.com/*'] }),
+            getAll: async () => ({ origins: ['https://gitlab.acme.io/*'] }),
             request: async () => { window.permissionRequests = (window.permissionRequests || 0) + 1; return true; },
             remove: async () => true
         },
