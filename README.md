@@ -59,9 +59,13 @@ request, and on a diagram file in the repository.
 - Visual diff of two BPMN/DMN versions in a merge request (MR branch vs. target branch), opened from a **Schema diff** / **Decision diff** button that appears on the MR page
 - Diff of a selected MR commit against its parent
 - Diff of a repository file against a local version (**Diff with local file…** in the menu of the **View schema** button)
-- Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified
-- Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries
-- A changes table — click an entry to jump to its element
+- Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified — with a ☼ toggle to turn it off
+- Switching between the shown versions (the **Switch branch** button) — the target branch is shown by name, not by hash — and downloading either of them
+- A clear indication when a schema is absent in one of the versions
+- A list of all changes — elements and connections, with what changed in each; click an entry to jump to its element, even inside a collapsed subprocess
+- Highlighting of the properties-panel groups affected by a change; an element whose type changed is marked in the panel header
+- Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries, and the changed lines of a sequence-flow condition
+- A collapsed subprocess is outlined when something inside it changed
 
 ![The changes table selects an element; the panel header marks a task's new type; a sequence-flow condition with only the changed lines highlighted](docs/media/details.gif)
 
@@ -70,22 +74,23 @@ request, and on a diagram file in the repository.
 **Browsing & navigation**
 
 - Viewing a BPMN schema or DMN decision from a repository file, without a diff — opened from a **View schema** / **View decision** button next to the file name
+- A clickable file path in the header (opens the file in the repository)
 - Diving from a Call Activity into the called process — and stepping back to the caller
+- A menu of every diagram that calls the one on screen
 - Navigating from a Business Rule Task to the called DMN — and back
-- Jumping to the handler code of a service task (external task or delegate)
+- Jumping to the handler code of a service task (external task or delegate) — to its diff when the merge request changed it
 - Jumping from a message-catching event/task to where its message is correlated in code
 
-![Handler badges: a handler changed in the merge request opens its diff there, an unchanged one opens its file; the message badge opens the code that correlates the message](docs/media/code.gif)
-
 ![Diving into a call activity, whose changed handler opens its diff in the merge request; diving further down; the menu of every diagram that calls this one; and a business rule task opening its DMN decision with the merge request's changes](docs/media/diagrams.gif)
+
+![Handler badges: a handler changed in the merge request opens its diff there, an unchanged one opens its file; the message badge opens the code that correlates the message](docs/media/code.gif)
 
 **Reading a diagram**
 
 - A properties panel with element details, including readable sequence-flow conditions
-- The properties panel auto-expands the groups relevant to the selected element
-- Highlighting of properties-panel groups affected by a change
-- Searching for an element on the canvas
-- A clear indication when a schema is absent in one of the versions
+- The properties panel auto-expands the groups relevant to the selected element, and can be resized or hidden
+- Searching for an element on the canvas (Ctrl/Cmd+F)
+- Viewport controls: zoom/pan and **Fit view**
 
 ![Ctrl/Cmd+F search stepping through the matches, then zooming in and fitting the view](docs/media/search.gif)
 
@@ -98,14 +103,11 @@ request, and on a diagram file in the repository.
 
 ![Edit mode: deleting an end event, appending a task, changing a task's type, renaming it, toggling the colouring, colouring a pool and downloading the result](docs/media/edit.gif)
 
+To review your edits before committing them, open the diagram's file in the repository,
+pick **Diff with local file…** in the menu of the **View schema** button and choose the
+downloaded file: the edits show up as an ordinary diff against the branch.
+
 ![The downloaded file compared with the branch through Diff with local file…: the edits are coloured, and Switch branch shows the deleted end event in red](docs/media/local.gif)
-
-**Versions & viewport**
-
-- Switching between the shown versions (the **Switch branch** button); the target branch is shown by name, not by hash
-- A clickable file path in the header (opens the file in the repository)
-- Downloading any of the shown versions
-- Viewport controls (zoom/pan, "Fit view"), a highlight toggle, and a resizable properties panel
 
 ## Links
 
