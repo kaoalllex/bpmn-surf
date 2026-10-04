@@ -121,3 +121,45 @@ describe('DifferTabNavigator cross-tab registry', () => {
         assert.equal(cFound, false);
     });
 });
+
+describe('DifferTabNavigator#navigateOpenerTab', () => {
+    // Tabs as the differ sees them through window.opener: a differ tab is an
+    // about:blank page, the MR is the GitLab page that opened the first differ.
+    const tab = (href, opener = null) => ({ closed: false, name: '', location: { href }, opener });
+
+    function navigateFrom(opener, url) {
+        const scope = createScope();
+        Object.defineProperty(scope.window, 'opener', { value: opener, configurable: true });
+        const opened = [];
+        scope.window.open = (href, target) => {
+            // Which tab carried the target name at the moment of the call.
+            opened.push({ href, named: [opener, opener && opener.opener].find(t => t && t.name === target) });
+        };
+        const result = new scope.DifferTabNavigator({ createChannel: () => null }).navigateOpenerTab(url);
+        return { result, opened };
+    }
+
+    it('navigates the MR tab that opened this differ', () => {
+        const mr = tab('https://gitlab.example/p/-/merge_requests/1/diffs');
+        const { result, opened } = navigateFrom(mr, 'https://gitlab.example/p/-/merge_requests/1/diffs#abc');
+        assert.equal(result, true);
+        assert.equal(opened[0].named, mr);
+    });
+
+    it('skips a parent differ tab and navigates the MR tab above it', () => {
+        // A differ opened by dive-in: navigating its opener would replace the
+        // parent diagram with the GitLab page.
+        const mr = tab('https://gitlab.example/p/-/merge_requests/1/diffs');
+        const parentDiffer = tab('about:blank', mr);
+        const { result, opened } = navigateFrom(parentDiffer, 'https://gitlab.example/p/-/merge_requests/1/diffs#abc');
+        assert.equal(result, true);
+        assert.equal(opened[0].named, mr);
+    });
+
+    it('declines when only differ tabs are left above (then a new tab opens)', () => {
+        const parentDiffer = tab('about:blank', null);
+        const { result, opened } = navigateFrom(parentDiffer, 'https://gitlab.example/x');
+        assert.equal(result, false);
+        assert.equal(opened.length, 0);
+    });
+});

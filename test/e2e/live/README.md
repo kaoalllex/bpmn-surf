@@ -126,5 +126,8 @@ The legacy diffs UI — what self-managed GitLab serves — is available on
 gitlab.com too: append `?rapid_diffs_disabled=true` to an MR diffs URL (that is
 what `--legacy` does). `?rapid_diffs=false` does *not* switch it.
 
-File blocks are anchored by `sha1(path)` in both UIs (element ids); the
-`HandlerLocator#mrFileDiffUrl` deep link relies on it.
+File blocks are anchored by `sha1(path)` in both UIs (element ids). The
+`HandlerLocator#mrFileDiffUrl` deep link is `diffs?file_path=<path>#<sha1(path)>`,
+the same as GitLab's own file-tree links. With "Show one file at a time" on, rapid
+diffs ignores a bare anchor, even on a fresh load, and picks the file only from
+`file_path`.
