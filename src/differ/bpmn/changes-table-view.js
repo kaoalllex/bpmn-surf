@@ -1,11 +1,39 @@
-// Table of changed/added/removed elements in the footer of the differ page
+// List of changed/added/removed elements in the footer of the differ page
 class ChangesTableView {
+    static #CHANGE_GLYPHS = new Map([
+        [DiffType.ADD.name, '+'],
+        [DiffType.CHANGE.name, '~'],
+        [DiffType.REMOVE.name, '−']
+    ]);
+
+    // Types whose bpmn-font icon name is not the kebab-cased type
+    static #TYPE_ICON_NAMES = new Map([
+        ['ExclusiveGateway', 'gateway-xor'],
+        ['InclusiveGateway', 'gateway-or'],
+        ['ParallelGateway', 'gateway-parallel'],
+        ['EventBasedGateway', 'gateway-eventbased'],
+        ['ComplexGateway', 'gateway-complex'],
+        ['AdHocSubProcess', 'ad-hoc-subprocess'],
+        ['SequenceFlow', 'connection'],
+        ['MessageFlow', 'connection'],
+        ['DataObjectReference', 'data-object'],
+        ['DataStoreReference', 'data-store']
+    ]);
+
+    // Event definitions whose bpmn-font name is not the lower-cased definition name
+    static #EVENT_ICON_NAMES = new Map([
+        ['Conditional', 'condition'],
+        ['Compensate', 'compensation']
+    ]);
+
     #changedTextElement;
     #addedRemovedLabelElement;
     #addedRemovedTextElement;
     #table;
     #elementRegistry = null;
     #highlighter = null;
+    #canvas = null;
+    #selection = null;
     #selectedRow = null;
     #selectedElem = null;
 
@@ -16,26 +44,28 @@ class ChangesTableView {
         this.#table = table;
     }
 
-    init(elementRegistry, highlighter) {
+    init(elementRegistry, highlighter, canvas, selection) {
         this.#elementRegistry = elementRegistry;
         this.#highlighter = highlighter;
+        this.#canvas = canvas;
+        this.#selection = selection;
     }
 
-    fill(rootBpmnNode, diffTypeForMissing, missingShapeIds, missingRowIds, changedShapeIds, changedRowIds) {
-        // do not add rows to the change table yet
-        const changedElems = this.#getElemsForTable(changedShapeIds, DiffType.CHANGE);
-        const missingElems = this.#getElemsForTable(missingShapeIds, diffTypeForMissing);
+    fill(diff, diffTypeForMissing) {
+        const changedElems = this.#getElemsForTable(
+            [...diff.changedShapeIds, ...diff.changedRowIds], DiffType.CHANGE);
+        const missingElems = this.#getElemsForTable(
+            [...diff.missingShapeIds, ...diff.missingRowIds], diffTypeForMissing);
 
         if (diffTypeForMissing === DiffType.ADD) {
             this.#addedRemovedLabelElement.textContent = 'Added:';
         } else {
             this.#addedRemovedLabelElement.textContent = 'Removed:';
         }
-        this.#changedTextElement.textContent = `${changedElems.length} elements (${changedRowIds.length} rows)`;
-        this.#addedRemovedTextElement.textContent = `${missingElems.length} elements (${missingRowIds.length} rows)`;
+        this.#changedTextElement.textContent = String(changedElems.length);
+        this.#addedRemovedTextElement.textContent = String(missingElems.length);
 
-        // Remove all old rows from the table
-        this.#table.innerHTML = "";
+        this.#table.innerHTML = '';
 
         const allElems = [...changedElems, ...missingElems];
         if (allElems.length === 0) {
@@ -46,10 +76,11 @@ class ChangesTableView {
         const tbody = document.createElement('tbody');
         this.#table.appendChild(tbody);
 
-        const sortedElems = this.#sortChangedElems(rootBpmnNode, allElems);
-
-        for (const [elem, diffType] of sortedElems) {
-            this.#addRow(tbody, diffType, elem);
+        for (const [elem, diffType] of this.#sortChangedElems(diff.processNode, allElems)) {
+            const whatChanged = diffType === DiffType.CHANGE
+                ? ChangesTableView.whatChanged(elem.id, diff.nodeIdToDiffsMap, diff.typeChangedIds)
+                : '';
+            this.#addRow(tbody, diffType, elem, whatChanged);
         }
     }
 
@@ -67,31 +98,73 @@ class ChangesTableView {
 
     resetSelection() {
         if (this.#selectedRow) {
-            this.#selectedRow.style.backgroundColor = '#ffffff';
+            this.#selectedRow.classList.remove('selected');
         }
         if (this.#selectedElem) {
             this.#highlighter.removeMarker(this.#selectedElem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
         }
     }
 
-    // This sorting reflects the order in which elements are added to the bpmn schema,
-    // not the sequence of elements passing through it
+    // The changed property groups of an element, as the properties panel names them
+    static whatChanged(elemId, nodeIdToDiffsMap, typeChangedIds) {
+        const items = new Set(nodeIdToDiffsMap.get(elemId) ?? []);
+        return [...(typeChangedIds.includes(elemId) ? ['Type'] : []), ...items].join(', ');
+    }
+
+    // bpmn-font class of the icon for a bpmn-js element; an unknown type yields a
+    // class with no glyph, which leaves the title (the type) to name it
+    static iconClass(elem) {
+        const bo = elem.businessObject;
+        const type = bo.$type.replace(/^bpmn:/, '');
+        let name;
+        if (type.endsWith('Event')) {
+            name = ChangesTableView.#eventIconName(bo, type);
+        } else if (type === 'SubProcess') {
+            const kind = bo.triggeredByEvent ? 'event-subprocess' : 'subprocess';
+            name = `${kind}-${elem.collapsed ? 'collapsed' : 'expanded'}`;
+        } else if (type === 'SequenceFlow' && bo.sourceRef?.default === bo) {
+            name = 'default-flow';
+        } else if (type === 'SequenceFlow' && bo.conditionExpression) {
+            name = 'conditional-flow';
+        } else {
+            name = ChangesTableView.#TYPE_ICON_NAMES.get(type)
+                ?? type.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        }
+        return `bpmn-icon-${name}`;
+    }
+
+    static #eventIconName(bo, type) {
+        const definitions = bo.eventDefinitions ?? [];
+        let kind = 'none';
+        if (definitions.length > 1) {
+            kind = 'multiple';
+        } else if (definitions.length === 1) {
+            const definition = definitions[0].$type.replace(/^bpmn:|EventDefinition$/g, '');
+            kind = ChangesTableView.#EVENT_ICON_NAMES.get(definition) ?? definition.toLowerCase();
+        }
+        switch (type) {
+            case 'StartEvent':
+                return `start-event-${bo.isInterrupting === false ? 'non-interrupting-' : ''}${kind}`;
+            case 'EndEvent':
+                return `end-event-${kind}`;
+            case 'IntermediateThrowEvent':
+                return kind === 'none' ? 'intermediate-event-none' : `intermediate-event-throw-${kind}`;
+            default:
+                // IntermediateCatchEvent, BoundaryEvent
+                return `intermediate-event-catch-${bo.cancelActivity === false ? 'non-interrupting-' : ''}${kind}`;
+        }
+    }
+
+    // Document order of the element ids: the order in which elements were added to the
+    // schema, not the sequence of elements passing through it. Ids outside the
+    // document go last.
     #sortChangedElems(rootBpmnNode, elemToDiffTypeArray) {
         const idToIndexMap = new Map();
-        Array.from(rootBpmnNode.querySelectorAll('[id]'))
-            .map(elem => elem.getAttribute('id'))
-            .filter(id => id)
-            .forEach((id, index) => {
-                idToIndexMap.set(id, index);
-            });
+        Array.from(rootBpmnNode.ownerDocument.querySelectorAll('[id]'))
+            .forEach((node, index) => idToIndexMap.set(node.getAttribute('id'), index));
 
-        elemToDiffTypeArray.sort(([elemA, dtA], [elemB, dtB]) => {
-            const indexA = idToIndexMap.get(elemA.id);
-            const indexB = idToIndexMap.get(elemB.id);
-            return indexA - indexB;
-        });
-
-        return elemToDiffTypeArray;
+        const indexOf = (elem) => idToIndexMap.get(elem.id) ?? Number.MAX_SAFE_INTEGER;
+        return elemToDiffTypeArray.sort(([elemA], [elemB]) => indexOf(elemA) - indexOf(elemB));
     }
 
     #getElemsForTable(elemIds, diffType) {
@@ -104,111 +177,86 @@ class ChangesTableView {
     #addHeader() {
         const thead = document.createElement('thead');
         this.#table.appendChild(thead);
-
         const row = document.createElement('tr');
         thead.appendChild(row);
 
-        const cellChange = document.createElement('th');
-        cellChange.style.minWidth = '60px';
-        cellChange.appendChild(document.createTextNode('Change'));
-        row.appendChild(cellChange);
-
-        const cellId = document.createElement('th');
-        cellId.style.minWidth = '60px';
-        cellId.appendChild(document.createTextNode('Id'));
-        row.appendChild(cellId);
-
-        const cellName = document.createElement('th');
-        cellName.style.minWidth = '200px';
-        cellName.appendChild(document.createTextNode('Name'));
-        row.appendChild(cellName);
-
-        const cellType = document.createElement('th');
-        cellType.style.minWidth = '200px';
-        cellType.appendChild(document.createTextNode('Type'));
-        row.appendChild(cellType);
-
-        const cellProps = document.createElement('th');
-        cellProps.style.width = '100%';
-        cellProps.appendChild(document.createTextNode('Properties'));
-        row.appendChild(cellProps);
+        for (const [text, className] of [
+            ['', 'changes-table-icons'], ['Element', 'changes-table-element'], ['What changed', '']
+        ]) {
+            const cell = document.createElement('th');
+            cell.className = className;
+            cell.textContent = text;
+            row.appendChild(cell);
+        }
     }
 
-    #addRow(tbody, diffType, elem) {
-        const elemId = elem.id;
-        let name = '';
-        let type = '';
-        let propsHtml = '';
-        if (elem && elem.di && elem.di.bpmnElement) {
-            const bpmnElement = elem.di.bpmnElement;
-
-            name = bpmnElement.name;
-            type = bpmnElement.$type;
-            if (type.startsWith('bpmn:')) {
-                type = type.slice(5);
-            }
-
-            switch (type) {
-                case 'ServiceTask':
-                    if (bpmnElement.delegateExpression) {
-                        propsHtml = `delegate = ${bpmnElement.delegateExpression}`;
-                    } else if (bpmnElement.topic) {
-                        propsHtml = `topic = ${bpmnElement.topic}`;
-                    } else if (bpmnElement.expression) {
-                        propsHtml = `expression = ${bpmnElement.expression}`;
-                    }
-                    propsHtml += '<br>';
-
-                case 'CallActivity':
-                    propsHtml += `
-                        asyncBefore = ${bpmnElement.asyncBefore}<br>
-                        asyncAfter = ${bpmnElement.asyncAfter}<br>
-                        exclusive = ${bpmnElement.exclusive}`;
-                    break;
-
-                default:
-            }
-            // console.debug('bpmnElement', bpmnElement);
-        }
+    #addRow(tbody, diffType, elem, whatChanged) {
+        const bo = elem.businessObject;
+        const type = bo.$type.replace(/^bpmn:/, '');
 
         const row = document.createElement('tr');
+        row.dataset.elementId = elem.id;
         tbody.appendChild(row);
 
-        const cellChange = document.createElement('td');
-        cellChange.style.backgroundColor = diffType.shapeColor;
-        cellChange.appendChild(document.createTextNode(diffType.name));
-        row.appendChild(cellChange);
+        const cellIcons = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = 'changes-table-badge';
+        badge.style.backgroundColor = diffType.shapeColor;
+        badge.title = diffType.name;
+        badge.textContent = ChangesTableView.#CHANGE_GLYPHS.get(diffType.name);
+        const typeIcon = document.createElement('span');
+        typeIcon.className = `changes-table-type ${ChangesTableView.iconClass(elem)}`;
+        typeIcon.title = type;
+        cellIcons.append(badge, typeIcon);
+        row.appendChild(cellIcons);
 
-        const cellId = document.createElement('td');
-        cellId.appendChild(document.createTextNode(elemId));
-        row.appendChild(cellId);
+        const cellElement = document.createElement('td');
+        const label = ChangesTableView.#label(elem);
+        cellElement.appendChild(document.createTextNode(label || elem.id));
+        if (label && label !== elem.id) {
+            const idSpan = document.createElement('span');
+            idSpan.className = 'changes-table-id';
+            idSpan.textContent = elem.id;
+            cellElement.appendChild(idSpan);
+        }
+        row.appendChild(cellElement);
 
-        const cellName = document.createElement('td');
-        cellName.appendChild(document.createTextNode(name));
-        row.appendChild(cellName);
+        const cellChanged = document.createElement('td');
+        cellChanged.textContent = whatChanged;
+        row.appendChild(cellChanged);
 
-        const cellType = document.createElement('td');
-        cellType.appendChild(document.createTextNode(type));
-        row.appendChild(cellType);
+        row.addEventListener('click', () => this.#onRowSelected(row, elem.id));
+    }
 
-        const cellProps = document.createElement('td');
-        cellProps.innerHTML = propsHtml;
-        row.appendChild(cellProps);
-
-        row.addEventListener('click', (event) => this.#onRowSelected(row, elemId));
+    // A connection is told apart by its ends: "name (Source → Target)"
+    static #label(elem) {
+        const name = elem.businessObject.name ?? '';
+        if (!elem.source || !elem.target) {
+            return name;
+        }
+        const end = (shape) => shape.businessObject.name || shape.id;
+        const ends = `${end(elem.source)} → ${end(elem.target)}`;
+        return name ? `${name} (${ends})` : ends;
     }
 
     #onRowSelected(row, elemId) {
         this.resetSelection();
 
         this.#selectedRow = row;
-        this.#selectedRow.style.backgroundColor = '#ffffdd';
+        this.#selectedRow.classList.add('selected');
 
         this.#selectedElem = this.#elementRegistry.get(elemId);
-        if (this.#selectedElem) {
-            this.#highlighter.addMarker(this.#selectedElem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
-        } else {
+        if (!this.#selectedElem) {
             console.warn('onRowSelected: bpmn elem not found by id: ' + elemId);
+            return;
+        }
+        this.#highlighter.addMarker(this.#selectedElem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
+        try {
+            // Also switches to the element's plane when it sits in a collapsed subprocess
+            this.#canvas.scrollToElement(this.#selectedElem);
+            this.#selection.select(this.#selectedElem);
+        } catch (error) {
+            // The root element (a process-level change) can be neither scrolled to nor selected
         }
     }
 }

@@ -28,10 +28,11 @@ test('BUG-0010: marks every subprocess enclosing a changed child', async ({ page
     // The table and the counter list the leaf only.
     await page.getByRole('button', { name: 'Show changes' }).click();
     const table = page.locator('table.changes-table');
-    await expect(table.locator('tbody tr', { hasText: 'DeepTask_1' })).toContainText('changed');
+    await expect(table.locator('tbody tr', { hasText: 'DeepTask_1' }).locator('.changes-table-badge'))
+        .toHaveAttribute('title', 'changed');
     await expect(table.locator('tbody tr', { hasText: 'SubProcess_1' })).toHaveCount(0);
     await expect(table.locator('tbody tr', { hasText: 'CollapsedSub_1' })).toHaveCount(0);
-    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1 elements (0 rows)');
+    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1');
 
     await page.getByTitle('Turn diff highlight on').click();
     await expect(element('SubProcess_1')).toHaveClass(/highlight-diff/);

@@ -92,7 +92,8 @@ class BpmnDiffer {
         this.#viewport.setBpmnCanvas(bpmnJSCanvas);
         this.#diffHighlighter = new DiffHighlighter(bpmnJSCanvas, this.#elementRegistry, bpmnJSModeling);
         if (this.#changesTableView) {
-            this.#changesTableView.init(this.#elementRegistry, this.#diffHighlighter);
+            this.#changesTableView.init(
+                this.#elementRegistry, this.#diffHighlighter, bpmnJSCanvas, this.#selection);
         }
         this.#propertiesPanelHighlighter.init(this.#elementRegistry);
         this.#propertiesGroupExpander.init(this.#elementRegistry);
@@ -655,14 +656,7 @@ class BpmnDiffer {
         // FEAT-0031: edit mode renders no changes table (see BpmnDifferView#build),
         // but the canvas colouring above must still run — it is colour layer 3.
         if (this.#changesTableView) {
-            this.#changesTableView.fill(
-                diff.processNode,
-                diffTypeForMissing,
-                diff.missingShapeIds,
-                diff.missingRowIds,
-                diff.changedShapeIds,
-                diff.changedRowIds
-            );
+            this.#changesTableView.fill(diff, diffTypeForMissing);
         }
 
         this.#diffHighlighter.applyIfEnabled();

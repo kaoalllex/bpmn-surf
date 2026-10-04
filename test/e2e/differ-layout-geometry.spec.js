@@ -37,10 +37,11 @@ test('lays the toolbar controls out on a single row (equal centers)', async ({ p
     expect(max - min).toBeLessThanOrEqual(4);
 });
 
-// BUG-0021/UX-0005: the changes-table body scrolls within a capped container
-// (max-height:250px) so a long table never pushes the footer off-screen. Reveal
-// the table, then assert the wrapping div's max-height.
-test('caps the changes-table height at 250px', async ({ page }) => {
+// BUG-0021/UX-0005: the changes-table body scrolls within a fixed-height container
+// (250px), so a long table never pushes the footer off-screen and a Switch branch
+// that changes the row count does not resize the canvas. Reveal the table, then
+// assert the wrapping div's height.
+test('fixes the changes-table height at 250px', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page);
 
@@ -48,7 +49,8 @@ test('caps the changes-table height at 250px', async ({ page }) => {
     const table = page.locator('table.changes-table');
     await expect(table).toBeVisible();
 
-    // The wrapping div carries the inline max-height (BUG-0021 needs the unit).
+    // The wrapping div carries the inline height (BUG-0021 needs the unit); the
+    // two-row default scenario would be far shorter under a max-height.
     const wrapper = table.locator('xpath=..');
-    await expect(wrapper).toHaveCSS('max-height', '250px');
+    await expect(wrapper).toHaveCSS('height', '250px');
 });

@@ -631,7 +631,7 @@ class BpmnDifferView {
 
         const changedTextElement = document.createTextNode('');
         const cellChanged = document.createElement('td');
-        cellChanged.style.minWidth = '200px';
+        cellChanged.style.minWidth = '40px';
         cellChanged.style.height = '32px';
         cellChanged.appendChild(changedTextElement);
         row1.appendChild(cellChanged);
@@ -646,7 +646,7 @@ class BpmnDifferView {
 
         const addedRemovedTextElement = document.createTextNode('');
         const cellAddedRemoved = document.createElement('td');
-        cellAddedRemoved.style.minWidth = '200px';
+        cellAddedRemoved.style.minWidth = '40px';
         cellAddedRemoved.style.height = '32px';
         cellAddedRemoved.appendChild(addedRemovedTextElement);
         row1.appendChild(cellAddedRemoved);
@@ -655,7 +655,10 @@ class BpmnDifferView {
         const cellBody = document.createElement('td');
         cellBody.setAttribute("colspan", "5");
         const changesTableDiv = document.createElement('div');
-        changesTableDiv.style.maxHeight = '250px'; // BUG-0021: needs units, a bare Number serializes to invalid CSS and is ignored
+        // A fixed height, not a max: Switch branch changes the number of rows, and the
+        // canvas must not resize with it (UX-0005). BUG-0021: needs units, a bare Number
+        // serializes to invalid CSS and is ignored.
+        changesTableDiv.style.height = '250px';
         changesTableDiv.style.overflowY = 'auto';
         cellBody.appendChild(changesTableDiv);
         row2.appendChild(cellBody);

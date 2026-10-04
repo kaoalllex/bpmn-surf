@@ -6,9 +6,9 @@ const {
 } = require('./support/boot-differ');
 
 // Task_1 renamed → a single CHANGED shape on the MR side. The footer counters are
-// visible without revealing the table body: "Changed: 1 elements (0 rows)" and, since
-// nothing was added, the dynamic label stays "Added:" with "0 elements (0 rows)".
-// Revealing the table shows one "changed" row for Task_1.
+// visible without revealing the table body: "Changed: 1" and, since nothing was added,
+// the dynamic label stays "Added:" with "0". Revealing the table shows one "changed"
+// row for Task_1 that names the changed property group.
 test('shows a changed row and the changed/added counters', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, {
@@ -16,8 +16,8 @@ test('shows a changed row and the changed/added counters', async ({ page }) => {
     });
 
     // Counters are visible immediately (only the table body is hidden).
-    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1 elements (0 rows)');
-    await expect(page.locator('td:has-text("Added:") + td')).toHaveText('0 elements (0 rows)');
+    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1');
+    await expect(page.locator('td:has-text("Added:") + td')).toHaveText('0');
 
     await page.getByRole('button', { name: 'Show changes' }).click();
     const table = page.locator('table.changes-table');
@@ -25,7 +25,10 @@ test('shows a changed row and the changed/added counters', async ({ page }) => {
 
     const row = table.locator('tbody tr', { hasText: 'Task_1' });
     await expect(row).toBeVisible();
-    await expect(row).toContainText('changed');
-    await expect(row).toContainText('Approve request');
-    await expect(row).toContainText('UserTask');
+    await expect(row.locator('.changes-table-badge')).toHaveAttribute('title', 'changed');
+    await expect(row.locator('.changes-table-badge')).toHaveText('~');
+    await expect(row.locator('.changes-table-type')).toHaveAttribute('title', 'UserTask');
+    await expect(row.locator('.changes-table-type')).toHaveClass(/bpmn-icon-user-task/);
+    await expect(row.locator('td').nth(1)).toHaveText('Approve requestTask_1');
+    await expect(row.locator('td').nth(2)).toHaveText('General');
 });
