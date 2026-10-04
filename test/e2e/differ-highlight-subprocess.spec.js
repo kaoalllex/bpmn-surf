@@ -25,13 +25,14 @@ test('BUG-0010: marks every subprocess enclosing a changed child', async ({ page
     await expect(element('InnerTask_1').locator('.djs-visual > rect'))
         .not.toHaveCSS('stroke', 'rgb(0, 0, 170)');
 
-    // The table and the counter list the leaf only.
+    // The counter counts the leaf only; on the top plane the list shows it as a
+    // change inside the collapsed subprocess holding it (the expanded one is not
+    // a plane of its own, so it gets no row).
     await page.getByRole('button', { name: 'Show changes' }).click();
     const table = page.locator('table.changes-table');
-    await expect(table.locator('tbody tr', { hasText: 'DeepTask_1' })).toContainText('changed');
-    await expect(table.locator('tbody tr', { hasText: 'SubProcess_1' })).toHaveCount(0);
-    await expect(table.locator('tbody tr', { hasText: 'CollapsedSub_1' })).toHaveCount(0);
-    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1 elements (0 rows)');
+    await expect(table.locator('tbody tr')).toHaveCount(1);
+    await expect(table.locator('tbody tr', { hasText: 'CollapsedSub_1' })).toContainText('1 change inside');
+    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1');
 
     await page.getByTitle('Turn diff highlight on').click();
     await expect(element('SubProcess_1')).toHaveClass(/highlight-diff/);

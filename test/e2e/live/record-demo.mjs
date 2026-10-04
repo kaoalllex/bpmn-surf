@@ -323,13 +323,17 @@ const CLIPS = {
         await finishClip('details', 800);
     },
 
-    // A change inside a collapsed subprocess.
+    // A change inside a collapsed subprocess, on the canvas and in the changes list.
     async subprocess() {
         const { diff } = await openDiff();
         onScreen(diff);
         await pause(1500);                                    // "Reserve stock" outlined
+        await click(diff, diff.getByRole('button', { name: 'Show changes' }));
+        await pause(1500);                                    // its row: "1 change inside"
+        await click(diff, diff.locator('table.changes-table tbody tr', { hasText: 'ReserveStock' }).first());
+        await pause(1800);                                    // the row highlights the subprocess
         await click(diff, badge(diff, 'ReserveStock', '.bjs-drilldown'));
-        await pause(1200);
+        await pause(1800);                                    // inside, the list shows its own change
         await click(diff, element(diff, 'NotifyWarehouse'));
         await pause(2000);
         await click(diff, diff.locator('.bjs-breadcrumbs li').first());
