@@ -34,6 +34,9 @@ class ChangesTableView {
     #highlighter = null;
     #canvas = null;
     #selection = null;
+    #diff = null;
+    // [element, DiffType] of every change in the diagram, whichever plane it is on
+    #elems = [];
     #selectedRow = null;
     #selectedElem = null;
 
@@ -44,11 +47,14 @@ class ChangesTableView {
         this.#table = table;
     }
 
-    init(elementRegistry, highlighter, canvas, selection) {
+    init(elementRegistry, highlighter, canvas, selection, eventBus) {
         this.#elementRegistry = elementRegistry;
         this.#highlighter = highlighter;
         this.#canvas = canvas;
         this.#selection = selection;
+        // The list follows the plane on screen: drilling into a collapsed subprocess
+        // or back out of it
+        eventBus.on('root.set', () => this.#render());
     }
 
     fill(diff, diffTypeForMissing) {
@@ -62,13 +68,43 @@ class ChangesTableView {
         } else {
             this.#addedRemovedLabelElement.textContent = 'Removed:';
         }
+        // The counters cover the whole diagram, the list only the plane on screen
         this.#changedTextElement.textContent = String(changedElems.length);
         this.#addedRemovedTextElement.textContent = String(missingElems.length);
 
+        this.#diff = diff;
+        this.#elems = [...changedElems, ...missingElems];
+        this.#render();
+    }
+
+    // Lists the changes on the shown plane; the changes inside a collapsed subprocess
+    // on it, however deep, make one row of that subprocess
+    #render() {
+        this.resetSelection();
+        this.#selectedRow = null;
+        this.#selectedElem = null;
         this.#table.innerHTML = '';
 
-        const allElems = [...changedElems, ...missingElems];
-        if (allElems.length === 0) {
+        const shownRoot = this.#canvas.getRootElement();
+        const entries = new Map();
+        const entryOf = (elem) => {
+            if (!entries.has(elem.id)) {
+                entries.set(elem.id, { elem, diffType: null, inside: 0 });
+            }
+            return entries.get(elem.id);
+        };
+        for (const [elem, diffType] of this.#elems) {
+            const place = this.#placeOnPlane(elem, shownRoot);
+            if (!place) {
+                continue;
+            }
+            if (place.holder) {
+                entryOf(place.holder).inside++;
+            } else {
+                entryOf(elem).diffType = diffType;
+            }
+        }
+        if (entries.size === 0) {
             return;
         }
 
@@ -76,12 +112,27 @@ class ChangesTableView {
         const tbody = document.createElement('tbody');
         this.#table.appendChild(tbody);
 
-        for (const [elem, diffType] of this.#sortChangedElems(diff.processNode, allElems)) {
-            const whatChanged = diffType === DiffType.CHANGE
-                ? ChangesTableView.whatChanged(elem.id, diff.nodeIdToDiffsMap, diff.typeChangedIds)
-                : '';
-            this.#addRow(tbody, diffType, elem, whatChanged);
+        for (const entry of this.#sortEntries(this.#diff.processNode, [...entries.values()])) {
+            this.#addRow(tbody, entry);
         }
+    }
+
+    // Where elem shows on the given plane: { holder: null } when it lies on it,
+    // { holder: <collapsed subprocess on it> } when it lies on a plane under that
+    // subprocess, null when it is not under the plane at all
+    #placeOnPlane(elem, planeRoot) {
+        let plane = this.#canvas.findRoot(elem);
+        let holder = null;
+        while (plane && plane !== planeRoot) {
+            // A collapsed subprocess's plane shares its business object with the
+            // subprocess shape on the plane above; the top plane's resolves to itself
+            holder = this.#elementRegistry.get(plane.businessObject.id);
+            if (!holder || holder === plane) {
+                return null;
+            }
+            plane = this.#canvas.findRoot(holder);
+        }
+        return plane ? { holder } : null;
     }
 
     // Empties the table and counters — used when the shown side has no diagram
@@ -90,6 +141,8 @@ class ChangesTableView {
         this.resetSelection();
         this.#selectedRow = null;
         this.#selectedElem = null;
+        this.#diff = null;
+        this.#elems = [];
         this.#changedTextElement.textContent = '';
         this.#addedRemovedLabelElement.textContent = '';
         this.#addedRemovedTextElement.textContent = '';
@@ -158,13 +211,13 @@ class ChangesTableView {
     // Document order of the element ids: the order in which elements were added to the
     // schema, not the sequence of elements passing through it. Ids outside the
     // document go last.
-    #sortChangedElems(rootBpmnNode, elemToDiffTypeArray) {
+    #sortEntries(rootBpmnNode, entries) {
         const idToIndexMap = new Map();
         Array.from(rootBpmnNode.ownerDocument.querySelectorAll('[id]'))
             .forEach((node, index) => idToIndexMap.set(node.getAttribute('id'), index));
 
-        const indexOf = (elem) => idToIndexMap.get(elem.id) ?? Number.MAX_SAFE_INTEGER;
-        return elemToDiffTypeArray.sort(([elemA], [elemB]) => indexOf(elemA) - indexOf(elemB));
+        const indexOf = (entry) => idToIndexMap.get(entry.elem.id) ?? Number.MAX_SAFE_INTEGER;
+        return entries.sort((entryA, entryB) => indexOf(entryA) - indexOf(entryB));
     }
 
     #getElemsForTable(elemIds, diffType) {
@@ -190,7 +243,7 @@ class ChangesTableView {
         }
     }
 
-    #addRow(tbody, diffType, elem, whatChanged) {
+    #addRow(tbody, { elem, diffType, inside }) {
         const bo = elem.businessObject;
         const type = bo.$type.replace(/^bpmn:/, '');
 
@@ -201,9 +254,16 @@ class ChangesTableView {
         const cellIcons = document.createElement('td');
         const badge = document.createElement('span');
         badge.className = 'changes-table-badge';
-        badge.style.backgroundColor = diffType.shapeColor;
-        badge.title = diffType.name;
-        badge.textContent = ChangesTableView.#CHANGE_GLYPHS.get(diffType.name);
+        if (diffType) {
+            badge.style.backgroundColor = diffType.shapeColor;
+            badge.title = diffType.name;
+            badge.textContent = ChangesTableView.#CHANGE_GLYPHS.get(diffType.name);
+        } else {
+            // Unchanged itself: outlined, as the canvas strokes such a subprocess
+            badge.style.boxShadow = `inset 0 0 0 2px ${DiffType.CHANGE.rowColor}`;
+            badge.title = 'changed inside';
+            badge.textContent = ChangesTableView.#CHANGE_GLYPHS.get(DiffType.CHANGE.name);
+        }
         const typeIcon = document.createElement('span');
         typeIcon.className = `changes-table-type ${ChangesTableView.iconClass(elem)}`;
         typeIcon.title = type;
@@ -221,11 +281,36 @@ class ChangesTableView {
         }
         row.appendChild(cellElement);
 
+        const own = diffType === DiffType.CHANGE
+            ? ChangesTableView.whatChanged(elem.id, this.#diff.nodeIdToDiffsMap, this.#diff.typeChangedIds)
+            : '';
         const cellChanged = document.createElement('td');
-        cellChanged.textContent = whatChanged;
+        cellChanged.textContent = [own, ChangesTableView.insideText(inside)].filter(Boolean).join(' · ');
         row.appendChild(cellChanged);
 
-        row.addEventListener('click', () => this.#onRowSelected(row, elem.id));
+        row.addEventListener('click', () => {
+            if (inside > 0) {
+                this.#drillInto(elem);
+            } else {
+                this.#onRowSelected(row, elem.id);
+            }
+        });
+    }
+
+    static insideText(count) {
+        if (count === 0) {
+            return '';
+        }
+        return `${count} ${count === 1 ? 'change' : 'changes'} inside`;
+    }
+
+    // bpmn-js names a collapsed subprocess's plane after the subprocess: <id>_plane.
+    // The root.set this fires re-renders the list for that plane.
+    #drillInto(subprocess) {
+        const plane = this.#elementRegistry.get(`${subprocess.id}_plane`);
+        if (plane) {
+            this.#canvas.setRootElement(plane);
+        }
     }
 
     // A connection is told apart by its ends: "name (Source → Target)"
@@ -252,7 +337,6 @@ class ChangesTableView {
         }
         this.#highlighter.addMarker(this.#selectedElem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
         try {
-            // Also switches to the element's plane when it sits in a collapsed subprocess
             this.#canvas.scrollToElement(this.#selectedElem);
             this.#selection.select(this.#selectedElem);
         } catch (error) {

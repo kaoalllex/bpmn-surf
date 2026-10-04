@@ -93,7 +93,7 @@ class BpmnDiffer {
         this.#diffHighlighter = new DiffHighlighter(bpmnJSCanvas, this.#elementRegistry, bpmnJSModeling);
         if (this.#changesTableView) {
             this.#changesTableView.init(
-                this.#elementRegistry, this.#diffHighlighter, bpmnJSCanvas, this.#selection);
+                this.#elementRegistry, this.#diffHighlighter, bpmnJSCanvas, this.#selection, bpmnJSEventBus);
         }
         this.#propertiesPanelHighlighter.init(this.#elementRegistry);
         this.#propertiesGroupExpander.init(this.#elementRegistry);

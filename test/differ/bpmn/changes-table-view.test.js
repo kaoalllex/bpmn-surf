@@ -67,3 +67,11 @@ describe('ChangesTableView.whatChanged', () => {
         assert.equal(ChangesTableView.whatChanged('Task_1', new Map(), []), '');
     });
 });
+
+describe('ChangesTableView.insideText', () => {
+    it('counts the changes inside a collapsed subprocess', () => {
+        assert.equal(ChangesTableView.insideText(0), '');
+        assert.equal(ChangesTableView.insideText(1), '1 change inside');
+        assert.equal(ChangesTableView.insideText(3), '3 changes inside');
+    });
+});
