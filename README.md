@@ -67,9 +67,9 @@ request, and on a diagram file in the repository.
 - Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries, and the changed lines of a sequence-flow condition
 - A collapsed subprocess is outlined when something inside it changed
 
-![The changes table selects an element; the panel header marks a task's new type; a sequence-flow condition with only the changed lines highlighted](docs/media/details.gif)
+![A row of the list of changes selects its element; the panel header marks a task's new type; a sequence-flow condition with only the changed lines highlighted](docs/media/details.gif)
 
-![A collapsed subprocess outlined because a step inside changed; drilling in shows the added step](docs/media/subprocess.gif)
+![A collapsed subprocess outlined because a step inside changed; in the list of changes it is one row counting the changes inside, and the row highlights it; drilling in shows the added step, and the list shows only the changes inside](docs/media/subprocess.gif)
 
 **Browsing & navigation**
 
