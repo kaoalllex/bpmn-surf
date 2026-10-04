@@ -68,10 +68,6 @@ class ChangesTableView {
         } else {
             this.#addedRemovedLabelElement.textContent = 'Removed:';
         }
-        // The counters cover the whole diagram, the list only the plane on screen
-        this.#changedTextElement.textContent = String(changedElems.length);
-        this.#addedRemovedTextElement.textContent = String(missingElems.length);
-
         this.#diff = diff;
         this.#elems = [...changedElems, ...missingElems];
         this.#render();
@@ -84,6 +80,9 @@ class ChangesTableView {
         this.#selectedRow = null;
         this.#selectedElem = null;
         this.#table.innerHTML = '';
+        if (!this.#diff) {
+            return;
+        }
 
         const shownRoot = this.#canvas.getRootElement();
         const entries = new Map();
@@ -104,6 +103,12 @@ class ChangesTableView {
                 entryOf(elem).diffType = diffType;
             }
         }
+        // The counters count the rows: a subprocess with changes inside is one
+        // change of the plane, unless it was added or removed as a whole
+        const changed = [...entries.values()]
+            .filter(entry => entry.diffType === null || entry.diffType === DiffType.CHANGE).length;
+        this.#changedTextElement.textContent = String(changed);
+        this.#addedRemovedTextElement.textContent = String(entries.size - changed);
         if (entries.size === 0) {
             return;
         }
