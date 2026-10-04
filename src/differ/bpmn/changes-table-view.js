@@ -288,13 +288,7 @@ class ChangesTableView {
         cellChanged.textContent = [own, ChangesTableView.insideText(inside)].filter(Boolean).join(' · ');
         row.appendChild(cellChanged);
 
-        row.addEventListener('click', () => {
-            if (inside > 0) {
-                this.#drillInto(elem);
-            } else {
-                this.#onRowSelected(row, elem.id);
-            }
-        });
+        row.addEventListener('click', () => this.#onRowSelected(row, elem.id));
     }
 
     static insideText(count) {
@@ -304,14 +298,6 @@ class ChangesTableView {
         return `${count} ${count === 1 ? 'change' : 'changes'} inside`;
     }
 
-    // bpmn-js names a collapsed subprocess's plane after the subprocess: <id>_plane.
-    // The root.set this fires re-renders the list for that plane.
-    #drillInto(subprocess) {
-        const plane = this.#elementRegistry.get(`${subprocess.id}_plane`);
-        if (plane) {
-            this.#canvas.setRootElement(plane);
-        }
-    }
 
     // A connection is told apart by its ends: "name (Source → Target)"
     static #label(elem) {

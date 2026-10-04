@@ -62,7 +62,7 @@ request, and on a diagram file in the repository.
 - Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified — with a ☼ toggle to turn it off
 - Switching between the shown versions (the **Switch branch** button) — the target branch is shown by name, not by hash — and downloading either of them
 - A clear indication when a schema is absent in one of the versions
-- A list of the changes — elements and connections, with what changed in each; click an entry to jump to its element. The list follows the level on screen: a collapsed subprocess with changes inside is one entry, and clicking it drills in
+- A list of the changes — elements and connections, with what changed in each; click an entry to jump to its element. The list follows the level on screen: a collapsed subprocess with changes inside is one entry, and the list inside it shows its own changes
 - Highlighting of the properties-panel groups affected by a change; an element whose type changed is marked in the panel header
 - Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries, and the changed lines of a sequence-flow condition
 - A collapsed subprocess is outlined when something inside it changed

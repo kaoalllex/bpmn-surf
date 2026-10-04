@@ -36,9 +36,10 @@ test('lists changes and highlights the element on row click', async ({ page }) =
 });
 
 // DeepTask_1 sits in a collapsed subprocess, i.e. on another plane. The top plane
-// lists only that subprocess, as one "changed inside" row; clicking it drills in,
-// where the list shows the subprocess's own changes, and leaving restores the row.
-test('lists the changes of the plane on screen and drills in from a subprocess row', async ({ page }) => {
+// lists only that subprocess, as one "changed inside" row; clicking it highlights
+// the subprocess where it is. Inside, the list shows the subprocess's own changes,
+// and leaving restores the row.
+test('lists the changes of the plane on screen, a subprocess row highlighting the subprocess', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, {
         fixtures: { xmlByRef: { 'base-sha': SUBPROCESS_BASE_BPMN, 'mr-sha': SUBPROCESS_CHANGED_CHILD_BPMN } }
@@ -54,7 +55,12 @@ test('lists the changes of the plane on screen and drills in from a subprocess r
     await expect(subRow).toContainText('1 change inside');
     await expect(subRow.locator('.changes-table-badge')).toHaveAttribute('title', 'changed inside');
     await subRow.click();
+    const subprocess = page.locator('svg .djs-element[data-element-id="CollapsedSub_1"]');
+    await expect(subprocess).toHaveClass(/(^|\s)highlight-diff-big(\s|$)/);
+    await expect(subprocess).toHaveClass(/(^|\s)selected(\s|$)/);
+    await expect(leaf).toBeHidden();
 
+    await page.getByRole('button', { name: 'Open Sign UZ' }).click();
     await expect(leaf).toBeVisible();
     await expect(rows).toHaveCount(1);
     await rows.filter({ hasText: 'DeepTask_1' }).click();
