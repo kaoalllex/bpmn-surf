@@ -31,8 +31,18 @@ function setup({ targetFilePath = async p => p } = {}) {
     };
     w.fetch = async () => ({ status: 200, ok: true, text: async () => '{}' });
     w.alert = () => {};
+    const tabs = [];
+    w.open = () => {
+        const tab = { closed: false, close() { this.closed = true; } };
+        tabs.push(tab);
+        return tab;
+    };
     const opened = [];
-    w.openDiffer = params => { opened.push(params); };
+    const openedInto = [];
+    w.openDiffer = (params, extParams, msgId, getUrl, tab) => {
+        opened.push(params);
+        openedInto.push(tab);
+    };
     const errors = [];
     w.console.error = (...args) => errors.push(args.join(' '));
 
@@ -67,7 +77,7 @@ function setup({ targetFilePath = async p => p } = {}) {
         syncFileButtons: describeFile => syncs.push(describeFile)
     };
     const app = new scope.App(repo, ui);
-    return { scope, app, sourceCommits, syncs, opened, errors };
+    return { scope, app, sourceCommits, syncs, opened, openedInto, tabs, errors };
 }
 
 describe('App — MR change view', () => {
@@ -94,7 +104,7 @@ describe('App — MR change view', () => {
     });
 
     it('does not open the diff of a view the URL has left', async () => {
-        const { scope, app, sourceCommits, syncs, opened } = setup();
+        const { scope, app, sourceCommits, syncs, opened, tabs } = setup();
         app.init();
         await settle();
         sourceCommits[0].resolve('head');
@@ -106,10 +116,29 @@ describe('App — MR change view', () => {
         await button.onButtonClickFunc();
 
         assert.equal(opened.length, 0);
+        assert.equal(tabs.length, 0, 'no blank tab left behind');
+    });
+
+    it('opens the tab on click, before the params resolve (BUG-0005)', async () => {
+        const target = deferred();
+        const { app, sourceCommits, syncs, openedInto, tabs } = setup({
+            targetFilePath: () => target.promise
+        });
+        app.init();
+        await settle();
+        sourceCommits[0].resolve('head');
+        await settle();
+
+        const click = syncs[0]('a.bpmn').onButtonClickFunc();
+        assert.equal(tabs.length, 1, 'the tab is opened while the click is still a user gesture');
+
+        target.resolve('a.bpmn');
+        await click;
+        assert.deepEqual(openedInto, [tabs[0]], 'the differ is loaded into that tab');
     });
 
     it('logs a click that fails instead of dropping it silently', async () => {
-        const { app, sourceCommits, syncs, opened, errors } = setup({
+        const { app, sourceCommits, syncs, opened, tabs, errors } = setup({
             targetFilePath: async () => { throw new Error('changes API down'); }
         });
         app.init();
@@ -119,6 +148,7 @@ describe('App — MR change view', () => {
 
         await assert.doesNotReject(syncs[0]('a.bpmn').onButtonClickFunc());
         assert.equal(opened.length, 0);
+        assert.ok(tabs[0].closed, 'the blank tab opened on click is closed');
         assert.ok(errors.some(e => e.includes('changes API down')), errors.join('\n'));
     });
 });
