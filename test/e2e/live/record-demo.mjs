@@ -207,8 +207,9 @@ async function openMr(path = BPMN) {
 // The MR's OrderMain diff, already on screen.
 async function openDiff() {
     const mr = await openMr();
+    const opened = toNewTab()();                              // before the click: the tab opens on it
     await fileButton(mr, 'Schema diff').click();
-    const diff = await toNewTab()();
+    const diff = await opened;
     await cursor(diff);
     await diff.bringToFront();
     return { mr, diff };
@@ -530,8 +531,9 @@ async function screenshots() {
     await shot(diff, '2-condition.png');
     await tap(diff, element(diff, 'Payment'));
     await pause(800);
+    const paymentOpened = toNewTab()();
     await badge(diff, 'Payment', '.dive-in-call-activity').click();
-    const payment = await toNewTab()();
+    const payment = await paymentOpened;
     await payment.bringToFront();
     await payment.locator('.differ-back-caret').click();
     await payment.locator('.differ-back-menu-item').nth(1).waitFor({ timeout: 30000 });
@@ -540,8 +542,9 @@ async function screenshots() {
     await payment.keyboard.press('Escape');
     await tap(payment, element(payment, 'AssessRisk'));
     await pause(800);
+    const dmnOpened = toNewTab()();
     await badge(payment, 'AssessRisk', '.dive-in-call-activity').click();
-    const dmn = await toNewTab()();
+    const dmn = await dmnOpened;
     await dmn.bringToFront();
     for (let i = 0; i < 2; i++) await button(dmn, 'Zoom in').click();
     await pause(800);
