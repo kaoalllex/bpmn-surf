@@ -2,7 +2,7 @@
 id: INFRA-0011
 title: Extend the live-check skill's catalog to the whole extension
 priority: medium
-status: open
+status: partial
 ---
 
 ## Statement
@@ -19,7 +19,11 @@ The areas to add:
 - the changes table;
 - the properties panel;
 - switch branch;
-- navigation (dive-in, handler badges, correlation, back);
+- navigation — partly covered: "Differ navigation" (`record-demo.mjs --no-video` on the
+  demo project) walks dive-in, back to the parent, the callers list, the decision
+  badge, handler and correlation badges. Not yet: opening a caller from that list (the
+  call site selected), and the sandbox's traps (prefix topics, duplicate classes,
+  no-code topics);
 - search;
 - edit mode;
 - the popup (hosts, settings);
@@ -43,6 +47,13 @@ The areas to add:
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-05 · claude-opus-5-5 · branch `release/v1.3.0`
+
+`record-demo.mjs --no-video` walks the demo tours without recording, and the skill
+gained a "Differ navigation" section (signed in: code search is mocked offline) and a
+"Release smoke" set run before every release and store submission; `/release` points
+to it. The navigation area is partly covered by that; the rest is listed above.
 
 ### 2026-09-27 · claude-opus-5-5 · branch `fix/loop-characteristics-panel-highlight`
 

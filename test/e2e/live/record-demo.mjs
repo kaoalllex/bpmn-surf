@@ -1,7 +1,7 @@
 // Records the README GIFs and the store screenshots from the demo project.
 //
 //   BPMN_SURF_PROJECT=https://gitlab.com/kao.alllex/bpmn-surf-demo \
-//     node test/e2e/live/record-demo.mjs <iid> <outDir> [--clip <name>[,<name>…]] [--no-shots]
+//     node test/e2e/live/record-demo.mjs <iid> <outDir> [--clip <name>[,<name>…]] [--no-shots] [--no-video]
 //
 // <iid> is the showcase MR ("Express checkout and stricter payment risk"; resolve
 // it by title, see README.md). Needs the signed-in profile (handler, correlation
@@ -11,6 +11,10 @@
 // Writes <outDir>/<clip>.gif for every clip in CLIPS (all of them unless --clip),
 // <outDir>/screenshots/*.png at 1280×800 (unless --no-shots) and <outDir>/edited.bpmn
 // (the edit clip's download, which the local-diff clip reads).
+//
+// --no-video walks the same tours without recording: a live check of the differ's
+// navigation (dive-in, callers, decision, handler and correlation badges, edit
+// mode) that writes no GIF and needs no ffmpeg.
 //
 // Every tab records its own video, so a clip notes which tab is on screen and
 // when; ffmpeg then cuts those spans out and joins them. Tab loading falls
@@ -24,7 +28,7 @@ const args = process.argv.slice(2);
 const [iid, outArg] = args.filter(a => !a.startsWith('--'));
 const option = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
 if (!iid || !outArg || !process.env.BPMN_SURF_PROJECT) {
-    console.error('usage: BPMN_SURF_PROJECT=<demo project URL> record-demo.mjs <iid> <outDir> [--clip <name>[,…]] [--no-shots]');
+    console.error('usage: BPMN_SURF_PROJECT=<demo project URL> record-demo.mjs <iid> <outDir> [--clip <name>[,…]] [--no-shots] [--no-video]');
     process.exit(2);
 }
 const OUT = resolve(outArg);
@@ -39,8 +43,10 @@ const BLOB_BUTTON = '#btn_77844bf3d4e842caa0d88194431197c0';
 rmSync(join(OUT, 'video'), { recursive: true, force: true });
 mkdirSync(join(OUT, 'screenshots'), { recursive: true });
 
+const videoWanted = !args.includes('--no-video');
 const context = await launchWithExtension({
-    viewport: SIZE, acceptDownloads: true, recordVideo: { dir: join(OUT, 'video'), size: SIZE }
+    viewport: SIZE, acceptDownloads: true,
+    ...(videoWanted && { recordVideo: { dir: join(OUT, 'video'), size: SIZE } })
 });
 const started = new Map();
 context.on('page', p => started.set(p, Date.now()));
@@ -229,6 +235,10 @@ async function finishClip(name, width, fps = width >= 1000 ? 12 : 10, colors = 1
     const clipSpans = spans;
     spans = [];
     for (const page of context.pages()) await page.close();
+    if (!videoWanted) {
+        console.log(`${name}: OK`);
+        return;
+    }
     const parts = [];
     for (const [i, s] of clipSpans.entries()) {
         const src = await s.page.video().path();
@@ -582,4 +592,5 @@ try {
     await restoreLayout();
     await context.close();
 }
-console.log(`wrote ${wanted.map(n => n + '.gif').join(', ')}${shotsWanted ? ' and screenshots/' : ''} in ${OUT}`);
+const written = [...(videoWanted ? wanted.map(n => n + '.gif') : []), ...(shotsWanted ? ['screenshots/'] : [])];
+console.log(written.length ? `wrote ${written.join(', ')} in ${OUT}` : `walked ${wanted.join(', ')}: OK`);
