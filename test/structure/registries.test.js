@@ -9,8 +9,11 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
+const path = require('node:path');
 const {
     exists,
+    read,
+    listFiles,
     listSrcJsFiles,
     manifestRegistries,
     loadScriptsRegistry,
@@ -105,6 +108,30 @@ describe('registries: differ-page scripts match across loadScripts and web_acces
         // web_accessible_resources should mirror it so the two never diverge.
         assert.deepEqual(differInLoad, differInWar);
     });
+});
+
+// sync-libs.js copies only the files it lists, so a vendored stylesheet that
+// starts referencing an unlisted file (a new font, an @import) would ship a
+// broken reference while everything else stays green.
+describe('registries: vendored libs are complete and reachable from the differ page', () => {
+    const libsInLoad = loadScripts.filter(p => p.startsWith('libs/'));
+
+    it('every lib loadScripts loads is in web_accessible_resources', () => {
+        const missing = libsInLoad.filter(p => !webAccessibleResources.includes(p));
+        assert.deepEqual(missing, [], `libs missing from manifest#web_accessible_resources: ${missing}`);
+    });
+
+    const cssRef = /url\(\s*['"]?([^'")\s]+)|@import\s+['"]([^'"]+)['"]/g;
+    for (const css of listFiles('libs', '.css')) {
+        it(`${css}: every relative url()/@import is synced and web-accessible`, () => {
+            const refs = [...read(css).matchAll(cssRef)]
+                .map(m => m[1] || m[2])
+                .filter(ref => !/^(data:|[a-z]+:|\/|#)/i.test(ref))
+                .map(ref => path.posix.join(path.posix.dirname(css), ref.replace(/[?#].*$/, '')));
+            const broken = [...new Set(refs)].filter(p => !exists(p) || !webAccessibleResources.includes(p));
+            assert.deepEqual(broken, [], 'add these to scripts/sync-libs.js and manifest#web_accessible_resources');
+        });
+    }
 });
 
 describe('registries: SCOPE_FILES is a curated subset of source files', () => {

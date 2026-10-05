@@ -45,7 +45,11 @@ Dropped the four alternative font stylesheets nothing loads — `bpmn-embedded.c
 `bpmn-codes.css`, `dmn-embedded.css`, `dmn-codes.css` (~140 KB) — from the
 `sync-libs.js` file list and from `manifest.json#web_accessible_resources`. A resync
 with `npm ci` dependencies reproduces the rest of `libs/` byte for byte. The unused
-font formats stay for now.
+font formats stay for now. `registries.test.js` now guards the whitelist both ways:
+every relative `url()`/`@import` in a vendored stylesheet must resolve to a synced,
+web-accessible file (so a library update that starts referencing a new or a dropped
+file fails `npm test`), and every lib `loadScripts` loads must be web-accessible.
+Dropping the font formats will need the `@font-face` transform first, or this test fails.
 
 ### 2026-08-29 · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
 
