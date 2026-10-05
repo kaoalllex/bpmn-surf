@@ -198,7 +198,7 @@ class BpmnDiffer {
             this.#onSelectedElementChanged(event.newSelection[0].id);
         });
 
-        this.#hideModelerPalleteAndPoweredByLabel();
+        this.#hideModelerPalette();
 
         if (this.#isEditMode()) {
             this.#editSession = new EditSession({
@@ -945,7 +945,7 @@ class BpmnDiffer {
         }
     }
 
-    #hideModelerPalleteAndPoweredByLabel() {
+    #hideModelerPalette() {
         if (!this.#isEditMode()) {
             try {
                 document.getElementsByClassName('djs-palette')[0].style.display = 'none';

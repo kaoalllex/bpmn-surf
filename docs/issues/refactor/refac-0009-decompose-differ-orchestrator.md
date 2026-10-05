@@ -13,7 +13,7 @@ low-level glue unrelated to orchestration:
 
 - creating and configuring the bpmn-js modeler (`#createModeler`);
 - hacks for hiding the editor UI (`#hideSchemaEditorControls` with `delay(100)` twice,
-  `#hideModelerPalleteAndPoweredByLabel`);
+  `#hideModelerPalette`);
 - opener-tab navigation via the `window.name` trick (`#navigateOpenerTab`);
 - resolving the resource URL in a nested tab (`#getLinkOrScriptHref`).
 
