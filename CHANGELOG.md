@@ -25,6 +25,7 @@ notes. Updated on release (the `release` skill).
 - BUG-0005 (partial): the MR and blob-view diagram buttons open their tab on click, so Chrome no longer blocks it on a slow first request; a blocked tab is reported to the user
 - Web-accessible resources are served to https pages only
 - Updated bpmn-js, dmn-js and the properties panel; timer and user-assignment changes map to their groups
+- INFRA-0001: unused library stylesheets are no longer shipped (~140 KB)
 - A manifest description for the Chrome Web Store
 
 ## 1.2.0
