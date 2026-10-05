@@ -193,11 +193,14 @@ function downloadTextFile(content, fileName) {
     URL.revokeObjectURL(link.href);
 }
 
-async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc) {
+// openedWindow: an about:blank tab the caller opened on click, before its own
+// awaits — window.open after a long await is blocked as a popup (BUG-0005).
+async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc, openedWindow) {
     console.debug('opening differ...');
-    const newWindow = window.open('about:blank');
+    const newWindow = openedWindow || window.open('about:blank');
     if (!newWindow) {
         console.error('failed to open new window');
+        alert('Chrome blocked the new tab. Allow pop-ups for this site or click again.');
         return false;
     }
 

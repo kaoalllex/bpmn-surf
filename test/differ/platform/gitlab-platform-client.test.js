@@ -83,14 +83,14 @@ describe('GitLabPlatformClient.searchCode', () => {
         assert.equal(
             calls[0],
             'https://gitlab.example/api/v4/projects/42/search' +
-            '?scope=blobs&ref=main&search=process%20id%3D%22Foo%22'
+            '?scope=blobs&ref=main&search=process%20id%3D%22Foo%22&per_page=100'
         );
     });
 
-    it('appends per_page when requested (large correlation page)', async () => {
+    it('takes a smaller page when requested', async () => {
         const { client, calls } = withLoader([]);
-        await client.searchCode('main', 'Order', { perPage: 100 });
-        assert.match(calls[0], /&per_page=100$/);
+        await client.searchCode('main', 'Order', { perPage: 10 });
+        assert.match(calls[0], /&per_page=10$/);
     });
 
     it('normalises GitLab items (path/startline/data) to { path, line, snippet }', async () => {

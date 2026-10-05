@@ -298,6 +298,9 @@ class App {
             this.#handleStart(null, 'click on a stale change view');
             return;
         }
+        // Open the tab while the click still counts as a user gesture: the awaits
+        // below can outlast it, and Chrome then blocks the tab (BUG-0005).
+        const newWindow = window.open('about:blank');
         try {
             const params = await this.#buildDiffParams(
                 filePath,
@@ -306,8 +309,9 @@ class App {
                 changeView.targetCommitId,
                 changeView.diffSideLabels
             );
-            await this.#openDiffer(UI_BUTTON_TYPE.DIFF, params, null, this.#getMessageId(fileType));
+            await this.#openDiffer(UI_BUTTON_TYPE.DIFF, params, null, this.#getMessageId(fileType), newWindow);
         } catch (error) {
+            newWindow?.close();
             console.error('cannot open the diff of ' + filePath, error);
         }
     }
@@ -405,10 +409,11 @@ class App {
      * Opens differ window
      * @private
      */
-    async #openDiffer(buttonType, params, extParams, msgId) {
+    async #openDiffer(buttonType, params, extParams, msgId, openedWindow) {
         if (this.#extensionWasReloaded()) {
             return;
         }
+        const newWindow = openedWindow || window.open('about:blank');
 
         // The branch button carries a closure over the blob it was built for, and
         // GitLab can switch the blob before our debounced re-check rebuilds it. A
@@ -417,6 +422,7 @@ class App {
             const shownPath = await this.#branchFilePath();
             if (shownPath && shownPath !== params.filePath) {
                 console.debug(`stale button click ignored: page now shows ${shownPath}, button was for ${params.filePath}`);
+                newWindow?.close();
                 return;
             }
         }
@@ -438,7 +444,8 @@ class App {
             finalParams,
             null,
             msgId,
-            (resourceName) => chrome.runtime.getURL(resourceName)
+            (resourceName) => chrome.runtime.getURL(resourceName),
+            newWindow
         );
     }
 

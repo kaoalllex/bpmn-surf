@@ -16,10 +16,8 @@ status: partial
 
 Remaining:
 
-- **Remove unnecessary library files** — ~430 KB more, measured but not acted on:
-  - `bpmn-embedded.css` (92 KB), `dmn-embedded.css` (36 KB), `bpmn-codes.css` (8 KB),
-    `dmn-codes.css` (2 KB) — alternative stylesheets nothing references; `loadScripts`
-    loads only `bpmn.css`/`dmn.css`. Safe to drop from the `sync-libs.js` file list.
+- **Remove unnecessary library files** — the unused stylesheets are gone (see the work
+  log); what is left:
   - ~294 KB of icon fonts: `bpmn.css` declares `eot`/`woff2`/`woff`/`ttf`/`svg` and the
     browser takes the first it supports, so Chrome uses `.woff2` and the other four are
     dead weight. Dropping them means editing the vendored `@font-face` rule, i.e. a new
@@ -40,6 +38,18 @@ Remaining:
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-05 · claude-opus-5-5 · branch `release/v1.3.0`
+
+Dropped the four alternative font stylesheets nothing loads — `bpmn-embedded.css`,
+`bpmn-codes.css`, `dmn-embedded.css`, `dmn-codes.css` (~140 KB) — from the
+`sync-libs.js` file list and from `manifest.json#web_accessible_resources`. A resync
+with `npm ci` dependencies reproduces the rest of `libs/` byte for byte. The unused
+font formats stay for now. `registries.test.js` now guards the whitelist both ways:
+every relative `url()`/`@import` in a vendored stylesheet must resolve to a synced,
+web-accessible file (so a library update that starts referencing a new or a dropped
+file fails `npm test`), and every lib `loadScripts` loads must be web-accessible.
+Dropping the font formats will need the `@font-face` transform first, or this test fails.
 
 ### 2026-08-29 · claude-opus-5 · branch `feature/feat-0031-bpmn-edit-mode`
 

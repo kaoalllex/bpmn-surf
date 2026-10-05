@@ -7,6 +7,8 @@
 // loadFileContent (ambient cookie session); promoting that to an auth-aware
 // loadFile is deferred to the GitHub work (REFAC-0004 subtask 3).
 class GitLabPlatformClient extends PlatformClient {
+    static #SEARCH_PAGE_SIZE = 100; // GitLab's maximum per_page
+
     #projectUrl;
     #projectHostUrl;
     #projectId;
@@ -52,12 +54,14 @@ class GitLabPlatformClient extends PlatformClient {
     // GitLab Advanced Search (blobs) at a ref. The response items
     // ({ path, startline, data }) are normalised to { path, line, snippet } so
     // the locators never see GitLab's field names.
+    //
+    // One page only, GitLab's maximum by default: the search is tokenised, so
+    // unrelated files can fill the default page of 20 and push the exact match
+    // the locators filter for onto a page that is never read.
     async searchCode(ref, term, options = {}) {
-        let url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
-            `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}`;
-        if (options.perPage) {
-            url += `&per_page=${options.perPage}`;
-        }
+        const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
+            `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}` +
+            `&per_page=${options.perPage || GitLabPlatformClient.#SEARCH_PAGE_SIZE}`;
         const content = await this.#load(url, false);
         if (!content) {
             console.debug(`blob search for '${term}' at ref '${ref}': no response`);
