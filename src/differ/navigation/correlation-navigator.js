@@ -183,8 +183,10 @@ class CorrelationNavigator {
         this.#menuElem.hidden = false;
         this.#isMenuOpen = true;
 
+        // Only a user click counts: the properties panel's auto-expand clicks a
+        // group header itself, possibly after the menu opened (BUG-0049).
         this.#onDocClick = (event) => {
-            if (this.#menuElem && !this.#menuElem.contains(event.target)
+            if (event.isTrusted && this.#menuElem && !this.#menuElem.contains(event.target)
                 && this.#badgeElem && !this.#badgeElem.contains(event.target)) {
                 this.#closeMenu();
             }

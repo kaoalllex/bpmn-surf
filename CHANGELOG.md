@@ -22,6 +22,7 @@ notes. Updated on release (the `release` skill).
 - BUG-0045: edit mode keeps the outline of a subprocess that contains a change
 - BUG-0046: the differ tab no longer spins forever when a file request times out
 - BUG-0047, BUG-0048: changed-handler links open the right file in the MR tab
+- BUG-0049: the correlation and callers menus no longer close by themselves right after opening
 - BUG-0005 (partial): the MR and blob-view diagram buttons open their tab on click, so Chrome no longer blocks it on a slow first request; a blocked tab is reported to the user
 - Web-accessible resources are served to https pages only
 - Updated bpmn-js, dmn-js and the properties panel (dmn-js 17.12.3 ships a production Inferno, so the DMN differ no longer logs Inferno warnings); timer and user-assignment changes map to their groups
