@@ -11,8 +11,8 @@ status: partial
 - ~~Replace the used library files with minified versions.~~ Done: dmn-js now takes the
   package's `.production.min.js`, `bpmn-js-properties-panel` (the one package that ships
   no minified build) is minified during `sync:libs` by esbuild.
-- ~~Figure out the Inferno error on `dmn-viewer.production.min.js`.~~ Resolved, see the
-  work log — it is cosmetic and the dev build is not a fix for it.
+- ~~Figure out the Inferno error on `dmn-viewer.production.min.js`.~~ Fixed upstream in
+  dmn-js 17.12.3 (bpmn-io/dmn-js#965), see the work log.
 
 Remaining:
 
@@ -38,6 +38,14 @@ Remaining:
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-06 · claude-opus-5-5 · branch `fix/dmn-js-17.12.3`
+
+- dmn-js 17.12.2 → 17.12.3: its production distribution now bundles the production build
+  of Inferno (bpmn-io/dmn-js#965). Loading `dmn-viewer.production.min.js` in jsdom: the
+  old build logged `Inferno is in development mode.` plus the "minified copy" error, the
+  new one logs nothing; 512 KB → 508 KB. The `sync-libs.js` comment explaining the
+  warning is removed.
 
 ### 2026-10-05 · claude-opus-5-5 · branch `release/v1.3.0`
 
