@@ -22,9 +22,10 @@ notes. Updated on release (the `release` skill).
 - BUG-0045: edit mode keeps the outline of a subprocess that contains a change
 - BUG-0046: the differ tab no longer spins forever when a file request times out
 - BUG-0047, BUG-0048: changed-handler links open the right file in the MR tab
+- BUG-0049: the correlation and callers menus no longer close by themselves right after opening
 - BUG-0005 (partial): the MR and blob-view diagram buttons open their tab on click, so Chrome no longer blocks it on a slow first request; a blocked tab is reported to the user
 - Web-accessible resources are served to https pages only
-- Updated bpmn-js, dmn-js and the properties panel; timer and user-assignment changes map to their groups
+- Updated bpmn-js, dmn-js and the properties panel (dmn-js 17.12.3 ships a production Inferno, so the DMN differ no longer logs Inferno warnings); timer and user-assignment changes map to their groups
 - INFRA-0010 (partial): code searches read 100 hits instead of 20, so callers lists and dive-in, decision and handler lookups miss far fewer matches in large repositories
 - INFRA-0001: unused library stylesheets are no longer shipped (~140 KB)
 - A manifest description for the Chrome Web Store

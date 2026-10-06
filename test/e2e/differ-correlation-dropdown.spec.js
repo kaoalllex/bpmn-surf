@@ -37,3 +37,27 @@ test('lists multiple correlation points in a dropdown and opens the chosen one',
         ['http://localhost/blob/mr-sha/src/OrderSaga.kt#L30']
     );
 });
+
+// BUG-0049: the properties panel auto-expands groups with a synthetic header click
+// that can land after the menu opened (a slow machine); only a user click is "outside".
+test('a synthetic click elsewhere keeps the correlation menu open', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams(),
+        fixtures: {
+            xmlByRef: { 'mr-sha': MESSAGE_CORRELATION_BPMN, 'base-sha': MESSAGE_CORRELATION_BPMN },
+            searchHits: [
+                { path: 'src/OrderListener.kt', line: 14, snippet: 'correlateMessage("OrderPlaced")' },
+                { path: 'src/OrderSaga.kt', line: 30, snippet: 'correlateMessage("OrderPlaced")' }
+            ]
+        }
+    });
+
+    await page.locator('svg .djs-element[data-element-id="ReceiveTask_1"]').click();
+    await page.locator('.djs-overlay-note .correlation-link').click();
+    const items = page.locator('.correlation-menu .differ-back-menu-item');
+    await expect(items).toHaveCount(2);
+
+    await page.evaluate(() => document.body.click());
+    await expect(items).toHaveCount(2);
+});

@@ -64,6 +64,19 @@ test('caller menu shows "no callers" for a root diagram', async ({ page }) => {
     await expect(page.locator('.differ-back-menu-item')).toHaveCount(0);
 });
 
+// BUG-0049: a synthetic click (the properties panel's auto-expand) is not a user
+// click outside the menu, so it leaves the callers list open.
+test('a synthetic click elsewhere keeps the caller menu open', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { params: defaultBpmnParams(), fixtures: { ...CA_FIXTURES, searchHits: [] } });
+
+    await caret(page).click();
+    await expect(page.locator('.differ-back-menu')).toBeVisible();
+
+    await page.evaluate(() => document.body.click());
+    await expect(page.locator('.differ-back-menu')).toBeVisible();
+});
+
 // J5: a failing search (CallerLocator throws) -> "Couldn't check…" plus a "Search in
 // GitLab" link; clicking it opens the human search page for calledElement="<id>".
 test('caller menu shows an error and a GitLab search link when the search fails', async ({ page }) => {

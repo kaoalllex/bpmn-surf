@@ -136,9 +136,10 @@ class BackNavigator {
         this.#menu.hidden = false;
         this.#renderLoading();
 
-        // Close when clicking anywhere outside the group.
+        // Close when the user clicks anywhere outside the group; a synthetic click
+        // (the properties panel's auto-expand) is not one (BUG-0049).
         this.#onDocClick = (event) => {
-            if (this.#group && !this.#group.contains(event.target)) {
+            if (event.isTrusted && this.#group && !this.#group.contains(event.target)) {
                 this.#closeMenu();
             }
         };

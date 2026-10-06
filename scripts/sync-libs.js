@@ -33,13 +33,6 @@ const LIBS = [
         package: 'dmn-js',
         from: 'dist',
         files: [
-            // INFRA-0001: the production build, despite bundling Inferno in dev
-            // mode just like the development one, so it logs "Inferno is in
-            // development mode" plus a "minified copy of the development build"
-            // warning on load — Inferno's own check looks for its `testFn` name,
-            // which dmn-js's minifier mangles. Cosmetic, and the dev build runs
-            // Inferno in exactly the same mode, only silently: 1.3 MB for two
-            // console lines is a bad trade.
             'dmn-viewer.production.min.js',
             'assets/diagram-js.css',
             'assets/dmn-js-decision-table-controls.css',
