@@ -36,7 +36,10 @@ inferno `key`, which never reaches the DOM. The rule body cells do carry it
 - an output with no label (dmn-js shows its `name` in `.output-name` instead of
   `.output-label`): never painted.
 
-Not worked around (no stable hook in the DOM). Options, none tried yet:
+Not worked around (no stable hook in the DOM); postponed. **Next step: research option 3**
+(a dmn-js change that puts `data-col-id` on the output header) — whether upstream accepts
+it, which release would carry it, and what `npm run sync:libs` then needs; the painter
+would then match outputs by id like `#paintInputDiffs`. Options, none tried yet:
 
 1. Positional: the n-th `thead th.output-cell` is the n-th `<output>` of the shown XML
    (dmn-js renders outputs in business-object order). Smallest change; relies on render
