@@ -73,7 +73,14 @@ first), checked against the panel code in `bpmn-js-properties-panel` 5.65.1:
   explicit `"true"` against an absent attribute is no longer a change (it used to mark
   the element changed and, after the first session, paint the header). This resolves
   the accepted risk recorded below.
+- Layer-2 spec `differ-prop-group-accuracy.spec.js` checks the error code, the
+  multi-instance retry cycle and `isInterrupting` in the real panel (all three fail on
+  the pre-fix comparator).
 - DMN outputs stay postponed; the next step (research a dmn-js change) is in Context.
+- Known gap left (review, low): the same explicit-default issue for `camunda:exclusive`
+  (default `true`) and `camunda:asyncBefore`/`asyncAfter` (default `false`) on any
+  async-capable node. Pre-existing for activities, not extended here to keep the change
+  narrow; adding them to `#ATTRIBUTE_DEFAULTS` would cover it.
 
 ### 2026-10-08 · claude-opus-5-5 · branch `fix/ux-0004-semantic-comparison-accuracy`
 
