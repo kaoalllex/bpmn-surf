@@ -34,7 +34,11 @@ class BpmnXmlComparator {
     // An absent attribute means its schema default, so stating the default is no change
     static #ATTRIBUTE_DEFAULTS = new Map([
         ['isInterrupting', 'true'],
-        ['cancelActivity', 'true']
+        ['cancelActivity', 'true'],
+        // camunda-bpmn-moddle AsyncCapable
+        ['camunda:asyncBefore', 'false'],
+        ['camunda:asyncAfter', 'false'],
+        ['camunda:exclusive', 'true']
     ]);
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';

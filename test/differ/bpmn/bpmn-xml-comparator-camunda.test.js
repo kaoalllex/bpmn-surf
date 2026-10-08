@@ -101,6 +101,28 @@ describe('BpmnXmlComparator property group: Asynchronous continuations', () => {
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { ServiceTask_1: ['Asynchronous continuations'] });
     });
 
+    // Stating a schema default (camunda-bpmn-moddle AsyncCapable) changes nothing
+    for (const [label, from, to] of [
+        ['asyncAfter="false" on a service task',
+            'camunda:asyncBefore="true" camunda:delegateExpression="${serviceOneDelegate}"',
+            'camunda:asyncBefore="true" camunda:asyncAfter="false" camunda:delegateExpression="${serviceOneDelegate}"'],
+        ['exclusive="true" on a service task',
+            'camunda:asyncBefore="true" camunda:delegateExpression="${serviceOneDelegate}"',
+            'camunda:asyncBefore="true" camunda:exclusive="true" camunda:delegateExpression="${serviceOneDelegate}"'],
+        ['asyncBefore="false" on a gateway',
+            '<bpmn:exclusiveGateway id="Gateway_1" name="Approved?" default="Flow_no">',
+            '<bpmn:exclusiveGateway id="Gateway_1" name="Approved?" camunda:asyncBefore="false" default="Flow_no">'],
+        ['exclusive="true" on the multi-instance body',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items"',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:exclusive="true" camunda:collection="items"']
+    ]) {
+        it(`reports no change for an explicit default ${label}`, () => {
+            const changed = variant(from, to);
+            assertNoDiffs(compare(changed, base));
+            assertNoDiffs(compare(base, changed));
+        });
+    }
+
     it('detects added camunda:asyncBefore on a gateway', () => {
         const changed = variant(
             '<bpmn:exclusiveGateway id="Gateway_1" name="Approved?" default="Flow_no">',
