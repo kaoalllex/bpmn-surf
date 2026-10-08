@@ -733,6 +733,17 @@ describe('BpmnXmlComparator start event isInterrupting', () => {
             assert.equal(result.nodeIdToDiffsMap.size, 0);
         }
     });
+
+    it('reports no change for an explicit isInterrupting="true" against the absent default', () => {
+        const absent = variant(
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
+            '<bpmn:startEvent id="EscalationStartEvent_1">');
+        const explicit = variant(
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="true">');
+        assertNoDiffs(compare(explicit, absent));
+        assertNoDiffs(compare(absent, explicit));
+    });
 });
 
 describe('BpmnXmlComparator complex sequence flow condition', () => {

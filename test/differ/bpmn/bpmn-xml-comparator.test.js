@@ -346,6 +346,15 @@ describe('BpmnXmlComparator boundary event cancelActivity', () => {
         assert.equal(result.nodeIdToDiffsMap.get('Boundary_1'), undefined);
     });
 
+    it('reports no change for an explicit cancelActivity="true" against the absent default', () => {
+        const absent = withBoundaryEvent(base, 'true').replace(' cancelActivity="true"', '');
+        for (const result of [compare(withBoundaryEvent(base, 'true'), absent),
+                              compare(absent, withBoundaryEvent(base, 'true'))]) {
+            assert.deepEqual(Array.from(result.typeChangedIds), []);
+            assert.deepEqual(Array.from(result.changedShapeIds), []);
+        }
+    });
+
     it('reports no change when cancelActivity is the same', () => {
         const result = compare(withBoundaryEvent(base, 'true'), withBoundaryEvent(base, 'true'));
         assert.deepEqual(Array.from(result.typeChangedIds), []);

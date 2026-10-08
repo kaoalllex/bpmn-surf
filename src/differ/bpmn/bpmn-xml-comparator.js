@@ -31,6 +31,12 @@ class BpmnXmlComparator {
     static #WORD_CHAR = /[\p{L}\p{N}_$]/u;
     static #WHITESPACE_CHAR = /\s/;
 
+    // An absent attribute means its schema default, so stating the default is no change
+    static #ATTRIBUTE_DEFAULTS = new Map([
+        ['isInterrupting', 'true'],
+        ['cancelActivity', 'true']
+    ]);
+
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
     // No property group to highlight, but the panel's header text does change
     // (e.g. "Timer boundary event" -> "Timer boundary event (non interrupting)"),
@@ -808,7 +814,8 @@ class BpmnXmlComparator {
 
             // node.getAttribute(attName) not working and returns null, so uses method 'find'
             const attrB = nodeBAttrs.find(a => a.name === attName);
-            if (!attrB || attrA.value !== attrB.value ||
+            const valueB = attrB ? attrB.value : BpmnXmlComparator.#ATTRIBUTE_DEFAULTS.get(attName);
+            if (valueB === undefined || attrA.value !== valueB ||
                 this.#isChangedMessageRef(attrA) || this.#isChangedEscalationRef(attrA) ||
                 this.#isChangedErrorRef(attrA)) {
                 const diff = nodeATagName + '/' + attName;
