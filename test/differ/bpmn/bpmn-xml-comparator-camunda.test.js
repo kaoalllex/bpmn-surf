@@ -652,6 +652,20 @@ describe('BpmnXmlComparator property groups: Error / Errors', () => {
     });
 });
 
+// Like a boundary event's cancelActivity: no panel field, but the header text changes
+// ("Escalation Start Event" <-> "Escalation Start Event (Non Interrupting)").
+describe('BpmnXmlComparator start event isInterrupting', () => {
+    it('highlights the header, not a property group, when isInterrupting changes', () => {
+        const changed = variant(
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
+            '<bpmn:startEvent id="EscalationStartEvent_1">');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.typeChangedIds), ['EscalationStartEvent_1']);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['EscalationStartEvent_1']);
+        assert.equal(result.nodeIdToDiffsMap.size, 0);
+    });
+});
+
 describe('BpmnXmlComparator complex sequence flow condition', () => {
     const complexCondition =
         '${(ex.func("AAA") &amp;&amp; !AAA &amp;&amp; BBB) || (LLL.size() &gt; 0 &amp;&amp; DDD != "\\"&amp;&amp;||{}()")}';

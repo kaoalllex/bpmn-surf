@@ -168,10 +168,9 @@ class BpmnXmlComparator {
         ['bpmn:outputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:inputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
 
-        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
-
         // No dedicated field in the panel, but it does change the header text
-        ['bpmn:boundaryEvent/cancelActivity', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
+        ['bpmn:boundaryEvent/cancelActivity', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP],
+        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
     ]);
 
     #changedMessages = [];
@@ -188,7 +187,8 @@ class BpmnXmlComparator {
      *   nodeIdToConditions (id -> [my condition, other condition]),
      *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}])),
      *   typeChangedIds (ids whose element type differs between the versions,
-     *     or whose panel header text changes for another reason, e.g. cancelActivity),
+     *     or whose panel header text changes for another reason, e.g. cancelActivity
+     *     or isInterrupting),
      *   subProcessWithChangesIds (subprocesses that are not changed themselves
      *     but contain an added, removed or changed element at any depth)
      * }
