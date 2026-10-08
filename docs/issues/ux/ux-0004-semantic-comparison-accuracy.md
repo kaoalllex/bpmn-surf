@@ -77,10 +77,10 @@ first), checked against the panel code in `bpmn-js-properties-panel` 5.65.1:
   multi-instance retry cycle and `isInterrupting` in the real panel (all three fail on
   the pre-fix comparator).
 - DMN outputs stay postponed; the next step (research a dmn-js change) is in Context.
-- Known gap left (review, low): the same explicit-default issue for `camunda:exclusive`
-  (default `true`) and `camunda:asyncBefore`/`asyncAfter` (default `false`) on any
-  async-capable node. Pre-existing for activities, not extended here to keep the change
-  narrow; adding them to `#ATTRIBUTE_DEFAULTS` would cover it.
+- `#ATTRIBUTE_DEFAULTS` also covers `camunda:asyncBefore`/`asyncAfter` (default `false`)
+  and `camunda:exclusive` (default `true`) — the camunda-bpmn-moddle `AsyncCapable`
+  defaults — so stating them explicitly on any async-capable node (activities, gateways,
+  events, the multi-instance body) is no longer a change.
 
 ### 2026-10-08 · claude-opus-5-5 · branch `fix/ux-0004-semantic-comparison-accuracy`
 
