@@ -26,10 +26,6 @@ may have to degrade there, the way they do on gitlab.com for a signed-out user.
 
 ## Context
 
-- Prior art: [`domclick/bpmn-diff-bitbucket-plugin`](https://github.com/domclick/bpmn-diff-bitbucket-plugin)
-  — a Bitbucket Server server-side plugin (Atlassian SDK, Java) that adds a "BPMN Visual
-  Diff" button to a pull request's diff page and opens a side-by-side comparison. BPMN only,
-  no DMN or navigation; last push January 2024.
 - New host permissions must follow the popup's optional-host flow; adding `bitbucket.org` to
   the manifest is a new permission with a warning for store users.
 
