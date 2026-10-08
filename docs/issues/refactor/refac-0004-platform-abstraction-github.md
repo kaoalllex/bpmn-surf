@@ -1,7 +1,7 @@
 ---
 id: REFAC-0004
 title: Code-hosting platform abstraction → GitHub support
-priority: low
+priority: high
 status: in-progress
 ---
 
@@ -271,6 +271,13 @@ GitHub in subtask 2 is now a one-line matcher entry already in place + flipping 
 
 ## Open questions to clarify before Subtask 2
 
+- **Permissions for store users (added 2026-10-08, after the store release):** step 1 of
+  Subtask 2 below predates the store listing. A new required host in `content_scripts.matches`
+  or `host_permissions` makes Chrome disable the extension for every store user until they
+  re-confirm. Rework the plan around the existing `optional_host_permissions` (the popup's
+  per-host grant from FEAT-0033), or a GitHub opt-in in the popup, so the update ships with no
+  warning. The "raw.githubusercontent is already present from the updater" note is stale: the
+  manifest has no `host_permissions` at all now.
 - **Public fixture repo:** Identify a public GitHub repo with `.bpmn`/`.dmn` files and an open PR with changes. Record in `docs/testing.md`.
 - **DOM selectors:** Confirm current GitHub selectors for file path (`[data-tagsearch-path]`, `clipboard-copy[value]`) and button container (PR file header / blob header). Document fallback chain.
 - **Rate limit handling:** Unauthenticated API = 60 req/hr. Decide: basic 403 handling in MVP, or fail visibly?

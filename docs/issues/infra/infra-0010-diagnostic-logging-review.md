@@ -1,7 +1,7 @@
 ---
 id: INFRA-0010
 title: Warn on truncated API results and review whether the logs identify user problems
-priority: medium
+priority: high
 status: partial
 ---
 

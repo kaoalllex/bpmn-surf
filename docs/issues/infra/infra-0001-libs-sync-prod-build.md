@@ -1,7 +1,7 @@
 ---
 id: INFRA-0001
 title: Mechanism for pulling in libraries and production build
-priority: medium
+priority: low
 status: partial
 ---
 

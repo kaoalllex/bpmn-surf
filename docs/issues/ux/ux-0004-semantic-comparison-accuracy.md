@@ -1,7 +1,7 @@
 ---
 id: UX-0004
 title: Accuracy of semantic comparison and property highlighting
-priority: medium
+priority: high
 status: open
 ---
 

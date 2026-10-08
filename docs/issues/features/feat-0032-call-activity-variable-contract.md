@@ -1,7 +1,7 @@
 ---
 id: FEAT-0032
 title: Cross-file variable contract check for Call Activities
-priority: high
+priority: medium
 status: open
 ---
 

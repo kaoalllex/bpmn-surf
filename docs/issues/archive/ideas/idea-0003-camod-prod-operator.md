@@ -2,7 +2,7 @@
 id: IDEA-0003
 title: CamOD — Camunda Operator Desktop (prod-runtime admin, separate product)
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -40,3 +40,7 @@ prod" against the same schema they browse in the repo.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-08 · claude-opus-5-5 · branch `feature/backlog-reprioritization`
+
+Closed as out of scope: a separate product with a backend and production access, not part of this extension. Kept in the archive as a record of the idea.
