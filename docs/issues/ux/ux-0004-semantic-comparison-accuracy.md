@@ -52,20 +52,28 @@ would then match outputs by id like `#paintInputDiffs`. Options, none tried yet:
 4. Override the `table.head` output-cell component through dmn-js `components`
    (`onGetComponent`) to add the attribute — a fork of internal markup.
 
-Related gaps noticed while fixing the other points (out of this task's scope):
-
-- `camunda:asyncBefore`/`asyncAfter`/`exclusive` on `bpmn:multiInstanceLoopCharacteristics`
-  map to `Asynchronous continuations`, but the panel shows them in `Multi-instance`
-  (`multiInstanceAsynchronousBefore/After`, `multiInstanceExclusive`); a test currently
-  asserts the old mapping (`detects multi-instance attribute change on the subprocess itself`).
-- `camunda:errorEventDefinition` added/removed or its `expression` changed, and
-  `camunda:errorCodeVariable`/`errorMessageVariable` on `bpmn:errorEventDefinition`, have
-  no group mapping (the element turns blue with no group highlighted).
-
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-08 · claude-opus-5-5 · branch `fix/ux-0004-semantic-comparison-accuracy` (follow-up)
+
+Closed the gaps found while fixing the first three points (one commit each, failing test
+first), checked against the panel code in `bpmn-js-properties-panel` 5.65.1:
+
+- `camunda:asyncBefore`/`asyncAfter`/`exclusive` on the multi-instance body map to
+  `Multi-instance` (the panel's `multiInstanceAsynchronousBefore/After`,
+  `multiInstanceExclusive`), no longer to the activity's `Asynchronous continuations`;
+  the subprocess test that asserted the old mapping is updated.
+- Error definitions: an added/removed `bpmn:errorEventDefinition` and its
+  `camunda:errorCodeVariable`/`errorMessageVariable` map to `Error`; an added/removed
+  `camunda:errorEventDefinition` and its `expression` map to `Errors`.
+- Attribute defaults: `isInterrupting` and `cancelActivity` default to `true`, so an
+  explicit `"true"` against an absent attribute is no longer a change (it used to mark
+  the element changed and, after the first session, paint the header). This resolves
+  the accepted risk recorded below.
+- DMN outputs stay postponed; the next step (research a dmn-js change) is in Context.
 
 ### 2026-10-08 · claude-opus-5-5 · branch `fix/ux-0004-semantic-comparison-accuracy`
 
