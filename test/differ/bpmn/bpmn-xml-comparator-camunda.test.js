@@ -604,6 +604,33 @@ describe('BpmnXmlComparator property group: Escalation', () => {
     });
 });
 
+describe('BpmnXmlComparator property groups: Error / Errors', () => {
+    it('detects a changed error code and flags every element referencing the error', () => {
+        const changed = variant('errorCode="PAYMENT_FAILED"', 'errorCode="PAYMENT_DECLINED"');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds).sort(), [
+            'CamundaErrorEventDefinition_1', 'ErrorBoundaryEvent_1', 'ErrorEventDefinition_1', 'ExternalTask_1'
+        ]);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            ExternalTask_1: ['Errors'],
+            CamundaErrorEventDefinition_1: ['Errors'],
+            ErrorBoundaryEvent_1: ['Error'],
+            ErrorEventDefinition_1: ['Error']
+        });
+    });
+
+    it('detects a switched error reference on a boundary event', () => {
+        const changed = variant(
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />',
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_2" />');
+        const result = compare(changed, base);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            ErrorBoundaryEvent_1: ['Error'],
+            ErrorEventDefinition_1: ['Error']
+        });
+    });
+});
+
 describe('BpmnXmlComparator complex sequence flow condition', () => {
     const complexCondition =
         '${(ex.func("AAA") &amp;&amp; !AAA &amp;&amp; BBB) || (LLL.size() &gt; 0 &amp;&amp; DDD != "\\"&amp;&amp;||{}()")}';

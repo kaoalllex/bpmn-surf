@@ -5,6 +5,7 @@ class BpmnXmlComparator {
     static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
     static #MESSAGE_TAG_NAME = 'bpmn:message';
     static #ESCALATION_TAG_NAME = 'bpmn:escalation';
+    static #ERROR_TAG_NAME = 'bpmn:error';
     // Children that describe the subprocess itself, not the flow inside it
     static #SUBPROCESS_OWN_CHILD_TAG_NAMES = [
         'bpmn:multiInstanceLoopCharacteristics',
@@ -120,6 +121,9 @@ class BpmnXmlComparator {
         ['escalationRef', 'Escalation'],
 
         ['bpmn:error', 'Error'],
+        ['errorRef', 'Error'],
+        // an external task's error definitions, listed in their own panel group
+        ['camunda:errorEventDefinition/errorRef', 'Errors'],
 
         ['camunda:executionListener', 'Execution listeners'],
         ['camunda:executionListener/delegateExpression', 'Execution listeners'],
@@ -172,6 +176,7 @@ class BpmnXmlComparator {
 
     #changedMessages = [];
     #changedEscalations = [];
+    #changedErrors = [];
 
     /**
      * Compare two BPMN XML documents
@@ -196,6 +201,8 @@ class BpmnXmlComparator {
             this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#MESSAGE_TAG_NAME);
         this.#changedEscalations =
             this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#ESCALATION_TAG_NAME);
+        this.#changedErrors =
+            this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#ERROR_TAG_NAME);
 
         // isExecutable only picks the main process out of a collaboration; it says
         // nothing about what is worth comparing. A file whose only process is not
@@ -434,7 +441,7 @@ class BpmnXmlComparator {
         return node.tagName === 'camunda:property';
     }
 
-    // Finds changed elements defined outside the process (messages, escalations)
+    // Finds changed elements defined outside the process (messages, escalations, errors)
     // that diagram elements point to via reference attributes
     #findChangedReferencedElements(myDoc, otherDoc, tagName) {
         const changedIds = [];
@@ -783,7 +790,8 @@ class BpmnXmlComparator {
             // node.getAttribute(attName) not working and returns null, so uses method 'find'
             const attrB = nodeBAttrs.find(a => a.name === attName);
             if (!attrB || attrA.value !== attrB.value ||
-                this.#isChangedMessageRef(attrA) || this.#isChangedEscalationRef(attrA)) {
+                this.#isChangedMessageRef(attrA) || this.#isChangedEscalationRef(attrA) ||
+                this.#isChangedErrorRef(attrA)) {
                 const diff = nodeATagName + '/' + attName;
                 if (!diffs.includes(diff)) {
                     diffs.push(diff);
@@ -798,5 +806,9 @@ class BpmnXmlComparator {
 
     #isChangedEscalationRef(attr) {
         return attr.name === 'escalationRef' && this.#changedEscalations.includes(attr.value);
+    }
+
+    #isChangedErrorRef(attr) {
+        return attr.name === 'errorRef' && this.#changedErrors.includes(attr.value);
     }
 }
