@@ -5,7 +5,7 @@ Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas 
 ![A merge request in GitLab: Schema diff opens the diagram diff with added, changed and removed elements, the ☼ highlight, Switch branch and the changed property groups](docs/media/hero.gif)
 
 Try it on the public [demo merge request](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
-once the extension is installed. The diffs, diving into called processes and a changed
+once the extension is [installed](#installation). The diffs, diving into called processes and a changed
 handler's diff work signed out. Jumping to an unchanged handler's code, to message
 correlation and to a called decision, and listing the callers of a diagram, use GitLab code
 search, which on gitlab.com needs a signed-in account.
@@ -16,6 +16,10 @@ search, which on gitlab.com needs a signed-in account.
 - Other Chromium browsers with support for Chrome Extension Manifest V3
 
 ## Installation
+
+Install **bpmn-surf** from the [Chrome Web Store](https://chromewebstore.google.com/detail/bpmn-surf/baaoelmjlbfjhhkgbfkilgnefegbaldp) — Chrome keeps it up to date.
+
+### From source
 
 The extension has no build step — it runs directly from the source files.
 
