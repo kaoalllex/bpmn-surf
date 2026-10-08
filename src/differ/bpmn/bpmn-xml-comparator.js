@@ -125,9 +125,14 @@ class BpmnXmlComparator {
         ['escalationRef', 'Escalation'],
 
         ['bpmn:error', 'Error'],
+        ['bpmn:errorEventDefinition', 'Error'],
         ['errorRef', 'Error'],
+        ['bpmn:errorEventDefinition/camunda:errorCodeVariable', 'Error'],
+        ['bpmn:errorEventDefinition/camunda:errorMessageVariable', 'Error'],
         // an external task's error definitions, listed in their own panel group
+        ['camunda:errorEventDefinition', 'Errors'],
         ['camunda:errorEventDefinition/errorRef', 'Errors'],
+        ['camunda:errorEventDefinition/expression', 'Errors'],
 
         ['camunda:executionListener', 'Execution listeners'],
         ['camunda:executionListener/delegateExpression', 'Execution listeners'],

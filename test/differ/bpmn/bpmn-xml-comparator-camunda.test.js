@@ -673,6 +673,41 @@ describe('BpmnXmlComparator property groups: Error / Errors', () => {
         });
     });
 
+    it('maps the code and message variables of an error event to Error', () => {
+        const changed = variant(
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />',
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" ' +
+            'camunda:errorCodeVariable="code" camunda:errorMessageVariable="message" />');
+        assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), {
+            ErrorBoundaryEvent_1: ['Error', 'Error'],
+            ErrorEventDefinition_1: ['Error', 'Error']
+        });
+    });
+
+    it('maps a changed throw expression of an external task error to Errors', () => {
+        const changed = variant('expression="${failed}"', 'expression="${failedTwice}"');
+        assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), {
+            ExternalTask_1: ['Errors'],
+            CamundaErrorEventDefinition_1: ['Errors']
+        });
+    });
+
+    it('maps an added external task error to Errors', () => {
+        const changed = variant(
+            '<camunda:errorEventDefinition id="CamundaErrorEventDefinition_1" errorRef="Error_1" expression="${failed}" />',
+            '<camunda:errorEventDefinition id="CamundaErrorEventDefinition_1" errorRef="Error_1" expression="${failed}" />\n' +
+            '        <camunda:errorEventDefinition id="CamundaErrorEventDefinition_2" errorRef="Error_1" expression="${other}" />');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.missingShapeIds), ['CamundaErrorEventDefinition_2']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { ExternalTask_1: ['Errors'] });
+    });
+
+    it('maps an added error event definition to Error', () => {
+        const plain = variant(
+            '\n      <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />', '');
+        assert.deepEqual(mapToObject(compare(base, plain).nodeIdToDiffsMap), { ErrorBoundaryEvent_1: ['Error'] });
+    });
+
     it('detects a switched error reference on a boundary event', () => {
         const changed = variant(
             '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />',
