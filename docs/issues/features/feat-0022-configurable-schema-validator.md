@@ -1,7 +1,7 @@
 ---
 id: FEAT-0022
 title: Configurable schema validator with violation highlighting (local + REST delegation)
-priority: medium
+priority: low
 status: open
 ---
 

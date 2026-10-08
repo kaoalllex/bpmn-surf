@@ -1,7 +1,7 @@
 ---
 id: BUG-0005
 title: Chrome blocks opening a tab on the first Dive-in (CallActivity)
-priority: medium
+priority: low
 status: partial
 ---
 
