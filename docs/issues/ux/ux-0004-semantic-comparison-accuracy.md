@@ -9,9 +9,9 @@ status: partial
 
 Eliminate accumulated comparator edge cases:
 
-- Highlight a change of the error code (`bpmn:error`): currently the change is not highlighted.
-- `failedJobRetryTimeCycle` belongs to two groups, one is supported (the mapping of `camunda:failedJobRetryTimeCycle` to `Multi-instance` is commented out).
-- Pick the correct property panel group title for `bpmn:startEvent/isInterrupting`.
+- ~~Highlight a change of the error code (`bpmn:error`): currently the change is not highlighted.~~ Done.
+- ~~`failedJobRetryTimeCycle` belongs to two groups, one is supported (the mapping of `camunda:failedJobRetryTimeCycle` to `Multi-instance` is commented out).~~ Done.
+- ~~Pick the correct property panel group title for `bpmn:startEvent/isInterrupting`.~~ Done (header highlight).
 - Compare DMN outputs by id, not by label — currently by label, because there is no id attribute on outputs in the html.
 
 ## Context
@@ -82,5 +82,9 @@ Three of the four points fixed, one commit each, failing test first (fixture
   header highlight (`typeChangedIds`) instead of being ignored. Decision: header over a
   group title, consistent with the existing `cancelActivity` handling. A start event with
   no event definition would get the header painted without its text changing; such
-  events cannot be non-interrupting in valid BPMN, so it is left as is.
+  events cannot be non-interrupting in valid BPMN, so it is left as is. Accepted risk
+  (review): an explicit `isInterrupting="true"` against an absent attribute (the same
+  default) paints the header with no text change — the element was already marked
+  changed before this branch, and `cancelActivity` has the same trait; normalizing
+  attribute defaults would fix both and is left for a separate change.
 - DMN outputs: not done — see "Remaining" in Context.

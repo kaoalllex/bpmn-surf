@@ -583,6 +583,27 @@ describe('BpmnXmlComparator property group: Job execution', () => {
             const result = compare(withMultiInstanceRetry('R3/PT1M'), base);
             assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
         });
+
+        it('maps one added on a subprocess to Multi-instance', () => {
+            const changed = variant(
+                '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems" camunda:elementVariable="subItem" />',
+                '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems" camunda:elementVariable="subItem">' +
+                '<bpmn:extensionElements><camunda:failedJobRetryTimeCycle>R3/PT1M</camunda:failedJobRetryTimeCycle></bpmn:extensionElements>' +
+                '</bpmn:multiInstanceLoopCharacteristics>');
+            assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
+            assert.deepEqual(mapToObject(compare(base, changed).nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
+        });
+
+        it('keeps a changed retry cycle of the activity itself in Job execution', () => {
+            const withActivityRetry = (cycle) => variant(
+                '      <bpmn:incoming>Flow_no</bpmn:incoming>',
+                '      <bpmn:extensionElements>\n' +
+                `        <camunda:failedJobRetryTimeCycle>${cycle}</camunda:failedJobRetryTimeCycle>\n` +
+                '      </bpmn:extensionElements>\n' +
+                '      <bpmn:incoming>Flow_no</bpmn:incoming>');
+            const result = compare(withActivityRetry('R5/PT1M'), withActivityRetry('R3/PT1M'));
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Job execution'] });
+        });
     });
 });
 
@@ -659,10 +680,11 @@ describe('BpmnXmlComparator start event isInterrupting', () => {
         const changed = variant(
             '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
             '<bpmn:startEvent id="EscalationStartEvent_1">');
-        const result = compare(changed, base);
-        assert.deepEqual(Array.from(result.typeChangedIds), ['EscalationStartEvent_1']);
-        assert.deepEqual(Array.from(result.changedShapeIds), ['EscalationStartEvent_1']);
-        assert.equal(result.nodeIdToDiffsMap.size, 0);
+        for (const result of [compare(changed, base), compare(base, changed)]) {
+            assert.deepEqual(Array.from(result.typeChangedIds), ['EscalationStartEvent_1']);
+            assert.deepEqual(Array.from(result.changedShapeIds), ['EscalationStartEvent_1']);
+            assert.equal(result.nodeIdToDiffsMap.size, 0);
+        }
     });
 });
 
