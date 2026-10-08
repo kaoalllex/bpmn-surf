@@ -88,7 +88,7 @@ class BpmnXmlComparator {
         ['camunda:elementVariable', 'Multi-instance'],
         ['bpmn:loopCardinality', 'Multi-instance'],
         ['bpmn:completionCondition', 'Multi-instance'],
-        //['camunda:failedJobRetryTimeCycle', 'Multi-instance'],
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:failedJobRetryTimeCycle', 'Multi-instance'],
 
         ['camunda:delegateExpression', 'Implementation'],
         ['camunda:expression', 'Implementation'],
@@ -475,7 +475,7 @@ class BpmnXmlComparator {
                 if (this.#isTextContentEqual(parentNode, nodeA, nodeB)) {
                     return null;
                 } else {
-                    return [parentNode.tagName];
+                    return [this.#diffNameOf(parentNode)];
                 }
             }
             return []; // A is text but B is not text
@@ -699,7 +699,17 @@ class BpmnXmlComparator {
                 && node.getAttribute('variables') === 'all') {
             return [node.tagName + '/variables'];
         }
-        return [node.tagName];
+        return [this.#diffNameOf(node)];
+    }
+
+    // The same tag can belong to different panel groups depending on where it sits
+    #diffNameOf(node) {
+        if (node.tagName === 'camunda:failedJobRetryTimeCycle'
+                && node.parentNode?.parentNode?.tagName === 'bpmn:multiInstanceLoopCharacteristics') {
+            // the multi-instance body's own retries, not the activity's (Job execution)
+            return 'bpmn:multiInstanceLoopCharacteristics/' + node.tagName;
+        }
+        return node.tagName;
     }
 
     #getAllNotTextChildren(node) {

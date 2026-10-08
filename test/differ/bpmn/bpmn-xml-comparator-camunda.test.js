@@ -563,6 +563,27 @@ describe('BpmnXmlComparator property group: Job execution', () => {
         const result = compare(changed, base);
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Job execution'] });
     });
+
+    // The multi-instance body has a retry time cycle of its own, shown in the Multi-instance group
+    describe('camunda:failedJobRetryTimeCycle of the multi-instance body', () => {
+        const withMultiInstanceRetry = (cycle) => variant(
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item" />',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item">\n' +
+            '        <bpmn:extensionElements>\n' +
+            `          <camunda:failedJobRetryTimeCycle>${cycle}</camunda:failedJobRetryTimeCycle>\n` +
+            '        </bpmn:extensionElements>\n' +
+            '      </bpmn:multiInstanceLoopCharacteristics>');
+
+        it('maps a changed one to Multi-instance', () => {
+            const result = compare(withMultiInstanceRetry('R5/PT1M'), withMultiInstanceRetry('R3/PT1M'));
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
+        });
+
+        it('maps an added one to Multi-instance', () => {
+            const result = compare(withMultiInstanceRetry('R3/PT1M'), base);
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
+        });
+    });
 });
 
 describe('BpmnXmlComparator property group: Message', () => {
