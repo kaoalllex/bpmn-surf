@@ -167,6 +167,18 @@ describe('BpmnXmlComparator property group: Multi-instance', () => {
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance', 'Multi-instance'] });
     });
 
+    // The multi-instance body's own async flags sit in the Multi-instance group,
+    // not in the activity's Asynchronous continuations
+    it('maps the multi-instance body\'s asyncBefore/asyncAfter/exclusive to Multi-instance', () => {
+        const changed = variant(
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items"',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncAfter="true" camunda:exclusive="false" camunda:collection="items"');
+        const result = compare(changed, base);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            MultiTask_1: ['Multi-instance', 'Multi-instance', 'Multi-instance']
+        });
+    });
+
     it('detects added/removed multiInstanceLoopCharacteristics', () => {
         const plain = variant(
             '\n      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item" />',
@@ -199,7 +211,7 @@ describe('BpmnXmlComparator subprocess comparison rules', () => {
             '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:collection="subItems" camunda:elementVariable="subItem" />');
         const result = compare(changed, base);
         assert.deepEqual(Array.from(result.changedShapeIds), ['SubProcess_1']);
-        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { SubProcess_1: ['Asynchronous continuations'] });
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
     });
 
     it('detects added extensionElements on the subprocess itself', () => {

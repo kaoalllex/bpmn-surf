@@ -89,6 +89,10 @@ class BpmnXmlComparator {
         ['bpmn:loopCardinality', 'Multi-instance'],
         ['bpmn:completionCondition', 'Multi-instance'],
         ['bpmn:multiInstanceLoopCharacteristics/camunda:failedJobRetryTimeCycle', 'Multi-instance'],
+        // the multi-instance body's own async flags, not the activity's
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:asyncBefore', 'Multi-instance'],
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:asyncAfter', 'Multi-instance'],
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:exclusive', 'Multi-instance'],
 
         ['camunda:delegateExpression', 'Implementation'],
         ['camunda:expression', 'Implementation'],
