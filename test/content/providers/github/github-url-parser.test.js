@@ -34,6 +34,10 @@ describe('GitHubUrlParser.parseBlob', () => {
             { owner: 'acme', repo: 'flows', refAndPath: 'feature/x/My Flows/order.bpmn' });
     });
 
+    it('returns null when the path cannot be decoded', () => {
+        assert.equal(parser.parseBlob('https://github.com/a/r/blob/main/%E0%A4%A.bpmn'), null);
+    });
+
     it('returns null off blob pages', () => {
         assert.equal(parser.parseBlob('https://github.com/acme/flows/tree/main/dir'), null);
         assert.equal(parser.parseBlob('https://github.com/acme/flows/pull/1/files'), null);

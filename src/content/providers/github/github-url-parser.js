@@ -15,7 +15,15 @@ class GitHubUrlParser {
 
     parseBlob(href) {
         const match = GitHubUrlParser.#BLOB.exec(new URL(href).pathname);
-        return match ? { owner: match[1], repo: match[2], refAndPath: decodeURIComponent(match[3]) } : null;
+        if (!match) {
+            return null;
+        }
+        try {
+            return { owner: match[1], repo: match[2], refAndPath: decodeURIComponent(match[3]) };
+        } catch {
+            // A malformed escape is not a blob page; this runs on every location.href.
+            return null;
+        }
     }
 
     getBranchFileType(href) {
