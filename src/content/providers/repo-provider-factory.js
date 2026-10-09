@@ -19,9 +19,10 @@ function createRepoProvider() {
         new GitLabApiRepoProvider(),
         // Fallback: the existing DOM- and URL-heuristic based provider.
         new GitLabRepoProvider(),
-        // GitHub (REFAC-0004): inert until subtask 2 — isAvailable() returns
-        // false, so the chain always skips it and GitLab behaviour is unchanged.
-        new GitHubRepoProvider()
+        // GitHub (REFAC-0004): the page first — no quota, private repositories
+        // work — then the anonymous REST API when the page cannot be read.
+        new GitHubRepoProvider(),
+        new GitHubApiRepoProvider()
     ]);
 }
 
