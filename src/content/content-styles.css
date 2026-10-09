@@ -99,3 +99,79 @@ html.gl-dark .bpmn-surf-btn-accent {
 .bpmn-surf-menu-item:focus-visible {
     background: var(--gl-dropdown-option-background-color-unselected-hover, rgba(0, 0, 0, 0.06));
 }
+
+/* GitHub (REFAC-0004): the buttons borrow no GitHub classes, so they carry the
+   box GitLab's .btn provides. Scoped to the GitHub-only classes, so no GitLab
+   rule above is affected. */
+.bpmn-surf-gh-file-btn,
+.bpmn-surf-gh-split {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 8px;
+}
+
+.bpmn-surf-gh-split {
+    position: relative;
+}
+
+.bpmn-surf-gh-file-btn > .bpmn-surf-btn-accent,
+.bpmn-surf-gh-split > .bpmn-surf-btn-accent {
+    padding: 3px 10px;
+    border: 1px solid var(--bpmn-surf-accent);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--bpmn-surf-accent);
+    font-size: 12px;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.bpmn-surf-gh-file-btn > .bpmn-surf-btn-accent:hover,
+.bpmn-surf-gh-split > .bpmn-surf-btn-accent:hover {
+    border-color: var(--bpmn-surf-accent-strong);
+    background-color: var(--bpmn-surf-accent-soft);
+    color: var(--bpmn-surf-accent-strong);
+}
+
+.bpmn-surf-gh-split > .bpmn-surf-btn-accent:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.bpmn-surf-gh-split > .bpmn-surf-gh-caret {
+    border-left: 0;
+    border-radius: 0 6px 6px 0;
+    padding: 3px 6px;
+}
+
+.bpmn-surf-gh-split > .bpmn-surf-menu {
+    left: auto;
+    right: 0;
+    background: var(--overlay-bgColor, var(--bgColor-default, #fff));
+    border-color: var(--borderColor-default, #d1d9e0);
+    color: var(--fgColor-default, inherit);
+}
+
+.bpmn-surf-gh-split .bpmn-surf-menu-item {
+    color: inherit;
+}
+
+.bpmn-surf-gh-split .bpmn-surf-menu-item:hover,
+.bpmn-surf-gh-split .bpmn-surf-menu-item:focus-visible {
+    background: var(--control-transparent-bgColor-hover, rgba(0, 0, 0, 0.06));
+}
+
+/* GitHub marks its dark theme with data-color-mode (and follows the system
+   theme when it is "auto"): same lighter accent as GitLab's dark theme. */
+html[data-color-mode="dark"] .bpmn-surf-btn-accent {
+    --bpmn-surf-accent: hsl(212, 85%, 68%);
+    --bpmn-surf-accent-strong: hsl(212, 90%, 76%);
+    --bpmn-surf-accent-soft: hsla(212, 73%, 50%, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+    html[data-color-mode="auto"] .bpmn-surf-btn-accent {
+        --bpmn-surf-accent: hsl(212, 85%, 68%);
+        --bpmn-surf-accent-strong: hsl(212, 90%, 76%);
+        --bpmn-surf-accent-soft: hsla(212, 73%, 50%, 0.18);
+    }
+}
