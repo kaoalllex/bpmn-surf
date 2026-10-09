@@ -4,7 +4,8 @@
 //
 // The odd one out in this directory: it needs no network and no GitLab account,
 // only a stubbed chrome.* so popup.js can run from file://. A Chrome popup window
-// scrolls past roughly 600px, so the height column is the thing to watch.
+// scrolls past roughly 600px, so the height column is the thing to watch. Then
+// the site warnings: none granted, the gitlab.com notice, gitlab.com + github.com.
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -17,12 +18,15 @@ function stubChromeApis() {
     let stored = {
         settings: { handlerAnnotations: { topic: ['ExternalTaskSubscription'], className: [] } }
     };
+    // Both are changed between checks below, then the popup re-renders.
+    window.grantedOrigins = ['https://gitlab.acme.io/*'];
+    window.localStore = {};
     window.chrome = {
         runtime: {
-            getManifest: () => ({ version: '0.0.0', content_scripts: [{ matches: ['https://gitlab.com/*'] }] })
+            getManifest: () => ({ version: '0.0.0' })
         },
         permissions: {
-            getAll: async () => ({ origins: ['https://gitlab.acme.io/*'] }),
+            getAll: async () => ({ origins: window.grantedOrigins }),
             request: async () => { window.permissionRequests = (window.permissionRequests || 0) + 1; return true; },
             remove: async () => true
         },
@@ -30,6 +34,11 @@ function stubChromeApis() {
             sync: {
                 get: async key => ({ [key]: stored[key] }),
                 set: async obj => Object.assign(stored, obj)
+            },
+            local: {
+                get: async key => ({ [key]: window.localStore[key] }),
+                set: async obj => Object.assign(window.localStore, obj),
+                remove: async key => { delete window.localStore[key]; }
             }
         }
     };
@@ -60,17 +69,38 @@ for (const [name, open] of [['home', null], ['sites', 'sites'], ['annotations', 
     }
 }
 
-// github.com must be refused before Chrome is asked for the permission.
+const WARNINGS = ['noSitesWarning', 'noSitesHomeWarning', 'gitlabComNotice'];
+
+async function rerender(origins, localStore) {
+    await page.evaluate(([o, l]) => {
+        window.grantedOrigins = o;
+        window.localStore = l;
+        return renderSites();
+    }, [origins, localStore]);
+}
+
+function warningFlags() {
+    return page.evaluate(ids => ids.map(id =>
+        `${id}.warning-visible=${!document.getElementById(id).classList.contains('hidden')}`).join('  '), WARNINGS);
+}
+
+// No site at all: both "nothing is on" warnings show.
+await rerender([], {});
 await page.click('[data-open="sites"]');
-await page.fill('#hostInput', 'github.com');
-await page.click('#addHostForm button[type="submit"]');
-await page.waitForTimeout(150);
-const refusal = await page.evaluate(() => ({
-    error: document.getElementById('hostError').textContent,
-    requests: window.permissionRequests || 0
-}));
-console.log(`sites-github error="${refusal.error}"  permission-requests=${refusal.requests}`);
-await page.screenshot({ path: join(outDir, 'popup-sites-github.png'), fullPage: true });
+console.log(`sites-none     ${await warningFlags()}`);
+await page.screenshot({ path: join(outDir, 'popup-sites-none.png'), fullPage: true });
+await page.click('#backBtn');
+
+// An update from 1.3.x that lost gitlab.com: the notice shows on Home.
+await rerender(['https://gitlab.acme.io/*'], { gitlabComNotice: true });
+console.log(`gitlab-notice  ${await warningFlags()}`);
+await page.screenshot({ path: join(outDir, 'popup-gitlab-notice.png'), fullPage: true });
+
+// gitlab.com and github.com on: nothing to warn about, both removable.
+await rerender(['https://gitlab.com/*', 'https://github.com/*'], { gitlabComNotice: true });
+const listed = await page.$$eval('#siteList .pu-site', items => items.map(item =>
+    `${item.querySelector('.pu-site-host').textContent}${item.querySelector('.pu-site-remove') ? ' ×' : ''}`));
+console.log(`sites-both     ${await warningFlags()}  listed=${JSON.stringify(listed)}`);
 
 console.log(problems.length ? `page errors:\n${problems.join('\n')}` : 'no page errors');
 console.log(`screenshots in ${outDir}`);

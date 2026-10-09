@@ -1,7 +1,7 @@
 // Shared plumbing for the live harness. Not part of `npm test` or
 // `playwright test` — see README.md in this directory.
 import { chromium } from '@playwright/test';
-import { existsSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,22 +23,64 @@ export function hasProfile() {
     return !process.env.BPMN_SURF_ANONYMOUS && existsSync(PROFILE_DIR);
 }
 
+// The hosts the harness drives. The tracked manifest declares no site — the user
+// turns each one on in the popup — so the copy loaded here bakes them in, the way
+// an internal build does (scripts/package.sh).
+const LIVE_HOSTS = ['https://gitlab.com/*', 'https://github.com/*'];
+
+// A fixed path keeps the unpacked extension's id stable across runs, as loading
+// it from REPO_ROOT did.
+const STAGED_EXTENSION = join(tmpdir(), 'bpmn-surf-live-extension');
+
+function stageExtension() {
+    rmSync(STAGED_EXTENSION, { recursive: true, force: true });
+    for (const entry of ['manifest.json', 'src', 'libs', 'icons']) {
+        cpSync(join(REPO_ROOT, entry), join(STAGED_EXTENSION, entry), { recursive: true });
+    }
+    const manifestPath = join(STAGED_EXTENSION, 'manifest.json');
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    manifest.host_permissions = LIVE_HOSTS;
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 4));
+    return STAGED_EXTENSION;
+}
+
+// The service worker registers the content scripts asynchronously after the
+// extension loads; a page opened before that would get no buttons.
+async function waitForContentScripts(context) {
+    const isOurs = w => w.url().endsWith('/src/background/service-worker.js');
+    const worker = context.serviceWorkers().find(isOurs)
+        || await context.waitForEvent('serviceworker', { predicate: isOurs, timeout: 10000 });
+    for (let attempt = 0; attempt < 100; attempt++) {
+        if ((await worker.evaluate(() => chrome.scripting.getRegisteredContentScripts())).length) {
+            return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    throw new Error('the extension registered no content scripts within 10 s');
+}
+
 /**
  * A browser with the unpacked extension loaded, the way Chrome loads it from
  * chrome://extensions. A persistent context is required: extensions do not load
- * into an ordinary one.
+ * into an ordinary one. The extension is a staged copy with gitlab.com and
+ * github.com baked in; this resolves once its content scripts are registered.
  *
  * Uses the signed-in profile when there is one, a throwaway profile otherwise —
  * so everything still runs anonymously, which is enough for a public project
  * except for per-user preferences. Only one script at a time: Chromium locks the
  * profile directory.
  */
-export function launchWithExtension({ headless = true, withExtension = true, ...contextOptions } = {}) {
+export async function launchWithExtension({ headless = true, withExtension = true, ...contextOptions } = {}) {
     const dir = hasProfile() ? PROFILE_DIR : mkdtempSync(join(tmpdir(), 'bpmn-surf-'));
-    const args = withExtension
-        ? [`--disable-extensions-except=${REPO_ROOT}`, `--load-extension=${REPO_ROOT}`]
+    const extension = withExtension ? stageExtension() : null;
+    const args = extension
+        ? [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`]
         : [];
-    return chromium.launchPersistentContext(dir, { channel: 'chromium', headless, args, ...contextOptions });
+    const context = await chromium.launchPersistentContext(dir, { channel: 'chromium', headless, args, ...contextOptions });
+    if (extension) {
+        await waitForContentScripts(context);
+    }
+    return context;
 }
 
 export function createProfileDir() {

@@ -173,12 +173,6 @@ button:hover { background: var(--pu-accent-dim); }
     border-radius: 6px;
 }
 .pu-site-host { flex: 1; overflow-wrap: anywhere; }
-.pu-site-badge {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--pu-muted);
-}
 .pu-site-remove {
     padding: 0 6px;
     font-size: 16px;
@@ -209,6 +203,17 @@ button:hover { background: var(--pu-accent-dim); }
     font-weight: 600;
 }
 .pu-primary:hover { background: #6BB0F2; }
+.pu-small { padding: 2px 8px; font-size: 12px; }
+
+.pu-link {
+    padding: 0;
+    font: inherit;
+    color: var(--pu-accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.pu-link:hover { background: none; text-decoration: underline; }
 
 .pu-error { margin-top: 6px; font-size: 12px; color: #F2A0A0; }
 

@@ -14,8 +14,6 @@
 // the same permissions and keeps the content-script registrations in sync. The
 // annotations have no such natural home and do live in chrome.storage.sync.
 
-const DECLARED_MATCHES = chrome.runtime.getManifest().content_scripts[0].matches;
-
 const VIEW_TITLES = {
     home: 'bpmn-surf',
     sites: 'Sites',
@@ -31,7 +29,12 @@ const els = {
     feedbackLink: document.getElementById('feedbackLink'),
     sitesSummary: document.getElementById('sitesSummary'),
     annSummary: document.getElementById('annSummary'),
+    gitlabComNotice: document.getElementById('gitlabComNotice'),
+    gitlabComOn: document.getElementById('gitlabComOn'),
+    gitlabComDismiss: document.getElementById('gitlabComDismiss'),
+    noSitesHomeWarning: document.getElementById('noSitesHomeWarning'),
 
+    noSitesWarning: document.getElementById('noSitesWarning'),
     siteList: document.getElementById('siteList'),
     addHostForm: document.getElementById('addHostForm'),
     hostInput: document.getElementById('hostInput'),
@@ -93,9 +96,7 @@ els.backBtn.addEventListener('click', () => showView('home'));
 
 // ==== Sites (FEAT-0033) ====
 
-// A declared match is injected by Chrome itself and cannot be unregistered
-// through the API — it is shown as built-in rather than with a remove button.
-function appendSite(pattern, builtIn) {
+function appendSite(pattern) {
     const host = hostOf(pattern);
     const item = document.createElement('li');
     item.className = 'pu-site';
@@ -105,36 +106,40 @@ function appendSite(pattern, builtIn) {
     name.textContent = host;
     item.appendChild(name);
 
-    if (builtIn) {
-        const badge = document.createElement('span');
-        badge.className = 'pu-site-badge';
-        badge.textContent = 'built-in';
-        item.appendChild(badge);
-    } else {
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'pu-site-remove';
-        remove.title = `Remove ${host}`;
-        remove.textContent = '×';
-        remove.addEventListener('click', () => removeHost(pattern));
-        item.appendChild(remove);
-    }
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'pu-site-remove';
+    remove.title = `Remove ${host}`;
+    remove.textContent = '×';
+    remove.addEventListener('click', () => removeHost(pattern));
+    item.appendChild(remove);
 
     els.siteList.appendChild(item);
 }
 
 async function renderSites() {
     const { origins } = await chrome.permissions.getAll();
-    const userPatterns = userOriginsFrom(origins, DECLARED_MATCHES);
+    const sites = userOriginsFrom(origins);
     els.siteList.textContent = '';
-    for (const pattern of DECLARED_MATCHES) {
-        appendSite(pattern, true);
-    }
-    for (const pattern of userPatterns) {
-        appendSite(pattern, false);
-    }
-    els.sitesSummary.textContent = [...DECLARED_MATCHES, ...userPatterns].map(hostOf).join(', ');
+    sites.forEach(appendSite);
+    els.sitesSummary.textContent = sites.length ? sites.map(hostOf).join(', ') : 'No site yet';
+    els.noSitesWarning.classList.toggle('hidden', sites.length > 0);
+    els.noSitesHomeWarning.classList.toggle('hidden', sites.length > 0);
+    const { [GITLAB_COM_NOTICE_KEY]: notice } = await chrome.storage.local.get(GITLAB_COM_NOTICE_KEY);
+    els.gitlabComNotice.classList.toggle('hidden', !notice || sites.includes(GITLAB_COM));
 }
+
+// Chrome grants a permission only while the click's gesture is live — the
+// request is issued before anything is awaited.
+els.gitlabComOn.addEventListener('click', () => {
+    chrome.permissions.request({ origins: [GITLAB_COM] })
+        .then(() => renderSites())
+        .catch(e => showError(String((e && e.message) || e)));
+});
+els.gitlabComDismiss.addEventListener('click', async () => {
+    await chrome.storage.local.remove(GITLAB_COM_NOTICE_KEY);
+    await renderSites();
+});
 
 async function removeHost(pattern) {
     await chrome.permissions.remove({ origins: [pattern] });
@@ -146,10 +151,6 @@ els.addHostForm.addEventListener('submit', event => {
     const pattern = normalizeHostPattern(els.hostInput.value);
     if (!pattern) {
         showError('Enter an https host, for example gitlab.mycompany.com');
-        return;
-    }
-    if (isUnsupportedHost(pattern)) {
-        showError('GitHub is not supported yet — bpmn-surf works with GitLab: gitlab.com and self-managed instances');
         return;
     }
     showError('');
@@ -252,7 +253,7 @@ els.exportBtn.addEventListener('click', async () => {
     try {
         const { origins } = await chrome.permissions.getAll();
         const file = buildSettingsExport({
-            hosts: userOriginsFrom(origins, DECLARED_MATCHES),
+            hosts: userOriginsFrom(origins),
             handlerAnnotations: await loadHandlerAnnotations(),
             version: chrome.runtime.getManifest().version
         });
@@ -287,7 +288,7 @@ els.importInput.addEventListener('change', async event => {
         await renderAnnotations();
 
         const { origins } = await chrome.permissions.getAll();
-        const granted = new Set([...origins, ...DECLARED_MATCHES]);
+        const granted = new Set(origins);
         const missing = imported.hosts.filter(h => !granted.has(h));
         if (missing.length === 0) {
             setMessage(els.ioNote, 'Imported. Every site in the file is already allowed.');

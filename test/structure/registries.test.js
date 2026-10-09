@@ -1,8 +1,8 @@
 'use strict';
 
 // Guards the four path registries that must stay in sync by hand (see
-// docs/architecture.md): manifest.json#content_scripts (order matters) and
-// #web_accessible_resources, utils.js#loadScripts (order matters) and
+// docs/architecture.md): src/hosts/content-scripts.json (order matters),
+// manifest.json#web_accessible_resources, utils.js#loadScripts (order matters) and
 // test/support/scope.js#SCOPE_FILES. A drift here breaks the extension
 // silently at runtime (chrome.runtime.getURL returns empty) while unit tests
 // stay green — so this is the cheapest, highest-value structural guard.
@@ -30,7 +30,7 @@ const isProjectResource = p => p.startsWith('src/') || p.startsWith('libs/');
 
 describe('registries: referenced files exist on disk', () => {
     const cases = [
-        ['manifest content_scripts', contentScripts],
+        ['content-scripts.json', contentScripts],
         ['manifest web_accessible_resources', webAccessibleResources.filter(isProjectResource)],
         ['utils.js#loadScripts', loadScripts.filter(isProjectResource)],
         ['scope.js#SCOPE_FILES', scopeFiles]
@@ -49,7 +49,7 @@ describe('registries: no registry lists the same path twice', () => {
     // second `const`/`class` declaration — and every existence check above still
     // passes, so nothing else here would notice.
     const cases = [
-        ['manifest content_scripts', contentScripts],
+        ['content-scripts.json', contentScripts],
         ['manifest web_accessible_resources', webAccessibleResources],
         ['utils.js#loadScripts', loadScripts],
         ['scope.js#SCOPE_FILES', scopeFiles]
@@ -67,17 +67,17 @@ describe('registries: no registry lists the same path twice', () => {
     }
 });
 
-describe('registries: content-scope files are all registered in content_scripts', () => {
-    // Content scripts run on GitLab pages: everything under src/content/ plus
-    // the cross-scope core files. Each must be listed in manifest content_scripts.
+describe('registries: content-scope files are all registered in content-scripts.json', () => {
+    // Content scripts run on the hosts' pages: everything under src/content/ plus
+    // the cross-scope core files. Each must be listed in content-scripts.json.
     const contentScopeFiles = srcJsFiles.filter(
         p => p.startsWith('src/content/') || p.startsWith('src/core/')
     );
     for (const file of contentScopeFiles) {
-        it(`${file} is in content_scripts`, () => {
+        it(`${file} is in content-scripts.json`, () => {
             assert.ok(
                 contentScripts.includes(file),
-                `${file} is a content-scope source file but not listed in manifest#content_scripts`
+                `${file} is a content-scope source file but not listed in src/hosts/content-scripts.json`
             );
         });
     }

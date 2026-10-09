@@ -57,7 +57,7 @@ const SCOPE_FILES = [
     'src/differ/dmn/dmn-diff-painter.js',
     'src/differ/bpmn/bpmn-differ-view.js',
     'src/differ/navigation/back-navigator.js',
-    // content-script files, in manifest.json#content_scripts relative order.
+    // content-script files, in src/hosts/content-scripts.json relative order.
     // repo-provider.js / ui-repo-provider.js must precede the gitlab-* providers
     // that extend them (extends is evaluated at load time).
     'src/core/config.js',
@@ -102,7 +102,7 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'detectPlatformKind', 'PLATFORM_KIND',
-    'normalizeHostPattern', 'userOriginsFrom', 'isUnsupportedHost',
+    'normalizeHostPattern', 'userOriginsFrom', 'needsGitlabComNotice',
     'GitHubChangesPayload',
     'DEFAULT_HANDLER_ANNOTATIONS', 'normalizeHandlerAnnotations', 'isDefaultHandlerAnnotations',
     'buildSettingsExport', 'parseSettingsExport', 'SETTINGS_EXPORT_FORMAT',

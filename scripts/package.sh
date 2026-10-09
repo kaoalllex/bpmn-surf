@@ -7,11 +7,12 @@
 # is dev-only (docs/, test/, scripts/, node_modules/, venv/, package*.json, ...).
 # The file set must mirror what manifest.json references.
 #
-# Extra content-script hosts (internal GitLab instances) are passed as arguments
-# and injected into the staged manifest only — they are never written to the
-# tracked manifest.json:
+# Hosts for an internal build (GitLab instances) are passed as arguments and
+# baked into the staged manifest's host_permissions only — they are never written
+# to the tracked manifest.json. A required host is among the granted origins, so
+# the service worker registers the content scripts there with no popup step:
 #
-#     npm run package                        # public build (gitlab.com only)
+#     npm run package                        # public build (no site built in)
 #     npm run package -- gitlab.internal.example
 #
 # `--store` builds the Chrome Web Store upload instead: the store wants
@@ -63,14 +64,14 @@ if [ "$#" -gt 0 ]; then
         const fs = require("fs");
         const [file, ...hosts] = process.argv.slice(1);
         const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
-        const matches = manifest.content_scripts[0].matches;
-        for (const host of hosts.reverse()) {
+        const granted = manifest.host_permissions = manifest.host_permissions || [];
+        for (const host of hosts) {
             const pattern = `https://${host}/*`;
-            if (!matches.includes(pattern)) matches.unshift(pattern);
+            if (!granted.includes(pattern)) granted.push(pattern);
         }
         fs.writeFileSync(file, JSON.stringify(manifest, null, 4));
     ' "$stage/manifest.json" "$@"
-    echo "package: added hosts to content_scripts matches: $*"
+    echo "package: baked hosts into host_permissions: $*"
 fi
 cp -R src "$stage/"
 cp -R libs "$stage/"

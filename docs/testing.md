@@ -31,7 +31,7 @@ Layout (`test/`):
 ### Structural tests (`test/structure/`)
 
 A separate class of tests — not "the logic of class X", but **invariants of the project structure**, which are otherwise protected only by prose in `docs/` and by discipline. They do not use vm/jsdom; they read the project's real files via the helper `test/support/source-tree.js` (parsing `manifest.json`, `utils.js#loadScripts`, `scope.js#SCOPE_FILES`, walking `src/`). Composition:
-- `registries.test.js` — synchronization of the four path registries: all references in `content_scripts`/`web_accessible_resources`/`loadScripts`/`SCOPE_FILES` exist on disk; the differ files match in composition and **relative order** in `loadScripts` and `web_accessible_resources`; every content-scope file is in `content_scripts`; and no registry lists the same path twice (a duplicate loads a file twice into one global scope, where the second `const`/`class` throws — and every other check here still passes). For the vendored `libs/`: every lib `loadScripts` loads is in `web_accessible_resources`, and every relative `url()`/`@import` in a vendored stylesheet resolves to a synced, web-accessible file — `sync-libs.js` copies only the files it lists, so a library update that starts referencing a new file (a font, an imported sheet) fails here instead of shipping a broken reference. Catches the desync that otherwise breaks silently at runtime (`chrome.runtime.getURL` → empty) while unit tests stay green.
+- `registries.test.js` — synchronization of the four path registries: all references in `src/hosts/content-scripts.json`/`web_accessible_resources`/`loadScripts`/`SCOPE_FILES` exist on disk; the differ files match in composition and **relative order** in `loadScripts` and `web_accessible_resources`; every content-scope file is in `content-scripts.json`; and no registry lists the same path twice (a duplicate loads a file twice into one global scope, where the second `const`/`class` throws — and every other check here still passes). For the vendored `libs/`: every lib `loadScripts` loads is in `web_accessible_resources`, and every relative `url()`/`@import` in a vendored stylesheet resolves to a synced, web-accessible file — `sync-libs.js` copies only the files it lists, so a library update that starts referencing a new file (a font, an imported sheet) fails here instead of shipping a broken reference. Catches the desync that otherwise breaks silently at runtime (`chrome.runtime.getURL` → empty) while unit tests stay green.
 - `message-id.test.js` — the postMessage id matching between scopes (`App.MESSAGES.BPMN_ID`/`DMN_ID` ↔ `BpmnDiffer.MSG_ID`/`DmnDiffer.MSG_ID`).
 - `source-layout.test.js` — uniqueness of basename across all of `src/` (the mirror layout rests on this) and the rule "every `src/**/*.js` either has a mirror test, or is listed in `UNTESTED_BY_DESIGN` with a reason". The `UNTESTED_BY_DESIGN` list must **shrink**: after adding a test, remove the entry (otherwise the stale check will fail). A new src file forces a deliberate decision — write a test or record why not.
 
@@ -114,8 +114,11 @@ run there. Its rules are in [`test/e2e/live/README.md`](../test/e2e/live/README.
 
 `popup-screens.mjs` is the exception that needs no network: it renders every
 popup screen with a stubbed `chrome.*` and reports height and overflow, then
-submits `github.com` on the Sites screen and reports the refusal message and
-the number of permission requests (must be 0).
+re-renders the site warnings and prints `warning-visible=` for `#noSitesWarning`,
+`#noSitesHomeWarning` and `#gitlabComNotice` in three states: no site granted
+(both "no site" warnings, `popup-sites-none.png`), an update from 1.3.x that lost
+gitlab.com (the notice, `popup-gitlab-notice.png`), and gitlab.com + github.com
+granted (all hidden, both listed with `×`).
 
 ## Manual checking
 

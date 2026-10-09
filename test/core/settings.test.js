@@ -46,9 +46,9 @@ describe('parseSettingsExport', () => {
         assert.deepEqual(parsed.hosts, ['https://gitlab.mycompany.com/*', 'https://gitlab.com/*']);
     });
 
-    it('drops github.com, which the extension does not support yet', () => {
+    it('imports github.com like any other host', () => {
         const parsed = parseSettingsExport(file({ hosts: ['github.com', 'gitlab.mycompany.com'] }));
-        assert.deepEqual(parsed.hosts, ['https://gitlab.mycompany.com/*']);
+        assert.deepEqual(parsed.hosts, ['https://github.com/*', 'https://gitlab.mycompany.com/*']);
     });
 
     it('de-duplicates hosts that normalise to the same pattern', () => {
