@@ -512,6 +512,56 @@ GitLab unchanged.
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
 
+### 2026-10-09 (4) · claude-opus-5-5 · `db943d4`, `0515cf3` + this entry (branch `feature/refac-0004-github`)
+
+**Upgrade check from 1.3.0 (by hand).** The 1.3.0 store build, loaded unpacked, decorated gitlab.com
+MR !1. Its files replaced by the branch build + Reload: the gitlab.com grant was **lost** — `!` on the
+icon, the notice on Home, no buttons, no errors. "Turn on gitlab.com" → Chrome's confirm → `!` and the
+notice gone, buttons back. With no site, `!` and the Home warning survive Cmd+Q and a relaunch.
+
+**Live check, GitLab** (sandbox, signed in, "Show one file at a time" off — the account's value — then
+on, restored to off): `mr-button` rapid and `--legacy` on a diagram next to code, added, deleted,
+renamed, `.dmn`, merged bpmn + dmn and code-only MRs; `--scroll` on the 30-file MR, `--walk`, `--click`
+(bpmn and dmn) in both modes; `branch-button` for a `.bpmn` and a `.dmn`; `search-page`;
+`popup-screens`. All `RESULT: OK`, screenshots fine.
+
+**Live check, GitHub** (a one-off driver over `launchWithExtension`, Network filtered on
+`api.github.com` — GitHub's own `_private/browser/stats` telemetry excluded):
+- signed in, **zero** `api.github.com` requests on every page, click and badge below; anonymous, one
+  `pulls/{n}/files` per BPMN differ (none for DMN);
+- sandbox #9: one button, both sides at the merge base `276bf8a` (not the base tip `cd9b157`), signed
+  in and anonymous;
+- #16 Conversation → Files changed by click: the button appears and resolves; the path with spaces
+  and `#` loads both sides, the header link answers 200;
+- #4 (DMN), camunda-bpm-examples#104: highlighted tables, no `EvalError`; #7 and camunda-modeler#6197
+  renames open; merged #2 opens; closed #10 is blank because both sides are truncated on purpose;
+- private #1: signed in as the public one; anonymous, GitHub's 404 and nothing of ours;
+- #1: the added handler's badge moves the PR tab to `#diff-<sha256(path)>`; an unchanged handler, the
+  dive-in on a call activity and the callers list open github.com code search;
+- blob pages: `View schema` / `View decision` before Raw, the caret menu, "Diff with local file…",
+  and the button follows soft navigation (tree → blob → tree → another blob);
+- github.com home, an issue, a PR's Conversation and Commits tabs, the repo root: nothing injected;
+  fork PR camunda-bpm-examples#260 (no diagrams): nothing of ours (its 500s are GitHub's);
+- popup, by hand in Chrome: removing github.com stops the GitHub tab, GitLab keeps working; no site →
+  `!` and both warnings; gitlab.com added back → all gone;
+- `npm run package -- --store`: neither `content_scripts` nor `host_permissions`;
+  `npm run package -- gitlab.mycompany.com`: that host in `host_permissions`.
+
+Found and fixed (separate `fix:` commits):
+1. `db943d4` — a DRD-only DMN (camunda-modeler#6197 `baz.dmn`: decisions without a table) left the
+   differ on "Loading the diagram…" forever: `DmnTableViewport.fit()` and the comparator need a table.
+   Now it says "This file has no decision table to compare". Older than REFAC-0004; GitLab had it too.
+2. `0515cf3` — a large PR's new-UI page (dmn-js#852, 101 files) embeds `diffSummaries` but no
+   `diffContents`, the only place with the merge base (`comparison.fullDiff.baseOid` is the base tip).
+   Signed in, that fell back to the anonymous REST API (2 requests; a private large PR would have
+   failed). The page provider now loads one file's diff from GitHub's own same-origin
+   `pull/{n}/page_data/diff_entries?paths=…&range={head}` (it answers 406 without the frontend's
+   `x-requested-with` / `github-verified-fetch` headers) — zero API requests. Undocumented endpoint:
+   if GitHub changes it, the REST fallback still serves public PRs.
+
+The skill's large-PR row named bpmn-io/bpmn-js#2429, which has no diagram at all; it now names
+dmn-js#852. Not covered: a fork PR with a diagram (none found yet).
+
 ### 2026-10-09 (3) · claude-opus-5-5 (controller) + subagents · `c04d7bc` + docs (branch `feature/refac-0004-github`)
 
 Subtask 2 implemented, plan order (Task 5 Step 1 ran before Task 3 while the human signed in to

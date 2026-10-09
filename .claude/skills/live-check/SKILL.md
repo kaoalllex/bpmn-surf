@@ -186,12 +186,12 @@ pick by kind if one moved.
 | sandbox `#9` `/changes` signed in, `/files` anonymous | one `Schema diff` / `Decision diff` button per diagram file, none elsewhere; signed in: **zero** `api.github.com` requests while opening the page, clicking a button and the differ's handler badges; anonymous: one `pulls/{n}/files` per differ |
 | `#9` after `main` moved | the target side equals GitHub's own diff (merge base, not the base tip) |
 | `#16` Conversation → Files changed (soft navigation) | the button appears and resolves the right PR (no stale payload) |
-| `bpmn-io/bpmn-js#2429` (162 files), scroll | buttons follow the virtualised blocks, no blinking, none on code files |
+| `bpmn-io/dmn-js#852` (101 files, 6 `.dmn`), scroll | buttons follow the blocks, no blinking, none on code files; signed in: the page embeds no file diffs, so the merge base comes from one `page_data/diff_entries` request — still zero `api.github.com` |
 | sandbox `#4` (DMN), `camunda/camunda-bpm-examples#104` | the differ renders under GitHub's CSP, no `EvalError` in the console |
 | renames: sandbox `#7`, `camunda/camunda-modeler#6197` | both sides open |
 | `#16` (spaces and `#` in the path) | the file opens, both sides load |
 | merged `#2`, closed `#10` | the buttons and the diff work |
-| fork PR `camunda/camunda-bpm-examples#260` | the head side loads from the fork |
+| fork PR `camunda/camunda-bpm-examples#260` (no diagrams) | no buttons, no errors from us; a fork PR with a diagram is still to be found |
 | private `bpmn-surf-test-private#1` | signed in: buttons, differ and handler badges, no API request; anonymous: GitHub's own 404, nothing of ours |
 | a changed handler's badge | links to that file's diff in the PR (`#diff-<sha256>`) |
 | dive-in miss, an unchanged handler, the callers list | opens github.com code search (`searchPageUrl`), never GitLab's tree walk |
