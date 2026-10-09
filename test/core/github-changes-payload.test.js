@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('#scope');
+const { createScope, fixture } = require('#scope');
 
 const { GitHubChangesPayload, document } = createScope();
 
@@ -50,5 +50,12 @@ describe('GitHubChangesPayload.read', () => {
     it('skips unparsable JSON', () => {
         const doc = parse('<react-app app-name="repo"><script type="application/json" data-target="react-app.embeddedData">{oops</script></react-app>');
         assert.equal(GitHubChangesPayload.read(doc, 7), null);
+    });
+
+    it('reads a real signed-in capture', () => {
+        const doc = parse(fixture('github/pr-changes-new-ui.html'));
+        const result = GitHubChangesPayload.read(doc, 7);
+        assert.ok(result);
+        assert.match(result.changes.diffContents[0].oldCommitOid, /^[0-9a-f]{40}$/);
     });
 });
