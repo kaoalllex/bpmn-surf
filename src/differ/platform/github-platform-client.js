@@ -57,6 +57,7 @@ class GitHubPlatformClient extends PlatformClient {
                     : file.changeType === 'DELETED' || file.changeType === 'REMOVED' ? 'removed' : 'changed'
             }));
         }
+        console.debug('bpmn-surf: no changes payload on the PR page — listing changed files via the GitHub API');
         return this.#prChangedFilesFromApi(changeId);
     }
 

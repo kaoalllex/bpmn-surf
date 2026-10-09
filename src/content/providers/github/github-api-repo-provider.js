@@ -31,6 +31,7 @@ class GitHubApiRepoProvider extends GitHubRepoProviderBase {
     #loadPull({ owner, repo, number }) {
         const key = `${owner}/${repo}#${number}`;
         if (!this.#pulls.has(key)) {
+            console.debug(`bpmn-surf: the PR page's refs could not be read — falling back to the GitHub API for ${key}`);
             const loading = this.#fetchPull(owner, repo, number);
             loading.catch((error) => console.info(
                 `bpmn-surf: no diff buttons on GitHub PR ${key}: ${GitHubApiRepoProvider.#reason(error)}`));
