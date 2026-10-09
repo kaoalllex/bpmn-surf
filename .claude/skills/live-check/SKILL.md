@@ -1,6 +1,6 @@
 ---
 name: live-check
-description: Use when asked to check the extension live, by hand, end to end or on the test sandbox — "проведи live-проверку", "проверь на песочнице", "ручная проверка", "live check", "does it work on real GitLab" — before declaring done a change to how the extension reads or decorates GitLab pages (buttons, file detection, placement), to the differ's navigation or code search, or to how differ tabs open — and before every release or store submission (the release smoke). Not for running unit or Layer-2 e2e tests.
+description: Use when asked to check the extension live, by hand, end to end or on the test sandbox — "проведи live-проверку", "проверь на песочнице", "ручная проверка", "live check", "does it work on real GitLab" — before declaring done a change to how the extension reads or decorates GitLab or GitHub pages (buttons, file detection, placement), to the differ's navigation or code search, or to how differ tabs open — and before every release or store submission (the release smoke). Not for running unit or Layer-2 e2e tests.
 ---
 
 # Live check on the sandbox
@@ -23,11 +23,11 @@ with the real bpmn-js and properties panel (`docs/testing.md`, `test/e2e/*.spec.
 
 | The change is in | Check it with |
 |---|---|
-| `src/content/` — buttons, file detection, placement, SPA navigation | the catalog below |
+| `src/content/` — buttons, file detection, placement, SPA navigation | the catalog below (GitLab); `src/content/providers/github/`, `src/differ/platform/github-platform-client.js`, `src/core/github-changes-payload.js` — "GitHub" below |
 | the differ (`src/differ/`) | the Layer-2 spec of that area (`differ-edit-*`, `differ-prop-group-*`, `differ-highlight-*`, `dmn-*`…): add a case that fails without the fix. For a diagram from a report, pull it first (`gitlab-test-project` skill, "From report to repro") |
 | `src/differ/navigation/`, `src/differ/platform/` — dive-in, callers, badges, code search | Layer-2 spec of that area **and** "Differ navigation" below (the search is mocked offline) |
 | how differ tabs open — `openDiffer` (`src/core/utils.js`), `src/differ/shared/differ-tab-navigator.js` | `mr-button --click`, `branch-button`, and "Differ navigation" below |
-| `src/popup/` | `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) and the screenshots |
+| `src/popup/`, `src/background/`, `src/hosts/` | `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) and the screenshots; the site-warning scenario under "GitHub" |
 | a release, a store submission | "Release smoke" below |
 
 Asked for a live check of a differ-only change: say so, run the Layer-2 spec, and
@@ -46,8 +46,9 @@ this set on the release branch, all against fresh MR iids resolved by kind:
 3. Branch view: a `.bpmn` and a `.dmn` on `main`, a file on a branch with a slash.
 4. Search fallback link (`search-page.mjs`) and the popup (`popup-screens.mjs`).
 5. Differ navigation (`record-demo.mjs … --no-video`), ~6 min.
-6. By hand, for the human: adding a self-managed host (Chrome's permission dialog
-   cannot be automated).
+6. GitHub, all of "GitHub" below.
+7. By hand, for the human: adding a site in the popup (Chrome's permission dialog
+   cannot be automated), and the upgrade check from the previous store build.
 
 ## Prerequisites
 
@@ -168,6 +169,39 @@ BPMN_SURF_PROJECT=https://gitlab.com/kao.alllex/bpmn-surf-demo \
 
 This is a check, not a re-recording: the README and store media change only on
 the human's request (`gitlab-test-project`, "The demo project").
+
+### GitHub
+
+The harness loads a staged copy of the extension with gitlab.com and github.com baked
+in (`docs/testing.md`), so these run without the popup. There is no GitHub script yet:
+drive them with `launchWithExtension()` from `test/e2e/live/support.mjs` or by hand, once
+signed in (`capture-login.mjs --github`, the Google-SSO route in
+`test/e2e/live/README.md`) and once anonymous (`BPMN_SURF_ANONYMOUS=1`), with the
+Network filter on `api.github.com`. Sandbox: `github.com/kaoalllex/bpmn-surf-test` and
+`bpmn-surf-test-private`; the numbers below are those of 2026-10-09 — list the PRs and
+pick by kind if one moved.
+
+| Scenario | Expect |
+|---|---|
+| sandbox `#9` `/changes` signed in, `/files` anonymous | one `Schema diff` / `Decision diff` button per diagram file, none elsewhere; signed in: **zero** `api.github.com` requests while opening the page, clicking a button and the differ's handler badges; anonymous: one `pulls/{n}/files` per differ |
+| `#9` after `main` moved | the target side equals GitHub's own diff (merge base, not the base tip) |
+| `#16` Conversation → Files changed (soft navigation) | the button appears and resolves the right PR (no stale payload) |
+| `bpmn-io/bpmn-js#2429` (162 files), scroll | buttons follow the virtualised blocks, no blinking, none on code files |
+| sandbox `#4` (DMN), `camunda/camunda-bpm-examples#104` | the differ renders under GitHub's CSP, no `EvalError` in the console |
+| renames: sandbox `#7`, `camunda/camunda-modeler#6197` | both sides open |
+| `#16` (spaces and `#` in the path) | the file opens, both sides load |
+| merged `#2`, closed `#10` | the buttons and the diff work |
+| fork PR `camunda/camunda-bpm-examples#260` | the head side loads from the fork |
+| private `bpmn-surf-test-private#1` | signed in: buttons, differ and handler badges, no API request; anonymous: GitHub's own 404, nothing of ours |
+| a changed handler's badge | links to that file's diff in the PR (`#diff-<sha256>`) |
+| dive-in miss, an unchanged handler, the callers list | opens github.com code search (`searchPageUrl`), never GitLab's tree walk |
+| blob page of a `.bpmn` / `.dmn` | `View schema` / `View decision` split button before Raw; the local-file menu diffs against a file; follows soft navigation between files |
+| popup: remove a site, remove them all, update from 1.3 | the site goes and the tab stops decorating after reload; no site: `!` on the icon and the warnings on Home and Sites; an update that lost gitlab.com: the "Turn on gitlab.com" notice |
+| non-PR GitHub pages (Conversation, Commits, issues, repo root) | nothing injected, no console errors from us |
+| `npm run package -- --store` | the manifest has neither `content_scripts` nor `host_permissions` |
+
+Open each differ and screenshot the buttons into the scratchpad; the runner-free scenarios
+above are judged by you, so say which you ran and which you skipped.
 
 ### Other areas
 

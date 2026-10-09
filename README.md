@@ -1,6 +1,6 @@
 # bpmn-surf
 
-Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas straight from a repository, follow call activities and decision references across files (and back), and review changes in merge requests.
+Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas straight from a repository, follow call activities and decision references across files (and back), and review changes in GitLab merge requests and GitHub pull requests.
 
 ![A merge request in GitLab: Schema diff opens the diagram diff with added, changed and removed elements, the ☼ highlight, Switch branch and the changed property groups](docs/media/hero.gif)
 
@@ -30,16 +30,21 @@ The extension has no build step — it runs directly from the source files.
 
 To update, pull (or re-download) the sources and click ⟳ on the extension in `chrome://extensions`.
 
-### Your own GitLab instance
+### Turning on your sites
 
-Out of the box the extension runs on `gitlab.com`. To use it on a self-hosted GitLab,
-add the host from the extension popup — no file editing:
+Nothing is on by default: the extension runs only on the sites you add, so it asks
+for no access to pages you never review diagrams on. Add `gitlab.com`, `github.com` or
+your own GitLab from the extension popup — no file editing:
 
-1. Click the bpmn-surf icon in the browser toolbar
-2. Under **Sites**, type the host (`gitlab.mycompany.com`; a pasted merge request link
-   works too) and click **Add**
+1. Click the bpmn-surf icon in the browser toolbar (it shows `!` while no site is on)
+2. Under **Sites**, type the host (`github.com`, `gitlab.com`, `gitlab.mycompany.com`; a
+   pasted merge or pull request link works too) and click **Add**
 3. Confirm the access request Chrome shows
-4. Reload the GitLab tabs you already had open
+4. Reload the tabs you already had open
+
+If you updated from 1.3 and the buttons are gone from `gitlab.com`, the popup offers
+**Turn on gitlab.com**. A build made for a team can bake its hosts in, so they need no
+popup step (`npm run package -- gitlab.internal.example`).
 
 Only `https` hosts are accepted. The host is kept as a Chrome permission, so it survives
 updates and re-installs; remove it with the `×` next to it in the popup. Chrome may keep
@@ -49,12 +54,14 @@ its own, the extension no longer runs there.
 The same popup sets which annotations mark external-task handlers, if your project uses
 something other than `@ExternalTaskSubscription`.
 
-![The popup: the Sites list with gitlab.com built in and a self-managed host added, and the handler annotation settings](docs/media/popup.png)
+![The popup: the Sites list with gitlab.com and a self-managed host added, and the handler annotation settings](docs/media/popup.png)
 
 ## Features
 
 The buttons appear only where there is a diagram: on `.bpmn` and `.dmn` files in a merge
-request, and on a diagram file in the repository.
+request, and on a diagram file in the repository. On GitHub the same buttons sit on the
+**Files changed** tab of a pull request (public and private, signed in or out) and on a
+file page; code search is left to GitHub's own search page.
 
 ![The Schema diff and Decision diff buttons on diagram files of a merge request, none on a Kotlin file, and the View schema button with its menu on a repository file](docs/media/buttons.gif)
 

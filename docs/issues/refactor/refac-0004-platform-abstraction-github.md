@@ -368,7 +368,7 @@ GitHub in subtask 2 is now a one-line matcher entry already in place + flipping 
 
 ---
 
-## Subtask 2 — GitHub support: no built-in sites, page-first (diff + render + handler badges)
+## Subtask 2 — GitHub support: no built-in sites, page-first (diff + render + handler badges) — ✅ implemented 2026-10-09 (live check and upgrade check pending)
 
 Rewritten 2026-10-09 after the decisions above and the spike. The step-by-step plan (code, tests,
 live checklist) lives in the local `docs/superpowers/plans/` folder; this is the durable summary.
@@ -420,6 +420,9 @@ live checklist) lives in the local `docs/superpowers/plans/` folder; this is the
    with badges; changed-handler badge link; dive-in → code search; blob buttons follow soft
    navigation; no-site warnings and the gitlab.com notice; store build has neither
    `content_scripts` nor `host_permissions`.
+
+**Release note for 1.4.0** (`/release` writes `CHANGELOG.md`, so it is recorded here): gitlab.com is
+no longer on by default — if the buttons are gone, open the extension and press "Turn on gitlab.com".
 
 **Acceptance subtask 2:** with github.com added in the popup, on a public and a private PR the
 user can open, signed in (`/changes`, also after a soft navigation) and signed out (`/files`),
@@ -508,6 +511,42 @@ GitLab unchanged.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-09 (3) · claude-opus-5-5 (controller) + subagents · `c04d7bc` + docs (branch `feature/refac-0004-github`)
+
+Subtask 2 implemented, plan order (Task 5 Step 1 ran before Task 3 while the human signed in to
+GitHub): `9f85cfc` live-harness GitHub sign-in · `76752f3` GitHub URL parser · `417e4f7` GitHub
+platform client, platforms build the PR file diff link (`prFileDiffUrl`) · `678f80a` shared button
+look and local-file menu lifted into `UIRepoProvider` · `0c28a9f` GitHub DOM scraper + fixtures ·
+`fc6db6c` GitHub repo providers (page, REST fallback) · `16ce295` GitHub diff and view buttons ·
+`c04d7bc` no built-in sites, gitlab.com notice · the docs commit. Docs updated: manifest description,
+README, CLAUDE.md, `docs/architecture.md`, `conventions.md`, `testing.md`, `git-workflow.md`, the
+`live-check` skill and the load-order mentions in `.claude/`.
+
+Where code or fixtures contradicted the plan (the code won):
+1. Classic "Files changed" on a small PR (sandbox #9, 2 files) has no progressive `diffs?…sha2=`
+   loader — every file is in the first HTML. The same SHAs sit on `details-menu[src*="/show_toc?"]`
+   (`base_sha` = `sha1` = merge base, `sha2` = head); the scraper reads that too. Large PRs
+   (camunda-modeler#6197) still carry the loader.
+2. The fixtures for #7 and #16 have one file block each (each PR changes one file).
+3. The new UI's "More options" button has no aria-label (named via `aria-labelledby` + tooltip); the
+   scraper selects `button[aria-haspopup="true"]` (last).
+4. jsdom's `window.crypto` is getter-only: tests install webcrypto with `Object.defineProperty`.
+5. The plan's page-provider stale-payload test lacked `await` on the async `getSourceCommitId`.
+6. The GitHub file-button wrapper carries an extra class `bpmn-surf-gh-file-btn`: GitLab's wrapper
+   also has `.bpmn-surf-file-btn`, so the planned CSS would have restyled GitLab buttons.
+7. `src/core/settings.js` also used `isUnsupportedHost`; a settings import now accepts github.com
+   like any host.
+
+Harness: `capture-login.mjs --github` cannot complete a "Continue with Google" GitHub sign-in —
+Google refuses an automated browser. Working route (now in `test/e2e/live/README.md`): launch
+Playwright's Chromium by hand with `--use-mock-keychain --user-data-dir=<profile>`, sign in, quit;
+without the mock keychain the cookies are encrypted with the macOS keychain and Playwright reads the
+profile as signed out. A password sign-in should work through the script (unverified).
+
+Still open: the manual upgrade check from the 1.3.0 build (does Chrome keep gitlab.com once it is
+only optional?) and the live check of the "Live check" step (signed in and anonymous; the scenarios
+are in the `live-check` skill, "GitHub"). Status stays `in-progress`: subtask 3 is not started.
 
 ### 2026-10-09 (2) · claude-opus-5-5 · branch `feature/refac-0004-github-store-plan` (planning only, no code)
 

@@ -35,7 +35,7 @@ A separate class of tests — not "the logic of class X", but **invariants of th
 - `message-id.test.js` — the postMessage id matching between scopes (`App.MESSAGES.BPMN_ID`/`DMN_ID` ↔ `BpmnDiffer.MSG_ID`/`DmnDiffer.MSG_ID`).
 - `source-layout.test.js` — uniqueness of basename across all of `src/` (the mirror layout rests on this) and the rule "every `src/**/*.js` either has a mirror test, or is listed in `UNTESTED_BY_DESIGN` with a reason". The `UNTESTED_BY_DESIGN` list must **shrink**: after adding a test, remove the entry (otherwise the stale check will fail). A new src file forces a deliberate decision — write a test or record why not.
 
-Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (including the mapping of diffs to properties-panel groups and the documented blind spots: arrow retarget, rebinding of incoming/outgoing, the `default` attribute), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.getSourceCommitId` (commits.json, then the page's `diff_head_sha`), `GitLabRepoProviderBase` (init + project id resolution with cache), `GitLabUrlParser`, `GitLabDomScraper`, `MergedMrCommitResolver` (resolution with collaborator injection — without `fetch`/`localStorage`), `SingleEntryCache`, `GitLabApiRepoProvider`, `GitLabUIRepoProvider` (per-file buttons on rapid and legacy markup — placement, idempotency, recycled blocks; the branch split button and its menu), `FallbackRepoProvider` (selection/delegation), `App` (the MR change-view flow over stub providers: refs resolved across a URL change are not used, a click on a view the URL has left is not opened, a failing click is logged), `PageReloader` (the attempt-counter contract — `location.reload` is a no-op in jsdom, the observable counter in `sessionStorage` is checked), the pure functions of `utils.js`, `ConsoleLog` (`test/core/console-log.test.js` — the ring, the two-tier tail, the cycle collapsing, and what it refuses to log), plus the structural invariants (see above).
+Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (including the mapping of diffs to properties-panel groups and the documented blind spots: arrow retarget, rebinding of incoming/outgoing, the `default` attribute), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.getSourceCommitId` (commits.json, then the page's `diff_head_sha`), `GitLabRepoProviderBase` (init + project id resolution with cache), `GitLabUrlParser`, `GitLabDomScraper`, `MergedMrCommitResolver` (resolution with collaborator injection — without `fetch`/`localStorage`), `SingleEntryCache`, `GitLabApiRepoProvider`, `GitLabUIRepoProvider` (per-file buttons on rapid and legacy markup — placement, idempotency, recycled blocks; the branch split button and its menu), the GitHub side (`GitHubUrlParser`; `GitHubDomScraper` over captured pages of both "Files changed" UIs in `test/fixtures/github/` — merge base from `oldCommitOid`, classic `sha1`, renames; `GitHubChangesPayload`; `GitHubRepoProvider` — the page first, a stale payload after a soft navigation re-fetched, no request; `GitHubApiRepoProvider` — waits for a rendered page; `GitHubUIRepoProvider` — file and blob buttons; `GitHubPlatformClient` — payload before the REST fallback, `prFileDiffUrl`), the host logic (`normalizeHostPattern`, `userOriginsFrom`, `needsGitlabComNotice`), `FallbackRepoProvider` (selection/delegation), `App` (the MR change-view flow over stub providers: refs resolved across a URL change are not used, a click on a view the URL has left is not opened, a failing click is logged), `PageReloader` (the attempt-counter contract — `location.reload` is a no-op in jsdom, the observable counter in `sessionStorage` is checked), the pure functions of `utils.js`, `ConsoleLog` (`test/core/console-log.test.js` — the ring, the two-tier tail, the cycle collapsing, and what it refuses to log), plus the structural invariants (see above). `test/e2e/differ-github-navigation.spec.js` is the Layer-2 guard that a non-GitLab dive-in miss never walks GitLab's repository tree.
 
 The GitLab DOM markup in the provider tests (`gitlab-repo-provider.test.js`, `gitlab-ui-repo-provider.test.js`) we build right in the test with small helpers — it is trivial and parameterizable; we keep fixture files only for complex third-party DOM (`dmn-table.html`, `properties-panel.html`).
 
@@ -103,7 +103,23 @@ the navigation locators open. The scenarios and the procedure live in the
 `live-check` project skill (`.claude/skills/live-check/SKILL.md`).
 `capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
 per-user "Show one file at a time" preference; without it everything runs
-anonymously.
+anonymously. `capture-login.mjs --github` stores a github.com session in the same
+profile.
+
+The tracked manifest declares no site, so the harness does not load the repository
+itself: `support.mjs` stages a copy (`manifest.json`, `src`, `libs`, `icons`) in the
+temp directory with `host_permissions` for gitlab.com and github.com, the way an
+internal build bakes hosts in, and waits for the service worker to register the content
+scripts. The staged manifest differs from the store one on purpose.
+
+**GitHub sandbox.** `github.com/kaoalllex/bpmn-surf-test` (public) and
+`github.com/kaoalllex/bpmn-surf-test-private` (private) are the mutable test material,
+the counterpart of the GitLab sandbox; public pull requests of other projects serve as
+real-world samples (large PRs, forks, GitHub's CSP). There are no GitHub-specific
+scripts yet: the GitHub scenarios of the `live-check` skill are driven by hand (or an
+ad-hoc Playwright script on `launchWithExtension()`), signed in and anonymous
+(`BPMN_SURF_ANONYMOUS=1`), with the Network panel filtered to `api.github.com` — a
+signed-in run must make no request there.
 
 `BPMN_SURF_PROJECT=<url>` points the scripts at another project, and
 `BPMN_SURF_ANONYMOUS=1` runs them in a throwaway profile, signed out. The other
