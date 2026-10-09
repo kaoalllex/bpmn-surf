@@ -46,22 +46,33 @@ async function reconcileHostRegistrations() {
     return matches;
 }
 
+// One run at a time: onInstalled hears its own storage write, and a failed run
+// must neither block later ones nor surface as an unhandled rejection.
+let reconciling = Promise.resolve();
+function reconcile() {
+    reconciling = reconciling.then(reconcileHostRegistrations)
+        .catch(e => console.error('bpmn-surf: could not reconcile host registrations', e));
+    return reconciling;
+}
+
 async function onInstalled({ reason, previousVersion }) {
     const { origins } = await chrome.permissions.getAll();
     if (reason === 'update' && needsGitlabComNotice(previousVersion, origins)) {
         await chrome.storage.local.set({ [GITLAB_COM_NOTICE_KEY]: true });
     }
-    await reconcileHostRegistrations();
+    await reconcile();
 }
 
-// onInstalled covers a fresh install and every update; the permission events
-// cover the user adding a host in the popup and revoking one in
-// chrome://extensions; the storage event covers the popup dismissing the notice.
+// onInstalled covers a fresh install and every update, onStartup a browser
+// restart (badge persistence is undocumented); the permission events cover the
+// user adding a host in the popup and revoking one in chrome://extensions; the
+// storage event covers the popup dismissing the notice.
 chrome.runtime.onInstalled.addListener(onInstalled);
-chrome.permissions.onAdded.addListener(reconcileHostRegistrations);
-chrome.permissions.onRemoved.addListener(reconcileHostRegistrations);
+chrome.runtime.onStartup.addListener(reconcile);
+chrome.permissions.onAdded.addListener(reconcile);
+chrome.permissions.onRemoved.addListener(reconcile);
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && GITLAB_COM_NOTICE_KEY in changes) {
-        reconcileHostRegistrations();
+        reconcile();
     }
 });
