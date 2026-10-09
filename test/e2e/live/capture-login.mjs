@@ -18,14 +18,25 @@
 // This script checks afterwards, by reopening the closed profile, and refuses to
 // report success if it did not stick.
 //
+// `--github` signs the same profile in to GitHub instead. GitHub's `user_session` is
+// persistent, so there is no "Remember me" to tick; the script still reopens the
+// closed profile and refuses to report success if the login did not stick.
+//
+//   node test/e2e/live/capture-login.mjs --github
+//
 // Treat the profile as the account itself. `rm -rf` it to sign out; the harness
 // then runs anonymously, which is enough for everything except per-user
 // preferences.
 //
 // "Show one file at a time" is a server-side account preference — set it here,
 // in GitLab → Preferences → Behavior, or with diff-mode.mjs.
-import { createProfileDir, PROFILE_DIR, signedInAs } from './support.mjs';
+import { createProfileDir, githubSignedInAs, PROFILE_DIR, signedInAs } from './support.mjs';
 import { chromium } from '@playwright/test';
+
+const github = process.argv.includes('--github');
+const site = github ? 'GitHub' : 'GitLab';
+const home = github ? 'https://github.com/' : 'https://gitlab.com/';
+const signedIn = github ? githubSignedInAs : signedInAs;
 
 const deadline = Date.now() + 10 * 60 * 1000;
 const context = await chromium.launchPersistentContext(createProfileDir(), {
@@ -35,8 +46,8 @@ const context = await chromium.launchPersistentContext(createProfileDir(), {
 const page = context.pages()[0] || await context.newPage();
 
 const already = await (async () => {
-    await page.goto('https://gitlab.com/', { waitUntil: 'domcontentloaded' });
-    return signedInAs(page);
+    await page.goto(home, { waitUntil: 'domcontentloaded' });
+    return signedIn(page);
 })();
 
 if (already) {
@@ -45,15 +56,15 @@ if (already) {
     process.exit(0);
 }
 
-await page.goto('https://gitlab.com/users/sign_in');
-console.log('\nA browser window is open — sign in to GitLab (2FA and all).');
-console.log('>>> Tick "Remember me", or the login will not outlive the browser. <<<');
+await page.goto(github ? 'https://github.com/login' : 'https://gitlab.com/users/sign_in');
+console.log(`\nA browser window is open — sign in to ${site} (2FA and all).`);
+if (!github) console.log('>>> Tick "Remember me", or the login will not outlive the browser. <<<');
 console.log('Nothing to press afterwards: this exits by itself once you are in.\n');
 
 let username = null;
 while (!username && Date.now() < deadline) {
     await page.waitForTimeout(2000);
-    username = await signedInAs(page);
+    username = await signedIn(page);
 }
 
 await context.close();
@@ -68,14 +79,16 @@ if (!username) {
 console.log(`Signed in as ${username}. Checking that it survives a restart...`);
 const verify = await chromium.launchPersistentContext(PROFILE_DIR, { channel: 'chromium', headless: true });
 const verifyPage = await verify.newPage();
-await verifyPage.goto('https://gitlab.com/', { waitUntil: 'domcontentloaded' });
-const stillIn = await signedInAs(verifyPage);
+await verifyPage.goto(home, { waitUntil: 'domcontentloaded' });
+const stillIn = await signedIn(verifyPage);
 await verify.close();
 
 if (!stillIn) {
     console.log('\nThe login did NOT survive closing the browser.');
-    console.log('That means "Remember me" was not ticked: GitLab\'s session cookie lives');
-    console.log('in memory only. Run this again and tick it.');
+    if (!github) {
+        console.log('That means "Remember me" was not ticked: GitLab\'s session cookie lives');
+        console.log('in memory only. Run this again and tick it.');
+    }
     process.exit(1);
 }
 console.log(`Still signed in as ${stillIn} after a restart. The profile at ${PROFILE_DIR} is ready.`);

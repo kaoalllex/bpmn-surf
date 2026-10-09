@@ -58,6 +58,15 @@ export async function signedInAs(page) {
     }
 }
 
+/** The signed-in GitHub login, or null when the profile is anonymous or expired. Expects a github.com page. */
+export async function githubSignedInAs(page) {
+    try {
+        return await page.evaluate(() => document.querySelector('meta[name="user-login"]')?.content || null);
+    } catch (error) {
+        return null;
+    }
+}
+
 /** The extension's own console output, filtered to the lines worth reading. */
 export function collectExtensionLog(page, pattern = /selected file|button|diff-file|cannot|not selected/i) {
     const lines = [];
