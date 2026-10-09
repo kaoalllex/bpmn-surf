@@ -101,6 +101,28 @@ describe('BpmnXmlComparator property group: Asynchronous continuations', () => {
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { ServiceTask_1: ['Asynchronous continuations'] });
     });
 
+    // Stating a schema default (camunda-bpmn-moddle AsyncCapable) changes nothing
+    for (const [label, from, to] of [
+        ['asyncAfter="false" on a service task',
+            'camunda:asyncBefore="true" camunda:delegateExpression="${serviceOneDelegate}"',
+            'camunda:asyncBefore="true" camunda:asyncAfter="false" camunda:delegateExpression="${serviceOneDelegate}"'],
+        ['exclusive="true" on a service task',
+            'camunda:asyncBefore="true" camunda:delegateExpression="${serviceOneDelegate}"',
+            'camunda:asyncBefore="true" camunda:exclusive="true" camunda:delegateExpression="${serviceOneDelegate}"'],
+        ['asyncBefore="false" on a gateway',
+            '<bpmn:exclusiveGateway id="Gateway_1" name="Approved?" default="Flow_no">',
+            '<bpmn:exclusiveGateway id="Gateway_1" name="Approved?" camunda:asyncBefore="false" default="Flow_no">'],
+        ['exclusive="true" on the multi-instance body',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items"',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:exclusive="true" camunda:collection="items"']
+    ]) {
+        it(`reports no change for an explicit default ${label}`, () => {
+            const changed = variant(from, to);
+            assertNoDiffs(compare(changed, base));
+            assertNoDiffs(compare(base, changed));
+        });
+    }
+
     it('detects added camunda:asyncBefore on a gateway', () => {
         const changed = variant(
             '<bpmn:exclusiveGateway id="Gateway_1" name="Approved?" default="Flow_no">',
@@ -167,6 +189,18 @@ describe('BpmnXmlComparator property group: Multi-instance', () => {
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance', 'Multi-instance'] });
     });
 
+    // The multi-instance body's own async flags sit in the Multi-instance group,
+    // not in the activity's Asynchronous continuations
+    it('maps the multi-instance body\'s asyncBefore/asyncAfter/exclusive to Multi-instance', () => {
+        const changed = variant(
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items"',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncAfter="true" camunda:exclusive="false" camunda:collection="items"');
+        const result = compare(changed, base);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            MultiTask_1: ['Multi-instance', 'Multi-instance', 'Multi-instance']
+        });
+    });
+
     it('detects added/removed multiInstanceLoopCharacteristics', () => {
         const plain = variant(
             '\n      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item" />',
@@ -199,7 +233,7 @@ describe('BpmnXmlComparator subprocess comparison rules', () => {
             '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:asyncAfter="true" camunda:collection="subItems" camunda:elementVariable="subItem" />');
         const result = compare(changed, base);
         assert.deepEqual(Array.from(result.changedShapeIds), ['SubProcess_1']);
-        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { SubProcess_1: ['Asynchronous continuations'] });
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
     });
 
     it('detects added extensionElements on the subprocess itself', () => {
@@ -563,6 +597,48 @@ describe('BpmnXmlComparator property group: Job execution', () => {
         const result = compare(changed, base);
         assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Job execution'] });
     });
+
+    // The multi-instance body has a retry time cycle of its own, shown in the Multi-instance group
+    describe('camunda:failedJobRetryTimeCycle of the multi-instance body', () => {
+        const withMultiInstanceRetry = (cycle) => variant(
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item" />',
+            '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item">\n' +
+            '        <bpmn:extensionElements>\n' +
+            `          <camunda:failedJobRetryTimeCycle>${cycle}</camunda:failedJobRetryTimeCycle>\n` +
+            '        </bpmn:extensionElements>\n' +
+            '      </bpmn:multiInstanceLoopCharacteristics>');
+
+        it('maps a changed one to Multi-instance', () => {
+            const result = compare(withMultiInstanceRetry('R5/PT1M'), withMultiInstanceRetry('R3/PT1M'));
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
+        });
+
+        it('maps an added one to Multi-instance', () => {
+            const result = compare(withMultiInstanceRetry('R3/PT1M'), base);
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Multi-instance'] });
+        });
+
+        it('maps one added on a subprocess to Multi-instance', () => {
+            const changed = variant(
+                '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems" camunda:elementVariable="subItem" />',
+                '<bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="subItems" camunda:elementVariable="subItem">' +
+                '<bpmn:extensionElements><camunda:failedJobRetryTimeCycle>R3/PT1M</camunda:failedJobRetryTimeCycle></bpmn:extensionElements>' +
+                '</bpmn:multiInstanceLoopCharacteristics>');
+            assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
+            assert.deepEqual(mapToObject(compare(base, changed).nodeIdToDiffsMap), { SubProcess_1: ['Multi-instance'] });
+        });
+
+        it('keeps a changed retry cycle of the activity itself in Job execution', () => {
+            const withActivityRetry = (cycle) => variant(
+                '      <bpmn:incoming>Flow_no</bpmn:incoming>',
+                '      <bpmn:extensionElements>\n' +
+                `        <camunda:failedJobRetryTimeCycle>${cycle}</camunda:failedJobRetryTimeCycle>\n` +
+                '      </bpmn:extensionElements>\n' +
+                '      <bpmn:incoming>Flow_no</bpmn:incoming>');
+            const result = compare(withActivityRetry('R5/PT1M'), withActivityRetry('R3/PT1M'));
+            assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MultiTask_1: ['Job execution'] });
+        });
+    });
 });
 
 describe('BpmnXmlComparator property group: Message', () => {
@@ -601,6 +677,94 @@ describe('BpmnXmlComparator property group: Escalation', () => {
             EscalationStartEvent_1: ['Escalation'],
             EscalationEventDefinition_2: ['Escalation']
         });
+    });
+});
+
+describe('BpmnXmlComparator property groups: Error / Errors', () => {
+    it('detects a changed error code and flags every element referencing the error', () => {
+        const changed = variant('errorCode="PAYMENT_FAILED"', 'errorCode="PAYMENT_DECLINED"');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedShapeIds).sort(), [
+            'CamundaErrorEventDefinition_1', 'ErrorBoundaryEvent_1', 'ErrorEventDefinition_1', 'ExternalTask_1'
+        ]);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            ExternalTask_1: ['Errors'],
+            CamundaErrorEventDefinition_1: ['Errors'],
+            ErrorBoundaryEvent_1: ['Error'],
+            ErrorEventDefinition_1: ['Error']
+        });
+    });
+
+    it('maps the code and message variables of an error event to Error', () => {
+        const changed = variant(
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />',
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" ' +
+            'camunda:errorCodeVariable="code" camunda:errorMessageVariable="message" />');
+        assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), {
+            ErrorBoundaryEvent_1: ['Error', 'Error'],
+            ErrorEventDefinition_1: ['Error', 'Error']
+        });
+    });
+
+    it('maps a changed throw expression of an external task error to Errors', () => {
+        const changed = variant('expression="${failed}"', 'expression="${failedTwice}"');
+        assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), {
+            ExternalTask_1: ['Errors'],
+            CamundaErrorEventDefinition_1: ['Errors']
+        });
+    });
+
+    it('maps an added external task error to Errors', () => {
+        const changed = variant(
+            '<camunda:errorEventDefinition id="CamundaErrorEventDefinition_1" errorRef="Error_1" expression="${failed}" />',
+            '<camunda:errorEventDefinition id="CamundaErrorEventDefinition_1" errorRef="Error_1" expression="${failed}" />\n' +
+            '        <camunda:errorEventDefinition id="CamundaErrorEventDefinition_2" errorRef="Error_1" expression="${other}" />');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.missingShapeIds), ['CamundaErrorEventDefinition_2']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { ExternalTask_1: ['Errors'] });
+    });
+
+    it('maps an added error event definition to Error', () => {
+        const plain = variant(
+            '\n      <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />', '');
+        assert.deepEqual(mapToObject(compare(base, plain).nodeIdToDiffsMap), { ErrorBoundaryEvent_1: ['Error'] });
+    });
+
+    it('detects a switched error reference on a boundary event', () => {
+        const changed = variant(
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />',
+            '<bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_2" />');
+        const result = compare(changed, base);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), {
+            ErrorBoundaryEvent_1: ['Error'],
+            ErrorEventDefinition_1: ['Error']
+        });
+    });
+});
+
+// Like a boundary event's cancelActivity: no panel field, but the header text changes
+// ("Escalation Start Event" <-> "Escalation Start Event (Non Interrupting)").
+describe('BpmnXmlComparator start event isInterrupting', () => {
+    it('highlights the header, not a property group, when isInterrupting changes', () => {
+        const changed = variant(
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
+            '<bpmn:startEvent id="EscalationStartEvent_1">');
+        for (const result of [compare(changed, base), compare(base, changed)]) {
+            assert.deepEqual(Array.from(result.typeChangedIds), ['EscalationStartEvent_1']);
+            assert.deepEqual(Array.from(result.changedShapeIds), ['EscalationStartEvent_1']);
+            assert.equal(result.nodeIdToDiffsMap.size, 0);
+        }
+    });
+
+    it('reports no change for an explicit isInterrupting="true" against the absent default', () => {
+        const absent = variant(
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
+            '<bpmn:startEvent id="EscalationStartEvent_1">');
+        const explicit = variant(
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="false">',
+            '<bpmn:startEvent id="EscalationStartEvent_1" isInterrupting="true">');
+        assertNoDiffs(compare(explicit, absent));
+        assertNoDiffs(compare(absent, explicit));
     });
 });
 

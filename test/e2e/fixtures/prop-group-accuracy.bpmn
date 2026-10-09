@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ExternalTask_1" name="Charge card" camunda:type="external" camunda:topic="charge">
+      <bpmn:extensionElements>
+        <camunda:errorEventDefinition id="CamundaErrorEventDefinition_1" errorRef="Error_1" expression="${failed}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="MultiTask_1" name="Notify each" camunda:expression="${notify}">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics camunda:asyncBefore="true" camunda:collection="items" camunda:elementVariable="item">
+        <bpmn:extensionElements>
+          <camunda:failedJobRetryTimeCycle>R3/PT1M</camunda:failedJobRetryTimeCycle>
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_1">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="ErrorBoundaryEvent_1" attachedToRef="ExternalTask_1">
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />
+    </bpmn:boundaryEvent>
+    <bpmn:subProcess id="EventSubProcess_1" triggeredByEvent="true">
+      <bpmn:startEvent id="MessageStartEvent_1" name="Cancelled" isInterrupting="false">
+        <bpmn:messageEventDefinition id="MessageEventDefinition_1" messageRef="Message_1" />
+      </bpmn:startEvent>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="ExternalTask_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="ExternalTask_1" targetRef="MultiTask_1" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="MultiTask_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmn:error id="Error_1" name="PAYMENT_FAILED" errorCode="PAYMENT_FAILED" />
+  <bpmn:message id="Message_1" name="CANCELLED" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="82" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExternalTask_1_di" bpmnElement="ExternalTask_1">
+        <dc:Bounds x="240" y="60" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MultiTask_1_di" bpmnElement="MultiTask_1">
+        <dc:Bounds x="400" y="60" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="562" y="82" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ErrorBoundaryEvent_1_di" bpmnElement="ErrorBoundaryEvent_1">
+        <dc:Bounds x="272" y="122" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EventSubProcess_1_di" bpmnElement="EventSubProcess_1" isExpanded="true">
+        <dc:Bounds x="150" y="220" width="250" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="MessageStartEvent_1_di" bpmnElement="MessageStartEvent_1">
+        <dc:Bounds x="192" y="272" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="100" />
+        <di:waypoint x="240" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="340" y="100" />
+        <di:waypoint x="400" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="500" y="100" />
+        <di:waypoint x="562" y="100" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

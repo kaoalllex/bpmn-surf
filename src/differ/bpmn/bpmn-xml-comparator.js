@@ -5,6 +5,7 @@ class BpmnXmlComparator {
     static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
     static #MESSAGE_TAG_NAME = 'bpmn:message';
     static #ESCALATION_TAG_NAME = 'bpmn:escalation';
+    static #ERROR_TAG_NAME = 'bpmn:error';
     // Children that describe the subprocess itself, not the flow inside it
     static #SUBPROCESS_OWN_CHILD_TAG_NAMES = [
         'bpmn:multiInstanceLoopCharacteristics',
@@ -29,6 +30,16 @@ class BpmnXmlComparator {
 
     static #WORD_CHAR = /[\p{L}\p{N}_$]/u;
     static #WHITESPACE_CHAR = /\s/;
+
+    // An absent attribute means its schema default, so stating the default is no change
+    static #ATTRIBUTE_DEFAULTS = new Map([
+        ['isInterrupting', 'true'],
+        ['cancelActivity', 'true'],
+        // camunda-bpmn-moddle AsyncCapable
+        ['camunda:asyncBefore', 'false'],
+        ['camunda:asyncAfter', 'false'],
+        ['camunda:exclusive', 'true']
+    ]);
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
     // No property group to highlight, but the panel's header text does change
@@ -87,7 +98,11 @@ class BpmnXmlComparator {
         ['camunda:elementVariable', 'Multi-instance'],
         ['bpmn:loopCardinality', 'Multi-instance'],
         ['bpmn:completionCondition', 'Multi-instance'],
-        //['camunda:failedJobRetryTimeCycle', 'Multi-instance'],
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:failedJobRetryTimeCycle', 'Multi-instance'],
+        // the multi-instance body's own async flags, not the activity's
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:asyncBefore', 'Multi-instance'],
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:asyncAfter', 'Multi-instance'],
+        ['bpmn:multiInstanceLoopCharacteristics/camunda:exclusive', 'Multi-instance'],
 
         ['camunda:delegateExpression', 'Implementation'],
         ['camunda:expression', 'Implementation'],
@@ -120,6 +135,14 @@ class BpmnXmlComparator {
         ['escalationRef', 'Escalation'],
 
         ['bpmn:error', 'Error'],
+        ['bpmn:errorEventDefinition', 'Error'],
+        ['errorRef', 'Error'],
+        ['bpmn:errorEventDefinition/camunda:errorCodeVariable', 'Error'],
+        ['bpmn:errorEventDefinition/camunda:errorMessageVariable', 'Error'],
+        // an external task's error definitions, listed in their own panel group
+        ['camunda:errorEventDefinition', 'Errors'],
+        ['camunda:errorEventDefinition/errorRef', 'Errors'],
+        ['camunda:errorEventDefinition/expression', 'Errors'],
 
         ['camunda:executionListener', 'Execution listeners'],
         ['camunda:executionListener/delegateExpression', 'Execution listeners'],
@@ -164,14 +187,14 @@ class BpmnXmlComparator {
         ['bpmn:outputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:inputSet', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
 
-        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
-
         // No dedicated field in the panel, but it does change the header text
-        ['bpmn:boundaryEvent/cancelActivity', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
+        ['bpmn:boundaryEvent/cancelActivity', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP],
+        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
     ]);
 
     #changedMessages = [];
     #changedEscalations = [];
+    #changedErrors = [];
 
     /**
      * Compare two BPMN XML documents
@@ -183,7 +206,8 @@ class BpmnXmlComparator {
      *   nodeIdToConditions (id -> [my condition, other condition]),
      *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}])),
      *   typeChangedIds (ids whose element type differs between the versions,
-     *     or whose panel header text changes for another reason, e.g. cancelActivity),
+     *     or whose panel header text changes for another reason, e.g. cancelActivity
+     *     or isInterrupting),
      *   subProcessWithChangesIds (subprocesses that are not changed themselves
      *     but contain an added, removed or changed element at any depth)
      * }
@@ -196,6 +220,8 @@ class BpmnXmlComparator {
             this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#MESSAGE_TAG_NAME);
         this.#changedEscalations =
             this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#ESCALATION_TAG_NAME);
+        this.#changedErrors =
+            this.#findChangedReferencedElements(myDoc, otherDoc, BpmnXmlComparator.#ERROR_TAG_NAME);
 
         // isExecutable only picks the main process out of a collaboration; it says
         // nothing about what is worth comparing. A file whose only process is not
@@ -434,7 +460,7 @@ class BpmnXmlComparator {
         return node.tagName === 'camunda:property';
     }
 
-    // Finds changed elements defined outside the process (messages, escalations)
+    // Finds changed elements defined outside the process (messages, escalations, errors)
     // that diagram elements point to via reference attributes
     #findChangedReferencedElements(myDoc, otherDoc, tagName) {
         const changedIds = [];
@@ -468,7 +494,7 @@ class BpmnXmlComparator {
                 if (this.#isTextContentEqual(parentNode, nodeA, nodeB)) {
                     return null;
                 } else {
-                    return [parentNode.tagName];
+                    return [this.#diffNameOf(parentNode)];
                 }
             }
             return []; // A is text but B is not text
@@ -692,7 +718,17 @@ class BpmnXmlComparator {
                 && node.getAttribute('variables') === 'all') {
             return [node.tagName + '/variables'];
         }
-        return [node.tagName];
+        return [this.#diffNameOf(node)];
+    }
+
+    // The same tag can belong to different panel groups depending on where it sits
+    #diffNameOf(node) {
+        if (node.tagName === 'camunda:failedJobRetryTimeCycle'
+                && node.parentNode?.parentNode?.tagName === 'bpmn:multiInstanceLoopCharacteristics') {
+            // the multi-instance body's own retries, not the activity's (Job execution)
+            return 'bpmn:multiInstanceLoopCharacteristics/' + node.tagName;
+        }
+        return node.tagName;
     }
 
     #getAllNotTextChildren(node) {
@@ -782,8 +818,10 @@ class BpmnXmlComparator {
 
             // node.getAttribute(attName) not working and returns null, so uses method 'find'
             const attrB = nodeBAttrs.find(a => a.name === attName);
-            if (!attrB || attrA.value !== attrB.value ||
-                this.#isChangedMessageRef(attrA) || this.#isChangedEscalationRef(attrA)) {
+            const valueB = attrB ? attrB.value : BpmnXmlComparator.#ATTRIBUTE_DEFAULTS.get(attName);
+            if (valueB === undefined || attrA.value !== valueB ||
+                this.#isChangedMessageRef(attrA) || this.#isChangedEscalationRef(attrA) ||
+                this.#isChangedErrorRef(attrA)) {
                 const diff = nodeATagName + '/' + attName;
                 if (!diffs.includes(diff)) {
                     diffs.push(diff);
@@ -798,5 +836,9 @@ class BpmnXmlComparator {
 
     #isChangedEscalationRef(attr) {
         return attr.name === 'escalationRef' && this.#changedEscalations.includes(attr.value);
+    }
+
+    #isChangedErrorRef(attr) {
+        return attr.name === 'errorRef' && this.#changedErrors.includes(attr.value);
     }
 }

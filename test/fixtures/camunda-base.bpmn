@@ -98,6 +98,14 @@
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_message_sub" sourceRef="MessageStartEvent_1" targetRef="MessageSubEndEvent_1" />
     </bpmn:subProcess>
+    <bpmn:serviceTask id="ExternalTask_1" name="External task" camunda:type="external" camunda:topic="externalTopic">
+      <bpmn:extensionElements>
+        <camunda:errorEventDefinition id="CamundaErrorEventDefinition_1" errorRef="Error_1" expression="${failed}" />
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="ErrorBoundaryEvent_1" attachedToRef="ExternalTask_1">
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_1" />
+    </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_start" sourceRef="StartEvent_1" targetRef="ServiceTask_1" />
     <bpmn:sequenceFlow id="Flow_to_gateway" sourceRef="ServiceTask_1" targetRef="Gateway_1" />
     <bpmn:sequenceFlow id="Flow_yes" name="Yes" sourceRef="Gateway_1" targetRef="CallActivity_1">
@@ -115,4 +123,5 @@
   <bpmn:message id="Message_1" name="STATUS_CHANGED" />
   <bpmn:escalation id="Escalation_1" name="START_CHECKS" escalationCode="START_CHECKS" />
   <bpmn:escalation id="Escalation_2" name="HANDLE_PROBLEM" escalationCode="HANDLE_PROBLEM" />
+  <bpmn:error id="Error_1" name="PAYMENT_FAILED" errorCode="PAYMENT_FAILED" />
 </bpmn:definitions>
