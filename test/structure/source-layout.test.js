@@ -34,7 +34,6 @@ const UNTESTED_BY_DESIGN = new Set([
     // logic to exercise yet — subtask 2 fills them in and adds their tests.
     'src/content/providers/github/github-repo-provider.js',
     'src/content/providers/github/github-ui-repo-provider.js',
-    'src/differ/platform/github-platform-client.js',
     'src/differ/shared/diff-type.js',
     // chrome.* glue: chrome.* APIs and DOM, neither available under node.
     'src/background/service-worker.js',

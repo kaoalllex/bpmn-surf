@@ -39,6 +39,6 @@ test('changed handler click navigates the opener tab to the MR diff (opener pres
     // Exactly one window.open — the opener navigation; the bare-url fallback did NOT fire.
     await expect.poll(async () => (await getOpenCalls(page)).length).toBe(1);
     const [[url, name]] = await getOpenCalls(page);
-    expect(url).toMatch(/^http:\/\/localhost\/mr\/42\/diffs\?file_path=src%2FScoreCarTask\.kt#[0-9a-f]{40}$/); // sha1-anchored MR diff
+    expect(url).toMatch(/^http:\/\/localhost\/mr\/42\/diffs\?file_path=src%2FScoreCarTask\.kt#fake-anchor$/); // fake-client MR diff link
     expect(name).toBe(openerTarget);                                        // present branch, not '_blank'
 });

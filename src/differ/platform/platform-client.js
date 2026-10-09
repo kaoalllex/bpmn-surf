@@ -59,11 +59,12 @@ class PlatformClient {
     }
 
     /**
-     * Human-facing URL of the MR/PR diffs page (the file query and anchor are appended by
-     * the caller — see HandlerLocator.mrFileDiffUrl).
-     * @returns {string}
+     * Human-facing URL of one file's diff on the MR/PR page, so a changed handler
+     * opens showing exactly what changed. Async: platforms anchor files by a hash
+     * of the path.
+     * @returns {Promise<string>}
      */
-    prDiffsUrl(changeId) {
-        throw new Error('prDiffsUrl() must be implemented');
+    async prFileDiffUrl(changeId, filePath) {
+        throw new Error('prFileDiffUrl() must be implemented');
     }
 }

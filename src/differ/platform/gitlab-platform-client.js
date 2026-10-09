@@ -79,8 +79,32 @@ class GitLabPlatformClient extends PlatformClient {
         return items;
     }
 
-    prDiffsUrl(changeId) {
-        return `${this.#projectUrl}/-/merge_requests/${changeId}/diffs`;
+    /**
+     * Repository-UI URL of the MR diffs tab anchored to a given file, so a
+     * handler changed in this MR opens showing exactly what changed (as if the
+     * file was clicked in the changes list). Built the way GitLab's own file tree
+     * links are: `?file_path=` picks the file in "one file at a time" mode, which
+     * ignores a bare anchor (BUG-0048), and the anchor — the SHA-1 of the path,
+     * GitLab's diff-file element id — scrolls to it when all files are shown.
+     * @returns {Promise<string>}
+     */
+    async prFileDiffUrl(changeId, filePath) {
+        const base = `${this.#projectUrl}/-/merge_requests/${changeId}/diffs?file_path=${encodeURIComponent(filePath)}`;
+        const anchor = await GitLabPlatformClient.#sha1Hex(filePath);
+        return anchor ? `${base}#${anchor}` : base;
+    }
+
+    static async #sha1Hex(text) {
+        try {
+            const bytes = new TextEncoder().encode(text);
+            const digest = await crypto.subtle.digest('SHA-1', bytes);
+            return Array.from(new Uint8Array(digest))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        } catch (error) {
+            console.warn('cannot compute sha1 for MR diff anchor', error);
+            return null;
+        }
     }
 
     // GitLab MR `changes` API, normalised. For added/modified files the path is

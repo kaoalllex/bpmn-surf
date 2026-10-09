@@ -54,7 +54,7 @@ class FakePlatformClient {
         return this._changedFiles;
     }
 
-    prDiffsUrl(changeId) {
-        return `http://localhost/mr/${changeId}/diffs`;
+    async prFileDiffUrl(changeId, filePath) {
+        return `http://localhost/mr/${changeId}/diffs?file_path=${encodeURIComponent(filePath)}#fake-anchor`;
     }
 }

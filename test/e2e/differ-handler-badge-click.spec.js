@@ -75,5 +75,5 @@ test('changed handler click opens the MR diff (opener-tab fallback)', async ({ p
 
     await expect.poll(async () => (await getOpenCalls(page)).length).toBe(1);
     const [url] = await getOpenCalls(page);
-    expect(url).toMatch(/^http:\/\/localhost\/mr\/42\/diffs\?file_path=src%2FScoreCarTask\.kt#[0-9a-f]{40}$/);
+    expect(url).toMatch(/^http:\/\/localhost\/mr\/42\/diffs\?file_path=src%2FScoreCarTask\.kt#fake-anchor$/);
 });

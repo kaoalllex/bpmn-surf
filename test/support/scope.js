@@ -22,6 +22,7 @@ const ROOT = path.join(__dirname, '..', '..');
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
     'src/core/handler-annotations.js',
+    'src/core/github-changes-payload.js',
     'src/core/utils.js',
     'src/core/console-log.js',
     'src/differ/shared/diff-type.js',
@@ -99,6 +100,7 @@ const EXPORTED_NAMES = [
     'FileTypeDetector',
     'detectPlatformKind', 'PLATFORM_KIND',
     'normalizeHostPattern', 'userOriginsFrom', 'isUnsupportedHost',
+    'GitHubChangesPayload',
     'DEFAULT_HANDLER_ANNOTATIONS', 'normalizeHandlerAnnotations', 'isDefaultHandlerAnnotations',
     'buildSettingsExport', 'parseSettingsExport', 'SETTINGS_EXPORT_FORMAT',
     'PlatformClient',
