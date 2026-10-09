@@ -11,7 +11,7 @@ function createProvider(url, { refs = REFS, blocks = [], blobRef = null } = {}) 
     const scope = createScope({ url });
     const calls = [];
     const load = async (requestUrl) => { calls.push(requestUrl); return null; };
-    const scraper = { pullRefs: () => refs, fileBlocks: () => blocks, findBlobRef: () => blobRef };
+    const scraper = { pullRefs: () => refs, lazyDiffEntry: () => null, fileBlocks: () => blocks, findBlobRef: () => blobRef };
     return { scope, calls, provider: new scope.GitHubRepoProvider(load, scraper) };
 }
 
@@ -54,6 +54,7 @@ describe('GitHubRepoProvider (page)', () => {
         const load = async (url) => { calls.push(url); return '<html><body>fresh</body></html>'; };
         const scraper = {
             pullRefs: (doc) => (doc.body.textContent === 'fresh' ? REFS : null),
+            lazyDiffEntry: () => null,
             fileBlocks: () => [],
             findBlobRef: () => null
         };
@@ -62,6 +63,42 @@ describe('GitHubRepoProvider (page)', () => {
         assert.equal(await provider.getSourceCommitId(), REFS.headSha);
         await provider.init();
         assert.deepEqual(calls, [PR_URL]);
+    });
+
+    // A large PR's page embeds no file diffs, so the merge base is not on it:
+    // one file's diff from GitHub's own page data (same origin, the session) has it.
+    it('loads one file diff from the page data when a large PR embeds none', async () => {
+        const scope = createScope({ url: PR_URL });
+        const fetched = [];
+        const fetchFn = async (url, init) => { fetched.push([url, init.headers['x-requested-with']]); return { ok: true, json: async () => ['entry'] }; };
+        const scraper = {
+            pullRefs: (doc, number, entries) => (entries && entries[0] === 'entry' ? REFS : null),
+            lazyDiffEntry: () => ({ path: 'My Flows/a.bpmn', headSha: REFS.headSha }),
+            fileBlocks: () => [],
+            findBlobRef: () => null
+        };
+        const calls = [];
+        const provider = new scope.GitHubRepoProvider(async (url) => { calls.push(url); return null; }, scraper, fetchFn);
+        assert.equal(await provider.init(), true);
+        assert.equal(await provider.getTargetCommitId(), REFS.mergeBaseSha);
+        await provider.init();
+        assert.deepEqual(fetched, [[
+            `https://github.com/acme/flows/pull/42/page_data/diff_entries?paths=My%2520Flows%252Fa.bpmn&range=${REFS.headSha}`,
+            'XMLHttpRequest'
+        ]]);
+        assert.deepEqual(calls, []);
+    });
+
+    it('fails init when the page data answers with an error', async () => {
+        const scope = createScope({ url: PR_URL });
+        const scraper = {
+            pullRefs: (doc, number, entries) => (entries ? REFS : null),
+            lazyDiffEntry: () => ({ path: 'a.bpmn', headSha: REFS.headSha }),
+            fileBlocks: () => [],
+            findBlobRef: () => null
+        };
+        const provider = new scope.GitHubRepoProvider(async () => null, scraper, async () => ({ ok: false, status: 406 }));
+        assert.equal(await provider.init(), false);
     });
 
     it('describes the repository as the project', async () => {

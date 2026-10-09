@@ -51,12 +51,13 @@ function newUiBlock(digit, path, oldPath = null) {
       </div></div></div>`;
 }
 
-function newUiPayload(number, viewing = 'FULL') {
+function newUiPayload(number, viewing = 'FULL', changes = {}) {
     const data = { payload: {
         pullRequestsChangesRoute: {
             comparison: { fullDiff: { baseOid: B, headOid: H }, viewing },
             diffSummaries: [],
-            diffContents: [{ oldCommitOid: M, newCommitOid: H }]
+            diffContents: [{ oldCommitOid: M, newCommitOid: H }],
+            ...changes
         },
         pullRequestsLayoutRoute: { pullRequest: { number, title: 'Add flow', headBranch: 'feature/x', baseBranch: 'main' } }
     } };
@@ -121,6 +122,31 @@ describe('GitHubDomScraper — new Files changed UI', () => {
         assert.equal(other.scraper.pullRefs(other.document, 7), null);
         const range = scrape(newUiPayload(7, 'RANGE'));
         assert.equal(range.scraper.pullRefs(range.document, 7), null);
+    });
+});
+
+// A large PR embeds its file list but no file diffs: GitHub loads each one from
+// page_data/diff_entries as it scrolls into view.
+describe('GitHubDomScraper — a large PR with lazily loaded diffs', () => {
+    const LAZY = { diffContents: [], diffSummaries: [{ path: 'big.js', linesChanged: 900 }, { path: 'flows/a.bpmn', linesChanged: 3 }] };
+
+    it('names the smallest file to load when the page embeds no file diffs', () => {
+        const { document, scraper } = scrape(newUiPayload(7, 'FULL', LAZY));
+        assert.equal(scraper.pullRefs(document, 7), null);
+        assert.deepEqual({ ...scraper.lazyDiffEntry(document, 7) }, { path: 'flows/a.bpmn', headSha: H });
+    });
+
+    it('reads the refs from the loaded file diffs', () => {
+        const { document, scraper } = scrape(newUiPayload(7, 'FULL', LAZY));
+        assert.deepEqual({ ...scraper.pullRefs(document, 7, [{ oldCommitOid: M, newCommitOid: H }]) },
+            { headSha: H, mergeBaseSha: M, headRef: 'feature/x', baseRef: 'main', title: 'Add flow' });
+    });
+
+    it('names nothing when the diffs are embedded, for another PR or a partial range', () => {
+        for (const [html, number] of [[newUiPayload(7), 7], [newUiPayload(8, 'FULL', LAZY), 7], [newUiPayload(7, 'RANGE', LAZY), 7]]) {
+            const { document, scraper } = scrape(html);
+            assert.equal(scraper.lazyDiffEntry(document, number), null);
+        }
     });
 });
 

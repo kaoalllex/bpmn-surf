@@ -37,8 +37,24 @@ class GitHubDomScraper {
         return blocks;
     }
 
-    pullRefs(doc, number) {
-        return this.#classicPullRefs(doc) || GitHubDomScraper.#newUiPullRefs(doc, number);
+    // diffEntries: the file diffs of a large PR, loaded for lazyDiffEntry().
+    pullRefs(doc, number, diffEntries = null) {
+        return this.#classicPullRefs(doc) || GitHubDomScraper.#newUiPullRefs(doc, number, diffEntries);
+    }
+
+    // A large PR embeds its file list but no file diffs (GitHub loads each from
+    // page_data/diff_entries), and only a file diff carries the merge base:
+    // names the file with the smallest diff to load, or null when none is needed.
+    lazyDiffEntry(doc, number) {
+        const page = GitHubChangesPayload.read(doc, number);
+        const comparison = page && page.changes.comparison;
+        const headSha = comparison && comparison.viewing === 'FULL' && comparison.fullDiff && comparison.fullDiff.headOid;
+        const files = (page && page.changes.diffSummaries) || [];
+        if (!GitHubDomScraper.#SHA.test(headSha || '') || (page.changes.diffContents || []).length || !files.length) {
+            return null;
+        }
+        const smallest = files.reduce((a, b) => ((b.linesChanged || 0) < (a.linesChanged || 0) ? b : a));
+        return { path: smallest.path, headSha };
     }
 
     // The breadcrumbs' repository link points at /{owner}/{repo}/tree/{ref}:
@@ -97,12 +113,12 @@ class GitHubDomScraper {
 
     // The payload's comparison.baseOid is the base branch tip when the PR was
     // last pushed; the merge base GitHub diffs against is each file's oldCommitOid.
-    static #newUiPullRefs(doc, number) {
+    static #newUiPullRefs(doc, number, diffEntries) {
         const page = GitHubChangesPayload.read(doc, number);
         if (!page || (page.changes.comparison && page.changes.comparison.viewing !== 'FULL')) {
             return null;
         }
-        const diff = (page.changes.diffContents || []).find(c =>
+        const diff = (diffEntries || page.changes.diffContents || []).find(c =>
             GitHubDomScraper.#SHA.test(c.oldCommitOid || '') && GitHubDomScraper.#SHA.test(c.newCommitOid || ''));
         return diff ? {
             headSha: diff.newCommitOid,
