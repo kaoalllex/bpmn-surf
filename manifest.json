@@ -37,6 +37,7 @@
                 "src/content/providers/gitlab/gitlab-repo-provider.js",
                 "src/content/providers/gitlab/gitlab-ui-repo-provider.js",
                 "src/content/providers/gitlab/gitlab-api-repo-provider.js",
+                "src/content/providers/github/github-url-parser.js",
                 "src/content/providers/github/github-repo-provider.js",
                 "src/content/providers/github/github-ui-repo-provider.js",
                 "src/content/providers/fallback-repo-provider.js",
