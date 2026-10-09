@@ -181,7 +181,7 @@ class DmnDiffer {
         this.#view.setShownFile(this.#shownFileFor(false));
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
-        if (this.#versions.branchXml) {
+        if (this.#versions.branchXml && this.#hasDecisionTable()) {
             this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
         } else {
             console.debug(this.#params.sourceRef || this.#params.localFileContent
@@ -197,7 +197,7 @@ class DmnDiffer {
         this.#view.setShownFile(this.#shownFileFor(true));
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
-        if (this.#versions.mrXml) {
+        if (this.#versions.mrXml && this.#hasDecisionTable()) {
             this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);
         } else {
             console.debug(this.#params.sourceRef || this.#params.localFileContent
@@ -226,9 +226,20 @@ class DmnDiffer {
             console.error('dmn loading error', ConsoleLog.describeImportError(err));
             return;
         }
+        if (!this.#hasDecisionTable()) {
+            // A DRD-only file (decisions without a table): the table viewport and
+            // the comparator both need a table, so say so instead of hanging.
+            console.debug('dmn file has no decision table');
+            this.#view.showEmptyState('This file has no decision table to compare');
+            return;
+        }
         this.#switchToViewTableMode();
         this.#viewport.fit();
         this.#viewport.scrollTop = scrollTop;
+    }
+
+    #hasDecisionTable() {
+        return this.#dmnJS.getViews().some(view => view.type === 'decisionTable');
     }
 
     #highlightDiffs(myXml, otherXml, diffTypeForMissing) {
