@@ -76,7 +76,7 @@ Docusaurus needs a Node toolchain of its own. Keep it out of the extension's
 
 Moving `docs/{architecture,conventions,git-workflow,testing}.md`, `docs/architecture/` and
 `docs/issues/` → `dev/...` breaks path references in: `CLAUDE.md`, several
-`.claude/` skills/agents/commands (`fix`, `refactor`, `feature`, `analyze`,
+`.claude/` skills/agents/commands (`fix`, `refactor`, `feature`,
 `code-reviewer`, `release`, `pr`, `cleanup`), and
 `docs/issues/README.md` (→ `dev/issues/README.md`). Inter-task links go by code
 (`[BUG-0001]`), so issue cross-links survive the move. Use `git mv`.

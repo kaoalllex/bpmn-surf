@@ -12,7 +12,7 @@ If a spec/plan for this task already exists in `docs/superpowers/` (from `brains
 2. **Plan** — steps, affected files, solution architecture, risks (including a possible `manifest.json` edit for permissions)
 3. **Confirmation** — for complex changes, do not start without confirming the plan
 4. **Implementation** — per the plan, minimal changes, style from `docs/conventions.md`
-5. **Verification** — the feature works, existing behavior is not broken; run `npm test` (it also parses every `src/` script); cover new isolated differ-page logic with unit tests (harness `test/support/scope.js`, see `docs/testing.md`)
+5. **Verification** — the feature works, existing behavior is not broken; run `npm test` (it also parses every `src/` script) and the affected e2e specs; check the twin paths (CLAUDE.md); page decoration / navigation / edit-mode changes → the `live-check` skill; cover new isolated differ-page logic with unit tests (harness `test/support/scope.js`, see `docs/testing.md`); a non-trivial diff → the `code-reviewer` subagent before `/pr`
 6. **Task tracking** — if the work relates to a task in `docs/issues/` or deserves one: update or create its file per `docs/issues/README.md`
 
 ## Rules
