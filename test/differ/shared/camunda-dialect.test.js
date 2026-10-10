@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { CAMUNDA_DIALECT, detectCamundaDialect, isFeelExpression, calledProcessId, calledDecisionId } = createScope();
+const { CAMUNDA_DIALECT, detectCamundaDialect, isFeelExpression } = createScope();
 
 const definitions = (attributes) =>
     '<?xml version="1.0" encoding="UTF-8"?>' +
@@ -70,36 +70,153 @@ describe('calledProcessId / calledDecisionId', () => {
     const withExtensions = (...values) => ({ extensionElements: { values } });
 
     it('reads calledElement in C7', () => {
-        assert.equal(calledProcessId({ calledElement: 'Sub' }, CAMUNDA_DIALECT.C7), 'Sub');
+        assert.equal(CAMUNDA_DIALECT.C7.calledProcessId({ calledElement: 'Sub' }), 'Sub');
     });
 
     it('reads the processId of zeebe:CalledElement in C8', () => {
-        assert.equal(calledProcessId(withExtensions(
-            { $type: 'zeebe:IoMapping' }, { $type: 'zeebe:CalledElement', processId: 'PaymentC8' }), CAMUNDA_DIALECT.C8),
+        assert.equal(CAMUNDA_DIALECT.C8.calledProcessId(withExtensions(
+            { $type: 'zeebe:IoMapping' }, { $type: 'zeebe:CalledElement', processId: 'PaymentC8' })),
         'PaymentC8');
     });
 
     it('does not read the other dialect', () => {
-        assert.equal(calledProcessId({ calledElement: 'Sub' }, CAMUNDA_DIALECT.C8), null);
-        assert.equal(calledProcessId(withExtensions({ $type: 'zeebe:CalledElement', processId: 'X' }), CAMUNDA_DIALECT.C7),
+        assert.equal(CAMUNDA_DIALECT.C8.calledProcessId({ calledElement: 'Sub' }), null);
+        assert.equal(CAMUNDA_DIALECT.C7.calledProcessId(withExtensions({ $type: 'zeebe:CalledElement', processId: 'X' })),
             null);
     });
 
     it('reads decisionRef in C7 and the decisionId of zeebe:CalledDecision in C8', () => {
-        assert.equal(calledDecisionId({ decisionRef: 'Risk' }, CAMUNDA_DIALECT.C7), 'Risk');
-        assert.equal(calledDecisionId(withExtensions({ $type: 'zeebe:CalledDecision', decisionId: 'RiskC8' }),
-            CAMUNDA_DIALECT.C8), 'RiskC8');
-        assert.equal(calledDecisionId({ decisionRef: 'Risk' }, CAMUNDA_DIALECT.C8), null);
+        assert.equal(CAMUNDA_DIALECT.C7.calledDecisionId({ decisionRef: 'Risk' }), 'Risk');
+        assert.equal(CAMUNDA_DIALECT.C8.calledDecisionId(withExtensions({ $type: 'zeebe:CalledDecision', decisionId: 'RiskC8' })),
+            'RiskC8');
+        assert.equal(CAMUNDA_DIALECT.C8.calledDecisionId({ decisionRef: 'Risk' }), null);
     });
 
     it('returns a FEEL id as is, for the navigator to decide', () => {
-        assert.equal(calledProcessId(withExtensions({ $type: 'zeebe:CalledElement', processId: '=subProcessVar' }),
-            CAMUNDA_DIALECT.C8), '=subProcessVar');
+        assert.equal(CAMUNDA_DIALECT.C8.calledProcessId(withExtensions({ $type: 'zeebe:CalledElement', processId: '=subProcessVar' })),
+            '=subProcessVar');
     });
 
     it('is null without a business object or extension elements', () => {
-        assert.equal(calledProcessId(null, CAMUNDA_DIALECT.C8), null);
-        assert.equal(calledDecisionId({}, CAMUNDA_DIALECT.C8), null);
-        assert.equal(calledProcessId(undefined, CAMUNDA_DIALECT.C7), null);
+        assert.equal(CAMUNDA_DIALECT.C8.calledProcessId(null), null);
+        assert.equal(CAMUNDA_DIALECT.C8.calledDecisionId({}), null);
+        assert.equal(CAMUNDA_DIALECT.C7.calledProcessId(undefined), null);
+    });
+});
+
+describe('CAMUNDA_DIALECT.C7.handlerKey', () => {
+    // Minimal moddle-like BO: get(name) reads camunda attributes; `type`/`topic`
+    // are plain properties (as camunda-moddle defines the external-task fields).
+    function bo({ attrs = {}, type, topic, eventDefinitions } = {}) {
+        return {
+            type,
+            topic,
+            eventDefinitions,
+            get: (name) => attrs[name]
+        };
+    }
+
+    function msgDef(opts) {
+        const def = bo(opts);
+        def.$type = 'bpmn:MessageEventDefinition';
+        return def;
+    }
+
+    function timerDef() {
+        const def = bo({});
+        def.$type = 'bpmn:TimerEventDefinition';
+        return def;
+    }
+
+    it('returns a class key for a service task with camunda:class (regression)', () => {
+        assert.equal(
+            CAMUNDA_DIALECT.C7.handlerKey(bo({ attrs: { 'camunda:class': 'com.foo.ScoreCarDelegate' } })),
+            'class:ScoreCarDelegate'
+        );
+    });
+
+    it('returns a topic key for an external service task (regression)', () => {
+        assert.equal(
+            CAMUNDA_DIALECT.C7.handlerKey(bo({ type: 'external', topic: 'score-car' })),
+            'topic:score-car'
+        );
+    });
+
+    it('returns a class key from a delegateExpression on a service task (regression)', () => {
+        assert.equal(
+            CAMUNDA_DIALECT.C7.handlerKey(bo({ attrs: { 'camunda:delegateExpression': '${scoreCarDelegate}' } })),
+            'class:ScoreCarDelegate'
+        );
+    });
+
+    it('reads camunda:class from a nested messageEventDefinition (message end event)', () => {
+        const event = bo({ eventDefinitions: [msgDef({ attrs: { 'camunda:class': 'com.foo.NotifyDelegate' } })] });
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(event), 'class:NotifyDelegate');
+    });
+
+    it('reads a delegateExpression from a nested messageEventDefinition', () => {
+        const event = bo({ eventDefinitions: [msgDef({ attrs: { 'camunda:delegateExpression': '${notifyBean}' } })] });
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(event), 'class:NotifyBean');
+    });
+
+    it('reads external type/topic from a nested messageEventDefinition', () => {
+        const event = bo({ eventDefinitions: [msgDef({ type: 'external', topic: 'notify-topic' })] });
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(event), 'topic:notify-topic');
+    });
+
+    it('picks the messageEventDefinition among several event definitions', () => {
+        const event = bo({ eventDefinitions: [timerDef(), msgDef({ attrs: { 'camunda:class': 'Notify' } })] });
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(event), 'class:Notify');
+    });
+
+    it('returns null for a message event with no implementation', () => {
+        const event = bo({ eventDefinitions: [msgDef({})] });
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(event), null);
+    });
+
+    it('returns null for a non-message event definition (timer/signal)', () => {
+        const event = bo({ eventDefinitions: [timerDef()] });
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(event), null);
+    });
+
+    it('returns null for an element without eventDefinitions or implementation', () => {
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(bo({})), null);
+    });
+
+    it('returns null for a missing business object', () => {
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(null), null);
+        assert.equal(CAMUNDA_DIALECT.C7.handlerKey(undefined), null);
+    });
+});
+
+describe('CAMUNDA_DIALECT.C8.handlerKey', () => {
+    const key = (bo, dialect = CAMUNDA_DIALECT.C7) => dialect.handlerKey(bo);
+    const withJobType = (type, extra = {}) =>
+        ({ ...extra, extensionElements: { values: [{ $type: 'zeebe:TaskDefinition', type }] } });
+
+    it('a service task → topic:<job type>', () => {
+        assert.equal(key(withJobType('find-items'), CAMUNDA_DIALECT.C8), 'topic:find-items');
+    });
+
+    it('a message throw event: the job type on the event itself', () => {
+        assert.equal(key(withJobType('publish-order-completed',
+            { eventDefinitions: [{ $type: 'bpmn:MessageEventDefinition' }] }), CAMUNDA_DIALECT.C8), 'topic:publish-order-completed');
+    });
+
+    it('no key for a Camunda connector or a FEEL job type', () => {
+        assert.equal(key(withJobType('io.camunda:http-json:1'), CAMUNDA_DIALECT.C8), null);
+        assert.equal(key(withJobType('=jobType'), CAMUNDA_DIALECT.C8), null);
+    });
+
+    it('no key without a task definition', () => {
+        assert.equal(key({ extensionElements: { values: [{ $type: 'zeebe:IoMapping' }] } }, CAMUNDA_DIALECT.C8), null);
+        assert.equal(key({}, CAMUNDA_DIALECT.C8), null);
+        assert.equal(key(null, CAMUNDA_DIALECT.C8), null);
+    });
+
+    it('dialects do not cross', () => {
+        assert.equal(key(withJobType('find-items'), CAMUNDA_DIALECT.C7), null);
+        assert.equal(key(withJobType('find-items')), null);
+        assert.equal(key({ type: 'external', topic: 'validateOrder', get: () => undefined }, CAMUNDA_DIALECT.C8), null);
     });
 });

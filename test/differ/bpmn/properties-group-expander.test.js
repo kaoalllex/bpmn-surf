@@ -6,7 +6,7 @@ const { createScope } = require('#scope');
 
 // ---- Axis B: the pure relevantGroupsForElement mapping --------------------
 // Pure (no DOM), so one shared scope is enough for the whole block.
-const { PropertiesGroupExpander } = createScope();
+const { PropertiesGroupExpander, CAMUNDA_DIALECT } = createScope();
 
 // Sorts into a plain host array so cross-realm assert.deepEqual is reliable.
 function groupsOf(element) {
@@ -352,7 +352,7 @@ describe('PropertiesGroupExpander.expandRelevantGroups — DOM', () => {
 
 describe('PropertiesGroupExpander.relevantGroupsForElement — Camunda 8 (Zeebe panel names)', () => {
     function c8GroupsOf(element) {
-        return [...PropertiesGroupExpander.relevantGroupsForElement(element, 'c8')].sort();
+        return [...PropertiesGroupExpander.relevantGroupsForElement(element, CAMUNDA_DIALECT.C8)].sort();
     }
     function withExtensions(type, values) {
         return { type, businessObject: { extensionElements: { values } } };
@@ -404,7 +404,7 @@ describe('PropertiesGroupExpander.expandRelevantGroups — dialect', () => {
     it('expands the Zeebe group names under the C8 dialect', async () => {
         const scope = createScope();
         const headers = buildPanel(scope, [{ title: 'Form', open: false }]);
-        const expander = new scope.PropertiesGroupExpander(() => 'c8');
+        const expander = new scope.PropertiesGroupExpander(() => scope.CAMUNDA_DIALECT.C8);
         expander.init({ get: () => ({ type: 'bpmn:UserTask', businessObject: {} }) });
         expander.setDiffData(new Map());
 

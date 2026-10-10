@@ -97,7 +97,7 @@ class HandlerNavigator {
     // The namespaced handler key for an element, or null if it references no
     // recognised handler. Covers both service-task-like tasks (attributes on the
     // BO) and message events (attributes on a nested bpmn:MessageEventDefinition);
-    // see HandlerLocator.handlerKeyFromBusinessObject.
+    // see the dialect's handlerKey (camunda-dialect.js).
     #getHandlerKey(elem) {
         // A bpmn-js external label (e.g. an event's caption) is a separate
         // registry element that shares its host's businessObject, so it would
@@ -107,7 +107,7 @@ class HandlerNavigator {
         if (!elem || elem.labelTarget) {
             return null;
         }
-        return HandlerLocator.handlerKeyFromBusinessObject(elem.businessObject, this.#getDialectFunc());
+        return this.#getDialectFunc().handlerKey(elem.businessObject);
     }
 
     #addBadge(elementId, key, diffType) {

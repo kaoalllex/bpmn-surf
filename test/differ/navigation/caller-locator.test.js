@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { CallerLocator, GitLabPlatformClient } = createScope();
+const { CallerLocator, GitLabPlatformClient, CAMUNDA_DIALECT } = createScope();
 
 // A GitLab client over a fixed project, so blobSearchPageUrl asserts the real
 // URL format the locator now delegates to (REFAC-0004).
@@ -126,7 +126,7 @@ describe('CallerLocator search term per Camunda dialect', () => {
 
     it('searches processId= in C8', async () => {
         const fake = recordingClient();
-        const locator = new CallerLocator(fake, () => 'c8');
+        const locator = new CallerLocator(fake, () => CAMUNDA_DIALECT.C8);
         await locator.resolveCallers(['PaymentC8'], 'main', 'self.bpmn');
         assert.deepEqual(fake.terms, ['processId="PaymentC8"']);
         assert.equal(locator.blobSearchPageUrl('PaymentC8', 'main'), 'processId="PaymentC8"');

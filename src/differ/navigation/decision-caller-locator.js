@@ -92,7 +92,6 @@ class DecisionCallerLocator {
 
     // The attribute a calling diagram names this decision with: camunda:decisionRef in C7, zeebe:calledDecision's decisionId in C8.
     #callerTerm(id) {
-        const attribute = this.#getDialectFunc() === CAMUNDA_DIALECT.C8 ? 'decisionId' : 'decisionRef';
-        return `${attribute}="${id}"`;
+        return this.#getDialectFunc().decisionCallerTerm(id);
     }
 }
