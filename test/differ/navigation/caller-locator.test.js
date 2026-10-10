@@ -104,3 +104,31 @@ describe('CallerLocator.resolveCallers (guards, no network)', () => {
         assert.equal((await locator.resolveCallers(['', null], 'main', 'self.bpmn')).length, 0);
     });
 });
+
+describe('CallerLocator search term per Camunda dialect', () => {
+    // Records what is searched; the hit list is irrelevant to the term.
+    const recordingClient = () => ({
+        terms: [],
+        async searchCode(ref, term) {
+            this.terms.push(term);
+            return [];
+        },
+        searchPageUrl: (term) => term
+    });
+
+    it('searches calledElement= in C7 (the default)', async () => {
+        const fake = recordingClient();
+        const locator = new CallerLocator(fake);
+        await locator.resolveCallers(['PaymentC7'], 'main', 'self.bpmn');
+        assert.deepEqual(fake.terms, ['calledElement="PaymentC7"']);
+        assert.equal(locator.blobSearchPageUrl('PaymentC7', 'main'), 'calledElement="PaymentC7"');
+    });
+
+    it('searches processId= in C8', async () => {
+        const fake = recordingClient();
+        const locator = new CallerLocator(fake, () => 'c8');
+        await locator.resolveCallers(['PaymentC8'], 'main', 'self.bpmn');
+        assert.deepEqual(fake.terms, ['processId="PaymentC8"']);
+        assert.equal(locator.blobSearchPageUrl('PaymentC8', 'main'), 'processId="PaymentC8"');
+    });
+});

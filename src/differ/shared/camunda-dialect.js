@@ -20,3 +20,21 @@ function detectCamundaDialect(...xmls) {
 function isFeelExpression(value) {
     return typeof value === 'string' && value.startsWith('=');
 }
+
+// The id a Call Activity / Business Rule Task calls. Explicit dialect, no
+// fallback: in a 7-vs-8 diff the other dialect's element simply has none.
+function calledProcessId(bo, dialect) {
+    return dialect === CAMUNDA_DIALECT.C8
+        ? zeebeExtension(bo, 'zeebe:CalledElement')?.processId ?? null
+        : bo?.calledElement ?? null;
+}
+
+function calledDecisionId(bo, dialect) {
+    return dialect === CAMUNDA_DIALECT.C8
+        ? zeebeExtension(bo, 'zeebe:CalledDecision')?.decisionId ?? null
+        : bo?.decisionRef ?? null;
+}
+
+function zeebeExtension(bo, type) {
+    return bo?.extensionElements?.values?.find(value => value.$type === type) ?? null;
+}

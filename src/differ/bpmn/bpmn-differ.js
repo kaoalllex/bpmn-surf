@@ -119,7 +119,8 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (processFilePath, processFileName) => this.#diveIntoCalledDiffer(processFilePath, processFileName),
-            (url) => window.open(url, '_blank')
+            (url) => window.open(url, '_blank'),
+            () => this.#dialect
         );
         this.#decisionNavigator = new DecisionNavigator(
             bpmnJSOverlays,
@@ -128,7 +129,8 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (decisionFilePath, decisionFileName) => this.#diveIntoCalledDiffer(decisionFilePath, decisionFileName),
-            (url) => window.open(url, '_blank')
+            (url) => window.open(url, '_blank'),
+            () => this.#dialect
         );
         this.#handlerNavigator = new HandlerNavigator(
             bpmnJSOverlays,
@@ -341,7 +343,7 @@ class BpmnDiffer {
         // FEAT-0005: resolve the DMN file called from a Business Rule Task
         // (decisionRef → defining .dmn) by a targeted code search; no fallback.
         this.#decisionLocator = new DecisionLocator(this.#platformClient);
-        this.#callerLocator = new CallerLocator(this.#platformClient);
+        this.#callerLocator = new CallerLocator(this.#platformClient, () => this.#dialect);
         // Shared opener-tab navigation (open a nested differ, step back to the
         // opener) used by both the dive-in and dive-out paths (FEAT-0005).
         this.#tabNavigator = new DifferTabNavigator();
@@ -875,10 +877,10 @@ class BpmnDiffer {
                 return false;
             }
             if (element.type === 'bpmn:CallActivity') {
-                return wanted.has(businessObject.calledElement);
+                return wanted.has(calledProcessId(businessObject, this.#dialect));
             }
             if (element.type === 'bpmn:BusinessRuleTask') {
-                return wanted.has(businessObject.decisionRef);
+                return wanted.has(calledDecisionId(businessObject, this.#dialect));
             }
             return false;
         });

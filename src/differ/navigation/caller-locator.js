@@ -2,7 +2,7 @@
 // CallActivityLocator (which resolves a called process id to its defining file,
 // for "diving in"). Here we go the other way: given the process(es) defined by
 // the diagram currently shown, find every BPMN file that references one of them
-// via a Call Activity (`calledElement="<processId>"`). These are the diagrams
+// via a Call Activity (`calledElement="<processId>"`, in Camunda 8 `processId="<processId>"`). These are the diagrams
 // from which the user could have arrived here, offered by the "back" navigation
 // (FEAT-0023) so they can step out to a caller — even one not opened yet.
 //
@@ -15,12 +15,16 @@
 // (a thrown error — search disabled/unreachable), which read very differently.
 class CallerLocator {
     #client;
+    #getDialectFunc;
 
     // Cache of resolveCallers() results, keyed by `${ref}\n${sorted ids}`.
     #cache = new Map();
 
-    constructor(client) {
+    // getDialectFunc: the differ's Camunda dialect (FEAT-0038), known only once
+    // the versions are loaded.
+    constructor(client, getDialectFunc = () => CAMUNDA_DIALECT.C7) {
         this.#client = client;
+        this.#getDialectFunc = getDialectFunc;
     }
 
     /**
@@ -67,7 +71,7 @@ class CallerLocator {
 
         const byPath = new Map();
         for (const id of ids) {
-            const items = await this.#client.searchCode(ref, `calledElement="${id}"`);
+            const items = await this.#client.searchCode(ref, this.#callerTerm(id));
             for (const caller of CallerLocator.selectCallers(items, selfFilePath)) {
                 byPath.set(caller.filePath, caller);
             }
@@ -83,6 +87,12 @@ class CallerLocator {
      * link when the lookup fails (e.g. search disabled on the instance).
      */
     blobSearchPageUrl(processId, ref) {
-        return this.#client.searchPageUrl(`calledElement="${processId}"`, ref);
+        return this.#client.searchPageUrl(this.#callerTerm(processId), ref);
+    }
+
+    // The attribute a calling diagram names this process with: camunda:calledElement in C7, zeebe:calledElement's processId in C8.
+    #callerTerm(id) {
+        const attribute = this.#getDialectFunc() === CAMUNDA_DIALECT.C8 ? 'processId' : 'calledElement';
+        return `${attribute}="${id}"`;
     }
 }

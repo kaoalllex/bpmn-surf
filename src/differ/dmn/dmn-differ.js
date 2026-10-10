@@ -10,6 +10,8 @@ class DmnDiffer {
     #params = null;
     #platformClient = null;
     #versions = null;
+    // Camunda 8 decides how callers name this decision (FEAT-0038).
+    #dialect = CAMUNDA_DIALECT.C7;
     #branchIndicator = null;
     #viewport = null;
     #view = null;
@@ -44,6 +46,7 @@ class DmnDiffer {
 
         try {
             await this.#loadVersions();
+            this.#dialect = detectCamundaDialect(this.#versions.branchXml, this.#versions.mrXml);
         } catch (error) {
             // loadFileContent has already retried once; a second failure would
             // otherwise leave the loading spinner up for good.
@@ -86,7 +89,7 @@ class DmnDiffer {
         this.#diffPainter = new DmnDiffPainter();
         // FEAT-0005: reverse search for the BPMN files whose Business Rule Task
         // calls this decision (decisionRef="<id>"), for the back navigation.
-        this.#decisionCallerLocator = new DecisionCallerLocator(this.#platformClient);
+        this.#decisionCallerLocator = new DecisionCallerLocator(this.#platformClient, () => this.#dialect);
         // Shared opener-tab navigation (open a nested differ, step back up).
         this.#tabNavigator = new DifferTabNavigator();
         // Register this tab in the cross-tab registry so any other tab navigating

@@ -2,7 +2,7 @@
 // DecisionLocator (which resolves a called decision id to its defining DMN file,
 // for "diving in"). Here we go the other way: given the decision(s) defined by
 // the DMN currently shown, find every BPMN file that references one of them via a
-// Business Rule Task (`decisionRef="<decisionId>"`). These are the diagrams from
+// Business Rule Task (`decisionRef="<decisionId>"`, in Camunda 8 `decisionId="<decisionId>"`). These are the diagrams from
 // which the user could have arrived here, offered by the "back" navigation
 // (FEAT-0005, the DMN direction of FEAT-0023) so they can step out to a caller —
 // even one not opened yet.
@@ -16,12 +16,16 @@
 // (a thrown error — search disabled/unreachable), which read very differently.
 class DecisionCallerLocator {
     #client;
+    #getDialectFunc;
 
     // Cache of resolveCallers() results, keyed by `${ref}\n${sorted ids}`.
     #cache = new Map();
 
-    constructor(client) {
+    // getDialectFunc: the differ's Camunda dialect (FEAT-0038), known only once
+    // the versions are loaded.
+    constructor(client, getDialectFunc = () => CAMUNDA_DIALECT.C7) {
         this.#client = client;
+        this.#getDialectFunc = getDialectFunc;
     }
 
     /**
@@ -67,7 +71,7 @@ class DecisionCallerLocator {
 
         const byPath = new Map();
         for (const id of ids) {
-            const items = await this.#client.searchCode(ref, `decisionRef="${id}"`);
+            const items = await this.#client.searchCode(ref, this.#callerTerm(id));
             for (const caller of DecisionCallerLocator.selectCallers(items, selfFilePath)) {
                 byPath.set(caller.filePath, caller);
             }
@@ -83,6 +87,12 @@ class DecisionCallerLocator {
      * link when the lookup fails (e.g. search disabled on the instance).
      */
     blobSearchPageUrl(decisionId, ref) {
-        return this.#client.searchPageUrl(`decisionRef="${decisionId}"`, ref);
+        return this.#client.searchPageUrl(this.#callerTerm(decisionId), ref);
+    }
+
+    // The attribute a calling diagram names this decision with: camunda:decisionRef in C7, zeebe:calledDecision's decisionId in C8.
+    #callerTerm(id) {
+        const attribute = this.#getDialectFunc() === CAMUNDA_DIALECT.C8 ? 'decisionId' : 'decisionRef';
+        return `${attribute}="${id}"`;
     }
 }

@@ -2,11 +2,12 @@
 // decision file (via DecisionLocator) and opens its DMN differ in a new tab
 // (FEAT-0005). The mirror of CallActivityNavigator for DMN: it shows the same
 // minimalist dive-in badge — reusing the .dive-in-call-activity style — but on a
-// bpmn:BusinessRuleTask carrying a camunda:decisionRef instead of a Call Activity.
+// bpmn:BusinessRuleTask carrying a camunda:decisionRef (C7) or a
+// zeebe:calledDecision (C8) instead of a Call Activity.
 //
 // On click the decision file is resolved on demand (a single targeted search);
-// if it cannot be located (not found, or a decisionRef expression `${…}` that is
-// not blob-searchable), GitLab blob-search for the decision id is opened as a
+// if it cannot be located (not found, a decisionRef expression `${…}` that is
+// not blob-searchable, or a FEEL id `=…`, which is not even searched), GitLab blob-search for the decision id is opened as a
 // fallback so the user can find it manually.
 //
 // While a resolve is in flight the dive-in arrow turns into a spinner (UX-0008),
@@ -25,11 +26,13 @@ class DecisionNavigator {
     #getCurrentRefFunc;
     #openDifferFunc;
     #openUrlFunc;
+    #getDialectFunc;
     #currentOverlayId = null;
     #currentOverlayElem = null;
     #isHandling = false;
 
-    constructor(overlays, elementRegistry, locator, getSelectedElementIdFunc, getCurrentRefFunc, openDifferFunc, openUrlFunc) {
+    constructor(overlays, elementRegistry, locator, getSelectedElementIdFunc, getCurrentRefFunc, openDifferFunc, openUrlFunc,
+        getDialectFunc = () => CAMUNDA_DIALECT.C7) {
         this.#overlays = overlays;
         this.#elementRegistry = elementRegistry;
         this.#locator = locator;
@@ -37,6 +40,7 @@ class DecisionNavigator {
         this.#getCurrentRefFunc = getCurrentRefFunc;
         this.#openDifferFunc = openDifferFunc;
         this.#openUrlFunc = openUrlFunc;
+        this.#getDialectFunc = getDialectFunc;
     }
 
     showDiveInOverlay() {
@@ -98,7 +102,7 @@ class DecisionNavigator {
 
     #getDecisionRef(businessRuleTaskElement) {
         try {
-            return businessRuleTaskElement.businessObject.decisionRef;
+            return calledDecisionId(businessRuleTaskElement.businessObject, this.#getDialectFunc());
         } catch (error) {
             console.warn('cannot get decisionRef for business rule task element', error);
             return null;
@@ -114,7 +118,10 @@ class DecisionNavigator {
         this.#refreshBadge();
         try {
             const ref = this.#getCurrentRefFunc();
-            const decisionParams = await this.#locator.resolveDecisionFile(decisionRef, ref);
+            // A FEEL id (=var) names no decision to search for: straight to the search page.
+            const decisionParams = isFeelExpression(decisionRef)
+                ? null
+                : await this.#locator.resolveDecisionFile(decisionRef, ref);
             if (decisionParams) {
                 await this.#openDifferFunc(decisionParams.filePath, decisionParams.fileName);
             } else {
