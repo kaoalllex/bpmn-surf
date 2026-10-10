@@ -48,8 +48,7 @@ class GitHubDomScraper {
     // names the file with the smallest diff to load, or null when none is needed.
     lazyDiffEntry(doc, number, range = null) {
         const page = GitHubChangesPayload.read(doc, number);
-        const comparison = page && page.changes.comparison;
-        if (!page || !GitHubDomScraper.#showsRange(comparison, range)) {
+        if (!page || !GitHubDomScraper.#showsRange(page.changes, range)) {
             return null;
         }
         const files = page.changes.diffSummaries || [];
@@ -64,28 +63,51 @@ class GitHubDomScraper {
     // page_data/diff_entries reads `range=<sha>` as BASE..sha, so a single commit
     // is named by its parent..itself; a range by the URL (BASE..x included).
     static #entryRange(changes, range) {
-        const comparison = changes.comparison || {};
-        if (comparison.viewing === 'COMMIT') {
+        if (range && range.includes('..')) {
+            return range;
+        }
+        if (range) {
             const commit = changes.commit || {};
             return GitHubDomScraper.#SHA.test(commit.sha1 || '') && GitHubDomScraper.#SHA.test(commit.sha2 || '')
                 ? `${commit.sha1}..${commit.sha2}` : null;
         }
-        if (comparison.viewing === 'RANGE') {
-            return range;
-        }
-        const headSha = comparison.fullDiff && comparison.fullDiff.headOid;
+        const fullDiff = (changes.comparison || {}).fullDiff;
+        const headSha = fullDiff && fullDiff.headOid;
         return GitHubDomScraper.#SHA.test(headSha || '') ? headSha : null;
     }
 
-    // After a click in the commit picker the DOM can still embed the previous
-    // selection; its head must be the one the URL names.
-    static #showsRange(comparison, range) {
-        const viewing = comparison ? comparison.viewing : 'FULL';
+    // [start, end] of the URL's selection; start is null for a single commit.
+    static #rangeEnds(range) {
+        return range.includes('..') ? range.split('..') : [null, range];
+    }
+
+    // The page keeps the payload of its first load across clicks in the commit
+    // picker, so a payload is read only for the selection the URL names. `viewing`
+    // tells a single commit from the whole PR but not a range: a range that spans
+    // one commit is viewed as COMMIT, so a range is checked by its pair (#showsPair).
+    static #showsRange(changes, range) {
+        const viewing = changes.comparison ? changes.comparison.viewing : 'FULL';
         if (!range) {
             return viewing === 'FULL';
         }
-        const head = comparison && comparison.selectedRange && comparison.selectedRange.headOid;
-        return viewing !== 'FULL' && !!head && head.startsWith(range.split('..').pop());
+        const [start, end] = GitHubDomScraper.#rangeEnds(range);
+        return start !== null || (viewing === 'COMMIT' && !!changes.commit && (changes.commit.oid || '').startsWith(end));
+    }
+
+    // The shown pair must be the URL's: a BASE..x range starts at the merge base,
+    // which is not one of the PR's commits.
+    static #showsPair(changes, range, diff) {
+        if (!range) {
+            return true;
+        }
+        const [start, end] = GitHubDomScraper.#rangeEnds(range);
+        if (!diff.newCommitOid.startsWith(end)) {
+            return false;
+        }
+        if (start === 'BASE') {
+            return !(changes.commits || []).some(c => c.oid === diff.oldCommitOid);
+        }
+        return start === null || diff.oldCommitOid.startsWith(start);
     }
 
     // The breadcrumbs' repository link points at /{owner}/{repo}/tree/{ref}:
@@ -153,12 +175,12 @@ class GitHubDomScraper {
     // last pushed; the merge base GitHub diffs against is each file's oldCommitOid.
     static #newUiPullRefs(doc, number, diffEntries, range) {
         const page = GitHubChangesPayload.read(doc, number);
-        if (!page || !GitHubDomScraper.#showsRange(page.changes.comparison, range)) {
+        if (!page || !GitHubDomScraper.#showsRange(page.changes, range)) {
             return null;
         }
         const diff = (diffEntries || page.changes.diffContents || []).find(c =>
             GitHubDomScraper.#SHA.test(c.oldCommitOid || '') && GitHubDomScraper.#SHA.test(c.newCommitOid || ''));
-        if (!diff) {
+        if (!diff || !GitHubDomScraper.#showsPair(page.changes, range, diff)) {
             return null;
         }
         const refs = {

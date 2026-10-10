@@ -188,6 +188,28 @@ describe('GitHubDomScraper — a selected commit or range (new UI)', () => {
         assert.equal(full.scraper.pullRefs(full.document, 7, null, C), null);  // URL shows a commit, DOM the whole PR
     });
 
+    it('rejects a leftover payload whose selection ends on the same commit', () => {
+        const A = 'f'.repeat(40);
+        const all = [{ oid: A, shortOid: 'fffffff', messageHeadline: 'zero' }, ...commits];
+        const commit = scrape(commitView.replace(JSON.stringify(commits).slice(1, -1), JSON.stringify(all).slice(1, -1)));
+        for (const range of [`${A}..${C}`, `BASE..${C}`]) {
+            assert.equal(commit.scraper.pullRefs(commit.document, 7, null, range), null, range);
+        }
+        const fromA = scrape(newUiPayload(7, 'RANGE', {
+            comparison: { fullDiff: { baseOid: B, headOid: H }, selectedRange: { baseOid: A, headOid: C }, viewing: 'RANGE' },
+            commits: all, diffContents: [{ oldCommitOid: A, newCommitOid: C }]
+        }, 'pullRequestsChangesWithRangeRoute'));
+        assert.equal(fromA.scraper.pullRefs(fromA.document, 7, null, `${P}..${C}`), null);
+        assert.equal(fromA.scraper.pullRefs(fromA.document, 7, null, C), null);
+        const lazy = [{ oldCommitOid: A, newCommitOid: C }];  // a large PR: the loaded diffs are checked too
+        assert.equal(commit.scraper.pullRefs(commit.document, 7, lazy, `${P}..${C}`), null);
+    });
+
+    it('accepts a range that spans one commit, which GitHub views as COMMIT', () => {
+        const { document, scraper } = scrape(commitView);
+        assert.equal(scraper.pullRefs(document, 7, null, `${P.slice(0, 7)}..${C.slice(0, 7)}`).mergeBaseSha, P);
+    });
+
     it('names the diff_entries range for a large PR: commit → parent..commit, range → the URL', () => {
         const lazy = { diffContents: [], diffSummaries: [{ path: 'a.bpmn', linesChanged: 1 }] };
         const commit = scrape(newUiPayload(7, 'COMMIT', { ...lazy,
