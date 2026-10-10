@@ -14,5 +14,3 @@ Prepare an extension release:
 6. Show the change and propose a commit like `release: vX.Y.Z` — commit only after confirmation
 7. Commit per `docs/git-workflow.md`: not into master, but into a separate branch with a follow-up PR (`/pr`)
 8. Before the release PR is merged: the `live-check` skill's "Release smoke" on the release branch
-
-Respond in the language the user opened the conversation with.

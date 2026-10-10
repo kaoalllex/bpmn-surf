@@ -66,7 +66,7 @@ What was done in this session: the essence of the change, key files, what remain
 
 ## Rules for working with tasks
 
-1. **Creating.** A new task → a new file in the folder of its type with the next free number in that group. The number is searched across **both zones** (the active one and `archive/<type>/`), so that codes are not reused. Fill in the `Statement` and `Context`; `status: open`; leave the `Work log` empty.
+1. **Creating.** A new task → a new file in the folder of its type with the next free number in that group. The number is searched across **both zones** (the active one and `archive/<type>/`), so that codes are not reused; in a worktree also re-check it against `origin/master` and open PRs before the PR (`docs/git-workflow.md`, "Parallel work"). Fill in the `Statement` and `Context`; `status: open`; leave the `Work log` empty.
 2. **During work.** When taking on a task — `status: in-progress`. On completion — `done`; if part is done and the rest is deliberately postponed — `partial` (in the `Context`/`Work log` explicitly list what remains).
 3. **Moving to the archive.** As soon as `status: done` is set — move the file to `archive/<type>/` with the same `git mv` (the file name and code do not change). `partial` is **not** moved to the archive. If a task was reopened — return the file from `archive/<type>/` to the active folder and change the `status`.
 4. **On completion of an AI session on a task** — add an entry to the `Work log` by the template above, update the `status` and (on `done`) move it to the archive. This requirement is enshrined in the `feature`/`fix`/`refactor` skills.
