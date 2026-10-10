@@ -13,18 +13,22 @@ covers only some areas (one file per area in `.claude/skills/live-check/catalog/
 from the skill's "Catalog" table). Add the other areas, each as its own file there, with:
 - concrete steps;
 - the sandbox material it needs, created through the API;
-- what the harness can assert and what has to be eyeballed from screenshots.
+- what the harness can assert and what has to be eyeballed from screenshots;
+- which dialect's material it runs on. Camunda 7 is the baseline and gets no file of its
+  own (`camunda8.md` is the C8 delta): its specific expectations go into the area files.
 
 The areas to add:
 - differ highlighting (BPMN and DMN);
 - the changes table;
-- the properties panel;
+- the properties panel — for Camunda 7 the C7 groups (external task topic, listeners,
+  I/O), next to the Zeebe groups `camunda8.md` already checks;
 - switch branch;
 - navigation — partly covered: "Differ navigation" (`record-demo.mjs --no-video` on the
   demo project) walks dive-in, back to the parent, the callers list, the decision
   badge, handler and correlation badges. Not yet: opening a caller from that list (the
   call site selected), and the sandbox's traps (prefix topics, duplicate classes,
-  no-code topics);
+  no-code topics), and the C7 handler badges themselves (`camunda:topic` →
+  `@ExternalTaskSubscription` on `order-service/`);
 - search;
 - edit mode;
 - the popup (hosts, settings);
@@ -48,6 +52,12 @@ The areas to add:
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-10 · claude-opus-5-5 · branch `fix/live-check-c7-baseline`
+
+The catalog was split into per-area files (`catalog/`). Made explicit that Camunda 7 is the
+baseline dialect (the skill's "Catalog" intro); added the C7-specific checks to the areas
+above (properties panel, handler badges) and the dialect requirement for new area files.
 
 ### 2026-10-05 · claude-opus-5-5 · branch `release/v1.3.0`
 
