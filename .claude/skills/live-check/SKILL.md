@@ -92,7 +92,10 @@ looks wrong (what, where). End with the preference values you restored.
 
 ## Catalog
 
-One file per area — open only the one the change needs:
+One file per area — open only the one the change needs. Camunda 7 is the baseline dialect:
+every file except `camunda8.md` runs on C7 material (the sandbox's `order-service/`, the demo
+project), and `camunda8.md` is the C8 delta, ending with a C7 regression row. C7-specific
+expectations (the C7 panel groups, `camunda:topic` badges) are not catalogued yet — [INFRA-0011].
 
 | Area | File |
 |---|---|
