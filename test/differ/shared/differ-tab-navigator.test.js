@@ -163,3 +163,30 @@ describe('DifferTabNavigator#navigateOpenerTab', () => {
         assert.equal(opened.length, 0);
     });
 });
+
+describe('DifferTabNavigator#openNestedDiffer resource lookup', () => {
+    // The nested about:blank tab has no chrome.runtime.getURL, so openDiffer gets
+    // each resource's href from this document. Capture that lookup.
+    function lookupFrom(scope) {
+        let lookup = null;
+        scope.window.BpmnDiffer = { MSG_ID: 'bpmn' };
+        scope.window.openDiffer = async (_params, _content, _msgId, getUrl) => { lookup = getUrl; };
+        return new scope.DifferTabNavigator().openNestedDiffer({}, 'x.bpmn').then(() => lookup);
+    }
+
+    it('skips inline <style> sheets, which have no href (the Zeebe FEEL editor adds them)', async () => {
+        const scope = createScope();
+        const style = scope.document.createElement('style');
+        style.textContent = '.cm-editor { color: red; }';
+        scope.document.head.appendChild(style);
+        const script = scope.document.createElement('script');
+        script.src = 'chrome-extension://abc/src/differ/bpmn/bpmn-differ.js';
+        scope.document.head.appendChild(script);
+        scope.window.console.error = () => {};
+
+        const lookup = await lookupFrom(scope);
+
+        assert.equal(lookup('src/differ/bpmn/bpmn-differ.js'), 'chrome-extension://abc/src/differ/bpmn/bpmn-differ.js');
+        assert.equal(lookup('src/differ/styles.css'), null);
+    });
+});
