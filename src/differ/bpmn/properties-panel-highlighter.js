@@ -104,7 +104,10 @@ class PropertiesPanelHighlighter {
         // missing is genuinely absent (graceful warn, no further wait).
         await doWithAttempts(() =>
             groupContainer.querySelector('.bio-properties-panel-collapsible-entry-header-title'));
-        if (run !== this.#run) {
+        // A run started right after a Switch branch can find the group in the panel
+        // still showing the previous side; if the re-render dropped the group, its
+        // entries are not missing — there is no group to colour.
+        if (run !== this.#run || !groupContainer.isConnected) {
             return;
         }
 

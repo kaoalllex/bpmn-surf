@@ -420,3 +420,28 @@ describe('PropertiesPanelHighlighter.highlightDiffPropGroups with a group the pa
         await done;
     });
 });
+
+describe('PropertiesPanelHighlighter.highlightDiffPropGroups when the panel re-renders', () => {
+    // After a Switch branch the run can find a group in the panel still showing the
+    // previous side; the panel then re-renders without that group (the Zeebe panel
+    // hides "Output mapping" when all child variables propagate). Its entries are
+    // not missing — the group is gone — so nothing is reported.
+    it('stays quiet when the group leaves the panel while its entries are awaited', async () => {
+        const scope = createPanelScope();
+        const warnings = [];
+        scope.window.console.warn = (...args) => warnings.push(args.join(' '));
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(
+            new Map([['Task_1', ['Condition']]]),
+            new Map(),
+            new Map([['Task_1', new Map([['Condition', [{ label: 'paymentId', changed: false }]]])]])
+        );
+
+        const done = highlighter.highlightDiffPropGroups('Task_1');
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        groupHeader(scope.document, 'Condition').parentElement.remove();
+        await done;
+
+        assert.deepEqual(warnings, []);
+    });
+});
