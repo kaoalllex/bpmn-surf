@@ -204,6 +204,14 @@ async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc, op
         return false;
     }
 
+    // An about:blank renders in quirks mode, where the libraries' CSS (written for
+    // standards mode) misbehaves — a CodeMirror `min-height: 100%` resolved
+    // against the window. Rewriting the blank document with a doctype switches it
+    // to standards mode; the window, and so its inherited origin, stay the same.
+    newWindow.document.open();
+    newWindow.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>');
+    newWindow.document.close();
+
     console.debug('setting title...');
     newWindow.document.title = getTitle(params.fileName);
 

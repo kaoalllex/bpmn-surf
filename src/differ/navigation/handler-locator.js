@@ -45,6 +45,10 @@ class HandlerLocator {
     // besides a positional one (@JobWorker(type = "…"), @ExternalTaskSubscription(topicName = "…")).
     static #TOPIC_ARGUMENT_NAMES = ['type', 'value', 'topicName'];
 
+    // Camunda 7's own subscription names its topic or has none; only the job
+    // worker annotations default the job type to the method name.
+    static #NO_METHOD_NAME_DEFAULT = ['ExternalTaskSubscription'];
+
     // Matches a class-name annotation (with optional arguments) followed by the
     // class it annotates, capturing the class name. Tolerates other annotations /
     // modifiers (e.g. @Component, open) between the annotation and the `class`
@@ -108,7 +112,9 @@ class HandlerLocator {
             return declarations;
         }
         content = HandlerLocator.#blankComments(content);
-        const regex = new RegExp(`@?(?:${names.join('|')})\\b`, 'g');
+        // (?<!\w): `JobWorker` must not match inside `ZeebeJobWorker`; a qualified
+        // name (`…annotation.JobWorker`) still matches after its dot.
+        const regex = new RegExp(`(?<!\\w)@?(${names.join('|')})\\b`, 'g');
         let match;
         while ((match = regex.exec(content)) !== null) {
             let end = HandlerLocator.#skipWhitespace(content, regex.lastIndex);
@@ -120,7 +126,8 @@ class HandlerLocator {
             }
             if (argument.topic) {
                 declarations.push({ topic: argument.topic, index: match.index });
-            } else if (!argument.found && content[match.index] === '@') {
+            } else if (!argument.found && content[match.index] === '@'
+                    && !HandlerLocator.#NO_METHOD_NAME_DEFAULT.includes(match[1])) {
                 const method = HandlerLocator.#followingMethod(content, end);
                 if (method) {
                     declarations.push(method);

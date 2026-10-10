@@ -386,10 +386,16 @@ check found (`e0d753e`, `e1b8b43`).
   migration no longer writes `zeebe:*` into it); the highlighter and the auto-expand look the
   groups up side by side, so a group the panel lacks (a C7 change on the C8 side of a
   migration) no longer delays the others by ~1.35 s each (live, !20: 3 s → 146 ms).
+- After the human's own check: the differ tab rendered in quirks mode (an `about:blank`), so the
+  FEEL fields of the Zeebe panel stretched to the window height (CodeMirror's `min-height: 100%`)
+  — `openDiffer` now writes a doctype (standards mode, like the Layer-2 harness, which is why no
+  spec saw it); the panel's FEEL pop-up editor opened under the differ's fixed full-page layout
+  (z-index 1001 vs 9999) — raised above it; an outdated highlight run (a group lookup still
+  retrying when the shown side changes) painted the other side's list entries into the new panel
+  and warned `list item "paymentId" not found` — runs are now numbered and an outdated one stops.
+  Also closed the review's minors: `between … and …` and a path segment `.or` no longer split a
+  FEEL condition; `@ExternalTaskSubscription` takes no method-name default; a configured name no
+  longer matches inside a longer one (`@ZeebeJobWorker`); params without the Zeebe descriptor (a
+  tab opened from an older differ) show a C8 diagram as C7 instead of failing.
 - `CHANGELOG.md` is left to the release.
-- Deferred: a nested tab opened from a differ tab older than this version gets no
-  `zeebeBpmnModdle`; the topic-annotation regex has no left word boundary (pre-existing); the
-  FEEL condition splitter also breaks inside `between … and …` and after a path segment `or`
-  (display only); the method-name default applies to `@ExternalTaskSubscription` too (the
-  spec's one rule).
-- Tests: unit 1620, Layer 2 199 (new: `differ-c8-*`, `popup-datalist`).
+- Tests: unit 1624, Layer 2 203 (new: `differ-c8-*`, `differ-highlight-stale-run`, `popup-datalist`).

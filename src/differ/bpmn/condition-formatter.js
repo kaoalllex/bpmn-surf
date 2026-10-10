@@ -12,6 +12,8 @@ class ConditionFormatter {
         // console.debug('format condition', condition);
 
         const feel = condition.trimStart().startsWith('=');
+        // `between a and b` is one range: its `and` joins nothing
+        let inBetween = false;
         const resultArr = [];
         const symbolArr = [];
         let indentSize = 0;
@@ -128,7 +130,12 @@ class ConditionFormatter {
                     andOpStarted = false;
                     orOpStarted = false;
                     escapeFound = false;
-                    if (feel && ConditionFormatter.#endsWithFeelOperator(symbolArr, condition[i + 1])) {
+                    const word = feel && ConditionFormatter.#feelKeywordEnding(symbolArr, condition[i + 1]);
+                    if (word === 'between') {
+                        inBetween = true;
+                    } else if (word === 'and' && inBetween) {
+                        inBetween = false;
+                    } else if (word === 'and' || word === 'or') {
                         this.#flush(resultArr, symbolArr, indentSize);
                         starting = true;
                         // a '(' after the operator is a grouping paren, not a call
@@ -146,13 +153,15 @@ class ConditionFormatter {
         return resultArr;
     }
 
-    // FEEL joins with the words `and` / `or`; one ends here when the next char
-    // cannot continue the word (`order`, `android` are no operators).
-    static #endsWithFeelOperator(symbolArr, nextChar) {
+    // The FEEL keyword (`and`, `or`, `between`) the line ends with, when the next
+    // char cannot continue the word: `order`, `android` and a path segment
+    // (`order.or`) are no keywords.
+    static #feelKeywordEnding(symbolArr, nextChar) {
         if (nextChar !== undefined && ConditionFormatter.#WORD_CHAR.test(nextChar)) {
-            return false;
+            return null;
         }
-        return /(^|[^\p{L}\p{N}_$])(and|or)$/u.test(symbolArr.join(''));
+        const match = /(?:^|[^\p{L}\p{N}_$.])(and|or|between)$/u.exec(symbolArr.join(''));
+        return match ? match[1] : null;
     }
 
     static #isCallParen(lastChar) {

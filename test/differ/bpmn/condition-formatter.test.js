@@ -195,6 +195,14 @@ describe('ConditionFormatter.format FEEL', () => {
             ['=paid and', 'amount > 0 and', 'not(fraudSuspected)']);
     });
 
+    it('keeps the and of a between … and … range', () => {
+        assert.deepEqual(format('=x between 1 and 10 and y'), ['=x between 1 and 10 and', 'y']);
+    });
+
+    it('does not split after a path segment named or / and', () => {
+        assert.deepEqual(format('=order.or > 1 and a.and'), ['=order.or > 1 and', 'a.and']);
+    });
+
     it('leaves and/or alone in a JUEL expression', () => {
         assert.deepEqual(format('${a and b}'), ['${', '  a and b', '}']);
     });

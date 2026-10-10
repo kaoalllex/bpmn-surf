@@ -999,6 +999,15 @@ describe('HandlerLocator.extractSubscriptionTopics — job workers', () => {
         assert.deepEqual(topics('@JobWorker(type = "http://x")\nfun a() {}'), ['http://x']);
     });
 
+    it('does not read a configured name inside a longer one, but reads a qualified one', () => {
+        assert.deepEqual(topics('@ZeebeJobWorker(type = "x")\nfun a() {}'), []);
+        assert.deepEqual(topics('@io.camunda.spring.client.annotation.JobWorker(type = "x")\nfun a() {}'), ['x']);
+    });
+
+    it('takes no method name for @ExternalTaskSubscription (Camunda 7 has no such default)', () => {
+        assert.deepEqual(topics('@ExternalTaskSubscription\n@Bean\npublic ExternalTaskHandler invoiceCreator() {}'), []);
+    });
+
     it('keeps @ExternalTaskSubscription as before', () => {
         assert.deepEqual(topics('@ExternalTaskSubscription("validateOrder")\nclass H'), ['validateOrder']);
         assert.deepEqual(topics('@ExternalTaskSubscription(topicName = "a")'), ['a']);

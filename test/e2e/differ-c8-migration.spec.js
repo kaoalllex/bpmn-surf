@@ -46,3 +46,20 @@ test('editing the C7 side of a 7-vs-8 diff uses the Camunda 7 panel', async ({ p
     await expect(title('Implementation')).toHaveCount(1);
     await expect(title('Task definition')).toHaveCount(0);
 });
+
+// A tab opened from a differ tab of an older version gets params without the
+// Zeebe descriptor; a C8 diagram then opens with the Camunda 7 panel, not broken.
+test('a C8 diagram without the Zeebe descriptor in the params falls back to C7', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({ zeebeBpmnModdle: undefined }),
+        fixtures: { xmlByRef: { 'base-sha': C8_PAYMENT_MIGRATED_BPMN, 'mr-sha': C8_PAYMENT_MIGRATED_BPMN } }
+    });
+
+    const chargeCustomer = page.locator('svg .djs-element[data-element-id="ChargeCustomer"]');
+    await chargeCustomer.click();
+    await expect(page.locator('.bio-properties-panel-group-header-title', { hasText: /^General$/ })).toHaveCount(1);
+    expect(pageErrors).toEqual([]);
+});

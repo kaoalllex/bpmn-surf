@@ -97,6 +97,11 @@ class BpmnDiffer {
         } catch (error) {
             loadError = error;
         }
+        if (this.#dialect === CAMUNDA_DIALECT.C8 && !this.#params.zeebeBpmnModdle) {
+            // Params from a differ tab of an older version carry no Zeebe descriptor.
+            console.warn('camunda 8 diagram, but no zeebe moddle in the params: showing it as camunda 7');
+            this.#dialect = CAMUNDA_DIALECT.C7;
+        }
         console.debug('camunda dialect:', this.#dialect);
 
         this.#bpmnJS = this.#createModeler();

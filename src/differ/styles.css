@@ -586,6 +586,13 @@ body:not(.differ-edit-mode) .djs-context-pad {
     display: none !important;
 }
 
+/* The panel's pop-up editors (FEEL, text) are appended to <body>, under the
+   differ's fixed full-page layout (z-index 9999, set in the views) at their own
+   z-index of 1001 — they opened unseen while the field read "Opened in editor". */
+body .bio-properties-panel-popup {
+    z-index: 10001;
+}
+
 /* Properties panel is view-only: neutralize every edit control. Group/list/
    collapsible headers (collapse/expand) and scrolling are intentionally left
    alone so the panel stays browsable. Toggles render as a visually-hidden
