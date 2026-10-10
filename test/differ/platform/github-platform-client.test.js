@@ -7,19 +7,27 @@ const { createScope } = require('#scope');
 
 const PLATFORM = { kind: 'github', projectUrl: 'https://github.com/acme/flows', hostUrl: 'https://github.com', projectId: 'acme/flows' };
 
-function createClient(pages = {}) {
+function createClient(pages = {}, { searches = {}, platform = PLATFORM, change = {} } = {}) {
     const scope = createScope();
     if (!scope.window.crypto || !scope.window.crypto.subtle) {
         Object.defineProperty(scope.window, 'crypto', { value: webcrypto, configurable: true }); // jsdom lacks SubtleCrypto
     }
     const calls = [];
+    const fetches = [];
     const load = async (url) => {
         calls.push(url);
-        if (!(url in pages)) return url.includes('api.github.com') ? JSON.stringify([]) : null;
+        if (!(url in pages)) return url.includes('/repos/') ? JSON.stringify([]) : null;
         const page = pages[url];
         return page === null || typeof page === 'string' ? page : JSON.stringify(page);
     };
-    return { client: new scope.GitHubPlatformClient(PLATFORM, load), calls };
+    const fetchFn = async (url, init) => {
+        fetches.push({ url, init });
+        const q = new URL(url).searchParams.get('q');
+        const answer = searches[q];
+        if (answer instanceof Error) throw answer;
+        return answer || new Response('<html>rate limited</html>', { status: 429 });
+    };
+    return { client: new scope.GitHubPlatformClient(platform, load, { fetchFn, ...change }), calls, fetches };
 }
 
 const filesUrl = (page) => `https://api.github.com/repos/acme/flows/pulls/7/files?per_page=100&page=${page}`;
@@ -119,9 +127,69 @@ describe('GitHubPlatformClient.prChangedFiles — REST fallback (anonymous, clas
     });
 });
 
-describe('GitHubPlatformClient code search', () => {
-    it('rejects, so navigators take their search-page fallback', async () => {
-        const { client } = createClient();
-        await assert.rejects(client.searchCode('abc', 'x'), /not supported on GitHub yet/);
+// GitHub's search page answers JSON to `accept: application/json` (2026-10-10 spike).
+function searchJson(results, extra = {}) {
+    return new Response(JSON.stringify({ payload: { blackbirdSearchRoute: { logged_in: true, errors: [], results, ...extra } } }),
+        { status: 200, headers: { 'content-type': 'application/json' } });
+}
+
+const PROCESS_HIT = {
+    path: 'flows/payment.bpmn',
+    snippets: [{
+        lines: ['  &lt;<span class="pl-ent">bpmn:process</span> <span class="pl-e">id</span>=<span class="pl-s">&quot;<mark>Payment</mark>&quot;</span>&gt;',
+            '    &lt;bpmn:startEvent id=&#34;Start&#34;&gt;'],
+        starting_line_number: 3
+    }]
+};
+const Q = (term) => `repo:acme/flows "${term.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+
+describe('GitHubPlatformClient.searchCode (web search, no token)', () => {
+    it('asks the search page for JSON with the exact term quoted and normalises each snippet', async () => {
+        const term = 'process id="Payment"';
+        const { client, fetches } = createClient({}, { searches: { [Q(term)]: searchJson([PROCESS_HIT]) } });
+        const hits = await client.searchCode('h'.repeat(40), term);
+        assert.equal(fetches.length, 1);
+        assert.equal(new URL(fetches[0].url).origin + new URL(fetches[0].url).pathname, 'https://github.com/search');
+        assert.equal(new URL(fetches[0].url).searchParams.get('type'), 'code');
+        assert.equal(fetches[0].init.headers.accept, 'application/json');
+        assert.deepEqual(JSON.parse(JSON.stringify(hits)), [{
+            path: 'flows/payment.bpmn',
+            line: 3,
+            snippet: '  <bpmn:process id="Payment">\n    <bpmn:startEvent id="Start">'
+        }]);
+    });
+
+    it('yields one hit per snippet', async () => {
+        const two = { ...PROCESS_HIT, snippets: [PROCESS_HIT.snippets[0], { lines: ['x'], starting_line_number: 9 }] };
+        const { client } = createClient({}, { searches: { [Q('Payment')]: searchJson([two]) } });
+        assert.deepEqual(Array.from(await client.searchCode('r', 'Payment'), h => h.line), [3, 9]);
+    });
+
+    for (const [name, answer] of [
+        ['a 429', new Response('<html></html>', { status: 429 })],
+        ['a non-JSON page', new Response('<html></html>', { status: 200 })],
+        ['a network error', new Error('offline')],
+        ['a signed-out answer', searchJson([PROCESS_HIT], { logged_in: false })],
+        ['a repository still being indexed', searchJson([], { errors: [{ type: 'ERROR_TYPE_MISSING_INACCESSIBLE_REPO_ORG' }] })]
+    ]) {
+        it(`resolves to no hits — never rejects — on ${name}`, async () => {
+            const { client } = createClient({}, { searches: { [Q('Payment')]: answer } });
+            assert.deepEqual(JSON.parse(JSON.stringify(await client.searchCode('r', 'Payment'))), []);
+        });
+    }
+
+    it('uses the page host on GitHub Enterprise Server', async () => {
+        const ghes = { kind: 'github', projectUrl: 'https://ghe.example.com/acme/flows', hostUrl: 'https://ghe.example.com', projectId: 'acme/flows' };
+        const { client, fetches } = createClient({}, { platform: ghes, searches: { [Q('Payment')]: searchJson([]) } });
+        await client.searchCode('r', 'Payment');
+        assert.ok(fetches[0].url.startsWith('https://ghe.example.com/search?'));
+        assert.ok(client.searchPageUrl('Payment', 'r').startsWith('https://ghe.example.com/search?'));
+    });
+
+    it('lists an anonymous PR through the GHES REST base', async () => {
+        const ghes = { kind: 'github', projectUrl: 'https://ghe.example.com/acme/flows', hostUrl: 'https://ghe.example.com', projectId: 'acme/flows' };
+        const { client, calls } = createClient({}, { platform: ghes });
+        await client.prChangedFiles(7);
+        assert.ok(calls.includes('https://ghe.example.com/api/v3/repos/acme/flows/pulls/7/files?per_page=100&page=1'));
     });
 });

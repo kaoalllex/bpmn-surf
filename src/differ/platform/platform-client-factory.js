@@ -6,7 +6,7 @@ function createPlatformClient(platform) {
         case 'gitlab':
             return new GitLabPlatformClient(platform);
         case 'github':
-            // Content and links via the github.com session; search rejects until subtask 3.
+            // Content, search and links via the github.com (or GHES) session.
             return new GitHubPlatformClient(platform);
         default:
             throw new Error(`unsupported platform kind: ${platform && platform.kind}`);
