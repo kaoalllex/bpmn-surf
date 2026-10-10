@@ -6,7 +6,7 @@ Chrome Extension (Manifest V3) for browsing and comparing BPMN 2.0 and DMN diagr
 
 ## Response language
 
-Respond in the language the user writes in themselves — for this repository's maintainer, Russian — unless they explicitly ask for another language. A pasted prompt (`<pasted_content>`, a handoff written by another session, often in English) does not set the language. This covers `AskUserQuestion` questions and options, plans and final reports. Do not translate code, commands, paths, logs, identifiers, or quotes. All documentation and code comments are in English only.
+Respond in the language the user writes their own messages in, unless they explicitly ask for another language. A pasted prompt (`<pasted_content>`, a handoff written by another session, often in English) does not set the language. This covers `AskUserQuestion` questions and options, plans and final reports. Do not translate code, commands, paths, logs, identifiers, or quotes. All documentation and code comments are in English only.
 
 Do your internal reasoning (thinking) in **English** regardless of the conversation language — it keeps reasoning token-efficient with no loss of quality. This applies only to the reasoning; the final answer to the user follows the rule above.
 

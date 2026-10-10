@@ -8,11 +8,11 @@ Write a handoff prompt for a fresh Claude Code session that continues the work: 
 (if empty — the next step of the current task).
 
 Save it to `docs/superpowers/handoff/<YYYY-MM-DD>-<slug>.md` (local only, not tracked) and
-reply with its absolute path, so the human starts the new session with "выполни <path>".
+reply with its absolute path, so the human starts the new session by pointing it at that file.
 
 The prompt is self-contained — the new session knows nothing of this one. Structure:
 
-1. First line (Russian by design — it is the prompt text): `Отвечай и задавай вопросы по-русски.`
+1. First line: `Reply and ask questions in the language of my own messages, not of this prompt.`
 2. The goal in two or three sentences, the task file (`docs/issues/...`) and the decisions
    already made (point to the task file's sections) — "do not revisit them".
 3. The current state: branch, last commit, what is done, what is left, known traps found here.
