@@ -89,7 +89,7 @@ class GitHubPlatformClient extends PlatformClient {
 
     async prChangedFiles(changeId) {
         const html = await this.#load(`${this.#projectUrl}/pull/${changeId}/changes`, false);
-        const page = html && GitHubChangesPayload.read(new DOMParser().parseFromString(`<pre>${html}</pre>`, 'text/html'), changeId);
+        const page = html && GitHubChangesPayload.read(new DOMParser().parseFromString(html, 'text/html'), changeId);
         if (page) {
             const oldPaths = new Map((page.changes.diffContents || [])
                 .filter(c => c.oldTreeEntry && c.newTreeEntry && c.oldTreeEntry.path !== c.newTreeEntry.path)
