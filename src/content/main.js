@@ -5,6 +5,12 @@
     }
     window.BPMN_APP_INITIALIZED = true;
 
+    // Chrome injects into every top-level document on a granted host, raw files
+    // and API JSON included; those carry no markup and must not mark the site unknown.
+    if (document.contentType !== 'text/html') {
+        return;
+    }
+
     const hostname = window.location.hostname;
     setSiteKindOverride((await loadSiteKinds())[hostname]);
     if (!detectPlatformKind()) {
