@@ -19,6 +19,8 @@ and UI are fundamentally different** (see below).
 
 ## Context
 
+Planned in one session with [REFAC-0017] (the Camunda 7 / 8 dialect objects), which goes first so the listener keys are written against them.
+
 ### What is reused (the resolution core — unchanged)
 
 The "class → handler code" link does not depend on the element type, so

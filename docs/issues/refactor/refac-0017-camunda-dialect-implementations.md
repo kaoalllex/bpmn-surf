@@ -53,6 +53,31 @@ seven short branches, and no third dialect is expected — Camunda 7 is end of l
 natural moment is [FEAT-0019] (listener badges), which adds new dialect-dependent
 decisions (the `zeebe:executionListener` / `zeebe:taskListener` job types).
 
+**Plan:** done in one separate session together with [FEAT-0019], before its listener
+badges, so they are written straight against the dialect objects. Commits stay apart: the
+refactor (no behaviour change) first, then FEAT-0019, then the two UI items below.
+
+**In the same session (behaviour changes, own commits):**
+- **Syntax colours in the formatted condition.** In view mode the panel's own condition
+  field (CodeMirror, with syntax colours) is replaced by the formatted, diff-coloured
+  condition of `PropertiesPanelHighlighter`, which is plain text. Colour its tokens in each
+  line, close to the panel editor's colours, with no new dependency:
+  - FEEL keywords (`and`, `or`, `not`, `between`, `in`, `if`/`then`/`else`,
+    `some`/`every`/`satisfies`, `true`/`false`/`null`);
+  - JUEL keywords and operators (`and`/`or`/`not`, `eq`/`ne`/`lt`/`gt`/`le`/`ge`, `empty`,
+    `&&`, `||`);
+  - string literals, numbers and names, each in its own colour.
+
+  The per-line diff background (green / red / blue) stays as it is; the colour is on the
+  text. A small tokenizer next to `ConditionFormatter`, unit-tested on both dialects, plus
+  one Layer-2 check that a keyword span carries its colour on a changed line. Not a
+  read-only CodeMirror: heavier, and it does not fit the per-line diff colouring.
+- **The download button icon:** the toolbar's `↓` becomes a floppy disk, in both differs
+  (`BpmnDifferView`, `DmnDifferView`; in edit mode the button downloads the edited file).
+  Keep the `title` / `aria-label`; check `differ-download.spec.js`,
+  `differ-edit-download.spec.js`, `dmn-download.spec.js` and the toolbar order in
+  `differ-feedback.spec.js`.
+
 **Checks:** the unit and Layer-2 suites as they are (`differ-c8-*` and the C7 specs) — the
 behaviour must not change; `registries.test.js` if new files are added.
 
