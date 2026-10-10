@@ -225,9 +225,10 @@ describe('GitHubDomScraper — a selected commit or range (new UI)', () => {
 });
 
 describe('GitHubDomScraper — a selected commit or range (classic)', () => {
+    const header = (sha1) => classicHeader().replace(/<include-fragment.*<\/include-fragment>/s,
+        `<details-menu src="/acme/flows/pull/7/show_toc?base_sha=${M}&amp;sha1=${sha1}&amp;sha2=${H}"></details-menu>`);
+
     it('reads the shown pair from show_toc and labels by short SHA, the merge base by branch', () => {
-        const header = (sha1) => classicHeader().replace(/<include-fragment.*<\/include-fragment>/s,
-            `<details-menu src="/acme/flows/pull/7/show_toc?base_sha=${M}&amp;sha1=${sha1}&amp;sha2=${H}"></details-menu>`);
         const mid = scrape(header(B));
         assert.deepEqual({ ...mid.scraper.pullRefs(mid.document, 7, null, `${B}..${H}`) }, {
             headSha: H, mergeBaseSha: B, headRef: 'feature/x', baseRef: 'main', title: 'Add flow',
@@ -235,6 +236,16 @@ describe('GitHubDomScraper — a selected commit or range (classic)', () => {
         });
         const fromBase = scrape(header(M));
         assert.equal(fromBase.scraper.pullRefs(fromBase.document, 7, null, H).baseLabel, 'main');
+    });
+
+    it('reads nothing when the page shows another selection than the URL', () => {
+        const { document, scraper } = scrape(header(B));
+        const E = 'e'.repeat(40);
+        assert.equal(scraper.pullRefs(document, 7, null, E), null);           // sha2 is not the URL's end
+        assert.equal(scraper.pullRefs(document, 7, null, `BASE..${E}`), null);
+        assert.equal(scraper.pullRefs(document, 7, null, `${E}..${H}`), null);  // sha1 is not the URL's start
+        assert.equal(scraper.pullRefs(document, 7, null, `${B.slice(0, 7)}..${H.slice(0, 7)}`).headSha, H);
+        assert.equal(scraper.pullRefs(document, 7, null, `BASE..${H}`).headSha, H);
     });
 });
 

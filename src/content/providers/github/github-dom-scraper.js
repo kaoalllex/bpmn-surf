@@ -139,6 +139,11 @@ class GitHubDomScraper {
         if (!GitHubDomScraper.#SHA.test(headSha || '') || !GitHubDomScraper.#SHA.test(mergeBaseSha || '')) {
             return null;
         }
+        // A commit's sha1 is its parent and /files/<sha> means BASE..sha, so the end alone checks those.
+        const [start, end] = range ? GitHubDomScraper.#rangeEnds(range) : [];
+        if (range && (!headSha.startsWith(end) || (start && start !== 'BASE' && !mergeBaseSha.startsWith(start)))) {
+            return null;
+        }
         const spans = [...doc.querySelectorAll('span.commit-ref[title]')];
         const head = spans.find(span => span.classList.contains('head-ref'));
         const base = spans.find(span => !span.classList.contains('head-ref'));
