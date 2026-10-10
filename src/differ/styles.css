@@ -593,6 +593,15 @@ body .bio-properties-panel-popup {
     z-index: 10001;
 }
 
+/* View mode replaces the panel's own condition field with the formatted, diff-
+   coloured condition (PropertiesPanelHighlighter). Hidden here, not only by that
+   script, so the field never flashes when the panel re-renders it on a selection
+   or a Switch branch: the C7 textarea, or the C8 FEEL editor's container. */
+body:not(.differ-edit-mode) #bio-properties-panel-conditionExpression:not([contenteditable]),
+body:not(.differ-edit-mode) .bio-properties-panel-feel-container:has(> * #bio-properties-panel-conditionExpression) {
+    display: none;
+}
+
 /* Properties panel is view-only: neutralize every edit control. Group/list/
    collapsible headers (collapse/expand) and scrolling are intentionally left
    alone so the panel stays browsable. Toggles render as a visually-hidden

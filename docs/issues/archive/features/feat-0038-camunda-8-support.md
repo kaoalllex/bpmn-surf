@@ -392,10 +392,13 @@ check found (`e0d753e`, `e1b8b43`).
   spec saw it); the panel's FEEL pop-up editor opened under the differ's fixed full-page layout
   (z-index 1001 vs 9999) — raised above it; an outdated highlight run (a group lookup still
   retrying when the shown side changes) painted the other side's list entries into the new panel
-  and warned `list item "paymentId" not found` — runs are now numbered and an outdated one stops.
+  and warned `list item "paymentId" not found` — runs are now numbered and an outdated one stops;
+  the panel's own condition field flashed (with its syntax colours) on every selection or Switch
+  branch until the injected formatted condition hid it — a CSS rule now hides it from the start
+  (C7 as well, where the flash was older).
   Also closed the review's minors: `between … and …` and a path segment `.or` no longer split a
   FEEL condition; `@ExternalTaskSubscription` takes no method-name default; a configured name no
   longer matches inside a longer one (`@ZeebeJobWorker`); params without the Zeebe descriptor (a
   tab opened from an older differ) show a C8 diagram as C7 instead of failing.
 - `CHANGELOG.md` is left to the release.
-- Tests: unit 1624, Layer 2 203 (new: `differ-c8-*`, `differ-highlight-stale-run`, `popup-datalist`).
+- Tests: unit 1624, Layer 2 205 (new: `differ-c8-*`, `differ-highlight-stale-run`, `differ-condition-no-flash`, `popup-datalist`).
