@@ -276,7 +276,7 @@ GitHub in subtask 2 is now a one-line matcher entry already in place + flipping 
 | D1 | How sites are turned on | **No built-in sites.** A built-in github.com (a new required host) would make Chrome disable the extension for every existing user until they accept it — rejected. gitlab.com stops being built in too: `content_scripts` leaves the manifest (its js/css list moves to `src/hosts/content-scripts.json`) and every site — gitlab.com, github.com, a self-managed GitLab — is added in the popup through `optional_host_permissions`. Removing a required host never prompts. Whether Chrome keeps gitlab.com granted for existing users is undocumented, so a user updating from 1.3.x without it gets `!` on the icon and a one-click "Turn on gitlab.com" notice; with no site at all the icon shows `!` and the popup warns. Internal builds bake their hosts in as `host_permissions`. |
 | D2 | Where PR refs come from | **The page** (no API request, private repos work). The REST API (`pulls/{n}` + `compare`) only as a fallback provider on public repos when the page has rendered its files but the refs cannot be read. |
 | D3 | Rate limit / "if the repo opens in the browser, the plugin must work" | The 60 req/h limit is the anonymous REST quota (per IP), unrelated to repo access; `api.github.com` ignores the github.com session cookie. Page-first (D2) + same-origin raw content: a signed-in user makes **no** API request at all, public or private; only anonymous users on public repos touch the API (badges, fallback). |
-| D4 | Which PR views | `/pull/{n}/files` and `/pull/{n}/changes`; commit and range views get no buttons. |
+| D4 | Which PR views | `/pull/{n}/files` and `/pull/{n}/changes`; commit and range views got no buttons in subtask 2 (subtask 3 added them). |
 | D5 | Navigation on GitHub | Degrade, don't gate: `searchCode` rejects → the navigators' fallbacks open github.com code search. **Changed-handler badges are in, private repos included**: `prChangedFiles` reads the file list from the PR's `/changes` page (session cookie); `GET /pulls/{n}/files` only for anonymous users. The badge link comes from a new `prFileDiffUrl`. |
 | D6 | "Search in GitLab" text | "Search in repository" everywhere. |
 | D7 | Test sandbox | `kaoalllex/bpmn-surf-test` (public mirror of the GitLab sandbox, PR numbers = MR iids) + `kaoalllex/bpmn-surf-test-private` — created 2026-10-09 (the human ran the setup script). |
@@ -368,7 +368,7 @@ GitHub in subtask 2 is now a one-line matcher entry already in place + flipping 
 
 ---
 
-## Subtask 2 — GitHub support: no built-in sites, page-first (diff + render + handler badges) — ✅ implemented 2026-10-09 (live check and upgrade check pending)
+## Subtask 2 — GitHub support: no built-in sites, page-first (diff + render + handler badges) — ✅ implemented 2026-10-09
 
 Rewritten 2026-10-09 after the decisions above and the spike. The step-by-step plan (code, tests,
 live checklist) lives in the local `docs/superpowers/plans/` folder; this is the durable summary.
@@ -435,57 +435,41 @@ otherwise unchanged (live-check catalog).
 
 ---
 
-## Subtask 3 — Rich GitHub support: token + navigation
+## Subtask 3 — GitHub navigation without a token, commit/range diffs, GitHub Enterprise — ✅ implemented 2026-10-10 (live check pending)
 
-Subtask 2 already renders private repositories and their changed-handler badges through the
-page and the session cookie. A token is still needed for what only the REST API offers: code
-search (navigation), the API fallback provider on private repositories, and a quota above 60
-req/h for anonymous-style use.
+Decisions (2026-10-10): users must be able to use the extension out of the box, so the token
+plan (3a) moved out to [FEAT-0037] and is only worth doing if 3b proves not enough. The
+step-by-step plan lives in the local `docs/superpowers/plans/`; this is the durable summary.
 
-### 3a. Authentication (PAT)
+- **3a — PAT:** not done, now [FEAT-0037] (status open, low priority).
+- **3b — navigation, "search + PR files", no token.**
+  `GitHubPlatformClient#searchCode` asks GitHub's own web search (`{host}/search?q=repo:o/r "term"&type=code`,
+  `accept: application/json`, same origin, session cookie) and normalises the hits. It indexes the
+  **default branch only**. When the search ref is the PR head, the PR's changed files are read raw at
+  the head (once per differ, lazily), grepped for the term, and web hits on paths the PR touched are
+  dropped; PR hits come first. Signed out, only the PR-file part answers. Limits: >100 changed files →
+  web search only; removed and binary files skipped; ~27 searches in a burst, then 429 → the
+  navigators open the host's search page, as does a signed-out answer, a non-JSON answer or an
+  `errors[]` entry (a private repo indexed lazily on its first search). Diagram↔diagram without
+  search (`tree-list`) was measured and left out: too many raw loads on big repositories.
+  `createPlatformClient(platform, change)` takes `{changeId, headRef}`.
+- **3c — commit and range views.** `parsePullFiles` accepts `/pull/N/(files|changes)(/<sha>|/<a>..<b>|/BASE..<b>)`
+  and `/pull/N/commits/<sha>`; the refs are the shown pair (`diffContents[].oldCommitOid/newCommitOid`,
+  classic `show_toc` sha1/sha2), the diff is exactly the selection, labels as GitLab FEAT-0001.
+  A payload stale after a picker switch is detected and the page re-fetched; large PRs pass the
+  right `page_data/diff_entries?range=`. The anonymous REST fallback refuses a selection (no button
+  rather than the whole PR). Changed-handler badges in a selection still use the whole PR's files.
+- **GitHub Enterprise Server — hybrid detection.** All GitHub URLs come from the page origin;
+  REST is `{host}/api/v3` off github.com. `detectPlatformKind` = name (github.com/gitlab.com) →
+  the user's per-site choice (`settings.siteKinds`) → page markup → unknown. An unknown site runs
+  nothing, is listed in `chrome.storage.local` `undetectedSites` (icon "!", Home warning) and the
+  popup asks for its type; types travel in the settings export.
+- **Not verified live:** GitHub Enterprise Server (no instance), an unrecognised site (harness hosts
+  are fixed).
 
-- **Storage:** a GitHub PAT entered by the user via the popup/options UI, stored in
-  `chrome.storage.local`. (`storage` permission already granted.)
-- **Differ delivery:** the differ tab is `about:blank` with **no `chrome.*`**. Pass the token into
-  the differ via the postMessage params (same channel as `camundaBpmnModdle`/`updateInfo`), attached
-  in `app.js#openDiffer` only for `kind: 'github'`. **Security note:** the token then lives in the
-  differ page's JS memory — acceptable for a local dev tool, but document it; never log it.
-- **Fetch seam:** promote `PlatformClient` to own fetching for GitHub so auth headers are applied:
-  add `loadFile(ref, path)` (and have `searchCode`/`prChangedFiles` attach
-  `Authorization: token <PAT>`). For **private raw content** prefer the Contents API
-  (`GET /repos/{o}/{r}/contents/{path}?ref={ref}` with `Accept: application/vnd.github.raw`) —
-  `raw.githubusercontent.com` does not reliably accept the `Authorization` header. `GitLabPlatformClient`
-  keeps using cookie-session `fetch` (no token), so GitLab is unaffected.
-- Content keeps loading same-origin through `github.com/{o}/{r}/raw/…` (subtask 2; the spike
-  confirmed it works for private repositories with the session cookie).
-- Update `DiagramVersions` to load via the client's `loadFile` (instead of `rawFileUrl` + global
-  `loadFileContent`) — do this carefully, keeping GitLab byte-for-byte (GitLab `loadFile` just wraps
-  today's `loadFileContent(rawFileUrl(...))`).
-
-### 3b. Navigation features on GitHub (best-effort, degraded)
-
-Implement `searchCode` in `GitHubPlatformClient` (`searchPageUrl`, `prChangedFiles` and
-`prFileDiffUrl` already land in subtask 2):
-
-- `searchCode(ref, term)`: `GET /search/code?q={term}+repo:{o}/{r}` (auth required). **Limitations to
-  document and handle:** searches the **default branch only** (ignore `ref`, or warn when the PR ref
-  differs), ~10 req/min rate limit (rely on the existing per-ref/per-term caches; add backoff on 403
-  rate-limit), different relevance/tokenization than GitLab Advanced Search. The exact-term gate
-  (BUG-0013) in the locators still applies to the normalized `snippet`.
-- `searchPageUrl(term, ref)` → `https://github.com/search?q={term}+repo:{o}/{r}&type=code`.
-- Drill-in / callers / decision / correlation locators then work on GitHub via the same neutral
-  `searchCode` — but document that results reflect the default branch, so dive-in by an arbitrary PR
-  commit may be approximate. `ProcessFileIndex` tree fallback stays GitLab-only (no-op on GitHub).
-
-### 3c. Polish
-
-- Single-commit-selection diff labels on GitHub (mirror FEAT-0001), if desired.
-- GitHub Enterprise Server host support (the design already keeps host configurable — add host
-  matching + configurable API base URL). Out of scope unless requested.
-
-**Acceptance subtask 3:** with a PAT set, on a **private** GitHub PR dive-in and
-correlation resolve (within GitHub Search limits); rate-limit handling degrades gracefully;
-GitLab unchanged.
+**Acceptance:** on a private and a public github.com PR, dive-in, callers, handlers and
+correlation work without a token within the limits above; commit and range views show the
+selection; GitLab unchanged.
 
 ---
 
@@ -502,15 +486,40 @@ GitLab unchanged.
 - Each step = its own MR; merge order 1.1 → 1.2 → 1.3 → 2 → 3 (steps within a subtask can be
   separate MRs too). GitLab behaviour must stay green through the whole sequence.
 
-## Open assumptions to confirm before subtask 3
+## Open assumptions
 
-- PAT stored in `chrome.storage.local`, entered via popup/options, passed into the differ through
-  params — acceptable for a local dev extension (token visible in differ JS).
+- The PAT assumption (storage in `chrome.storage.local`, delivery through params) moved to [FEAT-0037].
 
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-10 · claude-opus-5-5 (controller) + subagents · `092c3cd..HEAD` (branch `feature/refac-0004-subtask3`)
+
+Subtask 3 implemented (3b, 3c, GitHub Enterprise detection; 3a split out to [FEAT-0037]).
+Commits:
+
+- `8735557 fix: importing settings shows the imported site types at once`
+- `9e23e71 feat: popup lets the user set each self-hosted site's type and asks when it is unknown`
+- `1674724 fix: a raw or JSON page on a known site does not mark the site unrecognised`
+- `6495f46 feat: self-hosted sites are recognised as GitLab or GitHub from the page, or the user is asked`
+- `6a91513 refactor: GitHub content providers take every URL from the page's host`
+- `160b237 feat: GitHub diff follows the selected commit or commit range`
+- `35d6e9d feat: GitHub search also reads the pull request's own files at its head`
+- `2ba0596 fix: GitHub PR page is parsed as a document again`
+- `bbd77b4 feat: GitHub code search through the web search page, no token`
+
+Spike (2026-10-10, signed-in harness profile): the web search page answers JSON to a fetch with
+only `accept: application/json` (default branch only; anonymous gives `logged_in: false`; a
+private repo returns `errors[]` on its first query while GitHub indexes it, a correct hit
+~15 min later; 40 queries in a burst → 200 x27, then 429). `tree-list/<sha>` lists a commit's
+paths without a token (547 paths for a mid-size repo, 26,893 for a huge one). In commit and range
+views `diffContents[].oldCommitOid/newCommitOid` is exactly the shown pair, while `selectedRange.baseOid`
+and `fullDiff.baseOid` are the base tip; `page_data/diff_entries?range=<sha>` means BASE..sha.
+GHES: docs only, no instance.
+
+**Live check pending** — Task 8 adds its results here. Status stays in-progress, the file is not archived yet.
 
 ### 2026-10-09 (4) · claude-opus-5-5 · `db943d4`, `0515cf3` + this entry (branch `feature/refac-0004-github`)
 
