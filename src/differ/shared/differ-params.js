@@ -42,6 +42,7 @@ class DifferParams {
         this.targetFileName = getFileNameFromPath(this.targetFilePath);
 
         this.camundaBpmnModdle = params.camundaBpmnModdle;
+        this.zeebeBpmnModdle = params.zeebeBpmnModdle;
 
         // FEAT-0035: which annotations mark an external-task handler. Absent in a
         // tab opened before the field existed and in the e2e harness, where the
@@ -143,6 +144,7 @@ class DifferParams {
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: this.camundaBpmnModdle,
+            zeebeBpmnModdle: this.zeebeBpmnModdle,
             handlerAnnotations: this.handlerAnnotations,
             extensionVersion: this.extensionVersion,
             ...extra
@@ -175,6 +177,7 @@ class DifferParams {
             fileName: this.fileName,
             extensionVersion: this.extensionVersion,
             camundaBpmnModdle: this.camundaBpmnModdle,
+            zeebeBpmnModdle: this.zeebeBpmnModdle,
             handlerAnnotations: this.handlerAnnotations,
             mode: DifferParams.MODE_EDIT,
             editSide: editSide

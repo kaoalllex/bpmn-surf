@@ -34,6 +34,7 @@ class PropertiesGroupExpander {
         ['bpmn:EscalationEventDefinition', 'Escalation']
     ]);
 
+    #getDialectFunc;
     #elementRegistry = null;
     #nodeIdToDiffsMap = new Map();
     // Elements already auto-expanded once. Switching branch re-imports the diagram
@@ -43,6 +44,12 @@ class PropertiesGroupExpander {
     // the re-render), so after the first expand we simply stop fighting the user's
     // manual choice for that element. Persists for the lifetime of the differ page.
     #expandedElementIds = new Set();
+
+    // The Camunda dialect of the differ (FEAT-0038): the Zeebe panel names some
+    // groups differently, and it is known only once the versions are loaded.
+    constructor(getDialectFunc = () => CAMUNDA_DIALECT.C7) {
+        this.#getDialectFunc = getDialectFunc;
+    }
 
     init(elementRegistry) {
         this.#elementRegistry = elementRegistry;
@@ -54,12 +61,13 @@ class PropertiesGroupExpander {
 
     // Axis B: groups characteristic of the element type, derived purely from the
     // element and its business object. No DOM access — unit-testable with fakes.
-    static relevantGroupsForElement(element) {
+    static relevantGroupsForElement(element, dialect = CAMUNDA_DIALECT.C7) {
         if (!element) {
             return [];
         }
         const groups = new Set();
         const bo = element.businessObject;
+        const c8 = dialect === CAMUNDA_DIALECT.C8;
 
         // Condition on a sequence flow leaving a gateway.
         if (element.type === 'bpmn:SequenceFlow'
@@ -86,14 +94,17 @@ class PropertiesGroupExpander {
             groups.add('Message');
         }
 
-        // Tasks that carry an implementation.
+        // Tasks that carry an implementation. The Zeebe panel has no Implementation
+        // group on a service / send task: its job type is the "Task definition".
         if (PropertiesGroupExpander.#IMPLEMENTATION_TASK_TYPES.has(element.type)) {
-            groups.add('Implementation');
+            groups.add(c8 && (element.type === 'bpmn:ServiceTask' || element.type === 'bpmn:SendTask')
+                ? 'Task definition'
+                : 'Implementation');
         }
 
         // A UserTask carries the form configuration.
         if (element.type === 'bpmn:UserTask') {
-            groups.add('Forms');
+            groups.add(c8 ? 'Form' : 'Forms');
         }
 
         // Multi-instance, on any element carrying its loop characteristics.
@@ -135,6 +146,25 @@ class PropertiesGroupExpander {
                 if (Array.isArray(outputs) && outputs.length > 0) {
                     groups.add('Outputs');
                 }
+            } else if (value.$type === 'zeebe:IoMapping') {
+                const inputs = PropertiesGroupExpander.#read(value, 'inputParameters');
+                const outputs = PropertiesGroupExpander.#read(value, 'outputParameters');
+                if (Array.isArray(inputs) && inputs.length > 0) {
+                    groups.add('Input mapping');
+                }
+                if (Array.isArray(outputs) && outputs.length > 0) {
+                    groups.add('Output mapping');
+                }
+            } else if (value.$type === 'zeebe:TaskHeaders') {
+                const headers = PropertiesGroupExpander.#read(value, 'values');
+                if (Array.isArray(headers) && headers.length > 0) {
+                    groups.add('Headers');
+                }
+            } else if (value.$type === 'zeebe:Properties') {
+                const properties = PropertiesGroupExpander.#read(value, 'properties');
+                if (Array.isArray(properties) && properties.length > 0) {
+                    groups.add('Extension properties');
+                }
             }
         }
     }
@@ -165,7 +195,7 @@ class PropertiesGroupExpander {
         this.#expandedElementIds.add(elementId);
 
         const element = this.#elementRegistry && this.#elementRegistry.get(elementId);
-        const axisB = PropertiesGroupExpander.relevantGroupsForElement(element);
+        const axisB = PropertiesGroupExpander.relevantGroupsForElement(element, this.#getDialectFunc());
         const axisA = this.#nodeIdToDiffsMap.get(elementId) || [];
         const groupNames = new Set([...axisA, ...axisB]);
 

@@ -402,6 +402,7 @@ describe('ConsoleLog.describeDifferParams', () => {
         filePath: 'src/process.bpmn',
         fileName: 'process.bpmn',
         camundaBpmnModdle: { name: 'Camunda', types: [{ name: 'camunda:FormField' }] },
+        zeebeBpmnModdle: { name: 'Zeebe', types: [{ name: 'zeebe:TaskDefinition' }] },
         localFileContent: '<bpmn:definitions id="Definitions_1"/>',
         extensionVersion: '1.2.0'
     };
@@ -441,6 +442,7 @@ describe('ConsoleLog.describeDifferParams', () => {
     it('drops the moddle descriptor and the local diagram content', () => {
         const serialised = JSON.stringify(ConsoleLog.describeDifferParams(rawParams));
         assert.ok(!serialised.includes('camunda:FormField'), serialised);
+        assert.ok(!serialised.includes('zeebe:TaskDefinition'), serialised);
         assert.ok(!serialised.includes('bpmn:definitions'), serialised);
         // ...but still says a local file is in play, which matters when triaging.
         assert.equal(ConsoleLog.describeDifferParams(rawParams).localFile, true);

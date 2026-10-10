@@ -264,6 +264,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addScript('src/core/utils.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/console-log.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/diff-type.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/differ/shared/camunda-dialect.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/condition-formatter.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/canvas-viewport.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/bpmn/bpmn-xml-comparator.js', doc, getResourceUrlByNameFunc);

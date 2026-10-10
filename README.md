@@ -67,6 +67,7 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 
 **Comparing changes**
 
+- Camunda 7 and Camunda 8 (Zeebe) diagrams alike: the properties panel, the change highlighting and the readable conditions (JUEL and FEEL) follow the engine the diagram targets
 - Visual diff of two BPMN/DMN versions in a merge request (MR branch vs. target branch), opened from a **Schema diff** / **Decision diff** button that appears on the MR page
 - Diff of a selected MR commit against its parent
 - Diff of a repository file against a local version (**Diff with local file…** in the menu of the **View schema** button)

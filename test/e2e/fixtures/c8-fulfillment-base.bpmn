@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_fulfillmentc8" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
+  <bpmn:message id="Message_ShipmentConfirmedC8" name="ShipmentConfirmedC8">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=shipmentId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:process id="FulfillmentC8" name="Fulfillment" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:versionTag value="1.0" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartFulfillment" name="Fulfillment started">
+      <bpmn:outgoing>Flow_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ReserveStock" name="Reserve the stock">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="reserve-stock" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_f1</bpmn:incoming>
+      <bpmn:outgoing>Flow_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="PackItems" name="Pack the items">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="packItem" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_f2</bpmn:incoming>
+      <bpmn:outgoing>Flow_f3</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics>
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=items" inputElement="item" outputCollection="packages" outputElement="=package" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="PrepareDocuments" name="Prepare the documents">
+      <bpmn:incoming>Flow_f3</bpmn:incoming>
+      <bpmn:outgoing>Flow_f4</bpmn:outgoing>
+      <bpmn:startEvent id="DocsStart">
+        <bpmn:outgoing>Flow_d1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="PrintLabel" name="Print the label">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="print-label" retries="3" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_d1</bpmn:incoming>
+        <bpmn:outgoing>Flow_d2</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="PrintInvoice" name="Print the invoice">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="print-invoice" retries="3" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_d2</bpmn:incoming>
+        <bpmn:outgoing>Flow_d3</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:endEvent id="DocsEnd">
+        <bpmn:incoming>Flow_d3</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_d1" sourceRef="DocsStart" targetRef="PrintLabel" />
+      <bpmn:sequenceFlow id="Flow_d2" sourceRef="PrintLabel" targetRef="PrintInvoice" />
+      <bpmn:sequenceFlow id="Flow_d3" sourceRef="PrintInvoice" targetRef="DocsEnd" />
+    </bpmn:subProcess>
+    <bpmn:callActivity id="Delivery" name="Delivery">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="DeliveryC8" propagateAllChildVariables="false" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=orderId" target="orderId" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_f4</bpmn:incoming>
+      <bpmn:outgoing>Flow_f5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:intermediateCatchEvent id="AwaitShipment" name="Shipment confirmed">
+      <bpmn:incoming>Flow_f5</bpmn:incoming>
+      <bpmn:outgoing>Flow_f6</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Shipped" messageRef="Message_ShipmentConfirmedC8" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="FulfillmentDone" name="Fulfilled">
+      <bpmn:incoming>Flow_f6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_f1" sourceRef="StartFulfillment" targetRef="ReserveStock" />
+    <bpmn:sequenceFlow id="Flow_f2" sourceRef="ReserveStock" targetRef="PackItems" />
+    <bpmn:sequenceFlow id="Flow_f3" sourceRef="PackItems" targetRef="PrepareDocuments" />
+    <bpmn:sequenceFlow id="Flow_f4" sourceRef="PrepareDocuments" targetRef="Delivery" />
+    <bpmn:sequenceFlow id="Flow_f5" sourceRef="Delivery" targetRef="AwaitShipment" />
+    <bpmn:sequenceFlow id="Flow_f6" sourceRef="AwaitShipment" targetRef="FulfillmentDone" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="FulfillmentC8">
+      <bpmndi:BPMNShape id="StartFulfillment_di" bpmnElement="StartFulfillment">
+        <dc:Bounds x="182" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="225" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReserveStock_di" bpmnElement="ReserveStock">
+        <dc:Bounds x="260" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PackItems_di" bpmnElement="PackItems">
+        <dc:Bounds x="400" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PrepareDocuments_di" bpmnElement="PrepareDocuments" isExpanded="false">
+        <dc:Bounds x="540" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Delivery_di" bpmnElement="Delivery">
+        <dc:Bounds x="680" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AwaitShipment_di" bpmnElement="AwaitShipment">
+        <dc:Bounds x="822" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="795" y="225" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FulfillmentDone_di" bpmnElement="FulfillmentDone">
+        <dc:Bounds x="922" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="919" y="225" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_f1_di" bpmnElement="Flow_f1">
+        <di:waypoint x="218" y="200" />
+        <di:waypoint x="260" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f2_di" bpmnElement="Flow_f2">
+        <di:waypoint x="360" y="200" />
+        <di:waypoint x="400" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f3_di" bpmnElement="Flow_f3">
+        <di:waypoint x="500" y="200" />
+        <di:waypoint x="540" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f4_di" bpmnElement="Flow_f4">
+        <di:waypoint x="640" y="200" />
+        <di:waypoint x="680" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f5_di" bpmnElement="Flow_f5">
+        <di:waypoint x="780" y="200" />
+        <di:waypoint x="822" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f6_di" bpmnElement="Flow_f6">
+        <di:waypoint x="858" y="200" />
+        <di:waypoint x="922" y="200" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_PrepareDocuments">
+    <bpmndi:BPMNPlane id="BPMNPlane_PrepareDocuments" bpmnElement="PrepareDocuments">
+      <bpmndi:BPMNShape id="DocsStart_di" bpmnElement="DocsStart">
+        <dc:Bounds x="180" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PrintLabel_di" bpmnElement="PrintLabel">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PrintInvoice_di" bpmnElement="PrintInvoice">
+        <dc:Bounds x="400" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DocsEnd_di" bpmnElement="DocsEnd">
+        <dc:Bounds x="542" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_d1_di" bpmnElement="Flow_d1">
+        <di:waypoint x="216" y="120" />
+        <di:waypoint x="260" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d2_di" bpmnElement="Flow_d2">
+        <di:waypoint x="360" y="120" />
+        <di:waypoint x="400" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d3_di" bpmnElement="Flow_d3">
+        <di:waypoint x="500" y="120" />
+        <di:waypoint x="542" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

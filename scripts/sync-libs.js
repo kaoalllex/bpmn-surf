@@ -2,7 +2,8 @@
 // Usage: npm run sync:libs (after npm install). To upgrade a library:
 // bump its version in package.json#devDependencies, npm install, npm run sync:libs.
 // Every file listed here is referenced by manifest.json#web_accessible_resources
-// and loaded in utils.js#loadScripts (camunda.json — in camunda-bpmn-moddle-manager.js).
+// and loaded in utils.js#loadScripts (camunda.json and zeebe.json — by
+// the descriptor paths in app.js, read through camunda-bpmn-moddle-manager.js).
 'use strict';
 
 const fs = require('node:fs');
@@ -82,6 +83,13 @@ const LIBS = [
         from: '',
         files: [
             'resources/camunda.json'
+        ]
+    },
+    {
+        package: 'zeebe-bpmn-moddle',
+        from: '',
+        files: [
+            'resources/zeebe.json'
         ]
     }
 ];

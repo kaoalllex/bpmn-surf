@@ -148,14 +148,18 @@ class PropertiesPanelHighlighter {
                 return null; // not rendered yet
             }
             // Hide the native expression container and (re)draw the formatted one.
-            conditionExpressionElem.style.display = 'none';
+            // The Zeebe panel renders the condition in a FEEL editor (contenteditable,
+            // inside a container); the C7 one is a plain textarea.
+            const field = conditionExpressionElem.closest('.bio-properties-panel-feel-container')
+                || conditionExpressionElem;
+            field.style.display = 'none';
             removeElement(PropertiesPanelHighlighter.#CONDITION_DIV_ID);
 
             const div = document.createElement('div');
             div.id = PropertiesPanelHighlighter.#CONDITION_DIV_ID;
             div.dataset.conditionFor = elementId;
             div.className = 'properties-condition';
-            conditionExpressionElem.parentElement.appendChild(div);
+            field.parentElement.appendChild(div);
             this.#drawFormattedCondition(div, conditionExpressionElem, elementId);
             return null; // wait one interval to confirm the block survived
         }, 30, 50);
@@ -172,7 +176,10 @@ class PropertiesPanelHighlighter {
                 this.#drawConditionPart(parentElem, part, exists);
             }
         } else { // When viewing target branch only
-            const myCondParts = this.#conditionFormatter.format(conditionExpressionElem.value);
+            // A FEEL editor has no .value; the model holds the same text.
+            const condition = conditionExpressionElem.value
+                ?? this.#elementRegistry.get(elementId).businessObject.conditionExpression?.body ?? '';
+            const myCondParts = this.#conditionFormatter.format(condition);
             for (const part of myCondParts) {
                 this.#drawConditionPart(parentElem, part, true);
             }

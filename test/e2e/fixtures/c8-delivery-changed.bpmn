@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_deliveryc8" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
+  <bpmn:collaboration id="Collaboration_deliveryc8">
+    <bpmn:participant id="Participant_Delivery" name="Delivery" processRef="DeliveryC8" />
+  </bpmn:collaboration>
+  <bpmn:process id="DeliveryC8" name="Delivery" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:versionTag value="1.0" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartDelivery" name="Delivery started">
+      <bpmn:outgoing>Flow_d1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="FindItems" name="Find the items">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="find-items" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_d1</bpmn:incoming>
+      <bpmn:outgoing>Flow_d2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="FindItemsInCatalog" name="Find the items in the catalog">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="find-items-in-catalog" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_d2</bpmn:incoming>
+      <bpmn:outgoing>Flow_d3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="PickCourier" name="Pick a courier">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="pick-courier-v2" />
+        <zeebe:assignmentDefinition assignee="=logisticsUser" candidateGroups="logistics, dispatch" />
+        <zeebe:taskSchedule dueDate="=now() + duration(&quot;P1D&quot;)" />
+        <zeebe:priorityDefinition priority="70" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_d3</bpmn:incoming>
+      <bpmn:outgoing>Flow_d4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="ArchiveDelivery" name="Archive the delivery">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="archive-delivery" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_d4</bpmn:incoming>
+      <bpmn:outgoing>Flow_d5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="DeliveryDone" name="Delivered">
+      <bpmn:incoming>Flow_d5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="EscalateDelivery" name="Escalate the delivery">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:assignmentDefinition candidateGroups="dispatch" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_d6</bpmn:incoming>
+      <bpmn:outgoing>Flow_d7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="DeliveryFailed" name="Delivery failed">
+      <bpmn:incoming>Flow_d7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="CourierTimeout" name="No courier in 2 days" cancelActivity="false" attachedToRef="PickCourier">
+      <bpmn:outgoing>Flow_d6</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_Courier">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P2D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_d1" sourceRef="StartDelivery" targetRef="FindItems" />
+    <bpmn:sequenceFlow id="Flow_d2" sourceRef="FindItems" targetRef="FindItemsInCatalog" />
+    <bpmn:sequenceFlow id="Flow_d3" sourceRef="FindItemsInCatalog" targetRef="PickCourier" />
+    <bpmn:sequenceFlow id="Flow_d4" sourceRef="PickCourier" targetRef="ArchiveDelivery" />
+    <bpmn:sequenceFlow id="Flow_d5" sourceRef="ArchiveDelivery" targetRef="DeliveryDone" />
+    <bpmn:sequenceFlow id="Flow_d6" sourceRef="CourierTimeout" targetRef="EscalateDelivery" />
+    <bpmn:sequenceFlow id="Flow_d7" sourceRef="EscalateDelivery" targetRef="DeliveryFailed" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_deliveryc8">
+      <bpmndi:BPMNShape id="Participant_Delivery_di" bpmnElement="Participant_Delivery" isHorizontal="true">
+        <dc:Bounds x="160" y="100" width="800" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartDelivery_di" bpmnElement="StartDelivery">
+        <dc:Bounds x="222" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="201" y="225" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FindItems_di" bpmnElement="FindItems">
+        <dc:Bounds x="300" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FindItemsInCatalog_di" bpmnElement="FindItemsInCatalog">
+        <dc:Bounds x="440" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PickCourier_di" bpmnElement="PickCourier">
+        <dc:Bounds x="580" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ArchiveDelivery_di" bpmnElement="ArchiveDelivery">
+        <dc:Bounds x="720" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DeliveryDone_di" bpmnElement="DeliveryDone">
+        <dc:Bounds x="862" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="856" y="225" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EscalateDelivery_di" bpmnElement="EscalateDelivery">
+        <dc:Bounds x="720" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DeliveryFailed_di" bpmnElement="DeliveryFailed">
+        <dc:Bounds x="862" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="843" y="365" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CourierTimeout_di" bpmnElement="CourierTimeout">
+        <dc:Bounds x="610" y="222" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="560" y="255" width="101" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_d1_di" bpmnElement="Flow_d1">
+        <di:waypoint x="258" y="200" />
+        <di:waypoint x="300" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d2_di" bpmnElement="Flow_d2">
+        <di:waypoint x="400" y="200" />
+        <di:waypoint x="440" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d3_di" bpmnElement="Flow_d3">
+        <di:waypoint x="540" y="200" />
+        <di:waypoint x="580" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d4_di" bpmnElement="Flow_d4">
+        <di:waypoint x="680" y="200" />
+        <di:waypoint x="720" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d5_di" bpmnElement="Flow_d5">
+        <di:waypoint x="820" y="200" />
+        <di:waypoint x="862" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d6_di" bpmnElement="Flow_d6">
+        <di:waypoint x="628" y="278" />
+        <di:waypoint x="628" y="340" />
+        <di:waypoint x="720" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d7_di" bpmnElement="Flow_d7">
+        <di:waypoint x="820" y="340" />
+        <di:waypoint x="862" y="340" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

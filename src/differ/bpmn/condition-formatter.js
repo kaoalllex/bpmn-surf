@@ -1,4 +1,6 @@
-// Formats a condition expression into indented lines for display.
+// Formats a condition expression into indented lines for display: a JUEL
+// expression splits after `&&` / `||`, a FEEL one (`=…`, Camunda 8) after the
+// words `and` / `or`.
 // Insignificant whitespace (spaces, tabs, newlines) outside string literals is
 // collapsed: the formatter generates its own indentation, so the source layout
 // of a long/complex expression does not leak into the output.
@@ -9,6 +11,7 @@ class ConditionFormatter {
     format(condition) {
         // console.debug('format condition', condition);
 
+        const feel = condition.trimStart().startsWith('=');
         const resultArr = [];
         const symbolArr = [];
         let indentSize = 0;
@@ -125,6 +128,13 @@ class ConditionFormatter {
                     andOpStarted = false;
                     orOpStarted = false;
                     escapeFound = false;
+                    if (feel && ConditionFormatter.#endsWithFeelOperator(symbolArr, condition[i + 1])) {
+                        this.#flush(resultArr, symbolArr, indentSize);
+                        starting = true;
+                        // a '(' after the operator is a grouping paren, not a call
+                        lastChar = ' ';
+                        continue;
+                    }
             }
 
             lastChar = symbol;
@@ -134,6 +144,15 @@ class ConditionFormatter {
         }
 
         return resultArr;
+    }
+
+    // FEEL joins with the words `and` / `or`; one ends here when the next char
+    // cannot continue the word (`order`, `android` are no operators).
+    static #endsWithFeelOperator(symbolArr, nextChar) {
+        if (nextChar !== undefined && ConditionFormatter.#WORD_CHAR.test(nextChar)) {
+            return false;
+        }
+        return /(^|[^\p{L}\p{N}_$])(and|or)$/u.test(symbolArr.join(''));
     }
 
     static #isCallParen(lastChar) {

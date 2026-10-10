@@ -21,7 +21,8 @@ class App {
 
     #repoProvider;
     #uiRepoProvider;
-    #moddleManager;
+    #camundaModdleManager;
+    #zeebeModdleManager;
     #pageReloader;
     #fileTypeDetector;
     #diffParamsBuilder;
@@ -29,7 +30,8 @@ class App {
     constructor(repoProvider = createRepoProvider(), uiRepoProvider = createUIRepoProvider()) {
         this.#repoProvider = repoProvider;
         this.#uiRepoProvider = uiRepoProvider;
-        this.#moddleManager = new CamundaBpmnModdleManager();
+        this.#camundaModdleManager = new CamundaBpmnModdleManager('libs/camunda-bpmn-moddle/resources/camunda.json');
+        this.#zeebeModdleManager = new CamundaBpmnModdleManager('libs/zeebe-bpmn-moddle/resources/zeebe.json');
         this.#pageReloader = new PageReloader();
         this.#fileTypeDetector = new FileTypeDetector();
         this.#diffParamsBuilder = new DiffParamsBuilder(chrome.runtime.getManifest().version);
@@ -265,9 +267,10 @@ class App {
 
         const diffSideLabels = await this.#repoProvider.getDiffSideLabels(sourceCommitId, targetCommitId);
 
-        // The params are built on click; loading the moddle there the first time
-        // would delay the differ tab, so warm its cache now.
-        await this.#moddleManager.load();
+        // The params are built on click; loading the moddles there the first time
+        // would delay the differ tab, so warm their caches now. Both: the content
+        // script never reads the XML, so it cannot know the Camunda dialect.
+        await Promise.all([this.#camundaModdleManager.load(), this.#zeebeModdleManager.load()]);
 
         return { key, sourceCommitId, targetCommitId, diffSideLabels };
     }
@@ -360,7 +363,8 @@ class App {
      */
     async #buildDiffParams(filePath, fileName, sourceCommitId, targetCommitId, diffSideLabels) {
         const projectInfo = this.#repoProvider.getProjectInfo();
-        const camundaBpmnModdle = await this.#moddleManager.load();
+        const camundaBpmnModdle = await this.#camundaModdleManager.load();
+        const zeebeBpmnModdle = await this.#zeebeModdleManager.load();
         return this.#diffParamsBuilder.buildDiffParams({
             projectInfo: projectInfo,
             sourceRef: sourceCommitId,
@@ -371,6 +375,7 @@ class App {
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle,
+            zeebeBpmnModdle: zeebeBpmnModdle,
             handlerAnnotations: await loadHandlerAnnotations()
         });
     }
@@ -381,13 +386,15 @@ class App {
      */
     async #buildBranchParams(branchCommitId, filePath, fileName) {
         const projectInfo = this.#repoProvider.getProjectInfo();
-        const camundaBpmnModdle = await this.#moddleManager.load();
+        const camundaBpmnModdle = await this.#camundaModdleManager.load();
+        const zeebeBpmnModdle = await this.#zeebeModdleManager.load();
         return this.#diffParamsBuilder.buildBranchParams({
             projectInfo: projectInfo,
             targetRef: branchCommitId,
             filePath: filePath,
             fileName: fileName,
             camundaBpmnModdle: camundaBpmnModdle,
+            zeebeBpmnModdle: zeebeBpmnModdle,
             handlerAnnotations: await loadHandlerAnnotations()
         });
     }

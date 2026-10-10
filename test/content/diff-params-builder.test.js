@@ -27,7 +27,8 @@ describe('DiffParamsBuilder.buildDiffParams', () => {
         changeRequestId: '123',
         filePath: 'src/process.bpmn',
         fileName: 'process.bpmn',
-        camundaBpmnModdle: { moddle: true }
+        camundaBpmnModdle: { moddle: true },
+        zeebeBpmnModdle: { zeebe: true }
     });
 
     it('groups platform-specific data under a discriminated platform descriptor', () => {
@@ -51,6 +52,7 @@ describe('DiffParamsBuilder.buildDiffParams', () => {
         assert.equal(params.filePath, 'src/process.bpmn');
         assert.equal(params.fileName, 'process.bpmn');
         assert.deepEqual(params.camundaBpmnModdle, { moddle: true });
+        assert.deepEqual(params.zeebeBpmnModdle, { zeebe: true });
     });
 
     it('carries the extension version for the differ-page feedback report', () => {
@@ -71,7 +73,12 @@ describe('DiffParamsBuilder.buildBranchParams', () => {
         targetRef: 'feature/y',
         filePath: 'src/process.bpmn',
         fileName: 'process.bpmn',
-        camundaBpmnModdle: null
+        camundaBpmnModdle: null,
+        zeebeBpmnModdle: { zeebe: true }
+    });
+
+    it('carries the zeebe moddle', () => {
+        assert.deepEqual(params.zeebeBpmnModdle, { zeebe: true });
     });
 
     it('has no source side', () => {

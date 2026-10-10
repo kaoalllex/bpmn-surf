@@ -23,6 +23,7 @@
         "camunda-bpmn-moddle": "8.0.2",
         "dmn-js": "17.12.3",
         "esbuild": "^0.28.2",
-        "jsdom": "^29.1.1"
+        "jsdom": "^29.1.1",
+        "zeebe-bpmn-moddle": "2.0.0"
     }
 }

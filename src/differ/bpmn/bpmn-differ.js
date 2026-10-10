@@ -33,6 +33,9 @@ class BpmnDiffer {
     #branchIndicator = null;
     #view = null;
 
+    // Which Camunda engine the diagrams target (FEAT-0038); decided from the
+    // loaded versions before the modeler is built.
+    #dialect = CAMUNDA_DIALECT.C7;
     #bpmnJS = null;
     #elementRegistry = null;
     #selection = null;
@@ -77,6 +80,18 @@ class BpmnDiffer {
         // console.debug('bpmn div created');
         this.#viewport = this.#view.viewport;
         this.#changesTableView = this.#view.changesTableView;
+
+        // The dialect decides the moddle and the panel, so the versions are loaded
+        // before the modeler is built. A failed load keeps the C7 modeler and is
+        // reported below, once everything is wired, exactly as before.
+        let loadError = null;
+        try {
+            await this.#loadVersions();
+            this.#dialect = detectCamundaDialect(this.#versions.branchXml, this.#versions.mrXml);
+        } catch (error) {
+            loadError = error;
+        }
+        console.debug('camunda dialect:', this.#dialect);
 
         this.#bpmnJS = this.#createModeler();
         // console.debug('bpmn js created');
@@ -227,12 +242,10 @@ class BpmnDiffer {
                 this.#view.setHistoryEnabled(commandStack.canUndo(), commandStack.canRedo()));
         }
 
-        try {
-            await this.#loadVersions();
-        } catch (error) {
+        if (loadError) {
             // loadFileContent has already retried once; a second failure would
             // otherwise leave the loading spinner up for good.
-            console.error('cannot load the file', error);
+            console.error('cannot load the file', loadError);
             this.#view.showEmptyState('Could not load the file. Reload the tab to try again.');
             this.#view.setDownloadButtonEnabled(false);
             return;
@@ -347,7 +360,7 @@ class BpmnDiffer {
             () => !this.#isEditMode() && this.#branchIndicator.isTargetBranchShown()
         );
         // FEAT-0029: auto-expand the property groups relevant to the selected element.
-        this.#propertiesGroupExpander = new PropertiesGroupExpander();
+        this.#propertiesGroupExpander = new PropertiesGroupExpander(() => this.#dialect);
         this.#view = new BpmnDifferView(this.#params, this.#branchIndicator, {
             onDownload: () => this.#isEditMode()
                 ? this.#downloadEditedFile()
@@ -391,6 +404,7 @@ class BpmnDiffer {
     }
 
     #createModeler() {
+        const c8 = this.#dialect === CAMUNDA_DIALECT.C8;
         return new BpmnJS({
             container: '#' + BpmnDifferView.CANVAS_ID,
             propertiesPanel: {
@@ -399,11 +413,15 @@ class BpmnDiffer {
             additionalModules: [
                 window.BpmnJSPropertiesPanel.BpmnPropertiesPanelModule,
                 window.BpmnJSPropertiesPanel.BpmnPropertiesProviderModule,
-                window.BpmnJSPropertiesPanel.CamundaPlatformPropertiesProviderModule,
+                c8
+                    ? window.BpmnJSPropertiesPanel.ZeebePropertiesProviderModule
+                    : window.BpmnJSPropertiesPanel.CamundaPlatformPropertiesProviderModule
             ],
-            moddleExtensions: {
-                camunda: this.#params.camundaBpmnModdle
-            }
+            // One descriptor only: camunda and zeebe both define modelerTemplate,
+            // and moddle rejects every bpmn:process when both are registered.
+            moddleExtensions: c8
+                ? { zeebe: this.#params.zeebeBpmnModdle }
+                : { camunda: this.#params.camundaBpmnModdle }
         });
     }
 

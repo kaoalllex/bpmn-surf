@@ -25,7 +25,21 @@ const SEARCH_MULTI_BPMN = read('test/e2e/fixtures/search-multi.bpmn');
 const BUSINESS_RULE_TASK_BPMN = read('test/e2e/fixtures/business-rule-task.bpmn');
 const MESSAGE_CORRELATION_BPMN = read('test/e2e/fixtures/message-correlation.bpmn');
 const HANDLER_BADGES_BPMN = read('test/e2e/fixtures/handler-badges.bpmn');
+// Camunda 8 material cut from the sandboxes' order-service-c8/ module (main vs
+// c8/model-changes), plus the C7 Payment.bpmn migrated in place (c8/migrate-payment).
+const C8_ORDER_MAIN_BASE_BPMN = read('test/e2e/fixtures/c8-order-main-base.bpmn');
+const C8_ORDER_MAIN_CHANGED_BPMN = read('test/e2e/fixtures/c8-order-main-changed.bpmn');
+const C8_PAYMENT_BASE_BPMN = read('test/e2e/fixtures/c8-payment-base.bpmn');
+const C8_PAYMENT_CHANGED_BPMN = read('test/e2e/fixtures/c8-payment-changed.bpmn');
+const C8_DELIVERY_BASE_BPMN = read('test/e2e/fixtures/c8-delivery-base.bpmn');
+const C8_DELIVERY_CHANGED_BPMN = read('test/e2e/fixtures/c8-delivery-changed.bpmn');
+const C8_FULFILLMENT_BASE_BPMN = read('test/e2e/fixtures/c8-fulfillment-base.bpmn');
+const C8_FULFILLMENT_CHANGED_BPMN = read('test/e2e/fixtures/c8-fulfillment-changed.bpmn');
+const C8_PAYMENT_C7_BPMN = read('test/e2e/fixtures/c8-payment-c7.bpmn');
+const C8_PAYMENT_MIGRATED_BPMN = read('test/e2e/fixtures/c8-payment-migrated.bpmn');
+const C8_PAYMENT_RISK_DMN = read('test/e2e/fixtures/c8-payment-risk.dmn');
 const camundaModdle = require(path.join(ROOT, 'libs/camunda-bpmn-moddle/resources/camunda.json'));
+const zeebeModdle = require(path.join(ROOT, 'libs/zeebe-bpmn-moddle/resources/zeebe.json'));
 
 // Default scenario: the MR (mr-sha) adds Task_2 'Notify' serviceTask + Flow_3
 // over base (base-sha). show() renders the MR side first.
@@ -53,6 +67,7 @@ function defaultBpmnParams(overrides = {}) {
         filePath: 'diagram.bpmn',
         fileName: 'diagram.bpmn',
         camundaBpmnModdle: camundaModdle,
+        zeebeBpmnModdle: zeebeModdle,
         ...overrides
     };
 }
@@ -131,12 +146,15 @@ async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN
 }
 
 module.exports = {
-    ROOT, read, camundaModdle,
+    ROOT, read, camundaModdle, zeebeModdle,
     BASE_BPMN, ADDED_TASK_BPMN, CALL_ACTIVITY_BPMN, CHANGED_TASK_NAME_BPMN,
     SUBPROCESS_BASE_BPMN, SUBPROCESS_CHANGED_CHILD_BPMN, CHANGED_FLOW_CONDITION_BPMN,
     CALL_ACTIVITY_IN_BASE_BPMN, CALL_ACTIVITY_IN_CHANGED_BPMN, SEARCH_MULTI_BPMN, BUSINESS_RULE_TASK_BPMN, MESSAGE_CORRELATION_BPMN, HANDLER_BADGES_BPMN, BPMN_FIXTURES,
     BASE_DMN, ADDED_RULE_DMN, CHANGED_CELL_DMN, CHANGED_HEADER_DMN,
     CHANGED_INPUT_DMN, CHANGED_OUTPUT_LABEL_DMN, ADDED_INPUT_COLUMN_DMN, ADDED_OUTPUT_COLUMN_DMN, DMN_FIXTURES,
+    C8_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_CHANGED_BPMN, C8_PAYMENT_BASE_BPMN, C8_PAYMENT_CHANGED_BPMN,
+    C8_DELIVERY_BASE_BPMN, C8_DELIVERY_CHANGED_BPMN, C8_FULFILLMENT_BASE_BPMN, C8_FULFILLMENT_CHANGED_BPMN,
+    C8_PAYMENT_C7_BPMN, C8_PAYMENT_MIGRATED_BPMN, C8_PAYMENT_RISK_DMN,
     defaultBpmnParams, defaultDmnParams,
     wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
 };

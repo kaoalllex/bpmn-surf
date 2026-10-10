@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_zeebe" targetNamespace="http://bpmn.io/schema/bpmn" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
+  <bpmn:process id="ZeebeBase" isExecutable="true">
+    <bpmn:startEvent id="Start_1">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ServiceTask_1" name="Validate">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="validate-order" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=orderId" target="orderId" />
+          <zeebe:output source="=valid" target="valid" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="template" value="order-completed" />
+        </zeebe:taskHeaders>
+        <zeebe:properties>
+          <zeebe:property name="owner" value="team-a" />
+        </zeebe:properties>
+        <zeebe:executionListeners>
+          <zeebe:executionListener eventType="start" retries="3" type="audit-step" />
+        </zeebe:executionListeners>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ServiceTask_2" name="Notify">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="notify" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ServiceTask_3" name="Prioritised">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="prio-task" />
+        <zeebe:jobPriorityDefinition priority="10" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallActivity_1" name="Payment">
+      <bpmn:extensionElements>
+        <zeebe:calledElement processId="PaymentC8" propagateAllChildVariables="false" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:businessRuleTask id="BusinessRuleTask_1" name="Assess risk">
+      <bpmn:extensionElements>
+        <zeebe:calledDecision decisionId="RiskC8" resultVariable="risk" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:scriptTask id="ScriptTask_1" name="Round the fee">
+      <bpmn:extensionElements>
+        <zeebe:script expression="=round half up(fee, 2)" resultVariable="roundedFee" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="MultiTask_1" name="Pack items">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="pack-item" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics>
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=items" inputElement="item" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="UserTask_1" name="Pick a courier">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="pick-courier" />
+        <zeebe:assignmentDefinition assignee="=logisticsUser" candidateGroups="logistics" />
+        <zeebe:taskSchedule dueDate="=now()" />
+        <zeebe:priorityDefinition priority="50" />
+        <zeebe:taskListeners>
+          <zeebe:taskListener eventType="creating" type="assign-courier" />
+        </zeebe:taskListeners>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_2" name="Approve">
+      <bpmn:extensionElements>
+        <zeebe:formDefinition formKey="camunda-forms:bpmn:Form_1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="TemplatedTask_1" name="Call the PSP" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="8">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:http-json:1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_1">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="ServiceTask_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="ServiceTask_2" targetRef="ServiceTask_3" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="ServiceTask_3" targetRef="CallActivity_1" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="CallActivity_1" targetRef="BusinessRuleTask_1" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="BusinessRuleTask_1" targetRef="ScriptTask_1" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="ScriptTask_1" targetRef="MultiTask_1" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="MultiTask_1" targetRef="UserTask_1" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="UserTask_1" targetRef="UserTask_2" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="UserTask_2" targetRef="TemplatedTask_1" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="TemplatedTask_1" targetRef="End_1" />
+  </bpmn:process>
+</bpmn:definitions>
