@@ -1,32 +1,70 @@
-// Inert GitHub data/detection provider (REFAC-0004 step 1.3). It is registered
-// in the FallbackRepoProvider chain (repo-provider-factory.js) but is a
-// guaranteed no-op until subtask 2 fills it in: isAvailable() returns false, so
-// FallbackRepoProvider always skips it (it only initializes available providers)
-// and none of the throwing methods below can be reached. github.com is not yet
-// in manifest#content_scripts.matches either, so this never even loads on a
-// GitHub page. Subtask 2 will flip isAvailable() to detect github.com and
-// implement the rest; until then GitLab behaviour is unchanged.
-class GitHubRepoProvider extends RepoProvider {
-    isAvailable(/* platformKind */) {
-        // Inert: ignores the detected kind and never claims a page (the 'github'
-        // matcher stays dormant). Subtask 2 flips this to
-        // `platformKind === PLATFORM_KIND.GITHUB` with no factory change.
-        return false;
+// GitHub provider that reads the pull request from the page (REFAC-0004):
+// no API request, so no quota, and private repositories work wherever the
+// user can see them — the same model as GitLab's cookie session. Content is
+// loaded same-origin by the differ (GitHubPlatformClient). When the page's
+// refs cannot be read, init() fails and the chain tries GitHubApiRepoProvider.
+class GitHubRepoProvider extends GitHubRepoProviderBase {
+    #fetched = new Map(); // page path → Promise<refs|null>
+    #diffEntries = new Map(); // page data URL → Promise<entries|null>
+    #fetch;
+
+    constructor(loadContent, domScraper, fetchFn = (...args) => fetch(...args)) {
+        super(loadContent, domScraper);
+        this.#fetch = fetchFn;
     }
 
-    async init() { this.#notImplemented(); }
-    getProjectInfo() { this.#notImplemented(); }
-    async isChangeViewActive() { this.#notImplemented(); }
-    async getBranchFileType() { this.#notImplemented(); }
-    async initChangeInfo() { this.#notImplemented(); }
-    getChangeInfo() { this.#notImplemented(); }
-    getChangeBranchNames() { this.#notImplemented(); }
-    async getSourceCommitId() { this.#notImplemented(); }
-    async getTargetCommitId() { this.#notImplemented(); }
-    getDiffSideLabels() { this.#notImplemented(); }
-    extractBranchCommitIdAndFilePath() { this.#notImplemented(); }
+    async resolvePull(pr) {
+        const refs = await this.#refsOf(document, pr) || await this.#refetch(pr);
+        return refs ? { number: pr.number, ...refs } : null;
+    }
 
-    #notImplemented() {
-        throw new Error('GitHubRepoProvider: not implemented yet (REFAC-0004 subtask 2)');
+    async #refsOf(doc, { owner, repo, number }) {
+        const refs = this.domScraper.pullRefs(doc, number);
+        const lazy = !refs && this.domScraper.lazyDiffEntry(doc, number);
+        const entries = lazy && await this.#loadDiffEntries(`https://github.com/${owner}/${repo}/pull/${number}`, lazy);
+        return refs || (entries ? this.domScraper.pullRefs(doc, number, entries) : null);
+    }
+
+    // GitHub's own page data for one file of a large PR: same origin and the
+    // session cookie, so private repositories work and no API quota is spent.
+    // The endpoint answers 406 without the headers GitHub's frontend sends.
+    #loadDiffEntries(pullUrl, { path, headSha }) {
+        const url = `${pullUrl}/page_data/diff_entries?paths=${encodeURIComponent(encodeURIComponent(path))}&range=${headSha}`;
+        if (!this.#diffEntries.has(url)) {
+            const headers = { accept: 'application/json', 'x-requested-with': 'XMLHttpRequest', 'github-verified-fetch': 'true' };
+            this.#diffEntries.set(url, this.#fetch(url, { headers })
+                .then(response => {
+                    if (!response.ok) {
+                        console.debug(`bpmn-surf: GitHub page data answered ${response.status} for ${url}`);
+                        return null;
+                    }
+                    return response.json();
+                })
+                .catch(() => null));
+        }
+        return this.#diffEntries.get(url);
+    }
+
+    // A soft navigation (Conversation → Files changed) leaves the previous
+    // route's payload embedded; the same page fetched again (same origin, the
+    // session cookie — not the API) carries the current one. Once per path:
+    // init() runs on every click.
+    #refetch(pr) {
+        if (!/\/pull\/\d+\/changes\/?$/.test(location.pathname)) {
+            return Promise.resolve(null);
+        }
+        const key = location.pathname;
+        if (!this.#fetched.has(key)) {
+            this.#fetched.set(key, this.loadContent(location.origin + key, false)
+                .then(html => html && this.#refsOf(new DOMParser().parseFromString(html, 'text/html'), pr))
+                .catch(() => null));
+        }
+        return this.#fetched.get(key);
+    }
+
+    // Read at click time: GitHub renders file blocks progressively.
+    getTargetFilePath(filePath) {
+        const block = this.domScraper.fileBlocks(document).find(b => b.path === filePath);
+        return (block && block.oldPath) || filePath;
     }
 }

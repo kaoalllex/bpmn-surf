@@ -30,11 +30,8 @@ const UNTESTED_BY_DESIGN = new Set([
     'src/content/providers/ui-repo-provider.js',
     'src/content/providers/repo-provider-factory.js',
     'src/differ/platform/platform-client.js',
-    // inert GitHub stubs (REFAC-0004 step 1.3): no-ops / throw-stubs with no
-    // logic to exercise yet — subtask 2 fills them in and adds their tests.
-    'src/content/providers/github/github-repo-provider.js',
-    'src/content/providers/github/github-ui-repo-provider.js',
-    'src/differ/platform/github-platform-client.js',
+    // covered via both GitHub repo providers (REFAC-0004)
+    'src/content/providers/github/github-repo-provider-base.js',
     'src/differ/shared/diff-type.js',
     // chrome.* glue: chrome.* APIs and DOM, neither available under node.
     'src/background/service-worker.js',

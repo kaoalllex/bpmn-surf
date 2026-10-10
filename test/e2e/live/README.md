@@ -17,10 +17,10 @@ gitlab.com, so they are as available as it is.
 | `branch-button.mjs <ref> <path> [--shots <dir>]` | The blob-view split button: placement beside GitLab's button groups, the main button and the "Diff with local file…" menu both open the differ, Escape closes the menu |
 | `file-selection.mjs [iid]` | What GitLab does to the URL when a file is picked — the measurement behind [REFAC-0016] |
 | `search-page.mjs [--shots <dir>]` | Does GitLab still serve the "search in the repository" fallback URL that `GitLabPlatformClient#searchPageUrl` builds — 200, scoped to the project, honouring a ref with a slash? Picks its sample file from the sandbox at run time |
-| `capture-login.mjs` | One-time sign-in, so the others run as you instead of anonymously |
+| `capture-login.mjs [--github]` | One-time sign-in, so the others run as you instead of anonymously. `--github` signs in to github.com instead of GitLab |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
 | `record-demo.mjs <iid> <outDir> [--clip <name>,…] [--no-shots] [--no-video]` | Records the README GIFs (one per clip: `hero`, `buttons`, `details`, `subprocess`, `code`, `diagrams`, `search`, `edit`, `local`) and the five store screenshots from the demo project's showcase MR. Each clip is a paced tour with a visible pointer. Every tab records its own video, and ffmpeg (must be on PATH) cuts out and joins the on-screen spans. `--clip` re-records only the named clips (`local` reads the `edit` clip's download). Needs the signed-in profile and "Show one file at a time" on. GitLab's layout cookies are switched for the run and restored. When a clip breaks, every open tab is saved as `failed-<clip>-<n>.png`. `--no-video` walks the same tours without recording (no GIF, no ffmpeg): the live check of the differ's navigation |
-| `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots; also submits `github.com` and reports the refusal and that no permission was requested. Needs no network |
+| `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots; then re-renders the site warnings (no site, the gitlab.com notice, gitlab.com + github.com) and prints `warning-visible=` per warning. Needs no network |
 
 ## Environment
 
@@ -124,6 +124,25 @@ login on finding out.
 Treat the profile as the account itself. It never goes near the repository;
 `rm -rf` it to sign out, and the harness drops back to anonymous.
 
+`node test/e2e/live/capture-login.mjs --github` does the same for github.com in the same
+profile (the GitHub sandbox is checked signed in as well as anonymous). The sign-in page is `github.com/login`; the script polls the page's
+`user-login` meta tag. GitHub's `user_session` is persistent, so there is no "Remember
+me" to tick; the closed-profile check still runs.
+
+"Continue with Google" cannot be completed through the script: Google refuses a browser
+under automation ("This browser or app may not be secure"). Sign in by hand in the same
+profile instead, with Playwright's Chromium binary and the mock keychain Playwright
+itself uses (without `--use-mock-keychain` the cookies are encrypted with the macOS
+keychain and the harness reads the profile as signed out), then quit that browser:
+
+```
+"$(node -e "console.log(require('@playwright/test').chromium.executablePath())")" \
+  --use-mock-keychain --user-data-dir=$HOME/.config/bpmn-surf-browser-profile \
+  https://github.com/login
+```
+
+A password sign-in works through the script as written (not verified).
+
 Because it is one profile, **run one script at a time** — Chromium locks the
 directory.
 
@@ -139,7 +158,7 @@ gitlab.com too: append `?rapid_diffs_disabled=true` to an MR diffs URL (that is
 what `--legacy` does). `?rapid_diffs=false` does *not* switch it.
 
 File blocks are anchored by `sha1(path)` in both UIs (element ids). The
-`HandlerLocator#mrFileDiffUrl` deep link is `diffs?file_path=<path>#<sha1(path)>`,
+`GitLabPlatformClient#prFileDiffUrl` deep link is `diffs?file_path=<path>#<sha1(path)>`,
 the same as GitLab's own file-tree links. With "Show one file at a time" on, rapid
 diffs ignores a bare anchor, even on a fresh load, and picks the file only from
 `file_path`.

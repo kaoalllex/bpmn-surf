@@ -2,9 +2,12 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
+const { webcrypto } = require('node:crypto');
 const { createScope } = require('#scope');
 
-const { GitLabPlatformClient } = createScope();
+const scope = createScope();
+const { GitLabPlatformClient } = scope;
+Object.defineProperty(scope.window, 'crypto', { value: webcrypto, configurable: true }); // jsdom lacks SubtleCrypto
 
 // Results are built inside the jsdom vm realm, so their prototypes differ from
 // the host realm and deepStrictEqual would reject them — round-trip to plain
@@ -68,11 +71,10 @@ describe('GitLabPlatformClient URL builders', () => {
         assert.ok(url.startsWith('https://gitlab.example/search?search=topicName'), url);
     });
 
-    it('builds the MR diffs URL', () => {
-        assert.equal(
-            client.prDiffsUrl(7),
-            'https://gitlab.example/group/proj/-/merge_requests/7/diffs'
-        );
+    it('links a file in the MR diffs the way GitLab’s file tree does', async () => {
+        assert.equal(await client.prFileDiffUrl(7, 'src/Score Car.kt'),
+            'https://gitlab.example/group/proj/-/merge_requests/7/diffs?file_path=src%2FScore%20Car.kt' +
+            '#' + require('node:crypto').createHash('sha1').update('src/Score Car.kt').digest('hex'));
     });
 });
 

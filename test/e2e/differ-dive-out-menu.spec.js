@@ -91,7 +91,7 @@ test('caller menu shows an error and a GitLab search link when the search fails'
 
     await expect(page.locator('.differ-back-menu-message')).toContainText("check the calling diagrams");
     const link = page.locator('.differ-back-menu-link');
-    await expect(link).toHaveText('Search in GitLab');
+    await expect(link).toHaveText('Search in repository');
     await link.click();
 
     await expect.poll(() => getOpenCalls(page))

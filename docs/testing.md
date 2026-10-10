@@ -31,11 +31,11 @@ Layout (`test/`):
 ### Structural tests (`test/structure/`)
 
 A separate class of tests — not "the logic of class X", but **invariants of the project structure**, which are otherwise protected only by prose in `docs/` and by discipline. They do not use vm/jsdom; they read the project's real files via the helper `test/support/source-tree.js` (parsing `manifest.json`, `utils.js#loadScripts`, `scope.js#SCOPE_FILES`, walking `src/`). Composition:
-- `registries.test.js` — synchronization of the four path registries: all references in `content_scripts`/`web_accessible_resources`/`loadScripts`/`SCOPE_FILES` exist on disk; the differ files match in composition and **relative order** in `loadScripts` and `web_accessible_resources`; every content-scope file is in `content_scripts`; and no registry lists the same path twice (a duplicate loads a file twice into one global scope, where the second `const`/`class` throws — and every other check here still passes). For the vendored `libs/`: every lib `loadScripts` loads is in `web_accessible_resources`, and every relative `url()`/`@import` in a vendored stylesheet resolves to a synced, web-accessible file — `sync-libs.js` copies only the files it lists, so a library update that starts referencing a new file (a font, an imported sheet) fails here instead of shipping a broken reference. Catches the desync that otherwise breaks silently at runtime (`chrome.runtime.getURL` → empty) while unit tests stay green.
+- `registries.test.js` — synchronization of the four path registries: all references in `src/hosts/content-scripts.json`/`web_accessible_resources`/`loadScripts`/`SCOPE_FILES` exist on disk; the differ files match in composition and **relative order** in `loadScripts` and `web_accessible_resources`; every content-scope file is in `content-scripts.json`; and no registry lists the same path twice (a duplicate loads a file twice into one global scope, where the second `const`/`class` throws — and every other check here still passes). For the vendored `libs/`: every lib `loadScripts` loads is in `web_accessible_resources`, and every relative `url()`/`@import` in a vendored stylesheet resolves to a synced, web-accessible file — `sync-libs.js` copies only the files it lists, so a library update that starts referencing a new file (a font, an imported sheet) fails here instead of shipping a broken reference. Catches the desync that otherwise breaks silently at runtime (`chrome.runtime.getURL` → empty) while unit tests stay green.
 - `message-id.test.js` — the postMessage id matching between scopes (`App.MESSAGES.BPMN_ID`/`DMN_ID` ↔ `BpmnDiffer.MSG_ID`/`DmnDiffer.MSG_ID`).
 - `source-layout.test.js` — uniqueness of basename across all of `src/` (the mirror layout rests on this) and the rule "every `src/**/*.js` either has a mirror test, or is listed in `UNTESTED_BY_DESIGN` with a reason". The `UNTESTED_BY_DESIGN` list must **shrink**: after adding a test, remove the entry (otherwise the stale check will fail). A new src file forces a deliberate decision — write a test or record why not.
 
-Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (including the mapping of diffs to properties-panel groups and the documented blind spots: arrow retarget, rebinding of incoming/outgoing, the `default` attribute), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.getSourceCommitId` (commits.json, then the page's `diff_head_sha`), `GitLabRepoProviderBase` (init + project id resolution with cache), `GitLabUrlParser`, `GitLabDomScraper`, `MergedMrCommitResolver` (resolution with collaborator injection — without `fetch`/`localStorage`), `SingleEntryCache`, `GitLabApiRepoProvider`, `GitLabUIRepoProvider` (per-file buttons on rapid and legacy markup — placement, idempotency, recycled blocks; the branch split button and its menu), `FallbackRepoProvider` (selection/delegation), `App` (the MR change-view flow over stub providers: refs resolved across a URL change are not used, a click on a view the URL has left is not opened, a failing click is logged), `PageReloader` (the attempt-counter contract — `location.reload` is a no-op in jsdom, the observable counter in `sessionStorage` is checked), the pure functions of `utils.js`, `ConsoleLog` (`test/core/console-log.test.js` — the ring, the two-tier tail, the cycle collapsing, and what it refuses to log), plus the structural invariants (see above).
+Covered: `ConditionFormatter`, `FileTypeDetector`, `DifferParams`, `BpmnXmlComparator` (including the mapping of diffs to properties-panel groups and the documented blind spots: arrow retarget, rebinding of incoming/outgoing, the `default` attribute), `PropertiesPanelHighlighter`, `DmnXmlComparator`, `DmnDiffPainter`, `GitLabRepoProvider.getSourceCommitId` (commits.json, then the page's `diff_head_sha`), `GitLabRepoProviderBase` (init + project id resolution with cache), `GitLabUrlParser`, `GitLabDomScraper`, `MergedMrCommitResolver` (resolution with collaborator injection — without `fetch`/`localStorage`), `SingleEntryCache`, `GitLabApiRepoProvider`, `GitLabUIRepoProvider` (per-file buttons on rapid and legacy markup — placement, idempotency, recycled blocks; the branch split button and its menu), the GitHub side (`GitHubUrlParser`; `GitHubDomScraper` over captured pages of both "Files changed" UIs in `test/fixtures/github/` — merge base from `oldCommitOid`, classic `sha1`, renames; `GitHubChangesPayload`; `GitHubRepoProvider` — the page first, a stale payload after a soft navigation re-fetched, no request; `GitHubApiRepoProvider` — waits for a rendered page; `GitHubUIRepoProvider` — file and blob buttons; `GitHubPlatformClient` — payload before the REST fallback, `prFileDiffUrl`), the host logic (`normalizeHostPattern`, `userOriginsFrom`, `needsGitlabComNotice`), `FallbackRepoProvider` (selection/delegation), `App` (the MR change-view flow over stub providers: refs resolved across a URL change are not used, a click on a view the URL has left is not opened, a failing click is logged), `PageReloader` (the attempt-counter contract — `location.reload` is a no-op in jsdom, the observable counter in `sessionStorage` is checked), the pure functions of `utils.js`, `ConsoleLog` (`test/core/console-log.test.js` — the ring, the two-tier tail, the cycle collapsing, and what it refuses to log), plus the structural invariants (see above). `test/e2e/differ-github-navigation.spec.js` is the Layer-2 guard that a non-GitLab dive-in miss never walks GitLab's repository tree.
 
 The GitLab DOM markup in the provider tests (`gitlab-repo-provider.test.js`, `gitlab-ui-repo-provider.test.js`) we build right in the test with small helpers — it is trivial and parameterizable; we keep fixture files only for complex third-party DOM (`dmn-table.html`, `properties-panel.html`).
 
@@ -103,7 +103,23 @@ the navigation locators open. The scenarios and the procedure live in the
 `live-check` project skill (`.claude/skills/live-check/SKILL.md`).
 `capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
 per-user "Show one file at a time" preference; without it everything runs
-anonymously.
+anonymously. `capture-login.mjs --github` stores a github.com session in the same
+profile.
+
+The tracked manifest declares no site, so the harness does not load the repository
+itself: `support.mjs` stages a copy (`manifest.json`, `src`, `libs`, `icons`) in the
+temp directory with `host_permissions` for gitlab.com and github.com, the way an
+internal build bakes hosts in, and waits for the service worker to register the content
+scripts. The staged manifest differs from the store one on purpose.
+
+**GitHub sandbox.** `github.com/kaoalllex/bpmn-surf-test` (public) and
+`github.com/kaoalllex/bpmn-surf-test-private` (private) are the mutable test material,
+the counterpart of the GitLab sandbox; public pull requests of other projects serve as
+real-world samples (large PRs, forks, GitHub's CSP). There are no GitHub-specific
+scripts yet: the GitHub scenarios of the `live-check` skill are driven by hand (or an
+ad-hoc Playwright script on `launchWithExtension()`), signed in and anonymous
+(`BPMN_SURF_ANONYMOUS=1`), with the Network panel filtered to `api.github.com` — a
+signed-in run must make no request there.
 
 `BPMN_SURF_PROJECT=<url>` points the scripts at another project, and
 `BPMN_SURF_ANONYMOUS=1` runs them in a throwaway profile, signed out. The other
@@ -114,8 +130,11 @@ run there. Its rules are in [`test/e2e/live/README.md`](../test/e2e/live/README.
 
 `popup-screens.mjs` is the exception that needs no network: it renders every
 popup screen with a stubbed `chrome.*` and reports height and overflow, then
-submits `github.com` on the Sites screen and reports the refusal message and
-the number of permission requests (must be 0).
+re-renders the site warnings and prints `warning-visible=` for `#noSitesWarning`,
+`#noSitesHomeWarning` and `#gitlabComNotice` in three states: no site granted
+(both "no site" warnings, `popup-sites-none.png`), an update from 1.3.x that lost
+gitlab.com (the notice, `popup-gitlab-notice.png`), and gitlab.com + github.com
+granted (all hidden, both listed with `×`).
 
 ## Manual checking
 

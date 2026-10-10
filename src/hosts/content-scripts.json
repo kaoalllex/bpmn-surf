@@ -1,0 +1,41 @@
+{
+    "js": [
+        "src/core/config.js",
+        "src/core/handler-annotations.js",
+        "src/core/github-changes-payload.js",
+        "src/hosts/host-patterns.js",
+        "src/core/settings.js",
+        "src/core/models.js",
+        "src/core/utils.js",
+        "src/core/console-log.js",
+        "src/content/providers/repo-provider.js",
+        "src/content/providers/ui-repo-provider.js",
+        "src/content/providers/platform-detection.js",
+        "src/content/providers/gitlab/single-entry-cache.js",
+        "src/content/providers/gitlab/gitlab-url-parser.js",
+        "src/content/providers/gitlab/gitlab-dom-scraper.js",
+        "src/content/providers/gitlab/master-commit-manager.js",
+        "src/content/providers/gitlab/merged-mr-commit-resolver.js",
+        "src/content/providers/gitlab/gitlab-repo-provider-base.js",
+        "src/content/providers/gitlab/gitlab-repo-provider.js",
+        "src/content/providers/gitlab/gitlab-ui-repo-provider.js",
+        "src/content/providers/gitlab/gitlab-api-repo-provider.js",
+        "src/content/providers/github/github-url-parser.js",
+        "src/content/providers/github/github-dom-scraper.js",
+        "src/content/providers/github/github-repo-provider-base.js",
+        "src/content/providers/github/github-repo-provider.js",
+        "src/content/providers/github/github-api-repo-provider.js",
+        "src/content/providers/github/github-ui-repo-provider.js",
+        "src/content/providers/fallback-repo-provider.js",
+        "src/content/providers/repo-provider-factory.js",
+        "src/content/camunda-bpmn-moddle-manager.js",
+        "src/content/page-reloader.js",
+        "src/content/file-type-detector.js",
+        "src/content/diff-params-builder.js",
+        "src/content/app.js",
+        "src/content/main.js"
+    ],
+    "css": [
+        "src/content/content-styles.css"
+    ]
+}

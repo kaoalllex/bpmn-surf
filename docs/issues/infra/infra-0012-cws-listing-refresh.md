@@ -25,6 +25,18 @@ the extension is reached on a GitLab page.
    buttons on diagram files of a merge request and "View schema" with its menu on a
    repository file (the content of `docs/media/buttons.gif`). The store allows at most five
    screenshots and all five slots are taken, so one has to go or be merged into another.
+4. **Privacy policy and the first screenshot** — before the store release that ships GitHub
+   support, update `PRIVACY.md` (linked from the store listing). Today it says requests go
+   only to the GitLab host of the page; with github.com turned on the extension also requests
+   `github.com` (PR pages and raw files, same-origin with the session cookie),
+   `raw.githubusercontent.com` (where raw requests redirect) and, for signed-out users only,
+   `api.github.com` (anonymous REST fallback and changed-handler badges); no token, nothing
+   stored or sent elsewhere. Verify each claim against the code at release time.
+   - `docs/media/popup.png` still shows the old Sites list with gitlab.com built in — retake it.
+   - Item 1's summary already changed on branch `feature/refac-0004-github` ([REFAC-0004] D8:
+     "Review BPMN & DMN changes in GitLab merge requests and GitHub pull requests as
+     diagrams, not XML, with every change highlighted.") — re-check it against item 1's goals
+     at release.
 
 ## Context
 

@@ -3,7 +3,7 @@
 // Helpers for the structural tests under test/structure/.
 // These tests guard project-wide invariants that are otherwise protected only
 // by prose in docs/ and developer discipline: the four path registries kept in
-// sync by hand (manifest content_scripts / web_accessible_resources,
+// sync by hand (src/hosts/content-scripts.json, manifest web_accessible_resources,
 // utils.js#loadScripts, scope.js#SCOPE_FILES), the mirror test layout, the
 // cross-scope message ids and unique basenames.
 //
@@ -46,12 +46,11 @@ function listSrcJsFiles() {
     return listFiles('src', '.js').sort();
 }
 
-// manifest.json content_scripts[].js and web_accessible_resources[].resources,
-// each flattened into an ordered array.
+// src/hosts/content-scripts.json#js and manifest.json
+// web_accessible_resources[].resources, each flattened into an ordered array.
 function manifestRegistries() {
     const manifest = JSON.parse(read('manifest.json'));
-    const contentScripts = (manifest.content_scripts || [])
-        .flatMap(cs => cs.js || []);
+    const contentScripts = JSON.parse(read('src/hosts/content-scripts.json')).js || [];
     const webAccessibleResources = (manifest.web_accessible_resources || [])
         .flatMap(war => war.resources || []);
     return { contentScripts, webAccessibleResources };

@@ -315,12 +315,15 @@ class BpmnDiffer {
         // It stays GitLab-specific by design — the "doomed" fallback is not ported
         // to other platforms (REFAC-0004 / REFAC-0007), so it still reads the
         // platform descriptor's GitLab fields directly rather than the client.
-        this.#processFileIndex = new ProcessFileIndex(
-            this.#params.platform.projectUrl,
-            this.#params.platform.hostUrl,
-            this.#params.platform.projectId,
-            this.#params.targetRef
-        );
+        // Other platforms get no fallback index.
+        this.#processFileIndex = this.#params.platform.kind === 'gitlab'
+            ? new ProcessFileIndex(
+                this.#params.platform.projectUrl,
+                this.#params.platform.hostUrl,
+                this.#params.platform.projectId,
+                this.#params.targetRef
+            )
+            : null;
         this.#callActivityLocator = new CallActivityLocator(this.#platformClient, this.#processFileIndex);
         // FEAT-0005: resolve the DMN file called from a Business Rule Task
         // (decisionRef → defining .dmn) by a targeted code search; no fallback.

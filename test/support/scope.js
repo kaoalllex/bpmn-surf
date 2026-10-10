@@ -22,6 +22,7 @@ const ROOT = path.join(__dirname, '..', '..');
 // Do NOT add bpmn-differ.js / dmn-differ.js here: they self-execute main() on load.
 const SCOPE_FILES = [
     'src/core/handler-annotations.js',
+    'src/core/github-changes-payload.js',
     'src/core/utils.js',
     'src/core/console-log.js',
     'src/differ/shared/diff-type.js',
@@ -56,7 +57,7 @@ const SCOPE_FILES = [
     'src/differ/dmn/dmn-diff-painter.js',
     'src/differ/bpmn/bpmn-differ-view.js',
     'src/differ/navigation/back-navigator.js',
-    // content-script files, in manifest.json#content_scripts relative order.
+    // content-script files, in src/hosts/content-scripts.json relative order.
     // repo-provider.js / ui-repo-provider.js must precede the gitlab-* providers
     // that extend them (extends is evaluated at load time).
     'src/core/config.js',
@@ -73,7 +74,11 @@ const SCOPE_FILES = [
     'src/content/providers/gitlab/gitlab-repo-provider.js',
     'src/content/providers/gitlab/gitlab-ui-repo-provider.js',
     'src/content/providers/gitlab/gitlab-api-repo-provider.js',
+    'src/content/providers/github/github-url-parser.js',
+    'src/content/providers/github/github-dom-scraper.js',
+    'src/content/providers/github/github-repo-provider-base.js',
     'src/content/providers/github/github-repo-provider.js',
+    'src/content/providers/github/github-api-repo-provider.js',
     'src/content/providers/github/github-ui-repo-provider.js',
     'src/content/providers/fallback-repo-provider.js',
     'src/content/providers/repo-provider-factory.js',
@@ -97,7 +102,8 @@ const EXPORTED_NAMES = [
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',
     'detectPlatformKind', 'PLATFORM_KIND',
-    'normalizeHostPattern', 'userOriginsFrom', 'isUnsupportedHost',
+    'normalizeHostPattern', 'userOriginsFrom', 'needsGitlabComNotice',
+    'GitHubChangesPayload',
     'DEFAULT_HANDLER_ANNOTATIONS', 'normalizeHandlerAnnotations', 'isDefaultHandlerAnnotations',
     'buildSettingsExport', 'parseSettingsExport', 'SETTINGS_EXPORT_FORMAT',
     'PlatformClient',
@@ -140,7 +146,10 @@ const EXPORTED_NAMES = [
     'GitLabRepoProvider',
     'GitLabUIRepoProvider', 'UI_BUTTON_TYPE',
     'GitLabApiRepoProvider',
+    'GitHubUrlParser',
+    'GitHubDomScraper',
     'GitHubRepoProvider',
+    'GitHubApiRepoProvider',
     'GitHubUIRepoProvider',
     'FallbackRepoProvider',
     'createRepoProvider', 'createUIRepoProvider',

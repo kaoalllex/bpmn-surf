@@ -26,3 +26,28 @@ test('shows a placeholder when the DMN file is absent in both versions', async (
     await expect(page.getByTitle('Download the file as shown for the current branch'))
         .toBeDisabled();
 });
+
+// A DRD-only file (decisions without a decision table, e.g. a Camunda 8 project
+// skeleton) used to crash DmnTableViewport.fit() and leave the spinner up for good.
+const DRD_ONLY_DMN = `<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="Definitions_1" name="DRD" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="BarDecision" name="BarDecision" />
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape id="DMNShape_1" dmnElementRef="BarDecision">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>`;
+
+test('shows a message when the DMN file has no decision table', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootDmnDiffer(page, {
+        fixtures: { xmlByRef: { 'base-sha': DRD_ONLY_DMN, 'mr-sha': DRD_ONLY_DMN } }
+    });
+
+    await expect(page.locator('.differ-empty-state-message'))
+        .toHaveText('This file has no decision table to compare');
+    await expect(page.locator('.differ-loading-overlay')).toBeHidden();
+});

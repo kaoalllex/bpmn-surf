@@ -22,15 +22,14 @@ describe('createPlatformClient', () => {
         );
     });
 
-    it('builds a GitHubPlatformClient for kind "github" (inert stub, REFAC-0004)', () => {
+    it('builds a GitHubPlatformClient for kind "github"', () => {
         const client = createPlatformClient({
             kind: 'github',
             projectUrl: 'https://github.com/owner/repo',
             hostUrl: 'https://github.com'
         });
         assert.ok(client instanceof GitHubPlatformClient);
-        // The stub is inert until subtask 2 — every method throws for now.
-        assert.throws(() => client.rawFileUrl('abc', 'a.bpmn'), /not supported yet/);
+        assert.equal(client.rawFileUrl('abc', 'a.bpmn'), 'https://github.com/owner/repo/raw/abc/a.bpmn');
     });
 
     it('throws for an unknown platform kind', () => {

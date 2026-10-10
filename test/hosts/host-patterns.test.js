@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { normalizeHostPattern, userOriginsFrom, isUnsupportedHost } = createScope();
+const { normalizeHostPattern, userOriginsFrom, needsGitlabComNotice } = createScope();
 
 // Arrays built inside the vm realm carry that realm's prototype, so deepEqual
 // against a host array fails on identity — Array.from rebuilds them (docs/testing.md).
@@ -38,6 +38,10 @@ describe('normalizeHostPattern', () => {
         assert.equal(normalizeHostPattern('gitlab'), 'https://gitlab/*');
     });
 
+    it('accepts github.com like any other host', () => {
+        assert.equal(normalizeHostPattern('github.com'), 'https://github.com/*');
+    });
+
     it('rejects http — the extension asks for https origins only', () => {
         assert.equal(normalizeHostPattern('http://gitlab.acme.com'), null);
     });
@@ -61,40 +65,38 @@ describe('normalizeHostPattern', () => {
     });
 });
 
-describe('isUnsupportedHost', () => {
-    it('refuses github.com however it was typed', () => {
-        for (const input of ['github.com', 'www.github.com', 'GitHub.com', 'https://github.com/owner/repo/pull/7/files']) {
-            assert.equal(isUnsupportedHost(normalizeHostPattern(input)), true, input);
-        }
-    });
-
-    it('accepts gitlab.com, self-managed instances and look-alike hosts', () => {
-        for (const input of ['gitlab.com', 'gitlab.acme.com', 'gitlab', 'github.acme.com', 'notgithub.com']) {
-            assert.equal(isUnsupportedHost(normalizeHostPattern(input)), false, input);
-        }
-    });
-});
-
 describe('userOriginsFrom', () => {
-    const declared = ['https://gitlab.com/*'];
-
-    it('drops the origins the manifest already declares', () => {
-        const origins = ['https://gitlab.com/*', 'https://gitlab.acme.com/*'];
-        assert.deepEqual(arr(userOriginsFrom(origins, declared)), ['https://gitlab.acme.com/*']);
+    it('treats every granted https host as a site — none is built in', () => {
+        assert.deepEqual(Array.from(userOriginsFrom(
+            ['https://gitlab.com/*', 'https://github.com/*', 'https://*/*', 'http://x.example/*'])),
+            ['https://github.com/*', 'https://gitlab.com/*']);
     });
 
-    it('dedupes and sorts what is left', () => {
+    it('dedupes and sorts', () => {
         const origins = ['https://b.acme.com/*', 'https://a.acme.com/*', 'https://b.acme.com/*'];
-        assert.deepEqual(arr(userOriginsFrom(origins, declared)), ['https://a.acme.com/*', 'https://b.acme.com/*']);
+        assert.deepEqual(arr(userOriginsFrom(origins)), ['https://a.acme.com/*', 'https://b.acme.com/*']);
     });
 
     it('ignores anything broader than one concrete https host', () => {
         const origins = ['https://*/*', 'http://gitlab.acme.com/*', '<all_urls>', 'https://*.acme.com/*'];
-        assert.deepEqual(arr(userOriginsFrom(origins, declared)), []);
+        assert.deepEqual(arr(userOriginsFrom(origins)), []);
     });
 
-    it('survives missing arguments', () => {
-        assert.deepEqual(arr(userOriginsFrom(undefined, declared)), []);
-        assert.deepEqual(arr(userOriginsFrom(['https://gitlab.acme.com/*'], undefined)), ['https://gitlab.acme.com/*']);
+    it('survives a missing argument', () => {
+        assert.deepEqual(arr(userOriginsFrom(undefined)), []);
+    });
+});
+
+describe('needsGitlabComNotice', () => {
+    it('tells a user updating from a release that had gitlab.com built in, once it is gone', () => {
+        assert.equal(needsGitlabComNotice('1.3.0', []), true);
+        assert.equal(needsGitlabComNotice('1.2.9', ['https://gitlab.mycompany.com/*']), true);
+    });
+
+    it('stays quiet when gitlab.com is still granted or the user never had it built in', () => {
+        assert.equal(needsGitlabComNotice('1.3.0', ['https://gitlab.com/*']), false);
+        assert.equal(needsGitlabComNotice('1.4.0', []), false);
+        assert.equal(needsGitlabComNotice('1.10.0', []), false);
+        assert.equal(needsGitlabComNotice(undefined, []), false);
     });
 });

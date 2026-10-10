@@ -269,98 +269,180 @@ GitHub in subtask 2 is now a one-line matcher entry already in place + flipping 
 
 ---
 
-## Open questions to clarify before Subtask 2
+## Decisions — resolved 2026-10-09 (human; D1 revised the same day)
 
-- **Permissions for store users (added 2026-10-08, after the store release):** step 1 of
-  Subtask 2 below predates the store listing. A new required host in `content_scripts.matches`
-  or `host_permissions` makes Chrome disable the extension for every store user until they
-  re-confirm. Rework the plan around the existing `optional_host_permissions` (the popup's
-  per-host grant from FEAT-0033), or a GitHub opt-in in the popup, so the update ships with no
-  warning. The "raw.githubusercontent is already present from the updater" note is stale: the
-  manifest has no `host_permissions` at all now.
-- **Public fixture repo:** Identify a public GitHub repo with `.bpmn`/`.dmn` files and an open PR with changes. Record in `docs/testing.md`.
-- **DOM selectors:** Confirm current GitHub selectors for file path (`[data-tagsearch-path]`, `clipboard-copy[value]`) and button container (PR file header / blob header). Document fallback chain.
-- **Rate limit handling:** Unauthenticated API = 60 req/hr. Decide: basic 403 handling in MVP, or fail visibly?
-- **Error UX:** What to show on 404 (PR/file not found), API down, or `.bpmn` missing in one version? Alert, toast, or silent degrade?
-- **DMN specifics:** Confirm button label ("Decision diff" / "View decision") and `.dmn` extension detection in DOM scraper.
-- **MVP method coverage:** Explicitly confirm which `PlatformClient` methods are *not* called in the basic diff path (`searchCode`, `prChangedFiles`, `searchPageUrl`, `prDiffsUrl`) — these can throw "not supported".
+| # | Decision | Outcome |
+|---|----------|---------|
+| D1 | How sites are turned on | **No built-in sites.** A built-in github.com (a new required host) would make Chrome disable the extension for every existing user until they accept it — rejected. gitlab.com stops being built in too: `content_scripts` leaves the manifest (its js/css list moves to `src/hosts/content-scripts.json`) and every site — gitlab.com, github.com, a self-managed GitLab — is added in the popup through `optional_host_permissions`. Removing a required host never prompts. Whether Chrome keeps gitlab.com granted for existing users is undocumented, so a user updating from 1.3.x without it gets `!` on the icon and a one-click "Turn on gitlab.com" notice; with no site at all the icon shows `!` and the popup warns. Internal builds bake their hosts in as `host_permissions`. |
+| D2 | Where PR refs come from | **The page** (no API request, private repos work). The REST API (`pulls/{n}` + `compare`) only as a fallback provider on public repos when the page has rendered its files but the refs cannot be read. |
+| D3 | Rate limit / "if the repo opens in the browser, the plugin must work" | The 60 req/h limit is the anonymous REST quota (per IP), unrelated to repo access; `api.github.com` ignores the github.com session cookie. Page-first (D2) + same-origin raw content: a signed-in user makes **no** API request at all, public or private; only anonymous users on public repos touch the API (badges, fallback). |
+| D4 | Which PR views | `/pull/{n}/files` and `/pull/{n}/changes`; commit and range views get no buttons. |
+| D5 | Navigation on GitHub | Degrade, don't gate: `searchCode` rejects → the navigators' fallbacks open github.com code search. **Changed-handler badges are in, private repos included**: `prChangedFiles` reads the file list from the PR's `/changes` page (session cookie); `GET /pulls/{n}/files` only for anonymous users. The badge link comes from a new `prFileDiffUrl`. |
+| D6 | "Search in GitLab" text | "Search in repository" everywhere. |
+| D7 | Test sandbox | `kaoalllex/bpmn-surf-test` (public mirror of the GitLab sandbox, PR numbers = MR iids) + `kaoalllex/bpmn-surf-test-private` — created 2026-10-09 (the human ran the setup script). |
+| D8 | Store text | Next release: manifest `description` ("Review BPMN & DMN changes in GitLab merge requests and GitHub pull requests as diagrams, not XML, with every change highlighted." — 128/132), README, listing via [INFRA-0012]. |
+| D9 | "Diff with local file…" on the GitHub blob button | **In**: the split button, menu and local-file read move into `UIRepoProvider`. |
+| D10 | Signed-in "Files changed" DOM, private raw | Answered by the 2026-10-09 spike (a console probe run in the human's signed-in browser) — see "Markup — new UI" below. |
+
+## Open questions — resolved 2026-10-08/09
+
+- **Permissions.** Today: no `host_permissions`; `optional_host_permissions: ["https://*/*"]`;
+  `content_scripts[0].matches: ["https://gitlab.com/*"]`. Per D1 `content_scripts` goes; the
+  service worker already registers the same js/css for granted origins and will do it for all of
+  them. Readers of `content_scripts[0]` to move: `service-worker.js`, `popup.js`
+  (`DECLARED_MATCHES`), `scripts/package.sh` (internal builds → `host_permissions` instead), the
+  registry checks in `test/support/source-tree.js`; the live harness loads a staged copy with
+  `host_permissions`. `api.github.com` / `raw.githubusercontent.com` need no permission: both send
+  `Access-Control-Allow-Origin: *`, and github.com's CSP `connect-src` lists both plus `'self'`.
+  The differ's `about:blank` tab inherits that CSP: no `'unsafe-eval'` (dmn-js has one
+  `new Function` in a DOM-walker selector compiler — watch the DMN live check); extension-scheme
+  scripts and fonts are exempt (they already load under gitlab.com's `font-src 'self'`).
+- **Content without the API.** `https://github.com/{o}/{r}/raw/{ref}/{path}` → 302 →
+  `raw.githubusercontent.com` → 200, verified for a SHA, a branch, a fork PR's head SHA addressed
+  through the base repo (camunda/camunda-bpm-examples#260, fork deleted) and a path with spaces
+  encoded per segment. Same-origin for the differ tab, so the session cookie applies. **Private
+  repo, verified 2026-10-09:** the same request redirects to `raw.githubusercontent.com/…?token=…`
+  and returns the XML (head, merge base and base-tip SHAs). It must run with the github.com
+  origin — from an extension page the redirect would hit CORS.
+  `pull/{n}.diff` is not usable: it redirects to `patch-diff.githubusercontent.com`, which sends
+  no CORS header.
+- **Rate limits.** GitHub REST anonymous: 60 req/h per IP, 403/429 with
+  `x-ratelimit-remaining: 0`; responses carry `max-age=60` + `etag`. **Measured: an anonymous
+  `304` still counts** (the docs exempt 304 only with an `Authorization` header); only the
+  browser cache within 60 s is free. GitLab.com, for comparison (the extension rides the
+  session, i.e. authenticated): API 2000 req/min per user, search API 100 req/min per user and
+  per IP, raw 300 req/min per project+file, 429 + `Retry-After` beyond. Budget with D2/D5:
+  signed in — 0 API requests; anonymous — 1 per differ opened in PR mode (changed handlers), 2
+  per PR only when the fallback provider runs.
+- **Markup — verified.** Two "Files changed" UIs: classic `/pull/{n}/files` (signed-out,
+  opted-out) and React `/pull/{n}/changes` (signed-in default since GitHub's 2026-01-22
+  changelog; anonymous `/changes` → 302 `/files`). Classic per file: `<copilot-diff-entry
+  data-file-path>` → `div.file-header[data-path][data-anchor="diff-<sha256(path)>"]` → actions
+  `.file-actions > .d-flex`; a rename's header link has `title="<old> → <new>"`; big PRs render
+  progressively. Classic per PR: head branch `span.commit-ref.head-ref[title="<o>/<r>:<branch>"]`,
+  base branch the other `span.commit-ref`, title `bdi.js-issue-title`, SHAs in loader URLs
+  `…/diffs?base_sha=…&sha1=…&sha2=<head>` and `show_partial_comparison?base_commit_oid=…&
+  start_commit_oid=…&end_commit_oid=<head>`. Blob page: ref = tail of
+  `a[data-testid="breadcrumbs-repo-link"]` `href="/{o}/{r}/tree/{ref}"`; button anchor = the
+  `div[data-component="ButtonGroup"]` holding `a[data-testid="raw-button"]`; the embedded
+  `refInfo` JSON goes stale on soft navigation — not used.
+- **Markup — new UI (spike 2026-10-09: sandbox #7, #16 via soft navigation, private #1, a
+  private blob, bpmn-io/bpmn-js#2429 with 162 files).** The page embeds the comparison as JSON:
+  `react-app[app-name="repo"] > script[data-target="react-app.embeddedData"]` →
+  `payload.pullRequestsChangesRoute`. `diffContents[].oldCommitOid` is the **merge base**,
+  `newCommitOid` the head, `oldTreeEntry`/`newTreeEntry.path` the rename; only the first few files
+  are there (3 of 162), the rest load on scroll. `diffSummaries[]` lists **every** file (`path`,
+  `pathDigest` = the `diff-` anchor hash, `changeType`). `comparison.baseOid` is the **base branch
+  tip, not the merge base** — a trap. `pullRequestsLayoutRoute.pullRequest` has `number`, `title`,
+  `headBranch`, `baseBranch`. After a soft navigation (Conversation → Files changed) the embedded
+  JSON is still the Conversation route; fetching the same URL again returns a fresh one. DOM per
+  file: `div#diff-<64 hex>` → `[data-diff-header-wrapper]`; the path link's text sits between
+  U+200E marks, a rename adds an `.sr-only` "`<old>` renamed to `<new>`"; the actions end with
+  "More options" (`button[aria-haspopup="true"]`) — our button goes before it. Class names are
+  build hashes. Blob page (signed in, private too): breadcrumbs repo link and the Raw button group
+  as in the classic notes; no embedded route JSON. **Classic merge base:** on sandbox #9 after
+  `main` moved, `base_sha` = `sha1` = `start_commit_oid` = `git merge-base`.
+- **Merge base.** GitHub's Files changed diffs against the merge base; `pulls/{n}.base.sha` is
+  not it once the base branch moves → the fallback takes `compare/{base}...{head}` →
+  `merge_base_commit.sha` (+ `files[].previous_filename` for renames, ≤300 files).
+- **Fixtures.** Third-party, verified: camunda/camunda-bpm-examples #149 (BPMN), #104 (DMN),
+  #260 (fork); camunda/camunda-modeler #6197 (renamed BPMN+DMN, 54 files). Own sandbox per D7:
+  #1–#15 mirror MRs !1–!15 (#2/#3/#12 merged via helper branches `gitlab/mr-N-base|head`, #10
+  closed), #16 path with spaces and `#`, `main` one commit ahead of every open PR. The GitLab
+  sandbox's MR !12 carried two commits with a wrong author address in its read-only
+  `refs/merge-requests/12/*`: on 2026-10-09 it was recreated as **MR !17** (same base, same tree,
+  correct author; left open — `main` already has the change), !12 deleted and the refs purged with
+  GitLab's repository cleanup. Archived bug files that link to !12 now point at a deleted MR.
+- **DMN specifics.** Labels exist in `GitLabUIRepoProvider#getButtonText`; they move to
+  `UIRepoProvider`. Detection is the shared `FileTypeDetector`.
+- **Method coverage.** Eager when a differ opens: `rawFileUrl`, `blobFileUrl`, `prChangedFiles`
+  (PR mode, try/catch). On click: `searchCode`/`searchPageUrl`; the changed-handler link
+  (`prDiffsUrl` + a GitLab sha1 anchor built in `HandlerLocator` — moves into the client as
+  `prFileDiffUrl`; GitHub's anchor is `diff-<sha256(path)>`, verified). `ProcessFileIndex`
+  (GitLab tree walk) is built for every platform and fires on a dive-in miss — must become
+  GitLab-only.
+- **Codebase traps.** `App` re-runs `init()` on every mouseup → no uncached network per run.
+  `App#resolveChangeView` reloads the page when `getSourceCommitId()` is null → unresolvable
+  refs must fail `init()`. `FallbackRepoProvider` moves on when `init()` is false → the API
+  fallback must require a rendered PR page, or a page that is merely still loading burns quota.
 
 ---
 
-## Subtask 2 — Minimal GitHub support for PUBLIC repos (basic diff + render)
+## Subtask 2 — GitHub support: no built-in sites, page-first (diff + render + handler badges) — ✅ implemented 2026-10-09 (live check and upgrade check pending)
 
-Scope: detect GitHub PR "Files changed" and blob file-view pages, load both versions of a
-`.bpmn`/`.dmn`, render the highlighted diff, provide "open in GitHub" links. **No** advanced
-navigation (Call Activity dive-in, callers, handler, correlation) — those throw/no-op gracefully.
-Public repos only → **no auth** (raw.githubusercontent.com + unauthenticated API are enough; note
-the 60 req/hr unauthenticated rate limit, acceptable for the few requests the basic diff makes).
+Rewritten 2026-10-09 after the decisions above and the spike. The step-by-step plan (code, tests,
+live checklist) lives in the local `docs/superpowers/plans/` folder; this is the durable summary.
 
-1. **Manifest:** add `https://github.com/*` to `content_scripts.matches`; add
-   `https://raw.githubusercontent.com/*` and `https://api.github.com/*` to `host_permissions`
-   (raw.githubusercontent is already present from the updater — verify).
-2. **`github-url-parser.js`** (pure, mirror of `gitlab-url-parser.js`, fully unit-tested):
-   - PR files page: `https://github.com/{owner}/{repo}/pull/{number}/files` → owner, repo, number.
-   - PR page: `…/pull/{number}`. Blob: `…/blob/{ref}/{path}`.
-   - `buildPullApiUrl(owner, repo, number)` → `https://api.github.com/repos/{owner}/{repo}/pulls/{number}`.
-   - `isPrFilesPage`, `getBranchFileType` (by extension), `extractBranchCommitIdAndFilePath` (blob view).
-3. **`github-dom-scraper.js`** (DOM reads — the fragile part, mirror of `gitlab-dom-scraper.js`):
-   - `findSelectedFilePath`: GitHub renders all files; each file block carries the path on
-     `[data-tagsearch-path]` / the file header `clipboard-copy[value]`; selection by the URL hash
-     `#diff-<id>` if present, else the single bpmn/dmn file (mirror GitLab's single-file fallback).
-   - `isChangeViewActive`: PR "Files changed" tab active.
-   - branch/sha reads as needed.
-4. **`github-repo-provider.js`** (replace the stub; extends `RepoProvider`):
-   - `isAvailable()` → `detectPlatformKind() === 'github'` (the matcher entry added in step 1.4 —
-     no new host string here).
-   - `init()` → parse owner/repo/PR number; resolve project info; fetch PR metadata once (cached):
-     `GET /repos/{o}/{r}/pulls/{n}` → store `head.sha`, `base.sha`, `head.ref`, `base.ref`, `title`.
-   - `getProjectInfo()` → `{url: https://github.com/{o}/{r}, hostUrl: https://github.com, groupName: owner, name: repo, id: "{o}/{r}"}`.
-   - `getSourceCommitId()` → `head.sha`; `getTargetCommitId()` → `base.sha` (PR base; no merge-commit
-     heuristics needed — GitHub gives base.sha directly, unlike GitLab's `MergedMrCommitResolver`).
-   - `getChangeBranchNames()` → `{sourceBranchName: head.ref, targetBranchName: base.ref}`.
-   - `getDiffSideLabels()` → branch names (single-commit selection support can be added later).
-   - `getBranchFileType()`, `extractBranchCommitIdAndFilePath()` → blob view via the URL parser.
-   - `getTargetFilePath(filePath)` → rename resolution via `GET /pulls/{n}/files` `previous_filename`
-     (mirror of GitLab `extractRenameMap`/BUG-0002); default identity.
-   - `initChangeInfo`/`getChangeInfo` → `MergeRequestInfo`-shaped DTO (reuse `models.js`).
-5. **`github-ui-repo-provider.js`** (replace the stub; extends `UIRepoProvider`):
-   - Inject the accented "Schema diff"/"Decision diff" (PR) and "View schema"/"View decision"
-     (blob) buttons into GitHub's PR file header / blob header. Find the container by a list of
-     candidate selectors (mirror `gitlab-ui-repo-provider.js` resilience). Reuse
-     `content/content-styles.css` `.bpmn-surf-btn-accent` (drop/adjust GitLab-only native classes).
-   - `isOwnButtonClick`, `isButtonPresent`, `reset`.
-6. **`diff-params-builder.js`**: nothing to do — `#platform()` already sets `kind: detectPlatformKind()`
-   (step 1.4), so on github.com it emits `kind: 'github'` automatically. Just verify the descriptor on
-   a GitHub PR page carries `kind: 'github'`. (Step 1.4 deliberately dropped the earlier idea of a
-   `ProjectInfo.platformKind` field — `detectPlatformKind` is the single source of truth for `kind`.)
-7. **`github-platform-client.js`** (basic methods only for MVP):
-   - `rawFileUrl(ref, path)` → `https://raw.githubusercontent.com/{o}/{r}/{ref}/{path}` (derive o/r
-     from `projectUrl`).
-   - `blobFileUrl(ref, path, line?)` → `https://github.com/{o}/{r}/blob/{ref}/{path}#L{line}`.
-   - `searchCode`/`searchPageUrl`/`prChangedFiles`/`prDiffsUrl` → throw "not supported in public MVP"
-     (the locators are not invoked from the basic diff path; verify dive-in badges degrade quietly —
-     they should simply not resolve, falling back to the search-page link which can point to
-     `searchPageUrl` once subtask 3 implements it; for MVP, gate the navigation overlays off on
-     GitHub or let them show a "not supported on GitHub yet" tooltip).
-   - `platform-client-factory.js`: `case 'github'` → new `GitHubPlatformClient`.
-8. **Tests:** `test/content/providers/github/github-url-parser.test.js` (pure, thorough),
-   `test/content/providers/github/github-repo-provider.test.js` (PR metadata mapping, fakes fetch),
-   `test/differ/platform/github-platform-client.test.js` (raw/blob URL builders). DOM scraper tested
-   in jsdom with a GitHub PR DOM fixture under `test/fixtures/`.
-9. **Registries:** all new files into the four registries; `registries.test.js` green.
-10. **Docs:** update `docs/architecture.md` (provider diagram, key-files table, the two-seam note),
-    `CLAUDE.md` (GitHub now supported), `docs/conventions.md` if any new constraint.
+0. **Harness + fixtures:** a `--github` mode for `test/e2e/live/capture-login.mjs` (same
+   profile); trimmed captures in `test/fixtures/github/`: new UI `/pull/7/changes` (rename), the
+   same UI after a soft navigation (stale payload), classic `/pull/9/files` (anonymous).
+1. **`github-url-parser.js`** (pure): `parsePullFiles` (exact `/files|/changes`), `parseBlob`,
+   `getBranchFileType`, `splitRefAndPath`, `pullApiUrl`, `compareApiUrl`.
+2. **Differ seam:** `PlatformClient.prDiffsUrl(changeId)` → `prFileDiffUrl(changeId, filePath)`
+   (GitLab: today's `?file_path=` + sha1 anchor, moved out of `HandlerLocator`; GitHub:
+   `/pull/{n}/files#diff-<sha256>`). New cross-scope `src/core/github-changes-payload.js` reads
+   the new UI's embedded JSON for a given PR number. `GitHubPlatformClient`: `rawFileUrl` →
+   `https://github.com/{o}/{r}/raw/{ref}/{path}` (same-origin, cookie), `blobFileUrl`,
+   `searchPageUrl` (github.com code search), `searchCode` rejects, `prChangedFiles` → the
+   `/changes` page's `diffSummaries` (private included), REST `pulls/{n}/files` only when the page
+   has no payload (anonymous). `ProcessFileIndex` only for `kind === 'gitlab'`. D6 label.
+3. **`github-dom-scraper.js`:** `fileBlocks(doc) → [{path, oldPath, actions, before}]` (both UIs;
+   new UI inserts before "More options"), `pullRefs(doc, number)` (classic: loader URL `sha1`/`sha2`
+   + header spans; new UI: payload, merge base = `diffContents[].oldCommitOid`, never
+   `comparison.baseOid`), `findBlobRef`, `blobActionsAnchor`.
+4. **Providers:** `github-repo-provider-base.js` (project info, blob view, getters; `init()` fails
+   when the pull cannot be resolved), `GitHubRepoProvider` = page (re-fetches the page once per
+   path when the embedded payload is stale after a soft navigation; renames from the rendered
+   block at click time), new `GitHubApiRepoProvider` = REST fallback (only on a rendered PR page;
+   pull + compare cached per PR incl. failures). Chain: `[GitLabApi, GitLab, GitHub (page),
+   GitHubApi]`. Labels fall back to short SHAs.
+5. **UI:** lift the icon, labels, split-button menu and local-file read from
+   `GitLabUIRepoProvider` into `UIRepoProvider` (pure move, GitLab tests untouched);
+   `GitHubUIRepoProvider`: per-file "Schema diff"/"Decision diff" (blocks appear and disappear as
+   the new UI virtualises them), blob split button "View …" + "Diff with local file…" before the
+   Raw group; own CSS, GitHub dark mode.
+6. **No built-in sites:** `content_scripts` → `src/hosts/content-scripts.json`; the service worker
+   registers it for every granted origin, sets `!` on the icon when no site is on or the gitlab.com
+   notice waits; `needsGitlabComNotice(previousVersion, origins)` on update from < 1.4.0; popup:
+   every site removable, "Turn on gitlab.com" notice, no-site warnings on Home and Sites; delete
+   `UNSUPPORTED_HOSTNAMES` / `isUnsupportedHost` ([BUG-0043] guard); `scripts/package.sh` bakes
+   internal hosts into `host_permissions`; the live harness loads a staged copy with
+   `host_permissions`; registry checks read the JSON. Manual upgrade check from the 1.3.0 build
+   records whether Chrome kept gitlab.com.
+7. **Docs:** manifest `description`, README (nothing on by default; how to add sites),
+   `CLAUDE.md` (load-order rule now names `content-scripts.json`), `docs/architecture.md`,
+   `docs/conventions.md` (the four registries), `docs/testing.md` (GitHub sandbox, harness
+   `--github`, staged extension copy), live-check skill. 1.4.0 release notes: gitlab.com is no
+   longer on by default — "Turn on gitlab.com" in the popup.
+8. **Live check** (signed in and anonymous): zero `api.github.com` signed in; merge-base diff on a
+   PR whose base moved; soft navigation Conversation → Files changed; 162-file PR scrolling;
+   DMN under GitHub's CSP; renames; spaces/`#` path; merged and closed PRs; private PR renders
+   with badges; changed-handler badge link; dive-in → code search; blob buttons follow soft
+   navigation; no-site warnings and the gitlab.com notice; store build has neither
+   `content_scripts` nor `host_permissions`.
 
-**Acceptance subtask 2:** load the unpacked extension, open a **public** GitHub repo PR that changes
-a `.bpmn` file → "Schema diff" button appears → click → differ tab renders both versions with the
-diff highlighted; "open in GitHub" link works; DMN equivalent works; GitLab unchanged. Use a known
-public GitHub repo containing BPMN/DMN as the manual fixture (record it in `docs/testing.md`).
+**Release note for 1.4.0** (`/release` writes `CHANGELOG.md`, so it is recorded here): gitlab.com is
+no longer on by default — if the buttons are gone, open the extension and press "Turn on gitlab.com".
+
+**Acceptance subtask 2:** with github.com added in the popup, on a public and a private PR the
+user can open, signed in (`/changes`, also after a soft navigation) and signed out (`/files`),
+each changed `.bpmn`/`.dmn` gets one button → differ renders both versions with the diff against
+the merge base; a signed-in user makes no `api.github.com` request; DMN renders under GitHub's
+CSP; renamed files open with both sides; blob view button and local-file diff work and follow soft
+navigation; non-PR GitHub pages stay silent; no site is on by default, the popup warns when none
+is, and a user updating from 1.3.x who lost gitlab.com is offered it back in one click; GitLab
+otherwise unchanged (live-check catalog).
 
 ---
 
-## Subtask 3 — Rich GitHub support, incl. PRIVATE repos + navigation
+## Subtask 3 — Rich GitHub support: token + navigation
 
-### 3a. Authentication (PAT) — unblocks private repos
+Subtask 2 already renders private repositories and their changed-handler badges through the
+page and the session cookie. A token is still needed for what only the REST API offers: code
+search (navigation), the API fallback provider on private repositories, and a quota above 60
+req/h for anonymous-style use.
+
+### 3a. Authentication (PAT)
 
 - **Storage:** a GitHub PAT entered by the user via the popup/options UI, stored in
   `chrome.storage.local`. (`storage` permission already granted.)
@@ -374,16 +456,17 @@ public GitHub repo containing BPMN/DMN as the manual fixture (record it in `docs
   (`GET /repos/{o}/{r}/contents/{path}?ref={ref}` with `Accept: application/vnd.github.raw`) —
   `raw.githubusercontent.com` does not reliably accept the `Authorization` header. `GitLabPlatformClient`
   keeps using cookie-session `fetch` (no token), so GitLab is unaffected.
+- Content keeps loading same-origin through `github.com/{o}/{r}/raw/…` (subtask 2; the spike
+  confirmed it works for private repositories with the session cookie).
 - Update `DiagramVersions` to load via the client's `loadFile` (instead of `rawFileUrl` + global
   `loadFileContent`) — do this carefully, keeping GitLab byte-for-byte (GitLab `loadFile` just wraps
   today's `loadFileContent(rawFileUrl(...))`).
 
 ### 3b. Navigation features on GitHub (best-effort, degraded)
 
-Implement `searchCode`/`searchPageUrl`/`prChangedFiles`/`prDiffsUrl` in `GitHubPlatformClient`:
+Implement `searchCode` in `GitHubPlatformClient` (`searchPageUrl`, `prChangedFiles` and
+`prFileDiffUrl` already land in subtask 2):
 
-- `prChangedFiles`/`prDiffsUrl`: straightforward — `GET /pulls/{n}/files` (paginated) and
-  `…/pull/{n}/files`. This enables handler-change detection.
 - `searchCode(ref, term)`: `GET /search/code?q={term}+repo:{o}/{r}` (auth required). **Limitations to
   document and handle:** searches the **default branch only** (ignore `ref`, or warn when the PR ref
   differs), ~10 req/min rate limit (rely on the existing per-ref/per-term caches; add backoff on 403
@@ -400,16 +483,17 @@ Implement `searchCode`/`searchPageUrl`/`prChangedFiles`/`prDiffsUrl` in `GitHubP
 - GitHub Enterprise Server host support (the design already keeps host configurable — add host
   matching + configurable API base URL). Out of scope unless requested.
 
-**Acceptance subtask 3:** with a PAT set, open a **private** GitHub PR with a `.bpmn` → diff renders;
-handler badge / dive-in / correlation resolve (within GitHub Search limits); rate-limit handling
-degrades gracefully; GitLab unchanged.
+**Acceptance subtask 3:** with a PAT set, on a **private** GitHub PR dive-in and
+correlation resolve (within GitHub Search limits); rate-limit handling degrades gracefully;
+GitLab unchanged.
 
 ---
 
 ## Cross-cutting checklist (every step)
 
 - ⚠️ `npm test` green before any push; never commit to master — work on a feature branch per step.
-- ⚠️ Keep the four registries in sync (`manifest` content_scripts **order** + web_accessible_resources,
+- ⚠️ Keep the four registries in sync (`manifest` content_scripts **order** — `src/hosts/content-scripts.json`
+  once subtask 2 lands — + web_accessible_resources,
   `utils.js#loadScripts` order, `test/support/scope.js#SCOPE_FILES`); `registries.test.js` enforces it.
 - ⚠️ Shared differ classes are used by BOTH BPMN and DMN — when touching `DifferParams`,
   `DiagramVersions`, the orchestrators or the new `PlatformClient`, verify both differs.
@@ -427,6 +511,149 @@ degrades gracefully; GitLab unchanged.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-09 (4) · claude-opus-5-5 · `db943d4`, `0515cf3` + this entry (branch `feature/refac-0004-github`)
+
+**Upgrade check from 1.3.0 (by hand).** The 1.3.0 store build, loaded unpacked, decorated gitlab.com
+MR !1. Its files replaced by the branch build + Reload: the gitlab.com grant was **lost** — `!` on the
+icon, the notice on Home, no buttons, no errors. "Turn on gitlab.com" → Chrome's confirm → `!` and the
+notice gone, buttons back. With no site, `!` and the Home warning survive Cmd+Q and a relaunch.
+
+**Live check, GitLab** (sandbox, signed in, "Show one file at a time" off — the account's value — then
+on, restored to off): `mr-button` rapid and `--legacy` on a diagram next to code, added, deleted,
+renamed, `.dmn`, merged bpmn + dmn and code-only MRs; `--scroll` on the 30-file MR, `--walk`, `--click`
+(bpmn and dmn) in both modes; `branch-button` for a `.bpmn` and a `.dmn`; `search-page`;
+`popup-screens`. All `RESULT: OK`, screenshots fine.
+
+**Live check, GitHub** (a one-off driver over `launchWithExtension`, Network filtered on
+`api.github.com` — GitHub's own `_private/browser/stats` telemetry excluded):
+- signed in, **zero** `api.github.com` requests on every page, click and badge below; anonymous, one
+  `pulls/{n}/files` per BPMN differ (none for DMN);
+- sandbox #9: one button, both sides at the merge base `276bf8a` (not the base tip `cd9b157`), signed
+  in and anonymous;
+- #16 Conversation → Files changed by click: the button appears and resolves; the path with spaces
+  and `#` loads both sides, the header link answers 200;
+- #4 (DMN), camunda-bpm-examples#104: highlighted tables, no `EvalError`; #7 and camunda-modeler#6197
+  renames open; merged #2 opens; closed #10 is blank because both sides are truncated on purpose;
+- private #1: signed in as the public one; anonymous, GitHub's 404 and nothing of ours;
+- #1: the added handler's badge moves the PR tab to `#diff-<sha256(path)>`; an unchanged handler, the
+  dive-in on a call activity and the callers list open github.com code search;
+- blob pages: `View schema` / `View decision` before Raw, the caret menu, "Diff with local file…",
+  and the button follows soft navigation (tree → blob → tree → another blob);
+- github.com home, an issue, a PR's Conversation and Commits tabs, the repo root: nothing injected;
+  fork PR camunda-bpm-examples#260 (no diagrams): nothing of ours (its 500s are GitHub's);
+- popup, by hand in Chrome: removing github.com stops the GitHub tab, GitLab keeps working; no site →
+  `!` and both warnings; gitlab.com added back → all gone;
+- `npm run package -- --store`: neither `content_scripts` nor `host_permissions`;
+  `npm run package -- gitlab.mycompany.com`: that host in `host_permissions`.
+
+Found and fixed (separate `fix:` commits):
+1. `db943d4` — a DRD-only DMN (camunda-modeler#6197 `baz.dmn`: decisions without a table) left the
+   differ on "Loading the diagram…" forever: `DmnTableViewport.fit()` and the comparator need a table.
+   Now it says "This file has no decision table to compare". Older than REFAC-0004; GitLab had it too.
+2. `0515cf3` — a large PR's new-UI page (dmn-js#852, 101 files) embeds `diffSummaries` but no
+   `diffContents`, the only place with the merge base (`comparison.fullDiff.baseOid` is the base tip).
+   Signed in, that fell back to the anonymous REST API (2 requests; a private large PR would have
+   failed). The page provider now loads one file's diff from GitHub's own same-origin
+   `pull/{n}/page_data/diff_entries?paths=…&range={head}` (it answers 406 without the frontend's
+   `x-requested-with` / `github-verified-fetch` headers) — zero API requests. Undocumented endpoint:
+   if GitHub changes it, the REST fallback still serves public PRs.
+
+The skill's large-PR row named bpmn-io/bpmn-js#2429, which has no diagram at all; it now names
+dmn-js#852. Not covered: a fork PR with a diagram (none found yet).
+
+### 2026-10-09 (3) · claude-opus-5-5 (controller) + subagents · `c04d7bc` + docs (branch `feature/refac-0004-github`)
+
+Subtask 2 implemented, plan order (Task 5 Step 1 ran before Task 3 while the human signed in to
+GitHub): `9f85cfc` live-harness GitHub sign-in · `76752f3` GitHub URL parser · `417e4f7` GitHub
+platform client, platforms build the PR file diff link (`prFileDiffUrl`) · `678f80a` shared button
+look and local-file menu lifted into `UIRepoProvider` · `0c28a9f` GitHub DOM scraper + fixtures ·
+`fc6db6c` GitHub repo providers (page, REST fallback) · `16ce295` GitHub diff and view buttons ·
+`c04d7bc` no built-in sites, gitlab.com notice · the docs commit. Docs updated: manifest description,
+README, CLAUDE.md, `docs/architecture.md`, `conventions.md`, `testing.md`, `git-workflow.md`, the
+`live-check` skill and the load-order mentions in `.claude/`.
+
+Where code or fixtures contradicted the plan (the code won):
+1. Classic "Files changed" on a small PR (sandbox #9, 2 files) has no progressive `diffs?…sha2=`
+   loader — every file is in the first HTML. The same SHAs sit on `details-menu[src*="/show_toc?"]`
+   (`base_sha` = `sha1` = merge base, `sha2` = head); the scraper reads that too. Large PRs
+   (camunda-modeler#6197) still carry the loader.
+2. The fixtures for #7 and #16 have one file block each (each PR changes one file).
+3. The new UI's "More options" button has no aria-label (named via `aria-labelledby` + tooltip); the
+   scraper selects `button[aria-haspopup="true"]` (last).
+4. jsdom's `window.crypto` is getter-only: tests install webcrypto with `Object.defineProperty`.
+5. The plan's page-provider stale-payload test lacked `await` on the async `getSourceCommitId`.
+6. The GitHub file-button wrapper carries an extra class `bpmn-surf-gh-file-btn`: GitLab's wrapper
+   also has `.bpmn-surf-file-btn`, so the planned CSS would have restyled GitLab buttons.
+7. `src/core/settings.js` also used `isUnsupportedHost`; a settings import now accepts github.com
+   like any host.
+
+Harness: `capture-login.mjs --github` cannot complete a "Continue with Google" GitHub sign-in —
+Google refuses an automated browser. Working route (now in `test/e2e/live/README.md`): launch
+Playwright's Chromium by hand with `--use-mock-keychain --user-data-dir=<profile>`, sign in, quit;
+without the mock keychain the cookies are encrypted with the macOS keychain and Playwright reads the
+profile as signed out. A password sign-in should work through the script (unverified).
+
+Still open: the manual upgrade check from the 1.3.0 build (does Chrome keep gitlab.com once it is
+only optional?) and the live check of the "Live check" step (signed in and anonymous; the scenarios
+are in the `live-check` skill, "GitHub"). Status stays `in-progress`: subtask 3 is not started.
+
+### 2026-10-09 (2) · claude-opus-5-5 · branch `feature/refac-0004-github-store-plan` (planning only, no code)
+
+The human revised D1: **no built-in sites at all** — a required github.com host would have made
+Chrome disable the extension for existing users until they accepted it. gitlab.com leaves the
+manifest too; `content_scripts` becomes `src/hosts/content-scripts.json`; existing users who lose
+gitlab.com get a one-click notice (whether Chrome keeps the grant is undocumented; a local
+unpacked check lost it — the real upgrade path is a manual check in subtask 2).
+
+Ran the D10 spike with the human, one step at a time: a console probe
+(`docs/superpowers/plans/github-spike-probe.js`, local) in their signed-in Chrome on sandbox #7,
+#16 (after a soft navigation), private #1, a private blob page and bpmn-io/bpmn-js#2429. Results:
+the new UI embeds the comparison as JSON; the merge base is `diffContents[].oldCommitOid` while
+`comparison.baseOid` is the stale base tip; `diffSummaries` lists every file, so handler badges
+need no API and work on private repositories; a soft navigation leaves the payload stale and a
+same-origin re-fetch fixes it; private raw through `github.com/…/raw/…` works with the cookie;
+classic `sha1` is the merge base (checked anonymously on #9). Subtask 2 rewritten accordingly.
+
+Sandbox: the human created the GitHub repos (audited: no foreign addresses). The GitLab sandbox's
+MR !12 held two commits with a corporate author in GitLab-managed refs: recreated as MR !17 with
+the right author, !12 deleted by the human, refs and objects purged via GitLab's repository
+cleanup (commit pages and fetch-by-SHA now 404). The cause — a global git identity used in the
+sandbox clone — is fixed locally with an `includeIf` for the personal project folder.
+
+### 2026-10-09 · claude-opus-5-5 · branch `feature/refac-0004-github-store-plan` (planning only, no code)
+
+Applied the human's answers to D1–D10 (now "Decisions — resolved"). The design changed in two
+places. (1) github.com becomes a **built-in** declared host instead of a popup grant: built-ins
+can be switched off (stored flag, content script stands down — Chrome cannot revoke a declared
+host), the popup warns when no site is on, and the release accepts Chrome's one-time "new
+permission" prompt. (2) **Page-first**: refs, branch names, title and renames come from the PR
+page, content from same-origin `github.com/{o}/{r}/raw/…`, so a repository that opens in the
+browser works — private included — with no API quota on the main path; the anonymous REST API is
+a fallback provider (only on a rendered page) and the source of changed-handler badges (now in
+scope, via a new `prFileDiffUrl` seam method). Measured that an anonymous `304` still consumes
+GitHub's quota; recorded GitLab.com's limits for comparison; verified same-origin raw for a fork
+head and an encoded path, the classic page's SHA/branch/rename markup, GitHub's sha256 file
+anchor, and that `pull/{n}.diff` is CORS-blocked. Local-file diff on the blob button is in scope.
+Not done: creating the GitHub sandbox (the agent's push was refused by the permission
+classifier; a setup script waits in the local plan folder) and the signed-in/private checks (no
+browser tools) — both are the spike that opens subtask 2. Subtask 3 narrowed to token + search.
+
+### 2026-10-08 · claude-opus-5-5 · branch `feature/refac-0004-github-store-plan` (planning only, no code)
+
+Rewrote **Subtask 2** for Chrome Web Store users: GitHub is enabled at runtime from the popup
+through the existing `optional_host_permissions` + the service worker's dynamic registration
+(FEAT-0033), so the update needs no new required permission and no manifest permission edit —
+the manifest has no `host_permissions` at all. Closed the open questions from the code, GitHub's
+docs and live probes of github.com (CSP, CORS, rate-limit headers, both "Files changed" UIs, blob
+markup, fork-PR raw access, the compare API) — see "Open questions — resolved". The choices that
+are the human's moved to "Decisions pending" (D1–D10), each with a recommendation; the rewritten
+steps assume the recommendations. Still open: the signed-in React "Files changed" selectors
+(needs one capture, D10). Found three traps the old plan would have shipped (base.sha ≠ merge
+base, per-click quota burn, self-reload on API failure) and one leak (`ProcessFileIndex` firing
+GitLab API calls on any platform). Added a private-repo spike to 3a. The step-by-step
+implementation plan is kept locally in
+`docs/superpowers/plans/2026-10-08-refac-0004-github-public-store.md` (untracked).
 
 ### 2026-10-03 · claude-opus-5-5 · branch `fix/popup-github-host` ([BUG-0043])
 

@@ -65,7 +65,7 @@ Distribution is via **releases** (a git tag + an attached zip asset), not via ar
 
 Since [FEAT-0033] a self-hosted host is added from the extension popup, so a preconfigured build is no longer needed to reach an internal instance — the argument below only saves the user that one step.
 
-A build for an internal GitLab instance takes the host as an argument — `npm run package -- gitlab.internal.example` — which prepends `https://<host>/*` to the content-script `matches` **in the staged copy only**; the tracked `manifest.json` keeps listing `gitlab.com` alone, so internal domains never enter the repository.
+A build for an internal GitLab instance takes the host as an argument — `npm run package -- gitlab.internal.example` — which adds `https://<host>/*` to `host_permissions` **in the staged copy only**; the tracked `manifest.json` declares no site at all (every site is on or off in the popup), so internal domains never enter the repository.
 
 ## CI
 

@@ -260,6 +260,7 @@ async function loadScripts(doc, getResourceUrlByNameFunc) {
     await addStylesheet('src/differ/styles.css', doc, getResourceUrlByNameFunc);
     await addScript('src/core/config.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/handler-annotations.js', doc, getResourceUrlByNameFunc);
+    await addScript('src/core/github-changes-payload.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/utils.js', doc, getResourceUrlByNameFunc);
     await addScript('src/core/console-log.js', doc, getResourceUrlByNameFunc);
     await addScript('src/differ/shared/diff-type.js', doc, getResourceUrlByNameFunc);

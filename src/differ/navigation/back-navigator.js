@@ -226,7 +226,7 @@ class BackNavigator {
         if (id) {
             const link = document.createElement('a');
             link.className = 'differ-back-menu-link';
-            link.textContent = 'Search in GitLab';
+            link.textContent = 'Search in repository';
             link.href = '#';
             link.addEventListener('click', (event) => {
                 event.preventDefault();
