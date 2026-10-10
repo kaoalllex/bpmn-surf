@@ -11,11 +11,10 @@ description: Analyze and explain the architecture, logic, and structure of the b
 - Understanding the relationships between files
 
 ## How to analyze
-1. Start with `docs/architecture.md` — it describes the architecture, the data flow, the two script scopes, the shared differ-page classes (bpmn↔dmn), and the table of key files
-2. Read the surrounding context: which global functions/classes are used. There are two scopes: content scripts of the GitLab page (order in manifest.json) and the differ page (order in utils.js#loadScripts)
-3. Trace the data flow: App → RepoProvider → openDiffer → differ (bpmn-differ.js/dmn-differ.js — orchestrator classes; the logic lives in class files: params, versions, view, comparator, highlighter, viewport, etc.)
-4. For large files, first Grep by function/method names, then read the needed sections
-5. `libs/` — external libraries; study their API by how it is used in the project code, not by their sources
+1. Start with `docs/architecture.md` — the overview: data flow, the three script scopes, the shared differ-page classes (bpmn↔dmn); then open only the `docs/architecture/<area>.md` file for the code in question
+2. Trace the data flow: App → RepoProvider → openDiffer → differ (bpmn-differ.js/dmn-differ.js — orchestrator classes; the logic lives in the class files)
+3. Locate code with `codegraph_explore` when the CodeGraph MCP is connected (one call returns the source plus callers); otherwise search by function/method names first, then read only the needed sections
+4. `libs/` — external libraries; study their API by how it is used in the project code, not by their sources
 
 ## Response format
 
