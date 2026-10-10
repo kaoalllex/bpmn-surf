@@ -2,7 +2,7 @@
 id: REFAC-0004
 title: Code-hosting platform abstraction → GitHub support
 priority: high
-status: in-progress
+status: done
 ---
 
 ## Statement
@@ -435,7 +435,7 @@ otherwise unchanged (live-check catalog).
 
 ---
 
-## Subtask 3 — GitHub navigation without a token, commit/range diffs, GitHub Enterprise — ✅ implemented 2026-10-10 (live check pending)
+## Subtask 3 — GitHub navigation without a token, commit/range diffs, GitHub Enterprise — ✅ done 2026-10-10
 
 Decisions (2026-10-10): users must be able to use the extension out of the box, so the token
 plan (3a) moved out to [FEAT-0037] and is only worth doing if 3b proves not enough. The
@@ -464,8 +464,8 @@ step-by-step plan lives in the local `docs/superpowers/plans/`; this is the dura
   the user's per-site choice (`settings.siteKinds`) → page markup → unknown. An unknown site runs
   nothing and, unless the page is non-HTML or an error response (≥ 400), is listed in `chrome.storage.local` `undetectedSites` (icon "!", Home warning) and the
   popup asks for its type; types travel in the settings export.
-- **Not verified live:** GitHub Enterprise Server (no instance), an unrecognised site (harness hosts
-  are fixed).
+- **Not verified live:** GitHub Enterprise Server (no instance). The unrecognised-site flow was
+  checked by hand in Chrome on `example.com`, not by the harness (its hosts are fixed).
 
 **Acceptance:** on a private and a public github.com PR, dive-in, callers, handlers and
 correlation work without a token within the limits above; commit and range views show the
@@ -495,7 +495,70 @@ selection; GitLab unchanged.
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
 
-### 2026-10-10 · claude-opus-5-5 (controller) + subagents · `092c3cd..HEAD` (branch `feature/refac-0004-subtask3`)
+### 2026-10-10 (2) · claude-opus-5-5 (controller) + subagents · `452e46e..427b777` + this entry (branch `feature/refac-0004-subtask3`)
+
+**Final whole-branch review** (opus) found three real problems, fixed in separate commits:
+- `452e46e`: GitHub keeps the first-loaded payload across in-page switches in the commit picker. A switch to
+  another selection ending on the same commit (`/changes/C` → `A..C`, `BASE..C`) read the old pair, and
+  `App` cached it for the view. The scraper now checks the shown **pair** against the URL. It does not
+  key on `viewing`, because a range spanning one commit shows as `COMMIT` (spike).
+- `c76de16`: the classic page now reads a selection only when `show_toc` sha1/sha2 match the URL.
+- `5253883`: GitLab's own 404/5xx pages carry no markup, so a dead link on a self-managed GitLab marked
+  the site unrecognised. Pages with `responseStatus >= 400` no longer report the site. The app start no
+  longer waits on clearing the pending entry.
+
+Also `029ce4f` (label fallback when GitHub omits a commit title) and `01bc8fc` (architecture.md drift).
+After the human's popup check: `e4f5911` (the "!" badge is amber `#F5B400` with a dark `!`; Chrome's
+default grey-blue went unnoticed) and `427b777` (padding for the site-type select's arrow).
+
+**Live check, GitHub** (`gh-check.mjs`, Network filtered on `api.github.com`):
+- **PR #1, signed in, zero API requests.**
+  - The unchanged handler ValidateOrder resolves by web search to `ValidateOrderHandler.kt#L10` at the head.
+  - The Payment dive-in opens the nested Payment.bpmn differ.
+  - Fulfillment.bpmn callers lists OrderMain.bpmn, root-level.bpmn and `Order flow #1.bpmn`.
+- **PR #1, anonymous.** Callers still finds OrderMain.bpmn through the PR's files. The Payment dive-in
+  opens github.com search. One `pulls/1/files` request, as before.
+- **Private `bpmn-surf-test-private#1`, signed in.** Delivery.bpmn callers lists Fulfillment.bpmn, from a
+  web search on a private repo.
+- **Selections on #9, before and after the fixes.**
+  - `/changes/1499620` → `72086ff..1499620`, labelled with the commit title.
+  - `/changes/72086ff..69e462e` → that pair.
+  - `/changes/BASE..1499620` → `276bf8a` (merge base)`..1499620`.
+  - A signed-in `/files/<sha>` redirects to `/changes/BASE..<sha>`, which gives the same pair.
+  - #1's one-commit range `fe68035..bed0f05` shows as viewing `COMMIT` and gets a button with that pair.
+  - A picker switch (All commits → one commit, Save) gives `72086ff..1499620`.
+  - Anonymous classic `/commits/1499620`, `/files/1499620` and `/files/72086ff..69e462e` give the right pairs.
+- **dmn-js#852 `/changes/BASE..51fbf1ec`** → `6f3917f..51fbf1ec`; `6f3917f` equals the compare API's merge
+  base. Zero API requests.
+- **After a 45-search burst (429),** the dive-in opens the search page; no errors from us.
+
+**Live check, GitLab** (detection changed for every GitLab page; "Show one file at a time" off, unchanged):
+- `mr-button` on:
+  - !1 rapid and legacy;
+  - merged !3 with `--click`, rapid and legacy;
+  - !4 (`.dmn`) with `--click`;
+  - an added, a deleted and a renamed diagram;
+  - a code-only MR;
+  - !13 with `--scroll`, rapid and legacy;
+  - !17 with `--walk`, rapid and legacy.
+- `branch-button` for a `.bpmn` and a `.dmn`, `search-page`, `popup-screens`.
+- All `RESULT: OK`, screenshots fine. !1 rapid and legacy, !4 `--click` and `branch-button` were re-run after the fixes.
+
+**By hand in Chrome (human):**
+- Added `example.com` (Auto) and visited it: the "!" badge, the Home warning and the Sites note all showed.
+- Picking GitLab cleared all three.
+- Export wrote `"siteKinds": {"example.com": "gitlab"}`. Back to Auto, then import: the select showed GitLab at once.
+- Removing the site cleaned up.
+
+The popup closes when Chrome's permission dialog takes focus; that is Chrome's behaviour (FEAT-0033), not
+new here. The gitlab.com notice stays: the 1.3.0 upgrade check showed Chrome drops the grant
+(decision D1). On this branch, every Reload of the dev copy counts as an update from 1.3.0, so the notice
+reappears there.
+
+Not verified live: GitHub Enterprise Server (no instance; unit tests and Layer-2 on a non-github.com
+host). Subtask 3 done; task done.
+
+### 2026-10-10 · claude-opus-5-5 (controller) + subagents · `bbd77b4..8735557` (branch `feature/refac-0004-subtask3`)
 
 Subtask 3 implemented (3b, 3c, GitHub Enterprise detection; 3a split out to [FEAT-0037]).
 Commits:
@@ -519,7 +582,7 @@ views `diffContents[].oldCommitOid/newCommitOid` is exactly the shown pair, whil
 and `fullDiff.baseOid` are the base tip; `page_data/diff_entries?range=<sha>` means BASE..sha.
 GHES: docs only, no instance.
 
-**Live check pending** — Task 8 adds its results here. Status stays in-progress, the file is not archived yet.
+Docs: `76e49e5`, `13de1a4`.
 
 ### 2026-10-09 (4) · claude-opus-5-5 · `db943d4`, `0515cf3` + this entry (branch `feature/refac-0004-github`)
 
