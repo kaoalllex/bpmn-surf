@@ -21,7 +21,7 @@ pull request, `/cleanup` syncs master and deletes the merged local branch afterw
 
 ## Branches
 
-- The main branch is **master**, it is protected. **NEVER commit or push to master directly.**
+- The main branch is **master**, it is protected. **NEVER commit or push to master directly.** In Claude Code sessions a PreToolUse hook (`.claude/hooks/guard-master.js`, wired in `.claude/settings.json`, tested by `test/harness/guard-master.test.js`) blocks `git commit` while on master and `git push` while on master or to master.
 - Each task is done in a separate branch of the form `feature/<description>` or `fix/<description>`, created from a fresh `origin/master` (`git fetch origin` first).
 - Claude Code sessions are launched by a human in separate git worktrees — one per task. Work only in your current working directory and your branch; do not create worktrees yourself and do not switch branches in other directories.
 - Do not delete others' branches, do not change the repository settings.

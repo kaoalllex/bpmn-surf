@@ -9,7 +9,8 @@ status: partial
 
 The `live-check` project skill (`.claude/skills/live-check/SKILL.md`) lets any
 session run a hands-on check of the real extension on the sandbox. Its catalog
-covers only the MR and branch-view buttons. Add the other areas, each with:
+covers only some areas (one file per area in `.claude/skills/live-check/catalog/`, indexed
+from the skill's "Catalog" table). Add the other areas, each as its own file there, with:
 - concrete steps;
 - the sandbox material it needs, created through the API;
 - what the harness can assert and what has to be eyeballed from screenshots.
