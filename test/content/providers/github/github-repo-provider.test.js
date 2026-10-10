@@ -89,6 +89,23 @@ describe('GitHubRepoProvider (page)', () => {
         assert.deepEqual(calls, []);
     });
 
+    it('takes the project and page data URLs from the page host', async () => {
+        const scope = createScope({ url: 'https://ghe.example.com/acme/flows/pull/42/changes' });
+        const fetched = [];
+        const fetchFn = async (url) => { fetched.push(url); return { ok: true, json: async () => ['entry'] }; };
+        const scraper = {
+            pullRefs: (doc, number, entries) => (entries ? REFS : null),
+            lazyDiffEntry: () => ({ path: 'a.bpmn', range: 'x..y' }),
+            fileBlocks: () => [],
+            findBlobRef: () => null
+        };
+        const provider = new scope.GitHubRepoProvider(async () => null, scraper, fetchFn);
+        assert.equal(await provider.init(), true);
+        assert.equal(provider.getProjectInfo().url, 'https://ghe.example.com/acme/flows');
+        assert.equal(provider.getProjectInfo().hostUrl, 'https://ghe.example.com');
+        assert.deepEqual(fetched, ['https://ghe.example.com/acme/flows/pull/42/page_data/diff_entries?paths=a.bpmn&range=x..y']);
+    });
+
     it('fails init when the page data answers with an error', async () => {
         const scope = createScope({ url: PR_URL });
         const scraper = {

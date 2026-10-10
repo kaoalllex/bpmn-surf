@@ -30,9 +30,10 @@ class GitHubRepoProviderBase extends RepoProvider {
         if (!page) {
             return false;
         }
+        const origin = window.location.origin;
         Object.assign(this.projectInfo, {
-            url: `https://github.com/${page.owner}/${page.repo}`,
-            hostUrl: 'https://github.com',
+            url: `${origin}/${page.owner}/${page.repo}`,
+            hostUrl: origin,
             groupName: page.owner,
             name: page.repo,
             id: `${page.owner}/${page.repo}`

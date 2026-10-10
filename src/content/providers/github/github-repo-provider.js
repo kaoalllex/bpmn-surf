@@ -21,7 +21,7 @@ class GitHubRepoProvider extends GitHubRepoProviderBase {
     async #refsOf(doc, { owner, repo, number, range }) {
         const refs = this.domScraper.pullRefs(doc, number, null, range);
         const lazy = !refs && this.domScraper.lazyDiffEntry(doc, number, range);
-        const entries = lazy && await this.#loadDiffEntries(`https://github.com/${owner}/${repo}/pull/${number}`, lazy);
+        const entries = lazy && await this.#loadDiffEntries(`${this.projectInfo.url}/pull/${number}`, lazy);
         return refs || (entries ? this.domScraper.pullRefs(doc, number, entries, range) : null);
     }
 

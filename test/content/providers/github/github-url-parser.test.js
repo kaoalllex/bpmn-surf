@@ -87,9 +87,16 @@ describe('GitHubUrlParser.splitRefAndPath', () => {
 });
 
 describe('GitHubUrlParser API urls', () => {
-    it('builds the REST endpoints', () => {
-        assert.equal(parser.pullApiUrl('acme', 'flows', 42), 'https://api.github.com/repos/acme/flows/pulls/42');
-        assert.equal(parser.compareApiUrl('acme', 'flows', 'b1', 'h2'),
+    it('builds the REST endpoints on api.github.com', () => {
+        assert.equal(parser.pullApiUrl('https://github.com', 'acme', 'flows', 42), 'https://api.github.com/repos/acme/flows/pulls/42');
+        assert.equal(parser.compareApiUrl('https://github.com', 'acme', 'flows', 'b1', 'h2'),
             'https://api.github.com/repos/acme/flows/compare/b1...h2');
+    });
+
+    it('builds the REST endpoints under /api/v3 on GitHub Enterprise Server', () => {
+        assert.equal(parser.pullApiUrl('https://ghe.example.com', 'acme', 'flows', 42),
+            'https://ghe.example.com/api/v3/repos/acme/flows/pulls/42');
+        assert.equal(parser.compareApiUrl('https://ghe.example.com', 'acme', 'flows', 'b1', 'h2'),
+            'https://ghe.example.com/api/v3/repos/acme/flows/compare/b1...h2');
     });
 });

@@ -110,7 +110,7 @@ class GitHubDomScraper {
         if (!loader) {
             return null;
         }
-        const url = new URL(loader.getAttribute('src') || loader.getAttribute('data-url'), 'https://github.com');
+        const url = new URL(loader.getAttribute('src') || loader.getAttribute('data-url'), 'https://github.com'); // any base: only the query is read
         const headSha = url.searchParams.get('sha2');
         const mergeBaseSha = url.searchParams.get('sha1');
         const baseSha = url.searchParams.get('base_sha');

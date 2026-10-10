@@ -54,6 +54,15 @@ describe('GitHubApiRepoProvider (fallback)', () => {
         ]);
     });
 
+    it('requests the GitHub Enterprise Server API of the page host', async () => {
+        const { provider, calls } = createProvider({ url: 'https://ghe.example.com/acme/flows/pull/42/files' });
+        assert.equal(await provider.init(), true);
+        assert.deepEqual(calls, [
+            'https://ghe.example.com/api/v3/repos/acme/flows/pulls/42',
+            `https://ghe.example.com/api/v3/repos/acme/flows/compare/${PULL.base.sha}...${PULL.head.sha}`
+        ]);
+    });
+
     it('fetches each PR once however often init runs', async () => {
         const { provider, calls } = createProvider();
         await provider.init(); await provider.init(); await provider.init();
