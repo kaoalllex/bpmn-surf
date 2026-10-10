@@ -2,7 +2,7 @@
 id: FEAT-0038
 title: Camunda 8 (Zeebe) support
 priority: high
-status: open
+status: done
 ---
 
 ## Statement
@@ -305,9 +305,12 @@ connector; the popup datalist.
 `screenFraud` / `packItem` (method name), `reserve-stock` (type not first),
 `find-items-in-catalog` (multi-line) and the Java ones; `find-items` and `charge-customer`
 open their own workers, not the longer-named ones; `archive-delivery` opens the
-code-search page; the connector has no badge; `escalate-delivery` gets a badge only after
-`ZeebeWorker` is added in the popup; on !19 / #18 `find-items` and `charge-customer` show
-the "changed" badge. C7 handler badges on `order-service/` unchanged.
+code-search page; the connector has no badge; `escalate-delivery` opens its worker (the
+neutral badge is on every task with a job type, and a hit annotated by no configured name is
+still taken when no hit is — as for C7; `ZeebeWorker` in the popup matters for the "changed"
+badge, which scans the changed files); `find-items` and `charge-customer` yield their keys
+from the !19 / #18 worker files (that MR carries no diagram, so the "changed" badge itself is
+checked in Layer 2). C7 handler badges on `order-service/` unchanged.
 
 ### Out of scope / known limitations
 
@@ -342,3 +345,40 @@ release (INFRA-0012).
 
 <!-- Each AI session on the task — a separate entry by the template in docs/issues/README.md.
      Add new entries on top (freshest first). -->
+
+### 2026-10-10 · claude-opus-5-5 · `e1b8b43` (branch `feature/feat-0038-camunda-8`)
+
+All three stages, one commit each (`0da8740`, `2bb1dee`, `090c798`), plus two fixes the live
+check found (`e0d753e`, `e1b8b43`).
+
+- Stage 1: `src/differ/shared/camunda-dialect.js` (`detectCamundaDialect`, `isFeelExpression`);
+  `BpmnDiffer.show()` loads the versions, decides the dialect, then builds the modeler with one
+  descriptor + provider; both descriptors ride in the params (`zeebeBpmnModdle`). Comparator:
+  the `zeebe:*` rows, Zeebe list groups (Input/Output mapping by `target`, Headers by `key`,
+  Extension properties by `name`), the defaults (`propagateAllParentVariables`, `bindingType`,
+  `retries="3"`), `zeebe:` empty containers ignored except `zeebe:userTask`. The expander takes
+  the dialect (service task → "Task definition", user task → "Form"). FEEL conditions split on
+  `and`/`or`; the highlighter reads a FEEL editor (no `.value`).
+- `zeebe-bpmn-moddle` is pinned to **2.0.0**, not 1.14.0: the panel (5.65.1) is built against
+  ^2.0.0 and writes `zeebe:JobPriorityDefinition`, absent in 1.14; 2.0.0's `zeebe.json` is
+  byte-identical to 1.18.0 (the major is packaging only).
+- Stage 2: `calledProcessId` / `calledDecisionId`; navigators, the call-site auto-select and both
+  caller locators read the dialect through a getter (`processId=` / `decisionId=` under C8); a
+  FEEL id goes straight to the search page.
+- Stage 3: `handlerKeyFromBusinessObject(bo, dialect)` (job type, no key for `io.camunda:` or
+  FEEL); one annotation parser for every topic name (type at any position, method name without
+  one, nothing for a constant or a class); `matchesExactTopic` keeps `-`/`.` inside a name;
+  default list `['ExternalTaskSubscription', 'JobWorker']`; popup datalists and texts.
+- Live check (GitLab !18/!20/!9, `main` of both modules; GitHub #17/#19, `main`), all scenarios
+  of the three checklists passed after two fixes: every nested tab opened from a C8 differ was
+  blank (the FEEL editor's inline `<style>` has a null `href`, which the tab-resource lookup
+  dereferenced — pre-existing, surfaced by C8; Layer 2 stubs `openDiffer`, so it never saw it),
+  and a C7 badge (`findItems`) opened the C8 `FindItemsWorker` (method `findItems` under
+  `type = "find-items"`) once `JobWorker` was a default — the exact match now prefers a hit that
+  declares the topic.
+- Seen, not changed: on the C8 side of a 7-vs-8 diff a C7 implementation change asks for the
+  "Implementation" group the Zeebe panel lacks on a service task, so the other groups paint ~3 s
+  later (the highlighter waits out each missing group); `CHANGELOG.md` is left to the release.
+- Deferred: a nested tab opened from a differ tab older than this version gets no
+  `zeebeBpmnModdle`; the topic-annotation regex has no left word boundary (pre-existing).
+- Tests: unit 1615, Layer 2 197 (new: `differ-c8-*`, `popup-datalist`).
