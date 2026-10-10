@@ -12,7 +12,8 @@
 // There is no host list to store: the granted optional host permissions are the
 // list (docs/conventions.md, "Persistent settings"). The service worker watches
 // the same permissions and keeps the content-script registrations in sync. The
-// annotations have no such natural home and do live in chrome.storage.sync.
+// annotations have no such natural home and do live in chrome.storage.sync, and
+// so do the site types (GitLab or GitHub) the user picks for their own hosts.
 
 const VIEW_TITLES = {
     home: 'bpmn-surf',
@@ -33,6 +34,8 @@ const els = {
     gitlabComOn: document.getElementById('gitlabComOn'),
     gitlabComDismiss: document.getElementById('gitlabComDismiss'),
     noSitesHomeWarning: document.getElementById('noSitesHomeWarning'),
+    undetectedHomeWarning: document.getElementById('undetectedHomeWarning'),
+    undetectedHosts: document.getElementById('undetectedHosts'),
 
     noSitesWarning: document.getElementById('noSitesWarning'),
     siteList: document.getElementById('siteList'),
@@ -96,7 +99,9 @@ els.backBtn.addEventListener('click', () => showView('home'));
 
 // ==== Sites (FEAT-0033) ====
 
-function appendSite(pattern) {
+const BUILT_IN_KINDS = { 'github.com': 'GitHub', 'gitlab.com': 'GitLab' };
+
+function appendSite(pattern, kind, undetected) {
     const host = hostOf(pattern);
     const item = document.createElement('li');
     item.className = 'pu-site';
@@ -106,6 +111,17 @@ function appendSite(pattern) {
     name.textContent = host;
     item.appendChild(name);
 
+    if (!BUILT_IN_KINDS[host]) {
+        const select = document.createElement('select');
+        select.className = 'pu-site-kind';
+        select.title = `How bpmn-surf reads ${host}`;
+        for (const [value, label] of [['', 'Auto'], ['gitlab', 'GitLab'], ['github', 'GitHub']]) {
+            select.add(new Option(label, value, false, value === (kind || '')));
+        }
+        select.addEventListener('change', () => setSiteKind(host, select.value || null));
+        item.appendChild(select);
+    }
+
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'pu-site-remove';
@@ -114,14 +130,33 @@ function appendSite(pattern) {
     remove.addEventListener('click', () => removeHost(pattern));
     item.appendChild(remove);
 
+    if (undetected && !kind) {
+        item.classList.add('pu-site-undetected');
+        const note = document.createElement('div');
+        note.className = 'pu-site-note';
+        note.textContent = 'Not recognised as GitLab or GitHub — pick its type, then reload the page.';
+        item.appendChild(note);
+    }
+
     els.siteList.appendChild(item);
+}
+
+async function setSiteKind(host, kind) {
+    await saveSiteKinds({ [host]: kind });
+    await clearUndetectedSite(host);
+    await renderSites();
 }
 
 async function renderSites() {
     const { origins } = await chrome.permissions.getAll();
     const sites = userOriginsFrom(origins);
+    const kinds = await loadSiteKinds();
+    const undetected = pruneUndetectedSites(await loadUndetectedSites(), origins);
     els.siteList.textContent = '';
-    sites.forEach(appendSite);
+    sites.forEach(p => appendSite(p, kinds[hostOf(p)], undetected.includes(hostOf(p))));
+    const waiting = undetected.filter(h => !kinds[h]);
+    els.undetectedHosts.textContent = waiting.join(', ');
+    els.undetectedHomeWarning.classList.toggle('hidden', !waiting.length);
     els.sitesSummary.textContent = sites.length ? sites.map(hostOf).join(', ') : 'No site yet';
     els.noSitesWarning.classList.toggle('hidden', sites.length > 0);
     els.noSitesHomeWarning.classList.toggle('hidden', sites.length > 0);
@@ -143,6 +178,8 @@ els.gitlabComDismiss.addEventListener('click', async () => {
 
 async function removeHost(pattern) {
     await chrome.permissions.remove({ origins: [pattern] });
+    await saveSiteKinds({ [hostOf(pattern)]: null });
+    await clearUndetectedSite(hostOf(pattern));
     await renderSites();
 }
 
@@ -255,6 +292,7 @@ els.exportBtn.addEventListener('click', async () => {
         const file = buildSettingsExport({
             hosts: userOriginsFrom(origins),
             handlerAnnotations: await loadHandlerAnnotations(),
+            siteKinds: await loadSiteKinds(),
             version: chrome.runtime.getManifest().version
         });
         const url = URL.createObjectURL(
@@ -264,7 +302,7 @@ els.exportBtn.addEventListener('click', async () => {
         link.download = 'bpmn-surf-settings.json';
         link.click();
         URL.revokeObjectURL(url);
-        setMessage(els.ioNote, `Exported ${plural(file.hosts.length, 'site')} and the annotations.`);
+        setMessage(els.ioNote, `Exported ${plural(file.hosts.length, 'site')}, their types and the annotations.`);
     } catch (error) {
         setMessage(els.ioError, String((error && error.message) || error));
     }
@@ -285,6 +323,7 @@ els.importInput.addEventListener('change', async event => {
     try {
         const imported = parseSettingsExport(await file.text());
         await saveHandlerAnnotations(imported.handlerAnnotations);
+        await saveSiteKinds(imported.siteKinds);
         await renderAnnotations();
 
         const { origins } = await chrome.permissions.getAll();

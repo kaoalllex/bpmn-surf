@@ -28,6 +28,7 @@
 
         <div class="pu-warn hidden" id="gitlabComNotice">gitlab.com is no longer turned on by default. <button type="button" class="pu-primary pu-small" id="gitlabComOn">Turn on gitlab.com</button> <button type="button" class="pu-link" id="gitlabComDismiss">Not needed</button></div>
         <div class="pu-warn hidden" id="noSitesHomeWarning">bpmn-surf is not on for any site yet, so it shows nothing. Open Sites and add gitlab.com, github.com or your own GitLab.</div>
+        <div class="pu-warn hidden" id="undetectedHomeWarning">bpmn-surf cannot tell whether <span id="undetectedHosts"></span> is GitLab or GitHub. Open Sites and pick its type.</div>
 
         <nav class="pu-menu">
             <button type="button" class="pu-menu-item" data-open="sites">
@@ -59,6 +60,8 @@
         <p class="pu-hint">
             Where the extension runs. Nothing is on by default: add gitlab.com, github.com
             or your own GitLab — Chrome asks you to allow each one. Open tabs need a reload.
+            Your own sites are recognised as GitLab or GitHub from their pages; if that fails,
+            pick the type next to the site.
         </p>
         <div class="pu-warn hidden" id="noSitesWarning">No site yet — the extension shows nothing anywhere. Add the sites you review diagrams on.</div>
         <ul class="pu-site-list" id="siteList"></ul>
@@ -111,8 +114,8 @@
     <!-- ==== Settings file ==== -->
     <div class="pu-view hidden" data-view="file">
         <p class="pu-hint">
-            Export writes the sites and the annotations to a JSON file you can hand to a
-            colleague. Importing applies the annotations at once; the sites still need
+            Export writes the sites (with their type) and the annotations to a JSON file you can hand to a
+            colleague. Importing applies the annotations and site types at once; the sites still need
             Chrome's permission, so a button appears for you to allow them.
         </p>
         <div class="pu-add">
