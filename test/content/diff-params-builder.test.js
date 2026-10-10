@@ -4,9 +4,11 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-// The builder runs on a gitlab page; #platform() now reads detectPlatformKind()
-// off window.location, so the scope is created on a gitlab URL (kind: 'gitlab').
-const { DiffParamsBuilder } = createScope({ url: 'https://gitlab.example.com/group/project/-/merge_requests/1/diffs' });
+// The builder runs on a self-managed gitlab page; #platform() reads
+// detectPlatformKind() off window.location and the page, so the scope is created
+// on a gitlab URL and the body carries GitLab's marker (kind: 'gitlab').
+const { DiffParamsBuilder, document } = createScope({ url: 'https://gitlab.example.com/group/project/-/merge_requests/1/diffs' });
+document.body.setAttribute('data-page', 'projects:merge_requests:show');
 
 const projectInfo = {
     url: 'https://gitlab.example.com/group/project',

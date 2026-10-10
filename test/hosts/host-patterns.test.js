@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { normalizeHostPattern, userOriginsFrom, needsGitlabComNotice } = createScope();
+const { normalizeHostPattern, userOriginsFrom, needsGitlabComNotice, pruneUndetectedSites } = createScope();
 
 // Arrays built inside the vm realm carry that realm's prototype, so deepEqual
 // against a host array fails on identity — Array.from rebuilds them (docs/testing.md).
@@ -98,5 +98,12 @@ describe('needsGitlabComNotice', () => {
         assert.equal(needsGitlabComNotice('1.4.0', []), false);
         assert.equal(needsGitlabComNotice('1.10.0', []), false);
         assert.equal(needsGitlabComNotice(undefined, []), false);
+    });
+});
+
+describe('pruneUndetectedSites', () => {
+    it('keeps a host only while it is still turned on', () => {
+        assert.deepEqual(arr(pruneUndetectedSites(['a.io', 'b.io'], ['https://a.io/*'])), ['a.io']);
+        assert.deepEqual(arr(pruneUndetectedSites(undefined, [])), []);
     });
 });

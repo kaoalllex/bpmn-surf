@@ -9,7 +9,8 @@
 // The granted origins ARE the stored list: nothing is kept in chrome.storage,
 // and the user may revoke a host in chrome://extensions at any time — hence a
 // reconcile on permission events rather than a write when the host is added.
-// The toolbar icon shows "!" while no site is on or the gitlab.com notice waits.
+// The toolbar icon shows "!" while no site is on, the gitlab.com notice waits or
+// a site's type is unknown.
 
 importScripts('/src/hosts/host-patterns.js');
 
@@ -42,7 +43,13 @@ async function reconcileHostRegistrations() {
         await chrome.storage.local.remove(GITLAB_COM_NOTICE_KEY);
     }
     const { [GITLAB_COM_NOTICE_KEY]: notice } = await chrome.storage.local.get(GITLAB_COM_NOTICE_KEY);
-    await chrome.action.setBadgeText({ text: matches.length === 0 || notice ? '!' : '' });
+    const { [UNDETECTED_SITES_KEY]: undetected } = await chrome.storage.local.get(UNDETECTED_SITES_KEY);
+    const stored = (undetected && undetected.hosts) || [];
+    const pending = pruneUndetectedSites(stored, origins);
+    if (pending.length !== stored.length) {
+        await chrome.storage.local.set({ [UNDETECTED_SITES_KEY]: { hosts: pending } });
+    }
+    await chrome.action.setBadgeText({ text: matches.length === 0 || notice || pending.length ? '!' : '' });
     return matches;
 }
 
@@ -66,13 +73,14 @@ async function onInstalled({ reason, previousVersion }) {
 // onInstalled covers a fresh install and every update, onStartup a browser
 // restart (badge persistence is undocumented); the permission events cover the
 // user adding a host in the popup and revoking one in chrome://extensions; the
-// storage event covers the popup dismissing the notice.
+// storage events cover the popup dismissing the notice and a page reporting or
+// clearing a site of unknown type.
 chrome.runtime.onInstalled.addListener(onInstalled);
 chrome.runtime.onStartup.addListener(reconcile);
 chrome.permissions.onAdded.addListener(reconcile);
 chrome.permissions.onRemoved.addListener(reconcile);
 chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && GITLAB_COM_NOTICE_KEY in changes) {
+    if (area === 'local' && (GITLAB_COM_NOTICE_KEY in changes || UNDETECTED_SITES_KEY in changes)) {
         reconcile();
     }
 });

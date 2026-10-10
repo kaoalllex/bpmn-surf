@@ -30,9 +30,7 @@ class GitLabRepoProviderBase extends RepoProvider {
 
     isAvailable(platformKind) {
         // The caller detects the page's platform once and passes the kind in; this
-        // provider just answers whether the page is GitLab. On every gitlab URL
-        // detectPlatformKind yields 'gitlab', so this is byte-for-byte identical to
-        // the former href.includes('gitlab').
+        // provider just answers whether the page is GitLab.
         return platformKind === PLATFORM_KIND.GITLAB;
     }
 

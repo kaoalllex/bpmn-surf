@@ -1,12 +1,14 @@
 /**
  * Single source of truth for "which code-hosting platform is this page?"
- * (REFAC-0004 step 1.4). The returned `kind` is the same discriminator the
- * differ scope keys on (`platform.kind`); content-scope consumers
- * (repo-provider-factory, GitLabRepoProviderBase.isAvailable, diff-params-builder)
- * all detect through here so adding a platform is a one-line matcher change.
+ * The returned `kind` is the discriminator the differ keys on (`platform.kind`);
+ * content-scope consumers (repo-provider-factory, fallback-repo-provider,
+ * diff-params-builder) all detect through here.
  *
- * Pure and dependency-free: the `location` argument (defaulting to
- * `window.location`) keeps it unit-testable without globals.
+ * github.com and gitlab.com are known by name. Any other host is one the user
+ * added in the popup: their choice there wins; otherwise the page tells —
+ * GitHub Enterprise Server carries github.com's markup, every GitLab renders
+ * body[data-page]. A page that says neither returns null and the user is asked
+ * (main.js). Pure apart from the override main.js sets once per page.
  */
 
 // The platform.kind vocabulary, shared by every content-scope consumer so the
@@ -16,15 +18,26 @@ const PLATFORM_KIND = {
     GITHUB: 'github'
 };
 
-// Ordered most-specific first, and the last one is a catch-all: content scripts
-// run only on gitlab.com and on the hosts the user added from the popup
-// (FEAT-0033), so anything that is not github.com is a GitLab — an internal
-// instance need not carry the word 'gitlab' in its name.
-const PLATFORM_MATCHERS = [
-    { kind: PLATFORM_KIND.GITHUB, matches: (loc) => loc.hostname === 'github.com' },
-    { kind: PLATFORM_KIND.GITLAB, matches: () => true }
-];
+const KNOWN_HOSTS = { 'github.com': PLATFORM_KIND.GITHUB, 'gitlab.com': PLATFORM_KIND.GITLAB };
 
-function detectPlatformKind(location = window.location) {
-    return PLATFORM_MATCHERS.find((m) => m.matches(location)).kind;
+let siteKindOverride = null;
+
+function setSiteKindOverride(kind) {
+    siteKindOverride = Object.values(PLATFORM_KIND).includes(kind) ? kind : null;
+}
+
+function detectPlatformKind(location = window.location, doc = document) {
+    return KNOWN_HOSTS[location.hostname] || siteKindOverride || platformKindFromMarkup(doc);
+}
+
+function platformKindFromMarkup(doc) {
+    const siteNameMeta = doc.querySelector('meta[property="og:site_name"]');
+    const siteName = (siteNameMeta && siteNameMeta.getAttribute('content')) || '';
+    if (siteName.startsWith('GitHub') || doc.querySelector('meta[name="expected-hostname"]')) {
+        return PLATFORM_KIND.GITHUB;
+    }
+    if (siteName === 'GitLab' || doc.querySelector('body[data-page]')) {
+        return PLATFORM_KIND.GITLAB;
+    }
+    return null;
 }
