@@ -61,6 +61,7 @@ bpmn-surf/
 │
 └── dev/                       # OUTSIDE docs/ — not part of the site
     ├── architecture.md         #   moved from docs/
+    ├── architecture/           #   per-area key-files reference
     ├── conventions.md
     ├── git-workflow.md
     ├── testing.md
@@ -73,10 +74,10 @@ Docusaurus needs a Node toolchain of its own. Keep it out of the extension's
 
 ### Reference updates required by the `dev/` move (~11 files)
 
-Moving `docs/{architecture,conventions,git-workflow,testing}.md` and
+Moving `docs/{architecture,conventions,git-workflow,testing}.md`, `docs/architecture/` and
 `docs/issues/` → `dev/...` breaks path references in: `CLAUDE.md`, several
 `.claude/` skills/agents/commands (`fix`, `refactor`, `feature`, `analyze`,
-`code-reviewer`, `code-explorer`, `release`, `pr`, `cleanup`), and
+`code-reviewer`, `release`, `pr`, `cleanup`), and
 `docs/issues/README.md` (→ `dev/issues/README.md`). Inter-task links go by code
 (`[BUG-0001]`), so issue cross-links survive the move. Use `git mv`.
 
