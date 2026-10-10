@@ -349,3 +349,84 @@ describe('PropertiesGroupExpander.expandRelevantGroups — DOM', () => {
         assert.equal(headers['Documentation'].clicks, 1);
     });
 });
+
+describe('PropertiesGroupExpander.relevantGroupsForElement — Camunda 8 (Zeebe panel names)', () => {
+    function c8GroupsOf(element) {
+        return [...PropertiesGroupExpander.relevantGroupsForElement(element, 'c8')].sort();
+    }
+    function withExtensions(type, values) {
+        return { type, businessObject: { extensionElements: { values } } };
+    }
+
+    for (const type of ['bpmn:ServiceTask', 'bpmn:SendTask']) {
+        it(`${type} → Task definition, no Implementation`, () => {
+            assert.deepEqual(c8GroupsOf({ type, businessObject: {} }), ['Task definition']);
+        });
+    }
+
+    for (const type of ['bpmn:ScriptTask', 'bpmn:BusinessRuleTask']) {
+        it(`${type} → Implementation`, () => {
+            assert.deepEqual(c8GroupsOf({ type, businessObject: {} }), ['Implementation']);
+        });
+    }
+
+    it('a UserTask → Form, not Forms', () => {
+        assert.deepEqual(c8GroupsOf({ type: 'bpmn:UserTask', businessObject: {} }), ['Form']);
+    });
+
+    it('a non-empty zeebe:IoMapping → Input mapping / Output mapping by side', () => {
+        assert.deepEqual(c8GroupsOf(withExtensions('bpmn:Task',
+            [{ $type: 'zeebe:IoMapping', inputParameters: [{}], outputParameters: [] }])), ['Input mapping']);
+        assert.deepEqual(c8GroupsOf(withExtensions('bpmn:Task',
+            [{ $type: 'zeebe:IoMapping', inputParameters: [], outputParameters: [{}] }])), ['Output mapping']);
+    });
+
+    it('non-empty zeebe:TaskHeaders / zeebe:Properties → Headers / Extension properties', () => {
+        assert.deepEqual(c8GroupsOf(withExtensions('bpmn:Task',
+            [{ $type: 'zeebe:TaskHeaders', values: [{}] }, { $type: 'zeebe:Properties', properties: [{}] }])),
+        ['Extension properties', 'Headers']);
+    });
+
+    it('empty zeebe containers → no list group', () => {
+        assert.deepEqual(c8GroupsOf(withExtensions('bpmn:Task', [
+            { $type: 'zeebe:IoMapping', inputParameters: [], outputParameters: [] },
+            { $type: 'zeebe:TaskHeaders', values: [] },
+            { $type: 'zeebe:Properties', properties: [] }
+        ])), []);
+    });
+
+    it('the dialect defaults to C7', () => {
+        assert.deepEqual(groupsOf({ type: 'bpmn:ServiceTask', businessObject: {} }), ['Implementation']);
+    });
+});
+
+describe('PropertiesGroupExpander.expandRelevantGroups — dialect', () => {
+    it('expands the Zeebe group names under the C8 dialect', async () => {
+        const scope = createScope();
+        const headers = buildPanel(scope, [{ title: 'Form', open: false }]);
+        const expander = new scope.PropertiesGroupExpander(() => 'c8');
+        expander.init({ get: () => ({ type: 'bpmn:UserTask', businessObject: {} }) });
+        expander.setDiffData(new Map());
+
+        await expander.expandRelevantGroups('UserTask_1');
+
+        assert.equal(headers['Form'].clicks, 1);
+    });
+});
+
+describe('PropertiesGroupExpander.expandRelevantGroups with a group the panel lacks', () => {
+    it('expands the groups present without waiting out the missing one', async () => {
+        const scope = createScope();
+        const headers = buildPanel(scope, [{ title: 'Forms', open: false }]);
+        const expander = expanderWith(scope, {
+            element: { type: 'bpmn:UserTask', businessObject: {} },
+            diffMap: new Map([['UserTask_1', ['Not in this panel']]])
+        });
+
+        const done = expander.expandRelevantGroups('UserTask_1');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        assert.equal(headers['Forms'].clicks, 1);
+        await done;
+    });
+});

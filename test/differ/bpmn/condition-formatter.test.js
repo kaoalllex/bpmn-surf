@@ -162,3 +162,48 @@ describe('ConditionFormatter.format', () => {
         ]);
     });
 });
+
+describe('ConditionFormatter.format FEEL', () => {
+    const formatter = new ConditionFormatter();
+    const format = condition => Array.from(formatter.format(condition));
+
+    it('splits FEEL and/or and keeps the leading =', () => {
+        assert.deepEqual(format('=a and b or c'), ['=a and', 'b or', 'c']);
+    });
+
+    it('indents FEEL grouping parentheses', () => {
+        assert.deepEqual(format('=paid and (segment = "REGULAR" or loyaltyYears >= 1)'), [
+            '=paid and',
+            '(',
+            '  segment = "REGULAR" or',
+            '  loyaltyYears >= 1',
+            ')'
+        ]);
+    });
+
+    it('keeps not( as a function call', () => {
+        assert.deepEqual(format('=a and not(fraudSuspected)'), ['=a and', 'not(fraudSuspected)']);
+    });
+
+    it('does not split inside words or string literals', () => {
+        assert.deepEqual(format('=order > 1 and brand = "android or ios"'),
+            ['=order > 1 and', 'brand = "android or ios"']);
+    });
+
+    it('collapses the source line breaks of a multi-line FEEL condition', () => {
+        assert.deepEqual(format('=paid and amount > 0\n  and not(fraudSuspected)'),
+            ['=paid and', 'amount > 0 and', 'not(fraudSuspected)']);
+    });
+
+    it('keeps the and of a between … and … range', () => {
+        assert.deepEqual(format('=x between 1 and 10 and y'), ['=x between 1 and 10 and', 'y']);
+    });
+
+    it('does not split after a path segment named or / and', () => {
+        assert.deepEqual(format('=order.or > 1 and a.and'), ['=order.or > 1 and', 'a.and']);
+    });
+
+    it('leaves and/or alone in a JUEL expression', () => {
+        assert.deepEqual(format('${a and b}'), ['${', '  a and b', '}']);
+    });
+});

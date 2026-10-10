@@ -586,6 +586,22 @@ body:not(.differ-edit-mode) .djs-context-pad {
     display: none !important;
 }
 
+/* The panel's pop-up editors (FEEL, text) are appended to <body>, under the
+   differ's fixed full-page layout (z-index 9999, set in the views) at their own
+   z-index of 1001 — they opened unseen while the field read "Opened in editor". */
+body .bio-properties-panel-popup {
+    z-index: 10001;
+}
+
+/* View mode replaces the panel's own condition field with the formatted, diff-
+   coloured condition (PropertiesPanelHighlighter). Hidden here, not only by that
+   script, so the field never flashes when the panel re-renders it on a selection
+   or a Switch branch: the C7 textarea, or the C8 FEEL editor's container. */
+body:not(.differ-edit-mode) #bio-properties-panel-conditionExpression:not([contenteditable]),
+body:not(.differ-edit-mode) .bio-properties-panel-feel-container:has(> * #bio-properties-panel-conditionExpression) {
+    display: none;
+}
+
 /* Properties panel is view-only: neutralize every edit control. Group/list/
    collapsible headers (collapse/expand) and scrolling are intentionally left
    alone so the panel stays browsable. Toggles render as a visually-hidden
@@ -594,12 +610,12 @@ body:not(.differ-edit-mode) .djs-context-pad {
    NB (BUG-0014): plain text <input>/<textarea> are NOT listed here — pointer-events:
    none on them also killed click/select/copy. Their edits are blocked instead by a
    `beforeinput` veto in JS (BpmnDiffer), which leaves selection and copy working.
+   Nor are the FEEL editors (contenteditable, every FEEL value of the Zeebe panel):
+   BpmnDiffer vetoes their editing keys, paste, cut and drop the same way.
    FEAT-0031: scoped to :not(.differ-edit-mode) (rather than a separate mute list
    duplicated with pointer-events: auto for edit mode) so a control added here can
    never silently stay muted in edit mode. */
 body:not(.differ-edit-mode) .bio-properties-panel select,
-body:not(.differ-edit-mode) .bio-properties-panel [contenteditable],
-body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-editor,
 /* toggle switches: the slider/switcher overlays the hidden checkbox */
 body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-toggle-switch__switcher,
 body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-toggle-switch,

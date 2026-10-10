@@ -9,12 +9,17 @@ const {
 } = createScope();
 
 describe('normalizeHandlerAnnotations', () => {
-    it('defaults to the stock Camunda annotation only', () => {
+    it('defaults to the stock Camunda 7 and Camunda 8 annotations', () => {
         assert.deepEqual(normalizeHandlerAnnotations(undefined), {
-            topic: ['ExternalTaskSubscription'],
+            topic: ['ExternalTaskSubscription', 'JobWorker'],
             className: []
         });
         assert.deepEqual(normalizeHandlerAnnotations(null), normalizeHandlerAnnotations({}));
+    });
+
+    it('keeps a stored list as it is — JobWorker is never added to it', () => {
+        assert.deepEqual(normalizeHandlerAnnotations({ topic: ['ExternalTaskSubscription'] }).topic,
+            ['ExternalTaskSubscription']);
     });
 
     it('keeps an explicitly empty list empty — switching a style off is a choice', () => {
@@ -63,7 +68,8 @@ describe('isDefaultHandlerAnnotations', () => {
     it('is true for the shipped default in any equivalent spelling', () => {
         assert.equal(isDefaultHandlerAnnotations(undefined), true);
         assert.equal(isDefaultHandlerAnnotations({}), true);
-        assert.equal(isDefaultHandlerAnnotations({ topic: ['ExternalTaskSubscription'], className: [] }), true);
+        assert.equal(isDefaultHandlerAnnotations({ topic: ['ExternalTaskSubscription', 'JobWorker'], className: [] }), true);
+        assert.equal(isDefaultHandlerAnnotations({ topic: ['ExternalTaskSubscription'], className: [] }), false);
     });
 
     it('is false once a style is added or removed', () => {

@@ -267,8 +267,9 @@ class DifferTabNavigator {
                 return script.src;
             }
         }
+        // An inline <style> has no href; the Zeebe panel's FEEL editor adds them.
         for (const styleSheet of document.styleSheets) {
-            if (styleSheet.href.endsWith(resourceName)) {
+            if (styleSheet.href?.endsWith(resourceName)) {
                 return styleSheet.href;
             }
         }

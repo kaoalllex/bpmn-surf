@@ -108,6 +108,16 @@ describe('DifferParams', () => {
         assert.equal(nested.fileName, 'sub.bpmn');
     });
 
+    it('carries both moddle descriptors into nested and edit params', () => {
+        const camundaBpmnModdle = { name: 'camunda' };
+        const zeebeBpmnModdle = { name: 'zeebe' };
+        const p = new DifferParams({ ...validParams, camundaBpmnModdle, zeebeBpmnModdle });
+        assert.equal(p.zeebeBpmnModdle, zeebeBpmnModdle);
+        assert.equal(p.toNestedDifferParams('src/sub.bpmn', 'sub.bpmn').zeebeBpmnModdle, zeebeBpmnModdle);
+        assert.equal(p.toEditDifferParams('target').zeebeBpmnModdle, zeebeBpmnModdle);
+        assert.equal(p.toEditDifferParams('target').camundaBpmnModdle, camundaBpmnModdle);
+    });
+
     // FEAT-0023 follow-up: identityKey is the dedup key used to find an already-open
     // tab showing the same diagram before opening a duplicate nested differ.
     describe('identityKey', () => {

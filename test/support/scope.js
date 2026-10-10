@@ -26,6 +26,7 @@ const SCOPE_FILES = [
     'src/core/utils.js',
     'src/core/console-log.js',
     'src/differ/shared/diff-type.js',
+    'src/differ/shared/camunda-dialect.js',
     'src/differ/bpmn/condition-formatter.js',
     'src/differ/bpmn/bpmn-xml-comparator.js',
     'src/differ/bpmn/changes-table-view.js',
@@ -98,6 +99,7 @@ const SCOPE_FILES = [
 // Add a name here (and its file above, if new) to make it available in tests.
 const EXPORTED_NAMES = [
     'DiffType',
+    'CAMUNDA_DIALECT', 'detectCamundaDialect', 'isFeelExpression', 'calledProcessId', 'calledDecisionId',
     'ConditionFormatter',
     'FileType', 'FILE_TYPE_BPMN', 'FILE_TYPE_DMN',
     'FileTypeDetector',

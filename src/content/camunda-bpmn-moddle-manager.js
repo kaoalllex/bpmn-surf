@@ -1,17 +1,19 @@
 /**
- * Class for managing loading and caching of Camunda BPMN Moddle
+ * Loads and caches one moddle descriptor (camunda.json or zeebe.json)
  */
 class CamundaBpmnModdleManager {
+    #descriptorPath;
     #moddle;
     #loadingPromise;
-    
-    constructor() {
+
+    constructor(descriptorPath) {
+        this.#descriptorPath = descriptorPath;
         this.#moddle = null;
         this.#loadingPromise = null;
     }
 
     /**
-     * Loads Camunda BPMN Moddle (with caching and protection against parallel loads)
+     * Loads the moddle descriptor (with caching and protection against parallel loads)
      * @returns {Promise<Object>} loaded moddle object
      */
     async load() {
@@ -33,7 +35,7 @@ class CamundaBpmnModdleManager {
     }
 
     async #doLoad() {
-        const moddlePath = chrome.runtime.getURL('libs/camunda-bpmn-moddle/resources/camunda.json');
+        const moddlePath = chrome.runtime.getURL(this.#descriptorPath);
         const moddleContent = await loadFileContent(moddlePath, true);
         return JSON.parse(moddleContent);
     }

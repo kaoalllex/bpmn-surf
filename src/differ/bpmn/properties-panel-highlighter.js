@@ -18,6 +18,10 @@ class PropertiesPanelHighlighter {
     #nodeIdToMappingChanges = new Map();
     #typeChangedIds = [];
     #highlightedElems = null;
+    // Bumped by every new highlight run and every reset. A run awaits the panel's
+    // async render, and the selection or the shown side can change meanwhile; an
+    // outdated run must stop instead of painting the old diff into the new panel.
+    #run = 0;
 
     // isBaseSideShownFunc: true when what the panel shows is the OLDER of the two
     // versions, so an entry that exists only here was removed rather than added.
@@ -41,9 +45,13 @@ class PropertiesPanelHighlighter {
     async highlightDiffPropGroups(elementId) {
         this.#resetHighlightedPropGroups();
         this.#highlightedElems = [];
+        const run = this.#run;
 
         if (this.#typeChangedIds.includes(elementId)) {
             await this.#highlightElementType(elementId);
+            if (run !== this.#run) {
+                return;
+            }
         }
 
         const diffPropGroups = this.#nodeIdToDiffsMap.get(elementId);
@@ -52,11 +60,17 @@ class PropertiesPanelHighlighter {
         }
         const mappingChanges = this.#nodeIdToMappingChanges.get(elementId);
 
-        for (const diffPropGroup of diffPropGroups) {
+        // Looked up side by side: a group this panel does not render (a C7 change on
+        // the C8 side of a migration, a group the panel hides) retries for ~1.35 s,
+        // and the groups that are there must not wait for it.
+        await Promise.all([...new Set(diffPropGroups)].map(async (diffPropGroup) => {
             const groupHeader = await findPropertiesGroupHeader(diffPropGroup);
+            if (run !== this.#run) {
+                return;
+            }
             if (!groupHeader) {
                 console.warn(`property group header not found in panel, cannot highlight: "${diffPropGroup}" (element ${elementId})`);
-                continue;
+                return;
             }
             // Always highlight the group header (the user's entry point in the group list)
             this.#paint(groupHeader, PropertiesPanelHighlighter.#GROUP_COLOR);
@@ -64,9 +78,9 @@ class PropertiesPanelHighlighter {
             // Additionally highlight the individual changed entries inside list groups
             const descriptors = mappingChanges && mappingChanges.get(diffPropGroup);
             if (descriptors) {
-                await this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
+                await this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup, run);
             }
-        }
+        }));
     }
 
     // A replaced element type (or an attribute with no property group of its own but
@@ -82,7 +96,7 @@ class PropertiesPanelHighlighter {
         this.#paint(typeElem, PropertiesPanelHighlighter.#GROUP_COLOR);
     }
 
-    async #highlightListItems(groupContainer, descriptors, elementId, groupName) {
+    async #highlightListItems(groupContainer, descriptors, elementId, groupName, run) {
         // The list entries render asynchronously (preact) a tick after the group
         // header, so an immediate lookup can miss them. Wait until the list has
         // populated before matching descriptors. The list renders all its current
@@ -90,6 +104,12 @@ class PropertiesPanelHighlighter {
         // missing is genuinely absent (graceful warn, no further wait).
         await doWithAttempts(() =>
             groupContainer.querySelector('.bio-properties-panel-collapsible-entry-header-title'));
+        // A run started right after a Switch branch can find the group in the panel
+        // still showing the previous side; if the re-render dropped the group, its
+        // entries are not missing — there is no group to colour.
+        if (run !== this.#run || !groupContainer.isConnected) {
+            return;
+        }
 
         for (const descriptor of descriptors) {
             const itemHeaders = this.#findListItemHeaders(groupContainer, descriptor.label);
@@ -148,14 +168,18 @@ class PropertiesPanelHighlighter {
                 return null; // not rendered yet
             }
             // Hide the native expression container and (re)draw the formatted one.
-            conditionExpressionElem.style.display = 'none';
+            // The Zeebe panel renders the condition in a FEEL editor (contenteditable,
+            // inside a container); the C7 one is a plain textarea.
+            const field = conditionExpressionElem.closest('.bio-properties-panel-feel-container')
+                || conditionExpressionElem;
+            field.style.display = 'none';
             removeElement(PropertiesPanelHighlighter.#CONDITION_DIV_ID);
 
             const div = document.createElement('div');
             div.id = PropertiesPanelHighlighter.#CONDITION_DIV_ID;
             div.dataset.conditionFor = elementId;
             div.className = 'properties-condition';
-            conditionExpressionElem.parentElement.appendChild(div);
+            field.parentElement.appendChild(div);
             this.#drawFormattedCondition(div, conditionExpressionElem, elementId);
             return null; // wait one interval to confirm the block survived
         }, 30, 50);
@@ -172,7 +196,10 @@ class PropertiesPanelHighlighter {
                 this.#drawConditionPart(parentElem, part, exists);
             }
         } else { // When viewing target branch only
-            const myCondParts = this.#conditionFormatter.format(conditionExpressionElem.value);
+            // A FEEL editor has no .value; the model holds the same text.
+            const condition = conditionExpressionElem.value
+                ?? this.#elementRegistry.get(elementId).businessObject.conditionExpression?.body ?? '';
+            const myCondParts = this.#conditionFormatter.format(condition);
             for (const part of myCondParts) {
                 this.#drawConditionPart(parentElem, part, true);
             }
@@ -204,6 +231,7 @@ class PropertiesPanelHighlighter {
     }
 
     #resetHighlightedPropGroups() {
+        this.#run++;
         if (this.#highlightedElems) {
             for (const elem of this.#highlightedElems) {
                 elem.style.backgroundColor = null;

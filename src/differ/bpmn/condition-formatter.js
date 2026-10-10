@@ -1,4 +1,6 @@
-// Formats a condition expression into indented lines for display.
+// Formats a condition expression into indented lines for display: a JUEL
+// expression splits after `&&` / `||`, a FEEL one (`=…`, Camunda 8) after the
+// words `and` / `or`.
 // Insignificant whitespace (spaces, tabs, newlines) outside string literals is
 // collapsed: the formatter generates its own indentation, so the source layout
 // of a long/complex expression does not leak into the output.
@@ -9,6 +11,9 @@ class ConditionFormatter {
     format(condition) {
         // console.debug('format condition', condition);
 
+        const feel = condition.trimStart().startsWith('=');
+        // `between a and b` is one range: its `and` joins nothing
+        let inBetween = false;
         const resultArr = [];
         const symbolArr = [];
         let indentSize = 0;
@@ -125,6 +130,18 @@ class ConditionFormatter {
                     andOpStarted = false;
                     orOpStarted = false;
                     escapeFound = false;
+                    const word = feel && ConditionFormatter.#feelKeywordEnding(symbolArr, condition[i + 1]);
+                    if (word === 'between') {
+                        inBetween = true;
+                    } else if (word === 'and' && inBetween) {
+                        inBetween = false;
+                    } else if (word === 'and' || word === 'or') {
+                        this.#flush(resultArr, symbolArr, indentSize);
+                        starting = true;
+                        // a '(' after the operator is a grouping paren, not a call
+                        lastChar = ' ';
+                        continue;
+                    }
             }
 
             lastChar = symbol;
@@ -134,6 +151,17 @@ class ConditionFormatter {
         }
 
         return resultArr;
+    }
+
+    // The FEEL keyword (`and`, `or`, `between`) the line ends with, when the next
+    // char cannot continue the word: `order`, `android` and a path segment
+    // (`order.or`) are no keywords.
+    static #feelKeywordEnding(symbolArr, nextChar) {
+        if (nextChar !== undefined && ConditionFormatter.#WORD_CHAR.test(nextChar)) {
+            return null;
+        }
+        const match = /(?:^|[^\p{L}\p{N}_$.])(and|or|between)$/u.exec(symbolArr.join(''));
+        return match ? match[1] : null;
     }
 
     static #isCallParen(lastChar) {

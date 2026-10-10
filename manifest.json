@@ -39,6 +39,7 @@
                 "src/core/utils.js",
                 "src/core/console-log.js",
                 "src/differ/shared/diff-type.js",
+                "src/differ/shared/camunda-dialect.js",
                 "src/differ/bpmn/condition-formatter.js",
                 "src/differ/bpmn/canvas-viewport.js",
                 "src/differ/bpmn/bpmn-xml-comparator.js",
@@ -109,7 +110,8 @@
                 "libs/bpmn-js-properties-panel/bpmn-js-properties-panel.umd.js",
                 "libs/bpmn-js-properties-panel/assets/element-templates.css",
                 "libs/bpmn-js-properties-panel/assets/properties-panel.css",
-                "libs/camunda-bpmn-moddle/resources/camunda.json"
+                "libs/camunda-bpmn-moddle/resources/camunda.json",
+                "libs/zeebe-bpmn-moddle/resources/zeebe.json"
             ],
             "matches": [
                 "https://*/*"

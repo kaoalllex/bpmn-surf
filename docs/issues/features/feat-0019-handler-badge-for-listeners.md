@@ -1,7 +1,7 @@
 ---
 id: FEAT-0019
 title: Handler navigation badge for execution/task listeners
-priority: low
+priority: medium
 status: open
 ---
 
@@ -18,6 +18,8 @@ A separate task (not part of [FEAT-0018]), because **the resolution core is shar
 and UI are fundamentally different** (see below).
 
 ## Context
+
+Planned in one session with [REFAC-0017] (the Camunda 7 / 8 dialect objects), which goes first so the listener keys are written against them.
 
 ### What is reused (the resolution core — unchanged)
 
@@ -60,6 +62,30 @@ camunda:TaskListener       { event: 'create'|'assignment'|'complete'|'delete'|'t
 elements and on `bpmn:Process`). Access: `bo.extensionElements.values` →
 objects with `$type === 'camunda:ExecutionListener'` / `'camunda:TaskListener'`.
 
+### Camunda 8 (Zeebe) listeners
+
+With [FEAT-0038] (Camunda 8 support) the same badge is wanted for Zeebe listeners, and there
+they are job workers, not classes:
+
+```
+zeebe:ExecutionListener  { eventType: 'start'|'end', type, retries }
+zeebe:TaskListener       { eventType: 'creating'|'assigning'|'updating'|'completing'|'canceling', type, retries }
+```
+
+(under `extensionElements` → `zeebe:ExecutionListeners` / `zeebe:TaskListeners`; task
+listeners exist since 8.8 and only on a Camunda user task). The key is the job type, the same
+`topic:<type>` key [FEAT-0038] stage 3 derives for a task's `zeebe:taskDefinition`, so it is
+resolved by the job-worker annotations (`@JobWorker(type = "…")`) with no change to the
+locator. That makes point 4 above Camunda 7-only: a Zeebe listener always has a job type.
+A `type` that is a FEEL expression (`=…`) yields no key, as for a task.
+
+Do this for both dialects at once, after [FEAT-0038] stage 3: the 1:N UI question is the same.
+
+Test material: the sandboxes (`bpmn-surf-test` on GitLab and GitHub, module
+`order-service-c8/`) — "Validate the order" carries a start execution listener of type
+`audit-step`, served by `AuditWorker.kt`; the `c8/model-changes` MR/PR changes it to
+`audit-order-step`.
+
 ### Open UI questions (to resolve during the work)
 
 - **Where to attach.** Options: (a) a multi-badge / stack of overlays on the shape (several `</>`
@@ -84,6 +110,7 @@ with `script`/`expression` → skip; an element without `extensionElements` → 
 - [FEAT-0003], [FEAT-0004] — namespaced key and navigation (shared core).
 - [FEAT-0018] — badge for message events; shared `HandlerLocator`, but a 1:1 model.
 - [FEAT-0015] — deep analysis of handler changes, adjacent.
+- [FEAT-0038] — Camunda 8 support; its stage 3 provides the job-type key this task reuses.
 
 ### Affected files (expected)
 

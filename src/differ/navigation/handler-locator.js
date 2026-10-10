@@ -3,12 +3,16 @@
 //
 // A service task is linked to its code by a namespaced "handler key" so the
 // same machinery serves both implementation kinds:
-//  - topic:<topic>     — external task; the BPMN states the topic via
-//                        camunda:topic. Two declaration styles are recognised,
-//                        both configurable by annotation name (FEAT-0035, see
-//                        core/handler-annotations.js):
-//     - a topic annotation states it explicitly — @ExternalTaskSubscription("<topic>"),
-//       the stock Camunda form, on by default;
+//  - topic:<topic>     — a C7 external task (the BPMN states the topic via
+//                        camunda:topic) or a C8 job worker (the job type of
+//                        zeebe:taskDefinition, FEAT-0038). Two declaration styles
+//                        are recognised, both configurable by annotation name
+//                        (FEAT-0035, see core/handler-annotations.js):
+//     - a topic annotation states it — @ExternalTaskSubscription("<topic>"),
+//       @JobWorker(type = "<job type>"), both stock and on by default; the
+//       string is positional or named type / value / topicName, at any position,
+//       and with none the annotated method's name is the topic (the job worker
+//       default);
 //     - a class-name annotation states nothing, and the framework derives the
 //       topic from the annotated class name by lower-casing its first letter
 //       (@Something class CorrectItemABTestDelegate -> topic
@@ -37,13 +41,13 @@ class HandlerLocator {
     // File extensions treated as handler sources (Kotlin and Java).
     static #HANDLER_FILE_EXTENSIONS = ['.kt', '.java'];
 
-    // Matches a topic annotation — @ExternalTaskSubscription("topic") and any
-    // other name the user configured — tolerating whitespace/newlines and an
-    // optional named argument (value = "..." / topicName = "...").
-    static #topicAnnotationRegex(names) {
-        return new RegExp(
-            `@?(?:${names.join('|')})\\s*\\(\\s*(?:[A-Za-z_]+\\s*=\\s*)?"([^"]+)"`, 'g');
-    }
+    // The arguments of a topic annotation that may state the topic / job type,
+    // besides a positional one (@JobWorker(type = "…"), @ExternalTaskSubscription(topicName = "…")).
+    static #TOPIC_ARGUMENT_NAMES = ['type', 'value', 'topicName'];
+
+    // Camunda 7's own subscription names its topic or has none; only the job
+    // worker annotations default the job type to the method name.
+    static #NO_METHOD_NAME_DEFAULT = ['ExternalTaskSubscription'];
 
     // Matches a class-name annotation (with optional arguments) followed by the
     // class it annotates, capturing the class name. Tolerates other annotations /
@@ -94,13 +98,165 @@ class HandlerLocator {
         if (!fileContent || names.length === 0) {
             return [];
         }
-        const topics = [];
-        const regex = HandlerLocator.#topicAnnotationRegex(names);
-        let match;
-        while ((match = regex.exec(fileContent)) !== null) {
-            topics.push(match[1]);
+        return HandlerLocator.#topicDeclarations(fileContent, names).map(declaration => declaration.topic);
+    }
+
+    // Every topic / job type the topic annotations declare, with the index it is
+    // stated at: the annotation for a string literal, the method name when the
+    // annotation names none (a job worker's type defaults to its method name).
+    // The leading @ is optional for a literal (a search snippet may cut it off),
+    // but required before the method name is taken, so a bare word is no worker.
+    static #topicDeclarations(content, names) {
+        const declarations = [];
+        if (!content || names.length === 0) {
+            return declarations;
         }
-        return topics;
+        content = HandlerLocator.#blankComments(content);
+        // (?<!\w): `JobWorker` must not match inside `ZeebeJobWorker`; a qualified
+        // name (`…annotation.JobWorker`) still matches after its dot.
+        const regex = new RegExp(`(?<!\\w)@?(${names.join('|')})\\b`, 'g');
+        let match;
+        while ((match = regex.exec(content)) !== null) {
+            let end = HandlerLocator.#skipWhitespace(content, regex.lastIndex);
+            let argument = { found: false, topic: null };
+            if (content[end] === '(') {
+                const close = HandlerLocator.#closingBracket(content, end);
+                argument = HandlerLocator.#topicArgument(content.slice(end + 1, close));
+                end = close + 1;
+            }
+            if (argument.topic) {
+                declarations.push({ topic: argument.topic, index: match.index });
+            } else if (!argument.found && content[match.index] === '@'
+                    && !HandlerLocator.#NO_METHOD_NAME_DEFAULT.includes(match[1])) {
+                const method = HandlerLocator.#followingMethod(content, end);
+                if (method) {
+                    declarations.push(method);
+                }
+            }
+        }
+        return declarations;
+    }
+
+    // The topic among an annotation's arguments: a string literal that is
+    // positional or named type / value / topicName. `found` without a topic is a
+    // topic argument that is no literal (a constant): then the method name is not
+    // the topic either, and nothing is declared.
+    static #topicArgument(argumentList) {
+        for (const argument of HandlerLocator.#splitTopLevel(argumentList)) {
+            const named = /^\s*([A-Za-z_]\w*)\s*=\s*([\s\S]*)$/.exec(argument);
+            if (named && !HandlerLocator.#TOPIC_ARGUMENT_NAMES.includes(named[1])) {
+                continue;
+            }
+            const value = (named ? named[2] : argument).trim();
+            if (!value) {
+                continue;
+            }
+            const literal = /^"([^"]+)"$/.exec(value);
+            return { found: true, topic: literal ? literal[1] : null };
+        }
+        return { found: false, topic: null };
+    }
+
+    // The method an annotation sits on: skips further annotations, then reads the
+    // declaration up to its '('. A class / interface / object declares no topic.
+    static #followingMethod(content, from) {
+        let i = HandlerLocator.#skipWhitespace(content, from);
+        while (content[i] === '@') {
+            i = HandlerLocator.#skipWhitespace(content, i + /^@[\w.:]*/.exec(content.slice(i))[0].length);
+            if (content[i] === '(') {
+                i = HandlerLocator.#skipWhitespace(content, HandlerLocator.#closingBracket(content, i) + 1);
+            }
+        }
+        const paren = content.indexOf('(', i);
+        const header = paren >= 0 ? content.slice(i, paren) : '';
+        if (/[{};=]|\b(?:class|interface|object|enum|record)\b/.test(header)) {
+            return null;
+        }
+        const name = /([A-Za-z_]\w*)\s*$/.exec(header);
+        return name ? { topic: name[1], index: i + name.index } : null;
+    }
+
+    // The content with every // and /* */ comment outside string literals turned
+    // into spaces (line breaks kept), so indexes still point into the original:
+    // a comment inside or after an annotation must not read as an argument or a
+    // declaration, and an annotation quoted in a comment declares nothing.
+    static #blankComments(content) {
+        let result = '';
+        let i = 0;
+        while (i < content.length) {
+            if (content[i] === '"') {
+                const end = Math.min(HandlerLocator.#stringEnd(content, i), content.length - 1);
+                result += content.slice(i, end + 1);
+                i = end + 1;
+            } else if (content.startsWith('//', i) || content.startsWith('/*', i)) {
+                const lineComment = content[i + 1] === '/';
+                const close = lineComment ? content.indexOf('\n', i) : content.indexOf('*/', i + 2);
+                const end = close < 0 ? content.length : (lineComment ? close : close + 2);
+                result += content.slice(i, end).replace(/[^\n]/g, ' ');
+                i = end;
+            } else {
+                result += content[i];
+                i++;
+            }
+        }
+        return result;
+    }
+
+    static #skipWhitespace(content, index) {
+        while (index < content.length && /\s/.test(content[index])) {
+            index++;
+        }
+        return index;
+    }
+
+    // Index of the bracket closing the one at `open`, skipping nested brackets and
+    // string literals; the end of the content when it never closes.
+    static #closingBracket(content, open) {
+        let depth = 0;
+        for (let i = open; i < content.length; i++) {
+            const symbol = content[i];
+            if (symbol === '"') {
+                i = HandlerLocator.#stringEnd(content, i);
+            } else if ('([{'.includes(symbol)) {
+                depth++;
+            } else if (')]}'.includes(symbol) && --depth === 0) {
+                return i;
+            }
+        }
+        return content.length;
+    }
+
+    static #stringEnd(content, open) {
+        for (let i = open + 1; i < content.length; i++) {
+            if (content[i] === '\\') {
+                i++;
+            } else if (content[i] === '"') {
+                return i;
+            }
+        }
+        return content.length;
+    }
+
+    // Splits an argument list on its top-level commas.
+    static #splitTopLevel(argumentList) {
+        const parts = [];
+        let depth = 0;
+        let start = 0;
+        for (let i = 0; i < argumentList.length; i++) {
+            const symbol = argumentList[i];
+            if (symbol === '"') {
+                i = HandlerLocator.#stringEnd(argumentList, i);
+            } else if ('([{'.includes(symbol)) {
+                depth++;
+            } else if (')]}'.includes(symbol)) {
+                depth--;
+            } else if (symbol === ',' && depth === 0) {
+                parts.push(argumentList.slice(start, i));
+                start = i + 1;
+            }
+        }
+        parts.push(argumentList.slice(start));
+        return parts;
     }
 
     /**
@@ -216,9 +372,32 @@ class HandlerLocator {
      * intentionally ignored (a method call, not a class — parity with the badge's
      * scope). Attributes are read via get() because `class` is a reserved word
      * (bo.class would not work).
+     *
+     * Camunda 8 (FEAT-0038): the job type of the zeebe:TaskDefinition is the key
+     * (topic:<type>, the same namespace as a C7 topic). The dialect decides which
+     * reading applies — no fallback from one to the other.
      * @returns {string|null}
      */
-    static handlerKeyFromBusinessObject(bo) {
+    static handlerKeyFromBusinessObject(bo, dialect = CAMUNDA_DIALECT.C7) {
+        return dialect === CAMUNDA_DIALECT.C8
+            ? HandlerLocator.#jobTypeKey(bo)
+            : HandlerLocator.#camundaKey(bo);
+    }
+
+    // C8: the zeebe:TaskDefinition in the element's own extensionElements — also
+    // on a message throw / end event (the job type sits on the event, not on its
+    // event definition). Camunda's own connectors (io.camunda:…) have no project
+    // code, and a FEEL type (=…) names none.
+    static #jobTypeKey(bo) {
+        const type = bo?.extensionElements?.values
+            ?.find(value => value.$type === 'zeebe:TaskDefinition')?.type;
+        if (!type || type.startsWith('io.camunda:') || isFeelExpression(type)) {
+            return null;
+        }
+        return `topic:${type}`;
+    }
+
+    static #camundaKey(bo) {
         const impl = HandlerLocator.#implementationHolder(bo);
         if (!impl) {
             return null;
@@ -432,9 +611,13 @@ class HandlerLocator {
         // BUG-0027: searching for `FindItems` also matches
         // `FindItemsInCatalog` — we need an exact match.
         const candidates = annotatedItems.length > 0 ? annotatedItems : handlerItems;
-        const exactMatch = candidates.find(i =>
-            i.snippet && HandlerLocator.matchesExactTopic(i.snippet, topic)
-        );
+        // A hit that declares the topic wins over one that merely contains the
+        // word: a job worker whose method shares its name with another topic
+        // (fun findItems(…) under @JobWorker(type = "find-items")) declares no
+        // "findItems".
+        const exactMatch = candidates.find(i => i.snippet
+                && HandlerLocator.#topicDeclarations(i.snippet, this.#annotations.topic).some(d => d.topic === topic))
+            || candidates.find(i => i.snippet && HandlerLocator.matchesExactTopic(i.snippet, topic));
 
         if (!exactMatch) {
             // Nothing declares this exact topic: either the closest hit is a longer
@@ -525,6 +708,13 @@ class HandlerLocator {
         if (!item.snippet) {
             return startLine;
         }
+        // A declaration of the topic lands on its annotation (or, for a job type
+        // defaulted to the method name, on the method), wherever the type sits.
+        const declaration = HandlerLocator.#topicDeclarations(item.snippet, this.#annotations.topic)
+            .find(d => d.topic === topic);
+        if (declaration) {
+            return startLine + item.snippet.slice(0, declaration.index).split('\n').length - 1;
+        }
         const lines = item.snippet.split('\n');
         const offset = lines.findIndex(line => line.includes(topic));
         return offset >= 0 ? startLine + offset : startLine;
@@ -539,8 +729,10 @@ class HandlerLocator {
         return new RegExp(`\\bclass\\s+${c}(?![A-Za-z0-9_])`).test(snippet);
     }
 
+    // Job types are kebab- or dot-separated, so '-' and '.' continue a name:
+    // `find-items` must not match inside `find-items-in-catalog` (BUG-0027).
     static matchesExactTopic(snippet, topic) {
         const t = this.escapeRegExp(topic);
-        return new RegExp(`(["'])${t}\\1|\\b${t}\\b`).test(snippet);
+        return new RegExp(`(["'])${t}\\1|(?<![\\w.-])${t}(?![\\w.-])`).test(snippet);
     }
 }

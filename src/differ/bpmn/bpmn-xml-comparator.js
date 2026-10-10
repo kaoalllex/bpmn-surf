@@ -38,8 +38,24 @@ class BpmnXmlComparator {
         // camunda-bpmn-moddle AsyncCapable
         ['camunda:asyncBefore', 'false'],
         ['camunda:asyncAfter', 'false'],
-        ['camunda:exclusive', 'true']
+        ['camunda:exclusive', 'true'],
+        // zeebe-bpmn-moddle (bare attributes on zeebe: elements); retries has no
+        // moddle default, but 3 is the engine's and Camunda Modeler always writes it
+        ['propagateAllParentVariables', 'true'],
+        ['bindingType', 'latest'],
+        ['retries', '3']
     ]);
+
+    // Extension containers whose entries are diffed one by one
+    static #CONTAINER_TAG_NAMES = [
+        'bpmn:extensionElements',
+        'camunda:inputOutput',
+        'zeebe:ioMapping',
+        'zeebe:taskHeaders',
+        'zeebe:properties',
+        'zeebe:executionListeners',
+        'zeebe:taskListeners'
+    ];
 
     static #IGNORED_DIFF_PROPERTY_GROUP = '_ignored_';
     // No property group to highlight, but the panel's header text does change
@@ -74,7 +90,17 @@ class BpmnXmlComparator {
             tag: 'camunda:outputParameter', keyAttr: 'name', parentTag: 'camunda:inputOutput'
         }],
         ['Extension properties', {
-            tag: 'camunda:property', keyAttr: 'name', parentTag: 'camunda:properties'
+            tag: ['camunda:property', 'zeebe:property'], keyAttr: 'name',
+            parentTag: ['camunda:properties', 'zeebe:properties']
+        }],
+        ['Input mapping', {
+            tag: 'zeebe:input', keyAttr: 'target', parentTag: 'zeebe:ioMapping'
+        }],
+        ['Output mapping', {
+            tag: 'zeebe:output', keyAttr: 'target', parentTag: 'zeebe:ioMapping'
+        }],
+        ['Headers', {
+            tag: 'zeebe:header', keyAttr: 'key', parentTag: 'zeebe:taskHeaders'
         }]
     ]);
 
@@ -179,6 +205,35 @@ class BpmnXmlComparator {
 
         ['bpmn:documentation', 'Documentation'],
 
+        // Camunda 8 (zeebe-bpmn-moddle). A zeebe: element keeps its attributes
+        // unprefixed, so they fall back to the element's own row
+        // (see #findDiffPropertyGroup) unless a row names the attribute.
+        ['zeebe:taskDefinition', 'Task definition'],
+        ['zeebe:jobPriorityDefinition', 'Job priority'],
+        ['zeebe:ioMapping', 'Input mapping'],
+        ['zeebe:input', 'Input mapping'],
+        ['zeebe:output', 'Output mapping'],
+        ['zeebe:taskHeaders', 'Headers'],
+        ['zeebe:header', 'Headers'],
+        ['zeebe:properties', 'Extension properties'],
+        ['zeebe:property', 'Extension properties'],
+        ['zeebe:calledElement', 'Called element'],
+        ['zeebe:calledElement/propagateAllParentVariables', 'Input propagation'],
+        ['zeebe:calledElement/propagateAllChildVariables', 'Output propagation'],
+        ['zeebe:calledDecision', 'Called decision'],
+        ['zeebe:script', 'Script'],
+        ['zeebe:loopCharacteristics', 'Multi-instance'],
+        ['zeebe:userTask', 'Implementation'],
+        ['zeebe:assignmentDefinition', 'Assignment'],
+        ['zeebe:taskSchedule', 'Assignment'],
+        ['zeebe:priorityDefinition', 'Assignment'],
+        ['zeebe:formDefinition', 'Form'],
+        ['zeebe:userTaskForm', 'Form'],
+        ['zeebe:executionListeners', 'Execution listeners'],
+        ['zeebe:executionListener', 'Execution listeners'],
+        ['zeebe:taskListeners', 'Task listeners'],
+        ['zeebe:taskListener', 'Task listeners'],
+
         // Properties to be ignored because there is no property group to highlight
         ['bpmn:terminateEventDefinition', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
         ['bpmn:multiInstanceLoopCharacteristics/isSequential', BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP],
@@ -189,7 +244,11 @@ class BpmnXmlComparator {
 
         // No dedicated field in the panel, but it does change the header text
         ['bpmn:boundaryEvent/cancelActivity', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP],
-        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
+        ['bpmn:startEvent/isInterrupting', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP],
+        // element template attributes: the template module is not loaded, so no group
+        ['zeebe:modelerTemplate', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP],
+        ['zeebe:modelerTemplateVersion', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP],
+        ['zeebe:modelerTemplateIcon', BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP]
     ]);
 
     #changedMessages = [];
@@ -362,6 +421,11 @@ class BpmnXmlComparator {
             return res;
         }
 
+        // A zeebe: element keeps its attributes unprefixed, so its own row decides
+        // before a bare attribute row (`name` is General) could claim the diff.
+        if (diff.startsWith('zeebe:')) {
+            return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diff.split('/')[0]);
+        }
         const diffShort = diff.slice(diff.indexOf('/') + 1);
         return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
     }
@@ -426,13 +490,13 @@ class BpmnXmlComparator {
             return [];
         }
         const containers = config.parentTag
-            ? Array.from(ext.childNodes).filter(c => c.tagName === config.parentTag)
+            ? Array.from(ext.childNodes).filter(c => [].concat(config.parentTag).includes(c.tagName))
             : [ext];
 
         const entries = [];
         for (const container of containers) {
             for (const child of container.childNodes) {
-                if (child.tagName !== config.tag) {
+                if (![].concat(config.tag).includes(child.tagName)) {
                     continue;
                 }
                 if (config.skip && config.skip(child)) {
@@ -577,13 +641,16 @@ class BpmnXmlComparator {
     // An extension element with no attributes, no text and no significant children
     // carries no value, and the properties panel leaves exactly those behind: the
     // container of a list group survives the deletion of its last entry, and a field's
-    // element survives its value being cleared. Restricted to the camunda namespace
-    // (plus the extensionElements wrapper) because in the bpmn namespace bare presence
-    // IS the value — bpmn:terminateEventDefinition and the other event definitions.
-    // Recurses through #significantChildren, so a container holding nothing but empty
-    // extensions is empty too.
+    // element survives its value being cleared. Restricted to the camunda and zeebe
+    // namespaces (plus the extensionElements wrapper) because in the bpmn namespace bare
+    // presence IS the value — bpmn:terminateEventDefinition and the other event
+    // definitions — and so it is for zeebe:userTask (a Camunda user task, not a job
+    // worker). Recurses through #significantChildren, so a container holding nothing
+    // but empty extensions is empty too.
     #isEmptyExtension(node) {
-        return (node.tagName.startsWith('camunda:') || node.tagName === 'bpmn:extensionElements')
+        return (node.tagName.startsWith('camunda:') || node.tagName.startsWith('zeebe:')
+                || node.tagName === 'bpmn:extensionElements')
+            && node.tagName !== 'zeebe:userTask'
             && node.attributes.length === 0
             && this.#significantChildren(node).length === 0;
     }
@@ -699,7 +766,7 @@ class BpmnXmlComparator {
 
     #nodeToDiffs(node) {
         // console.debug('nodeToDiffs', node);
-        if (node.tagName === 'bpmn:extensionElements' || node.tagName === 'camunda:inputOutput') {
+        if (BpmnXmlComparator.#CONTAINER_TAG_NAMES.includes(node.tagName)) {
             const children = this.#getAllNotTextChildren(node);
             // console.debug('getAllNotTextChildren res', children);
             let res = [];

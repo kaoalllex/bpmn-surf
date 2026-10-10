@@ -105,3 +105,30 @@ describe('DecisionCallerLocator.resolveCallers (guards, no network)', () => {
         assert.equal((await locator.resolveCallers(['', null], 'main', 'self.dmn')).length, 0);
     });
 });
+
+describe('DecisionCallerLocator search term per Camunda dialect', () => {
+    const recordingClient = () => ({
+        terms: [],
+        async searchCode(ref, term) {
+            this.terms.push(term);
+            return [];
+        },
+        searchPageUrl: (term) => term
+    });
+
+    it('searches decisionRef= in C7 (the default)', async () => {
+        const fake = recordingClient();
+        const locator = new DecisionCallerLocator(fake);
+        await locator.resolveCallers(['Risk'], 'main', 'self.dmn');
+        assert.deepEqual(fake.terms, ['decisionRef="Risk"']);
+        assert.equal(locator.blobSearchPageUrl('Risk', 'main'), 'decisionRef="Risk"');
+    });
+
+    it('searches decisionId= in C8', async () => {
+        const fake = recordingClient();
+        const locator = new DecisionCallerLocator(fake, () => 'c8');
+        await locator.resolveCallers(['RiskC8'], 'main', 'self.dmn');
+        assert.deepEqual(fake.terms, ['decisionId="RiskC8"']);
+        assert.equal(locator.blobSearchPageUrl('RiskC8', 'main'), 'decisionId="RiskC8"');
+    });
+});

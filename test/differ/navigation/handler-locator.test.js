@@ -923,3 +923,187 @@ describe('HandlerLocator with real GitLab search results (BUG-0027)', () => {
         assert.match(warnings[0], /no exact match for topic/);
     });
 });
+
+// Camunda 8 job workers (FEAT-0038): one rule for every configured topic annotation.
+describe('HandlerLocator.extractSubscriptionTopics — job workers', () => {
+    const C8 = { topic: ['ExternalTaskSubscription', 'JobWorker'], className: [] };
+    const topics = (content, annotations = C8) =>
+        Array.from(HandlerLocator.extractSubscriptionTopics(content, annotations));
+
+    it('reads type = "…" at any position', () => {
+        assert.deepEqual(topics('@JobWorker(timeout = 30_000, type = "reserve-stock")\nfun reserve() {}'),
+            ['reserve-stock']);
+    });
+
+    it('ignores other named strings', () => {
+        assert.deepEqual(topics('@JobWorker(name = "w1", type = "x")\nfun a() {}'), ['x']);
+    });
+
+    it('reads a multi-line annotation', () => {
+        assert.deepEqual(topics('@JobWorker(\n    type = "find-items-in-catalog",\n    timeout = 60_000\n)\nfun find() {}'),
+            ['find-items-in-catalog']);
+    });
+
+    it('takes the Kotlin method name when no type is given', () => {
+        assert.deepEqual(topics('@JobWorker\nfun screenFraud(@Variable orderId: String) = 1'), ['screenFraud']);
+        assert.deepEqual(topics('@JobWorker(autoComplete = true, maxJobsActive = 8)\n' +
+            'fun packItem(@Variable item: Map<String, Any>) = 1'), ['packItem']);
+    });
+
+    it('takes the Java method name when no type is given', () => {
+        assert.deepEqual(topics('@JobWorker\npublic Map<String, Object> chargeWithRetry(@Variable String orderId) {}'),
+            ['chargeWithRetry']);
+    });
+
+    it('skips further annotations before the method', () => {
+        assert.deepEqual(topics('@JobWorker\n@Transactional(readOnly = true)\nfun audit(job: ActivatedJob) {}'),
+            ['audit']);
+    });
+
+    it('yields nothing for a class without a type', () => {
+        assert.deepEqual(topics('@JobWorker\nclass Worker(private val x: X)'), []);
+        assert.deepEqual(topics('@JobWorker\ndata class Worker(private val x: X)'), []);
+    });
+
+    it('yields nothing for a type that is not a string literal (a constant)', () => {
+        assert.deepEqual(topics('@JobWorker(type = TYPE)\nfun run() {}'), []);
+        assert.deepEqual(topics('@JobWorker(TYPE)\nfun run() {}'), []);
+    });
+
+    it('does not read the strings of an array argument as positional', () => {
+        assert.deepEqual(topics('@JobWorker(type = "charge", fetchVariables = {"orderId", "amount"})\npublic void c() {}'),
+            ['charge']);
+        assert.deepEqual(topics('@JobWorker(fetchVariables = ["orderId"])\nfun chargeIt() {}'), ['chargeIt']);
+    });
+
+    it('reads @ZeebeWorker only once it is configured', () => {
+        const content = '@ZeebeWorker(type = "escalate-delivery")\nfun escalate() {}';
+        assert.deepEqual(topics(content), []);
+        assert.deepEqual(topics(content, { topic: ['JobWorker', 'ZeebeWorker'], className: [] }), ['escalate-delivery']);
+    });
+
+    it('does not take the method name from a bare word in prose', () => {
+        assert.deepEqual(topics('// see JobWorker\nfun helper() {}'), []);
+    });
+
+    it('ignores comments inside and after the annotation', () => {
+        assert.deepEqual(topics('@JobWorker(\n    name = "w", // worker name\n    type = "x-y")\nfun a() {}'), ['x-y']);
+        assert.deepEqual(topics('@JobWorker(\n    // the job type\n    type = "x-y")\nfun a() {}'), ['x-y']);
+        assert.deepEqual(topics('@JobWorker(/* t */ type = "x-y")\nfun a() {}'), ['x-y']);
+        assert.deepEqual(topics('@ExternalTaskSubscription("t" /* note */)\nclass H'), ['t']);
+        assert.deepEqual(topics('@JobWorker // defaults (to the method)\nfun screenFraud() {}'), ['screenFraud']);
+        assert.deepEqual(topics('// see @JobWorker(type = "old")\nfun helper() {}'), []);
+    });
+
+    it('keeps a // inside a string literal', () => {
+        assert.deepEqual(topics('@JobWorker(type = "http://x")\nfun a() {}'), ['http://x']);
+    });
+
+    it('does not read a configured name inside a longer one, but reads a qualified one', () => {
+        assert.deepEqual(topics('@ZeebeJobWorker(type = "x")\nfun a() {}'), []);
+        assert.deepEqual(topics('@io.camunda.spring.client.annotation.JobWorker(type = "x")\nfun a() {}'), ['x']);
+    });
+
+    it('takes no method name for @ExternalTaskSubscription (Camunda 7 has no such default)', () => {
+        assert.deepEqual(topics('@ExternalTaskSubscription\n@Bean\npublic ExternalTaskHandler invoiceCreator() {}'), []);
+    });
+
+    it('keeps @ExternalTaskSubscription as before', () => {
+        assert.deepEqual(topics('@ExternalTaskSubscription("validateOrder")\nclass H'), ['validateOrder']);
+        assert.deepEqual(topics('@ExternalTaskSubscription(topicName = "a")'), ['a']);
+        assert.deepEqual(topics('@ExternalTaskSubscription(\n  "multi"\n)'), ['multi']);
+        assert.deepEqual(topics('@ExternalTaskSubscription\nclass NoTopic'), []);
+    });
+});
+
+describe('HandlerLocator.matchesExactTopic — kebab and dotted job types', () => {
+    it('treats - and . as part of the name', () => {
+        assert.equal(HandlerLocator.matchesExactTopic('@JobWorker(type = "find-items-in-catalog")', 'find-items'), false);
+        assert.equal(HandlerLocator.matchesExactTopic('val t = find-items-in-catalog', 'find-items'), false);
+        assert.equal(HandlerLocator.matchesExactTopic('charge-customer-with-retry', 'charge-customer'), false);
+        assert.equal(HandlerLocator.matchesExactTopic('topic.v2', 'topic'), false);
+    });
+
+    it('matches the exact job type and a method-name type', () => {
+        assert.equal(HandlerLocator.matchesExactTopic('@JobWorker(type = "find-items")', 'find-items'), true);
+        assert.equal(HandlerLocator.matchesExactTopic('fun screenFraud(@Variable orderId: String)', 'screenFraud'), true);
+    });
+});
+
+describe('HandlerLocator.resolveLocation — job workers', () => {
+    const clientReturning = (hits) => ({ searchCode: async () => hits });
+
+    it('lands on the annotation line of a multi-line annotation', async () => {
+        const hits = [{
+            path: 'src/FindItemsInCatalogWorker.kt', line: 10,
+            snippet: '// header\n@JobWorker(\n    type = "find-items-in-catalog"\n)\nfun find() {}'
+        }];
+        const location = await new HandlerLocator(clientReturning(hits)).resolveLocation('topic:find-items-in-catalog', 'main');
+        assert.equal(location.line, 11);
+    });
+
+    it('lands on the method line of a method-name type, not on a comment naming it', async () => {
+        const hits = [{
+            path: 'src/ScreenFraudWorker.kt', line: 5,
+            snippet: '// No type: the job type is "screenFraud".\n@JobWorker\nfun screenFraud(@Variable orderId: String) = 1'
+        }];
+        const location = await new HandlerLocator(clientReturning(hits)).resolveLocation('topic:screenFraud', 'main');
+        assert.equal(location.filePath, 'src/ScreenFraudWorker.kt');
+        assert.equal(location.line, 7);
+    });
+
+    it('prefers the file declaring the topic over a method of the same name with its own type', async () => {
+        // A C8 worker whose method is named like a C7 topic, but whose job type is
+        // stated: it declares "find-items", not "findItems".
+        const worker = {
+            path: 'c8/FindItemsWorker.kt', line: 14,
+            snippet: '    @JobWorker(type = "find-items")\n    fun findItems(@Variable orderId: String): Map<String, Any> {'
+        };
+        const handler = { path: 'c7/FindItemsHandler.kt', line: 10, snippet: '@ExternalTaskSubscription("findItems")\nclass FindItemsHandler' };
+        for (const hits of [[worker, handler], [handler, worker]]) {
+            const location = await new HandlerLocator(clientReturning(hits)).resolveLocation('topic:findItems', 'main');
+            assert.equal(location.filePath, 'c7/FindItemsHandler.kt');
+        }
+    });
+
+    it('resolves a kebab-case prefix to its own worker in either order', async () => {
+        const own = { path: 'src/FindItemsWorker.kt', line: 14, snippet: '@JobWorker(type = "find-items")' };
+        const longer = { path: 'src/FindItemsInCatalogWorker.kt', line: 14, snippet: '@JobWorker(\n    type = "find-items-in-catalog",' };
+        for (const hits of [[own, longer], [longer, own]]) {
+            const location = await new HandlerLocator(clientReturning(hits)).resolveLocation('topic:find-items', 'main');
+            assert.equal(location.filePath, 'src/FindItemsWorker.kt');
+        }
+    });
+});
+
+describe('HandlerLocator.handlerKeyFromBusinessObject — Camunda 8', () => {
+    const key = (bo, dialect) => HandlerLocator.handlerKeyFromBusinessObject(bo, dialect);
+    const withJobType = (type, extra = {}) =>
+        ({ ...extra, extensionElements: { values: [{ $type: 'zeebe:TaskDefinition', type }] } });
+
+    it('a service task → topic:<job type>', () => {
+        assert.equal(key(withJobType('find-items'), 'c8'), 'topic:find-items');
+    });
+
+    it('a message throw event: the job type on the event itself', () => {
+        assert.equal(key(withJobType('publish-order-completed',
+            { eventDefinitions: [{ $type: 'bpmn:MessageEventDefinition' }] }), 'c8'), 'topic:publish-order-completed');
+    });
+
+    it('no key for a Camunda connector or a FEEL job type', () => {
+        assert.equal(key(withJobType('io.camunda:http-json:1'), 'c8'), null);
+        assert.equal(key(withJobType('=jobType'), 'c8'), null);
+    });
+
+    it('no key without a task definition', () => {
+        assert.equal(key({ extensionElements: { values: [{ $type: 'zeebe:IoMapping' }] } }, 'c8'), null);
+        assert.equal(key({}, 'c8'), null);
+        assert.equal(key(null, 'c8'), null);
+    });
+
+    it('dialects do not cross', () => {
+        assert.equal(key(withJobType('find-items'), 'c7'), null);
+        assert.equal(key(withJobType('find-items')), null);
+        assert.equal(key({ type: 'external', topic: 'validateOrder', get: () => undefined }, 'c8'), null);
+    });
+});

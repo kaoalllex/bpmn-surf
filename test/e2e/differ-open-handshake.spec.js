@@ -131,3 +131,29 @@ test('openDiffer works from a differ page too, where location.origin is "null"',
     expect(result.opened[0].id).toBe('msg_test');
     expect(result.opened[0].targetOrigin).toBe(result.origin);
 });
+
+// The differ tab is an about:blank, which renders in quirks mode: the library CSS
+// (properties panel, CodeMirror) is written for standards mode, and its
+// `min-height: 100%` there resolved against the window — FEEL fields as tall as
+// the panel. The test harness page has a doctype, so the Layer-2 specs never saw it.
+test('openDiffer renders the differ tab in standards mode, same origin, titled', async ({ page }) => {
+    await page.goto('/test/e2e/harness/differ-harness.html');
+    await page.addScriptTag({ url: '/src/core/utils.js' });
+
+    const result = await page.evaluate(async () => {
+        window.loadScripts = async () => {};
+        let child = null;
+        const realOpen = window.open;
+        window.open = (...args) => (child = realOpen(...args));
+        try {
+            await openDiffer({ fileName: 'process.bpmn' }, null, 'msg_test', (name) => '/' + name);
+            return { mode: child.document.compatMode, origin: child.origin, opener: window.origin, title: child.document.title };
+        } finally {
+            window.open = realOpen;
+        }
+    });
+
+    expect(result.mode).toBe('CSS1Compat');
+    expect(result.origin).toBe(result.opener);
+    expect(result.title).toContain('process.bpmn');
+});

@@ -4,8 +4,9 @@
 // shown only while a Call Activity is selected.
 //
 // On click the process file is resolved on demand (a single targeted search);
-// if it cannot be located, GitLab blob-search for the process id is opened as a
-// fallback so the user can find it manually.
+// if it cannot be located (or the id is a FEEL expression), the code-search page
+// for the process id is opened as a fallback so the user can find it manually.
+// The called id is camunda:calledElement in C7, zeebe:calledElement's processId in C8.
 //
 // Resolving can take seconds to tens of seconds (the fallback walks the whole
 // repository tree), so the badge gives feedback (UX-0008): while a resolve is
@@ -25,11 +26,13 @@ class CallActivityNavigator {
     #getCurrentRefFunc;
     #openDifferFunc;
     #openUrlFunc;
+    #getDialectFunc;
     #currentOverlayId = null;
     #currentOverlayElem = null;
     #isHandling = false;
 
-    constructor(overlays, elementRegistry, locator, getSelectedElementIdFunc, getCurrentRefFunc, openDifferFunc, openUrlFunc) {
+    constructor(overlays, elementRegistry, locator, getSelectedElementIdFunc, getCurrentRefFunc, openDifferFunc, openUrlFunc,
+        getDialectFunc = () => CAMUNDA_DIALECT.C7) {
         this.#overlays = overlays;
         this.#elementRegistry = elementRegistry;
         this.#locator = locator;
@@ -37,6 +40,7 @@ class CallActivityNavigator {
         this.#getCurrentRefFunc = getCurrentRefFunc;
         this.#openDifferFunc = openDifferFunc;
         this.#openUrlFunc = openUrlFunc;
+        this.#getDialectFunc = getDialectFunc;
     }
 
     showDiveInOverlay() {
@@ -98,7 +102,7 @@ class CallActivityNavigator {
 
     #getCallActivityProcessId(callActivityElement) {
         try {
-            return callActivityElement.businessObject.calledElement;
+            return calledProcessId(callActivityElement.businessObject, this.#getDialectFunc());
         } catch (error) {
             console.warn('cannot get calledElement for call activity element', error);
             return null;
@@ -114,7 +118,10 @@ class CallActivityNavigator {
         this.#refreshBadge();
         try {
             const ref = this.#getCurrentRefFunc();
-            const processParams = await this.#locator.resolveProcessFile(processId, ref);
+            // A FEEL id (=var) names no process to search for: straight to the search page.
+            const processParams = isFeelExpression(processId)
+                ? null
+                : await this.#locator.resolveProcessFile(processId, ref);
             if (processParams) {
                 await this.#openDifferFunc(processParams.filePath, processParams.fileName);
             } else {

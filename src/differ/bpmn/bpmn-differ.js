@@ -33,6 +33,9 @@ class BpmnDiffer {
     #branchIndicator = null;
     #view = null;
 
+    // Which Camunda engine the diagrams target (FEAT-0038); decided from the
+    // loaded versions before the modeler is built.
+    #dialect = CAMUNDA_DIALECT.C7;
     #bpmnJS = null;
     #elementRegistry = null;
     #selection = null;
@@ -78,6 +81,29 @@ class BpmnDiffer {
         this.#viewport = this.#view.viewport;
         this.#changesTableView = this.#view.changesTableView;
 
+        // The dialect decides the moddle and the panel, so the versions are loaded
+        // before the modeler is built. A failed load keeps the C7 modeler and is
+        // reported below, once everything is wired, exactly as before.
+        let loadError = null;
+        try {
+            await this.#loadVersions();
+            // Edit mode imports only the edited side, so only its own dialect counts:
+            // editing the C7 side of a migration must not write zeebe:* into it.
+            this.#dialect = this.#isEditMode()
+                ? detectCamundaDialect(this.#params.editSide === DifferParams.EDIT_SIDE_TARGET
+                    ? this.#versions.branchXml
+                    : this.#versions.mrXml)
+                : detectCamundaDialect(this.#versions.branchXml, this.#versions.mrXml);
+        } catch (error) {
+            loadError = error;
+        }
+        if (this.#dialect === CAMUNDA_DIALECT.C8 && !this.#params.zeebeBpmnModdle) {
+            // Params from a differ tab of an older version carry no Zeebe descriptor.
+            console.warn('camunda 8 diagram, but no zeebe moddle in the params: showing it as camunda 7');
+            this.#dialect = CAMUNDA_DIALECT.C7;
+        }
+        console.debug('camunda dialect:', this.#dialect);
+
         this.#bpmnJS = this.#createModeler();
         // console.debug('bpmn js created');
 
@@ -104,7 +130,8 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (processFilePath, processFileName) => this.#diveIntoCalledDiffer(processFilePath, processFileName),
-            (url) => window.open(url, '_blank')
+            (url) => window.open(url, '_blank'),
+            () => this.#dialect
         );
         this.#decisionNavigator = new DecisionNavigator(
             bpmnJSOverlays,
@@ -113,7 +140,8 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (decisionFilePath, decisionFileName) => this.#diveIntoCalledDiffer(decisionFilePath, decisionFileName),
-            (url) => window.open(url, '_blank')
+            (url) => window.open(url, '_blank'),
+            () => this.#dialect
         );
         this.#handlerNavigator = new HandlerNavigator(
             bpmnJSOverlays,
@@ -123,7 +151,8 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (url) => window.open(url, '_blank'),
-            (url) => this.#tabNavigator.navigateOpenerTab(url)
+            (url) => this.#tabNavigator.navigateOpenerTab(url),
+            () => this.#dialect
         );
         this.#correlationNavigator = new CorrelationNavigator(
             bpmnJSOverlays,
@@ -166,7 +195,8 @@ class BpmnDiffer {
             // never fire `beforeinput`, so copying keeps working. Delegating on the
             // stable panel container (preact re-renders `.bio-properties-panel` inside
             // it) survives re-renders without re-binding. Non-text controls (toggles,
-            // buttons, select, contenteditable/FEEL) stay disabled via CSS — see styles.css.
+            // buttons, select) stay disabled via CSS — see styles.css; the FEEL editors
+            // (contenteditable) get the key/paste veto below instead.
             //
             // BUG-0015: keep canvas label/comment text selectable and copyable while
             // blocking edits. Double-click opens bpmn-js' contenteditable overlay
@@ -182,6 +212,7 @@ class BpmnDiffer {
                     container.addEventListener('beforeinput', (event) => event.preventDefault(), true);
                 }
             }
+            this.#vetoFeelEditorEdits(document.getElementById(BpmnDifferView.PROPS_ID));
         }
 
         bpmnJSEventBus.on('selection.changed', (event) => {
@@ -227,12 +258,10 @@ class BpmnDiffer {
                 this.#view.setHistoryEnabled(commandStack.canUndo(), commandStack.canRedo()));
         }
 
-        try {
-            await this.#loadVersions();
-        } catch (error) {
+        if (loadError) {
             // loadFileContent has already retried once; a second failure would
             // otherwise leave the loading spinner up for good.
-            console.error('cannot load the file', error);
+            console.error('cannot load the file', loadError);
             this.#view.showEmptyState('Could not load the file. Reload the tab to try again.');
             this.#view.setDownloadButtonEnabled(false);
             return;
@@ -328,7 +357,7 @@ class BpmnDiffer {
         // FEAT-0005: resolve the DMN file called from a Business Rule Task
         // (decisionRef → defining .dmn) by a targeted code search; no fallback.
         this.#decisionLocator = new DecisionLocator(this.#platformClient);
-        this.#callerLocator = new CallerLocator(this.#platformClient);
+        this.#callerLocator = new CallerLocator(this.#platformClient, () => this.#dialect);
         // Shared opener-tab navigation (open a nested differ, step back to the
         // opener) used by both the dive-in and dive-out paths (FEAT-0005).
         this.#tabNavigator = new DifferTabNavigator();
@@ -347,7 +376,7 @@ class BpmnDiffer {
             () => !this.#isEditMode() && this.#branchIndicator.isTargetBranchShown()
         );
         // FEAT-0029: auto-expand the property groups relevant to the selected element.
-        this.#propertiesGroupExpander = new PropertiesGroupExpander();
+        this.#propertiesGroupExpander = new PropertiesGroupExpander(() => this.#dialect);
         this.#view = new BpmnDifferView(this.#params, this.#branchIndicator, {
             onDownload: () => this.#isEditMode()
                 ? this.#downloadEditedFile()
@@ -390,7 +419,42 @@ class BpmnDiffer {
         });
     }
 
+    // Keys that only move the caret or the selection, and copying.
+    static #READ_ONLY_KEYS = new Set([
+        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown',
+        'Tab', 'Escape', 'Shift', 'Control', 'Alt', 'Meta'
+    ]);
+
+    // The panel's FEEL editors (CodeMirror, contenteditable — every FEEL value of the
+    // Zeebe panel) apply edits from their own keydown, paste, cut and drop handlers,
+    // which the beforeinput veto never sees. Stopping those events in the capture
+    // phase, before they reach the editor, keeps it selectable and copyable.
+    #vetoFeelEditorEdits(container) {
+        if (!container) {
+            return;
+        }
+        const inEditor = (event) => event.target instanceof Element && event.target.closest('[contenteditable]');
+        const veto = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
+        container.addEventListener('keydown', (event) => {
+            const copyOrSelectAll = (event.ctrlKey || event.metaKey) && ['c', 'a'].includes(event.key.toLowerCase());
+            if (inEditor(event) && !copyOrSelectAll && !BpmnDiffer.#READ_ONLY_KEYS.has(event.key)) {
+                veto(event);
+            }
+        }, true);
+        for (const type of ['paste', 'cut', 'drop']) {
+            container.addEventListener(type, (event) => {
+                if (inEditor(event)) {
+                    veto(event);
+                }
+            }, true);
+        }
+    }
+
     #createModeler() {
+        const c8 = this.#dialect === CAMUNDA_DIALECT.C8;
         return new BpmnJS({
             container: '#' + BpmnDifferView.CANVAS_ID,
             propertiesPanel: {
@@ -399,11 +463,15 @@ class BpmnDiffer {
             additionalModules: [
                 window.BpmnJSPropertiesPanel.BpmnPropertiesPanelModule,
                 window.BpmnJSPropertiesPanel.BpmnPropertiesProviderModule,
-                window.BpmnJSPropertiesPanel.CamundaPlatformPropertiesProviderModule,
+                c8
+                    ? window.BpmnJSPropertiesPanel.ZeebePropertiesProviderModule
+                    : window.BpmnJSPropertiesPanel.CamundaPlatformPropertiesProviderModule
             ],
-            moddleExtensions: {
-                camunda: this.#params.camundaBpmnModdle
-            }
+            // One descriptor only: camunda and zeebe both define modelerTemplate,
+            // and moddle rejects every bpmn:process when both are registered.
+            moddleExtensions: c8
+                ? { zeebe: this.#params.zeebeBpmnModdle }
+                : { camunda: this.#params.camundaBpmnModdle }
         });
     }
 
@@ -857,10 +925,10 @@ class BpmnDiffer {
                 return false;
             }
             if (element.type === 'bpmn:CallActivity') {
-                return wanted.has(businessObject.calledElement);
+                return wanted.has(calledProcessId(businessObject, this.#dialect));
             }
             if (element.type === 'bpmn:BusinessRuleTask') {
-                return wanted.has(businessObject.decisionRef);
+                return wanted.has(calledDecisionId(businessObject, this.#dialect));
             }
             return false;
         });

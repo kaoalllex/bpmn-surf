@@ -15,10 +15,13 @@
 // annotations have no such natural home and do live in chrome.storage.sync, and
 // so do the site types (GitLab or GitHub) the user picks for their own hosts.
 
+const TOPIC_ANNOTATION_SUGGESTIONS = ['ExternalTaskSubscription', 'JobWorker', 'ZeebeWorker'];
+const SITE_SUGGESTIONS = ['gitlab.com', 'github.com'];
+
 const VIEW_TITLES = {
     home: 'bpmn-surf',
     sites: 'Sites',
-    annotations: 'External task handler annotations',
+    annotations: 'Handler annotations',
     file: 'Settings file'
 };
 
@@ -41,6 +44,7 @@ const els = {
     siteList: document.getElementById('siteList'),
     addHostForm: document.getElementById('addHostForm'),
     hostInput: document.getElementById('hostInput'),
+    hostSuggestions: document.getElementById('hostSuggestions'),
     hostError: document.getElementById('hostError'),
 
     topicAnnList: document.getElementById('topicAnnList'),
@@ -48,6 +52,7 @@ const els = {
     addTopicAnnForm: document.getElementById('addTopicAnnForm'),
     addClassAnnForm: document.getElementById('addClassAnnForm'),
     topicAnnInput: document.getElementById('topicAnnInput'),
+    topicAnnSuggestions: document.getElementById('topicAnnSuggestions'),
     classAnnInput: document.getElementById('classAnnInput'),
     annError: document.getElementById('annError'),
     annWarning: document.getElementById('annWarning'),
@@ -157,6 +162,7 @@ async function renderSites() {
     const waiting = undetected.filter(h => !kinds[h]);
     els.undetectedHosts.textContent = waiting.join(', ');
     els.undetectedHomeWarning.classList.toggle('hidden', !waiting.length);
+    fillSuggestions(els.hostSuggestions, SITE_SUGGESTIONS, sites.map(hostOf));
     els.sitesSummary.textContent = sites.length ? sites.map(hostOf).join(', ') : 'No site yet';
     els.noSitesWarning.classList.toggle('hidden', sites.length > 0);
     els.noSitesHomeWarning.classList.toggle('hidden', sites.length > 0);
@@ -203,6 +209,17 @@ els.addHostForm.addEventListener('submit', event => {
         .catch(e => showError(String((e && e.message) || e)));
 });
 
+// Native suggestions for an add field: the known values not yet in its list;
+// free text is still accepted.
+function fillSuggestions(datalist, values, taken) {
+    datalist.textContent = '';
+    for (const value of values.filter(v => !taken.includes(v))) {
+        const option = document.createElement('option');
+        option.value = value;
+        datalist.appendChild(option);
+    }
+}
+
 // ==== Handler annotations (FEAT-0035) ====
 
 // Removing the last entry of a style is allowed: it switches that style off.
@@ -239,10 +256,12 @@ async function renderAnnotations() {
         appendAnnotation(els.classAnnList, name, n => removeAnnotation('className', n));
     }
 
+    fillSuggestions(els.topicAnnSuggestions, TOPIC_ANNOTATION_SUGGESTIONS, annotations.topic);
+
     const total = annotations.topic.length + annotations.className.length;
     els.annWarning.classList.toggle('hidden', total > 0);
     els.annSummary.textContent = total === 0
-        ? 'none — external tasks will not link to code'
+        ? 'none — tasks will not link to code'
         : [...annotations.topic, ...annotations.className].map(n => `@${n}`).join(', ');
     return annotations;
 }
