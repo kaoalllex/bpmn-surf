@@ -204,7 +204,7 @@ class GitHubDomScraper {
     static #rangeLabels(commits, refs) {
         const label = (sha) => {
             const commit = commits.find(c => c.oid === sha);
-            return commit ? `${commit.messageHeadline} (${commit.shortOid})` : null;
+            return commit && commit.messageHeadline && commit.shortOid ? `${commit.messageHeadline} (${commit.shortOid})` : null;
         };
         return {
             headLabel: label(refs.headSha) || shortenCommitId(refs.headSha),

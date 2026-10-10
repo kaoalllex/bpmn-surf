@@ -205,6 +205,11 @@ describe('GitHubDomScraper — a selected commit or range (new UI)', () => {
         assert.equal(commit.scraper.pullRefs(commit.document, 7, lazy, `${P}..${C}`), null);
     });
 
+    it('labels a commit by short SHA when GitHub omits its title', () => {
+        const { document, scraper } = scrape(commitView.replace(',"messageHeadline":"second"', ''));
+        assert.equal(scraper.pullRefs(document, 7, null, C).headLabel, 'eeeeeeee');
+    });
+
     it('accepts a range that spans one commit, which GitHub views as COMMIT', () => {
         const { document, scraper } = scrape(commitView);
         assert.equal(scraper.pullRefs(document, 7, null, `${P.slice(0, 7)}..${C.slice(0, 7)}`).mergeBaseSha, P);
