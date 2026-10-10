@@ -28,3 +28,19 @@ test('downloads the shown side with a branch-prefixed filename', async ({ page }
 
 // The absent-file / disabled-Download case is already covered by
 // dmn-absent-side.spec.js — not duplicated here.
+
+// The icon is a floppy disk drawn by CSS (a mask over currentColor), not a glyph;
+// the button keeps a spelled-out accessible name.
+test('the download button shows a floppy-disk icon', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootDmnDiffer(page);
+
+    const button = page.getByRole('button', { name: DOWNLOAD_TITLE });
+    await expect(button).toHaveText('');
+    const icon = await button.evaluate((element) => {
+        const style = getComputedStyle(element, '::before');
+        return { mask: style.maskImage || style.webkitMaskImage, width: style.width };
+    });
+    expect(icon.mask).toContain('data:image/svg+xml');
+    expect(icon.width).toBe('16px');
+});

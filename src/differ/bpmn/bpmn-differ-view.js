@@ -385,10 +385,14 @@ class BpmnDifferView {
     #button(opts) {
         const button = document.createElement('button');
         button.className = BpmnDifferView.BTN_CLASS + ' differ-btn'
-            + (opts.icon ? ' differ-icon-btn' : '')
+            + (opts.icon || opts.iconClass ? ' differ-icon-btn' : '')
             + (opts.strong ? ' differ-btn-strong' : '')
             + (opts.danger ? ' differ-btn-danger' : '');
-        button.textContent = opts.icon || opts.text;
+        button.textContent = opts.icon || opts.text || '';
+        // A CSS-drawn icon (no glyph fits): the class paints it.
+        if (opts.iconClass) {
+            button.classList.add(opts.iconClass);
+        }
         if (opts.title) {
             button.title = opts.title;
         }
@@ -425,11 +429,13 @@ class BpmnDifferView {
 
         // Download stays first (left), at a stable position by the bar's edge, so it
         // does not drift with the path length; the path is truncated after it.
+        const downloadTitle = this.#isEditMode()
+            ? 'Download the edited .bpmn'
+            : 'Download the file as shown for the current branch';
         this.#downloadButton = this.#button({
-            icon: '↓',
-            title: this.#isEditMode()
-                ? 'Download the edited .bpmn'
-                : 'Download the file as shown for the current branch',
+            iconClass: 'differ-icon-download',
+            title: downloadTitle,
+            ariaLabel: downloadTitle,
             onClick: () => this.#callbacks.onDownload()
         });
         fileGroup.appendChild(this.#downloadButton);
