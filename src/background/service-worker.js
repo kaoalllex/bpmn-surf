@@ -15,6 +15,9 @@
 importScripts('/src/hosts/host-patterns.js');
 
 const USER_HOSTS_SCRIPT_ID = 'bpmn-surf-user-hosts';
+// Amber: "!" asks for the user's action (a warning), the default grey-blue goes unnoticed.
+const BADGE_COLOR = '#F5B400';
+const BADGE_TEXT_COLOR = '#1F1F1F';
 
 async function reconcileHostRegistrations() {
     const declared = await (await fetch(chrome.runtime.getURL('src/hosts/content-scripts.json'))).json();
@@ -48,6 +51,11 @@ async function reconcileHostRegistrations() {
     const pending = pruneUndetectedSites(stored, origins);
     if (pending.length !== stored.length) {
         await chrome.storage.local.set({ [UNDETECTED_SITES_KEY]: { hosts: pending } });
+    }
+    await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR });
+    // setBadgeTextColor exists since Chrome 110; the manifest sets no minimum version
+    if (chrome.action.setBadgeTextColor) {
+        await chrome.action.setBadgeTextColor({ color: BADGE_TEXT_COLOR });
     }
     await chrome.action.setBadgeText({ text: matches.length === 0 || notice || pending.length ? '!' : '' });
     return matches;
