@@ -324,6 +324,10 @@ els.importInput.addEventListener('change', async event => {
         const imported = parseSettingsExport(await file.text());
         await saveHandlerAnnotations(imported.handlerAnnotations);
         await saveSiteKinds(imported.siteKinds);
+        for (const host of Object.keys(imported.siteKinds)) {
+            await clearUndetectedSite(host);
+        }
+        await renderSites();
         await renderAnnotations();
 
         const { origins } = await chrome.permissions.getAll();
