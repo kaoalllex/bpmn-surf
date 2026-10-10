@@ -4,12 +4,17 @@
 // exactly as it does on the page, and GitHub redirects to its raw host
 // (allowed by the CSP the tab inherits). Code search goes through GitHub's
 // own search page, which answers JSON to a same-origin request and sees what
-// the session sees; it indexes the default branch only. The PR file list comes from the PR page's embedded
+// the session sees; it indexes the default branch only, so inside a PR the
+// files the PR changes are also read at its head. The PR file list comes from the PR page's embedded
 // payload (signed in, private repositories included); the anonymous REST API
 // only serves a signed-out user, who gets the classic page without it.
 class GitHubPlatformClient extends PlatformClient {
     // 100 files a page; three pages keep a huge PR from eating the 60/h quota.
     static #MAX_FILE_PAGES = 3;
+    // ponytail: a PR changing more files than this is searched on the default
+    // branch only; raise it if large PRs miss their own handlers in practice.
+    static #MAX_SCANNED_FILES = 100;
+    static #BINARY = /\.(png|jpe?g|gif|ico|webp|bmp|pdf|zip|gz|jar|war|class|woff2?|ttf|otf|eot|exe|dll|so|bin)$/i;
 
     #projectUrl;
     #repoSlug;
@@ -17,6 +22,7 @@ class GitHubPlatformClient extends PlatformClient {
     #load;
     #fetch;
     #change;
+    #prFiles = null; // Promise<{changedPaths: Set<string>, files: Array<{path, text}>}|null>
 
     constructor({ projectUrl, hostUrl }, loadFn = loadFileContent, { fetchFn = (...args) => fetch(...args), changeId = null, headRef = null } = {}) {
         super();
@@ -44,13 +50,62 @@ class GitHubPlatformClient extends PlatformClient {
         return `${this.#hostUrl}/search?${params}`;
     }
 
+    // The default-branch index cannot know what the PR itself adds or edits, so
+    // the files the PR changes are read at the PR head and searched here; web
+    // hits on those paths are stale and dropped.
+    async searchCode(ref, term) {
+        const [web, pr] = await Promise.all([this.#webSearch(term), this.#prSide(ref)]);
+        if (!pr) {
+            return web;
+        }
+        const own = pr.files.flatMap(({ path, text }) => GitHubPlatformClient.#grep(path, text, term));
+        return [...own, ...web.filter(hit => !pr.changedPaths.has(hit.path))];
+    }
+
+    #prSide(ref) {
+        const { changeId, headRef } = this.#change;
+        if (!changeId || !headRef || ref !== headRef) {
+            return Promise.resolve(null);
+        }
+        if (!this.#prFiles) {
+            this.#prFiles = this.#loadPrFiles(changeId, headRef).catch(error => {
+                console.debug(`bpmn-surf: cannot read PR #${changeId}'s files for search`, error);
+                return null;
+            });
+        }
+        return this.#prFiles;
+    }
+
+    async #loadPrFiles(changeId, headRef) {
+        const changed = await this.prChangedFiles(changeId);
+        const changedPaths = new Set(changed.flatMap(file => [file.path, file.oldPath].filter(Boolean)));
+        const present = changed.filter(file => file.status !== 'removed' && !GitHubPlatformClient.#BINARY.test(file.path));
+        if (present.length > GitHubPlatformClient.#MAX_SCANNED_FILES) {
+            console.info(`bpmn-surf: PR #${changeId} changes ${present.length} files — searching GitHub's default branch only`);
+            return null;
+        }
+        const texts = await Promise.all(present.map(file =>
+            this.#load(this.rawFileUrl(headRef, file.path), false).catch(() => null)));
+        return { changedPaths, files: present.map((file, i) => ({ path: file.path, text: texts[i] })).filter(file => file.text) };
+    }
+
+    // One hit per matching line, two lines of context either side — the shape a
+    // GitLab blob-search chunk has, so the locators' line arithmetic holds.
+    static #grep(path, text, term) {
+        const lines = text.split('\n');
+        const hits = [];
+        lines.forEach((line, i) => {
+            if (line.includes(term)) {
+                const start = Math.max(0, i - 2);
+                hits.push({ path, line: start + 1, snippet: lines.slice(start, i + 3).join('\n') });
+            }
+        });
+        return hits;
+    }
+
     // GitHub's code search page answers JSON to a same-origin request that asks
     // for it: no token, the session cookie decides what is visible. Signed out it
     // finds nothing; it indexes the default branch only, so the ref is not sent.
-    async searchCode(ref, term) {
-        return this.#webSearch(term);
-    }
-
     async #webSearch(term) {
         const params = new URLSearchParams({ q: `repo:${this.#repoSlug} ${GitHubPlatformClient.#exact(term)}`, type: 'code' });
         let route = null;

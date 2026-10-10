@@ -193,3 +193,60 @@ describe('GitHubPlatformClient.searchCode (web search, no token)', () => {
         assert.ok(calls.includes('https://ghe.example.com/api/v3/repos/acme/flows/pulls/7/files?per_page=100&page=1'));
     });
 });
+
+describe('GitHubPlatformClient.searchCode — the PR\'s own files', () => {
+    const HEAD = 'h'.repeat(40);
+    const raw = (path) => `https://github.com/acme/flows/raw/${HEAD}/${path.split('/').map(encodeURIComponent).join('/')}`;
+    const prPage = changesPage(7, [
+        { path: 'handlers/AuditOrderHandler.kt', changeType: 'ADDED' },
+        { path: 'flows/payment.bpmn', changeType: 'MODIFIED' },
+        { path: 'flows/old.bpmn', changeType: 'DELETED' },
+        { path: 'img/logo.png', changeType: 'ADDED' }
+    ]);
+    const pages = {
+        [CHANGES_URL]: prPage,
+        [raw('handlers/AuditOrderHandler.kt')]: 'package x\n\n@ExternalTaskSubscription("audit-order")\nclass AuditOrderHandler\n',
+        [raw('flows/payment.bpmn')]: '<a>\n<bpmn:process id="Payment">\n</a>'
+    };
+    const change = { changeId: 7, headRef: HEAD };
+
+    it('finds what the PR adds, which the default-branch index cannot know', async () => {
+        const { client } = createClient(pages, { change, searches: { [Q('audit-order')]: searchJson([]) } });
+        const hits = await client.searchCode(HEAD, 'audit-order');
+        assert.deepEqual(JSON.parse(JSON.stringify(hits)), [{
+            path: 'handlers/AuditOrderHandler.kt',
+            line: 1,
+            snippet: 'package x\n\n@ExternalTaskSubscription("audit-order")\nclass AuditOrderHandler\n'
+        }]);
+    });
+
+    it('drops web hits on files the PR changed or deleted — the PR side wins', async () => {
+        const web = searchJson([PROCESS_HIT, { path: 'flows/old.bpmn', snippets: [{ lines: ['Payment'], starting_line_number: 1 }] },
+            { path: 'flows/other.bpmn', snippets: [{ lines: ['Payment'], starting_line_number: 5 }] }]);
+        const { client } = createClient(pages, { change, searches: { [Q('Payment')]: web } });
+        const hits = await client.searchCode(HEAD, 'Payment');
+        assert.deepEqual(Array.from(hits, h => `${h.path}:${h.line}`), ['flows/payment.bpmn:1', 'flows/other.bpmn:5']);
+    });
+
+    it('keeps the PR side when the web search has no answer (anonymous, 429)', async () => {
+        const { client } = createClient(pages, { change });  // no searches → 429
+        assert.deepEqual(Array.from(await client.searchCode(HEAD, 'audit-order'), h => h.path), ['handlers/AuditOrderHandler.kt']);
+    });
+
+    it('reads the PR files once per differ, skips deleted and binary files', async () => {
+        const { client, calls } = createClient(pages, { change, searches: { [Q('a')]: searchJson([]), [Q('b')]: searchJson([]) } });
+        await client.searchCode(HEAD, 'a');
+        await client.searchCode(HEAD, 'b');
+        const rawCalls = calls.filter(u => u.includes('/raw/'));
+        assert.deepEqual(rawCalls.sort(), [raw('flows/payment.bpmn'), raw('handlers/AuditOrderHandler.kt')].sort());
+    });
+
+    it('searches the web only for another ref, outside a PR, and on a PR too large to read', async () => {
+        const many = changesPage(7, Array.from({ length: 101 }, (_, i) => ({ path: `f${i}.txt`, changeType: 'MODIFIED' })));
+        for (const [setup, ref] of [[{ change }, 'b'.repeat(40)], [{}, HEAD], [{ change, pages: { [CHANGES_URL]: many } }, HEAD]]) {
+            const { client, calls } = createClient(setup.pages || pages, { change: setup.change, searches: { [Q('x')]: searchJson([]) } });
+            assert.deepEqual(Array.from(await client.searchCode(ref, 'x')), []);
+            assert.equal(calls.filter(u => u.includes('/raw/')).length, 0);
+        }
+    });
+});

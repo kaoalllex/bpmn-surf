@@ -1,7 +1,8 @@
 'use strict';
 
 // Shared Layer-2 harness helper: boots the real BPMN differ in the page with an
-// injected FakePlatformClient. The feature specs (differ-*.spec.js) import this
+// injected FakePlatformClient (or, with realClient, the production client the
+// spec's page.route()s answer for). The feature specs (differ-*.spec.js) import this
 // so the boot sequence lives in one place and stays in sync with production.
 const fs = require('node:fs');
 const path = require('node:path');
@@ -78,7 +79,7 @@ function defaultDmnParams(overrides = {}) {
     };
 }
 
-async function bootBpmnDiffer(page, { params = defaultBpmnParams(), fixtures = BPMN_FIXTURES } = {}) {
+async function bootBpmnDiffer(page, { params = defaultBpmnParams(), fixtures = BPMN_FIXTURES, realClient = false } = {}) {
     await page.goto('/test/e2e/harness/differ-harness.html');
 
     // Load utils.js ONCE (defines loadScripts / loadFileContent). The real
@@ -92,16 +93,20 @@ async function bootBpmnDiffer(page, { params = defaultBpmnParams(), fixtures = B
         await loadScripts(document, getLocalUrl);
     });
 
-    await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
-    await page.evaluate(async ({ params, fixtures }) => {
-        const client = new FakePlatformClient(fixtures);
+    if (!realClient) {
+        await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
+    }
+    await page.evaluate(async ({ params, fixtures, realClient }) => {
+        const client = realClient
+            ? createPlatformClient(params.platform, { changeId: params.changeRequestId, headRef: params.sourceRef })
+            : new FakePlatformClient(fixtures);
         // Kept on window so a spec can inspect what the differ asked the platform for.
         window.__platformClient = client;
         await new BpmnDiffer(params, client).show();
-    }, { params, fixtures });
+    }, { params, fixtures, realClient });
 }
 
-async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN_FIXTURES } = {}) {
+async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN_FIXTURES, realClient = false } = {}) {
     await page.goto('/test/e2e/harness/differ-harness.html');
 
     // Load utils.js ONCE (see bootBpmnDiffer for why the re-include is neutralized).
@@ -112,13 +117,17 @@ async function bootDmnDiffer(page, { params = defaultDmnParams(), fixtures = DMN
         await loadScripts(document, getLocalUrl);
     });
 
-    await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
-    await page.evaluate(async ({ params, fixtures }) => {
-        const client = new FakePlatformClient(fixtures);
+    if (!realClient) {
+        await page.addScriptTag({ url: '/test/e2e/support/fake-platform-client.js' });
+    }
+    await page.evaluate(async ({ params, fixtures, realClient }) => {
+        const client = realClient
+            ? createPlatformClient(params.platform, { changeId: params.changeRequestId, headRef: params.sourceRef })
+            : new FakePlatformClient(fixtures);
         // Kept on window so a spec can inspect what the differ asked the platform for.
         window.__platformClient = client;
         await new DmnDiffer(params, client).show();
-    }, { params, fixtures });
+    }, { params, fixtures, realClient });
 }
 
 module.exports = {
