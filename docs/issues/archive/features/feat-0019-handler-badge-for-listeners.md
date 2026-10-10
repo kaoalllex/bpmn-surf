@@ -2,7 +2,7 @@
 id: FEAT-0019
 title: Handler navigation badge for execution/task listeners
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -124,3 +124,7 @@ with `script`/`expression` → skip; an element without `extensionElements` → 
 ## Work log
 
 <!-- Filled in while working on the task; freshest entries on top. -->
+
+### 2026-10-10 · claude-opus-5-5 · `3ccd05f`, `87d81ee` (branch `feature/camunda-dialects-listener-badges`)
+
+Both dialects. Keys: the dialect's `listenerKeys(bo)` → `[{ key, kind, event }]` (C7 `class` / `delegateExpression` → `class:<Name>`, expression and script skipped; C8 `zeebe:ExecutionListeners` / `zeebe:TaskListeners` job types → `topic:<type>`, no key for `io.camunda:` or FEEL), unit-tested on moddle mocks. UI questions resolved: on the canvas, not the panel — a row of `ℓ</>` badges off the shape's bottom-left corner (the implementation badge stays bottom-right, so they coexist), one badge per distinct key (two listeners of one class share it, the title lists the events), each coloured by its own change (no aggregation needed); permanent when any key is touched in the MR, otherwise on selection. A sequence flow carries the row under the middle of its middle segment, a pool shows its process's listeners, and a process without a pool hands them to its top-level start events ("Process execution listener (…)") — the last two from the branch review. `handler-locator.js` is unchanged as planned. Layer 2: `differ-listener-badges.spec.js` (C7 fixture `listener-badges.bpmn` + the C8 `OrderMain`). Live: the sandbox's `c8/model-changes` shows the badge on "Validate the order". Nothing remains.
