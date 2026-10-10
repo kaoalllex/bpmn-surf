@@ -12,8 +12,8 @@ const COMPARE = {
 const PR_URL = 'https://github.com/acme/flows/pull/42/files';
 const RENDERED = [{ path: 'flows/new-name.bpmn', oldPath: null }];
 
-function createProvider({ failWith, blocks = RENDERED, missing = false } = {}) {
-    const scope = createScope({ url: PR_URL });
+function createProvider({ failWith, blocks = RENDERED, missing = false, url = PR_URL } = {}) {
+    const scope = createScope({ url });
     const calls = [];
     const load = async (url) => {
         calls.push(url);
@@ -32,6 +32,12 @@ function createProvider({ failWith, blocks = RENDERED, missing = false } = {}) {
 describe('GitHubApiRepoProvider (fallback)', () => {
     it('waits for a rendered PR page before spending quota', async () => {
         const { provider, calls } = createProvider({ blocks: [] });
+        assert.equal(await provider.init(), false);
+        assert.deepEqual(calls, []);
+    });
+
+    it('gives a commit or range selection no button and spends no quota', async () => {
+        const { provider, calls } = createProvider({ url: `https://github.com/acme/flows/pull/42/files/${'a'.repeat(40)}..${'b'.repeat(40)}` });
         assert.equal(await provider.init(), false);
         assert.deepEqual(calls, []);
     });

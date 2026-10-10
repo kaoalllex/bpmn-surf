@@ -51,9 +51,9 @@ function newUiBlock(digit, path, oldPath = null) {
       </div></div></div>`;
 }
 
-function newUiPayload(number, viewing = 'FULL', changes = {}) {
+function newUiPayload(number, viewing = 'FULL', changes = {}, route = 'pullRequestsChangesRoute') {
     const data = { payload: {
-        pullRequestsChangesRoute: {
+        [route]: {
             comparison: { fullDiff: { baseOid: B, headOid: H }, viewing },
             diffSummaries: [],
             diffContents: [{ oldCommitOid: M, newCommitOid: H }],
@@ -133,7 +133,7 @@ describe('GitHubDomScraper — a large PR with lazily loaded diffs', () => {
     it('names the smallest file to load when the page embeds no file diffs', () => {
         const { document, scraper } = scrape(newUiPayload(7, 'FULL', LAZY));
         assert.equal(scraper.pullRefs(document, 7), null);
-        assert.deepEqual({ ...scraper.lazyDiffEntry(document, 7) }, { path: 'flows/a.bpmn', headSha: H });
+        assert.deepEqual({ ...scraper.lazyDiffEntry(document, 7) }, { path: 'flows/a.bpmn', range: H });
     });
 
     it('reads the refs from the loaded file diffs', () => {
@@ -147,6 +147,72 @@ describe('GitHubDomScraper — a large PR with lazily loaded diffs', () => {
             const { document, scraper } = scrape(html);
             assert.equal(scraper.lazyDiffEntry(document, number), null);
         }
+    });
+});
+
+describe('GitHubDomScraper — a selected commit or range (new UI)', () => {
+    const P = 'd'.repeat(40);  // the commit's parent
+    const C = 'e'.repeat(40);  // the selected commit
+    const commits = [{ oid: P, shortOid: 'ddddddd', messageHeadline: 'first' }, { oid: C, shortOid: 'eeeeeee', messageHeadline: 'second' }];
+    const commitView = newUiPayload(7, 'COMMIT', {
+        comparison: { fullDiff: { baseOid: B, headOid: H }, selectedRange: { baseOid: P, headOid: C }, viewing: 'COMMIT' },
+        commit: { oid: C, sha1: P, sha2: C, parents: [P] }, commits,
+        diffContents: [{ oldCommitOid: P, newCommitOid: C }]
+    }, 'pullRequestsChangesWithRangeRoute');
+
+    it('diffs the commit against its parent and labels both by commit', () => {
+        const { document, scraper } = scrape(commitView);
+        assert.deepEqual({ ...scraper.pullRefs(document, 7, null, C) }, {
+            headSha: C, mergeBaseSha: P, headRef: 'feature/x', baseRef: 'main', title: 'Add flow',
+            headLabel: 'second (eeeeeee)', baseLabel: 'first (ddddddd)'
+        });
+    });
+
+    it('labels a side outside the PR\'s commits by the base branch', () => {
+        const range = newUiPayload(7, 'RANGE', {
+            comparison: { fullDiff: { baseOid: B, headOid: H }, selectedRange: { baseOid: B, headOid: C }, viewing: 'RANGE' },
+            commits, diffContents: [{ oldCommitOid: M, newCommitOid: C }]
+        }, 'pullRequestsChangesWithRangeRoute');
+        const { document, scraper } = scrape(range);
+        const refs = scraper.pullRefs(document, 7, null, `BASE..${C}`);
+        assert.equal(refs.mergeBaseSha, M);  // the shown pair, never selectedRange.baseOid (the base tip)
+        assert.equal(refs.baseLabel, 'main');
+        assert.equal(refs.headLabel, 'second (eeeeeee)');
+    });
+
+    it('rejects a payload left over from another selection (SPA switch in the picker)', () => {
+        const { document, scraper } = scrape(commitView);
+        assert.equal(scraper.pullRefs(document, 7, null, P), null);    // URL now shows the other commit
+        assert.equal(scraper.pullRefs(document, 7), null);              // URL shows the whole PR
+        const full = scrape(newUiPayload(7));
+        assert.equal(full.scraper.pullRefs(full.document, 7, null, C), null);  // URL shows a commit, DOM the whole PR
+    });
+
+    it('names the diff_entries range for a large PR: commit → parent..commit, range → the URL', () => {
+        const lazy = { diffContents: [], diffSummaries: [{ path: 'a.bpmn', linesChanged: 1 }] };
+        const commit = scrape(newUiPayload(7, 'COMMIT', { ...lazy,
+            comparison: { selectedRange: { baseOid: P, headOid: C }, viewing: 'COMMIT' }, commit: { oid: C, sha1: P, sha2: C } },
+        'pullRequestsChangesWithRangeRoute'));
+        assert.deepEqual({ ...commit.scraper.lazyDiffEntry(commit.document, 7, C) }, { path: 'a.bpmn', range: `${P}..${C}` });
+        const range = scrape(newUiPayload(7, 'RANGE', { ...lazy,
+            comparison: { selectedRange: { baseOid: B, headOid: C }, viewing: 'RANGE' } }, 'pullRequestsChangesWithRangeRoute'));
+        assert.deepEqual({ ...range.scraper.lazyDiffEntry(range.document, 7, `BASE..${C}`) }, { path: 'a.bpmn', range: `BASE..${C}` });
+        const full = scrape(newUiPayload(7, 'FULL', lazy));
+        assert.deepEqual({ ...full.scraper.lazyDiffEntry(full.document, 7) }, { path: 'a.bpmn', range: H });
+    });
+});
+
+describe('GitHubDomScraper — a selected commit or range (classic)', () => {
+    it('reads the shown pair from show_toc and labels by short SHA, the merge base by branch', () => {
+        const header = (sha1) => classicHeader().replace(/<include-fragment.*<\/include-fragment>/s,
+            `<details-menu src="/acme/flows/pull/7/show_toc?base_sha=${M}&amp;sha1=${sha1}&amp;sha2=${H}"></details-menu>`);
+        const mid = scrape(header(B));
+        assert.deepEqual({ ...mid.scraper.pullRefs(mid.document, 7, null, `${B}..${H}`) }, {
+            headSha: H, mergeBaseSha: B, headRef: 'feature/x', baseRef: 'main', title: 'Add flow',
+            headLabel: 'aaaaaaaa', baseLabel: 'bbbbbbbb'
+        });
+        const fromBase = scrape(header(M));
+        assert.equal(fromBase.scraper.pullRefs(fromBase.document, 7, null, H).baseLabel, 'main');
     });
 });
 

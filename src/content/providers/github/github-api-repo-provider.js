@@ -12,6 +12,10 @@ class GitHubApiRepoProvider extends GitHubRepoProviderBase {
     #renames = new Map();
 
     async resolvePull(pr) {
+        // The REST fallback knows only the whole PR; a selection gets no button rather than the whole diff.
+        if (pr.range) {
+            return null;
+        }
         if (this.domScraper.fileBlocks(document).length === 0) {
             return null;
         }

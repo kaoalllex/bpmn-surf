@@ -12,7 +12,7 @@ describe('GitHubUrlParser.parsePullFiles', () => {
     it('parses the classic and the new Files changed URLs', () => {
         for (const tab of ['files', 'changes', 'files/', 'changes?diff=split', 'files#diff-abc']) {
             assert.deepEqual(plain(parser.parsePullFiles(`https://github.com/acme/flows/pull/42/${tab}`)),
-                { owner: 'acme', repo: 'flows', number: 42 }, tab);
+                { owner: 'acme', repo: 'flows', number: 42, range: null }, tab);
         }
     });
 
@@ -25,6 +25,28 @@ describe('GitHubUrlParser.parsePullFiles', () => {
             assert.equal(parser.parsePullFiles(`https://github.com/${path}`), null, path);
         }
     });
+});
+
+describe('GitHubUrlParser.parsePullFiles — commit and range views', () => {
+    const p = new (createScope().GitHubUrlParser)();
+    const A = 'a'.repeat(40), B = 'b'.repeat(40);
+    for (const [path, range] of [
+        ['/acme/flows/pull/9/changes', null],
+        ['/acme/flows/pull/9/files/', null],
+        [`/acme/flows/pull/9/changes/${A}`, A],
+        [`/acme/flows/pull/9/changes/${A}..${B}`, `${A}..${B}`],
+        [`/acme/flows/pull/9/changes/BASE..${B}`, `BASE..${B}`],
+        [`/acme/flows/pull/9/files/${A}..${B}`, `${A}..${B}`],
+        [`/acme/flows/pull/9/commits/${A}`, A],
+        ['/acme/flows/pull/9/files/1499620', '1499620']
+    ]) {
+        it(`reads ${path}`, () => {
+            assert.deepEqual({ ...p.parsePullFiles(`https://github.com${path}`) }, { owner: 'acme', repo: 'flows', number: 9, range });
+        });
+    }
+    for (const path of ['/acme/flows/pull/9/commits', '/acme/flows/pull/9/changes/main', '/acme/flows/pull/9/changes/a..b/x', '/acme/flows/pull/9']) {
+        it(`rejects ${path}`, () => assert.equal(p.parsePullFiles(`https://github.com${path}`), null));
+    }
 });
 
 describe('GitHubUrlParser.parseBlob', () => {
