@@ -140,7 +140,8 @@ class BpmnDiffer {
             () => this.#selectedElementId,
             () => this.#getShownRef(),
             (url) => window.open(url, '_blank'),
-            (url) => this.#tabNavigator.navigateOpenerTab(url)
+            (url) => this.#tabNavigator.navigateOpenerTab(url),
+            () => this.#dialect
         );
         this.#correlationNavigator = new CorrelationNavigator(
             bpmnJSOverlays,

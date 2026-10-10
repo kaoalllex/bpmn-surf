@@ -51,8 +51,9 @@ updates and re-installs; remove it with the `×` next to it in the popup. Chrome
 showing a removed host under `chrome://extensions` → Details → Site access — that record is
 its own, the extension no longer runs there.
 
-The same popup sets which annotations mark external-task handlers, if your project uses
-something other than `@ExternalTaskSubscription`.
+The same popup sets which annotations mark task handlers, if your project uses something
+other than `@ExternalTaskSubscription` (Camunda 7) and `@JobWorker` (Camunda 8) — for
+example `@ZeebeWorker`.
 
 ![The popup: the Sites list with gitlab.com and a self-managed host added, and the handler annotation settings](docs/media/popup.png)
 
@@ -90,7 +91,7 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 - Diving from a Call Activity into the called process — and stepping back to the caller
 - A menu of every diagram that calls the one on screen
 - Navigating from a Business Rule Task to the called DMN — and back
-- Jumping to the handler code of a service task (external task or delegate) — to its diff when the merge request changed it
+- Jumping to the handler code of a service task (external task, delegate or Camunda 8 job worker) — to its diff when the merge request changed it
 - Jumping from a message-catching event/task to where its message is correlated in code
 
 ![Diving into a call activity, whose changed handler opens its diff in the merge request; diving further down; the menu of every diagram that calls this one; and a business rule task opening its DMN decision with the merge request's changes](docs/media/diagrams.gif)

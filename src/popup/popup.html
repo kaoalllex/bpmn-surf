@@ -40,7 +40,7 @@
             </button>
             <button type="button" class="pu-menu-item" data-open="annotations">
                 <span class="pu-menu-text">
-                    <span class="pu-menu-label">External task handler annotations</span>
+                    <span class="pu-menu-label">Handler annotations</span>
                     <span class="pu-menu-sub" id="annSummary">&nbsp;</span>
                 </span>
                 <span class="pu-menu-chevron" aria-hidden="true">&#8250;</span>
@@ -67,7 +67,8 @@
         <ul class="pu-site-list" id="siteList"></ul>
         <form class="pu-add" id="addHostForm">
             <input type="text" id="hostInput" class="pu-input" placeholder="gitlab.mycompany.com"
-                   autocomplete="off" autocapitalize="off" spellcheck="false">
+                   list="hostSuggestions" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <datalist id="hostSuggestions"></datalist>
             <button type="submit" class="pu-primary">Add</button>
         </form>
         <div class="pu-error hidden" id="hostError"></div>
@@ -76,22 +77,25 @@
     <!-- ==== Handler annotations ==== -->
     <div class="pu-view hidden" data-view="annotations">
         <p class="pu-hint">
-            How this project marks the class serving an external task, so the diagram
-            can link to it. Delegates need no annotation and always work.
+            How this project marks the code serving a task — a Camunda 7 external task or a
+            Camunda 8 job worker — so the diagram can link to it. Delegates need no annotation
+            and always work.
         </p>
         <div class="pu-warn hidden" id="annWarning">
-            Both lists are empty — external tasks will not link to their handler code.
+            Both lists are empty — tasks will not link to their handler code.
         </div>
 
-        <h3 class="pu-subtitle">Topic in the annotation</h3>
+        <h3 class="pu-subtitle">Topic / job type in the annotation</h3>
         <p class="pu-hint pu-hint-tight">
             <code>@ExternalTaskSubscription("validateOrder")</code> &#8594; topic
-            <code>validateOrder</code>.
+            <code>validateOrder</code>; <code>@JobWorker(type = "validate-order")</code>
+            &#8594; job type <code>validate-order</code>; no type &#8594; the method name.
         </p>
         <ul class="pu-site-list" id="topicAnnList"></ul>
         <form class="pu-add" id="addTopicAnnForm">
             <input type="text" id="topicAnnInput" class="pu-input" placeholder="ExternalTaskSubscription"
-                   autocomplete="off" autocapitalize="off" spellcheck="false">
+                   list="topicAnnSuggestions" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <datalist id="topicAnnSuggestions"></datalist>
             <button type="submit" class="pu-primary">Add</button>
         </form>
 

@@ -19,7 +19,7 @@ describe('buildSettingsExport', () => {
         assert.equal(file.format, SETTINGS_EXPORT_FORMAT);
         assert.equal(file.exportedBy, 'bpmn-surf 1.2.0');
         assert.deepEqual(file.handlerAnnotations, {
-            topic: ['ExternalTaskSubscription'],
+            topic: ['ExternalTaskSubscription', 'JobWorker'],
             className: ['ExternalTaskBean']
         });
     });
@@ -60,7 +60,7 @@ describe('parseSettingsExport', () => {
 
     it('falls back to the default annotations when the file omits them', () => {
         assert.deepEqual(parseSettingsExport(file()).handlerAnnotations, {
-            topic: ['ExternalTaskSubscription'],
+            topic: ['ExternalTaskSubscription', 'JobWorker'],
             className: []
         });
     });

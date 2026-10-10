@@ -36,6 +36,7 @@ class HandlerNavigator {
     #getCurrentRefFunc;
     #openUrlFunc;
     #navigateOpenerFunc;
+    #getDialectFunc;
 
     // Map "key -> {filePath, diffType}" of handlers touched in this MR
     // (key = topic:<topic> or class:<Name>); diffType is
@@ -44,7 +45,8 @@ class HandlerNavigator {
     #persistentOverlayIds = [];
     #selectionOverlayId = null;
 
-    constructor(overlays, elementRegistry, locator, mrIid, getSelectedElementIdFunc, getCurrentRefFunc, openUrlFunc, navigateOpenerFunc) {
+    constructor(overlays, elementRegistry, locator, mrIid, getSelectedElementIdFunc, getCurrentRefFunc, openUrlFunc, navigateOpenerFunc,
+        getDialectFunc = () => CAMUNDA_DIALECT.C7) {
         this.#overlays = overlays;
         this.#elementRegistry = elementRegistry;
         this.#locator = locator;
@@ -53,6 +55,7 @@ class HandlerNavigator {
         this.#getCurrentRefFunc = getCurrentRefFunc;
         this.#openUrlFunc = openUrlFunc;
         this.#navigateOpenerFunc = navigateOpenerFunc;
+        this.#getDialectFunc = getDialectFunc;
     }
 
     setChangedHandlers(changedHandlers) {
@@ -104,7 +107,7 @@ class HandlerNavigator {
         if (!elem || elem.labelTarget) {
             return null;
         }
-        return HandlerLocator.handlerKeyFromBusinessObject(elem.businessObject);
+        return HandlerLocator.handlerKeyFromBusinessObject(elem.businessObject, this.#getDialectFunc());
     }
 
     #addBadge(elementId, key, diffType) {
