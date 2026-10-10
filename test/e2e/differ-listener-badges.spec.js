@@ -131,3 +131,28 @@ test('a pool shows the listeners of its process', async ({ page }) => {
     await expect(listenerBadgesOn(page, 'Pool')).toHaveAttribute('title',
         'Execution listener (start) — open the handler code');
 });
+
+test('a flow listener row sits on the flow, clear of its source and target shapes', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, { fixtures: { xmlByRef: same(LISTENER_BADGES_BPMN) } });
+
+    await element(page, 'Flow_2').click({ force: true });
+    const badge = listenerBadgesOn(page, 'Flow_2');
+    await expect(badge).toBeVisible();
+    const box = await badge.boundingBox();
+    const source = await element(page, 'ClassTask').locator('.djs-visual > rect').first().boundingBox();
+    const target = await element(page, 'Approve').locator('.djs-visual > rect').first().boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(source.x + source.width);
+    expect(box.x + box.width).toBeLessThanOrEqual(target.x);
+});
+
+// A process without a pool has no shape of its own: its start events carry its listeners.
+test('a changed process listener marks the start event of a pool-less process', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, changedFile('src/ProcessAuditListener.kt', 'class ProcessAuditListener'));
+
+    const badge = listenerBadgesOn(page, 'StartEvent_1');
+    await expect(badge).toHaveCount(1);
+    await expect(badge).toHaveClass(/handler-link-changed/);
+    await expect(badge).toHaveAttribute('title', 'Process execution listener (start) changed in this MR — open its diff');
+});

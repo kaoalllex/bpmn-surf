@@ -489,6 +489,11 @@
     transform: translateX(-100%);
 }
 
+/* on a flow: centred under the line's middle */
+.listener-links-flow {
+    transform: translate(-50%, 4px);
+}
+
 /* message-correlation code link (FEAT-0027) — same minimalist look as .handler-link */
 .correlation-overlay {
     position: relative;

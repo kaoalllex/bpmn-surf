@@ -25,8 +25,9 @@
 //   badges off the element's bottom-left corner (the implementation badge sits
 //   off the bottom-right one), one per distinct handler key. The row is
 //   permanent when any of them is touched in this MR (each badge coloured by its
-//   own change), otherwise it appears on selection. A pool shows its process's
-//   listeners; a process without a pool has no shape to carry them.
+//   own change), otherwise it appears on selection. A flow carries its row at
+//   its middle. A pool shows its process's listeners; a process without a pool
+//   has no shape, so its top-level start events carry them.
 class HandlerNavigator {
     // Tooltip per change kind; absence (selection badge) falls back to a neutral one.
     static #BADGE_TITLES = {
@@ -86,13 +87,13 @@ class HandlerNavigator {
             }
             const listeners = this.#getListeners(elem);
             if (listeners.some(listener => this.#changedHandlers.has(listener.key))) {
-                this.#persistentOverlayIds.push(this.#addListenerBadges(elem.id, listeners));
+                this.#persistentOverlayIds.push(this.#addListenerBadges(elem, listeners));
             }
         }
     }
 
-    // Shows the on-demand "open handler code" badge for the selected service
-    // task (unless it already has a permanent badge).
+    // Shows the on-demand "open handler code" badges for the selected element:
+    // its implementation and its listeners, each unless already permanent.
     showOverlayForSelectedElement() {
         this.#removeSelectionOverlay();
 
@@ -104,7 +105,7 @@ class HandlerNavigator {
         }
         const listeners = this.#getListeners(elem);
         if (listeners.length > 0 && !listeners.some(listener => this.#changedHandlers.has(listener.key))) {
-            this.#selectionOverlayIds.push(this.#addListenerBadges(elementId, listeners));
+            this.#selectionOverlayIds.push(this.#addListenerBadges(elem, listeners));
         }
     }
 
@@ -130,19 +131,40 @@ class HandlerNavigator {
         if (!elem || elem.labelTarget || !elem.parent) {
             return [];
         }
-        const bo = elem.type === 'bpmn:Participant' ? elem.businessObject?.processRef : elem.businessObject;
         const labelsByKey = new Map();
-        for (const { key, kind, event } of this.#getDialectFunc().listenerKeys(bo)) {
-            const label = `${kind} listener` + (event ? ` (${event})` : '');
-            labelsByKey.set(key, [...(labelsByKey.get(key) || []), label]);
+        const collect = (bo, prefix) => {
+            for (const { key, kind, event } of this.#getDialectFunc().listenerKeys(bo)) {
+                const label = `${prefix}${kind} listener` + (event ? ` (${event})` : '');
+                labelsByKey.set(key, [...(labelsByKey.get(key) || []), label]);
+            }
+        };
+        collect(elem.type === 'bpmn:Participant' ? elem.businessObject?.processRef : elem.businessObject, '');
+        if (elem.type === 'bpmn:StartEvent' && elem.parent.type === 'bpmn:Process' && !elem.parent.parent) {
+            collect(elem.parent.businessObject, 'process ');
         }
         return [...labelsByKey].map(([key, labels]) => ({ key, labels }));
     }
 
+    // Off a shape's bottom-left corner; on a flow, at the middle of its middle
+    // segment (a connection's corner is its start, inside the source shape).
+    static #listenerRowPosition(elem) {
+        const points = elem.waypoints;
+        if (!points || points.length < 2) {
+            return { bottom: 0, left: 0 };
+        }
+        const i = Math.floor((points.length - 1) / 2);
+        const left = Math.min(...points.map(point => point.x));
+        const top = Math.min(...points.map(point => point.y));
+        return {
+            left: (points[i].x + points[i + 1].x) / 2 - left,
+            top: (points[i].y + points[i + 1].y) / 2 - top
+        };
+    }
+
     // DOM nodes rather than an html string: the titles quote the diagram.
-    #addListenerBadges(elementId, listeners) {
+    #addListenerBadges(elem, listeners) {
         const row = document.createElement('div');
-        row.className = 'listener-links';
+        row.className = elem.waypoints ? 'listener-links listener-links-flow' : 'listener-links';
         for (const { key, labels } of listeners) {
             const diffType = this.#changedHandlers.get(key)?.diffType;
             const badge = document.createElement('div');
@@ -153,8 +175,8 @@ class HandlerNavigator {
             badge.addEventListener('click', () => this.#onOpenCode(key));
             row.appendChild(badge);
         }
-        return this.#overlays.add(elementId, 'note', {
-            position: { bottom: 0, left: 0 },
+        return this.#overlays.add(elem.id, 'note', {
+            position: HandlerNavigator.#listenerRowPosition(elem),
             html: row
         });
     }
