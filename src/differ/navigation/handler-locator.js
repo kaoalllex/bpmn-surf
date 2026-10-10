@@ -3,12 +3,16 @@
 //
 // A service task is linked to its code by a namespaced "handler key" so the
 // same machinery serves both implementation kinds:
-//  - topic:<topic>     — external task; the BPMN states the topic via
-//                        camunda:topic. Two declaration styles are recognised,
-//                        both configurable by annotation name (FEAT-0035, see
-//                        core/handler-annotations.js):
-//     - a topic annotation states it explicitly — @ExternalTaskSubscription("<topic>"),
-//       the stock Camunda form, on by default;
+//  - topic:<topic>     — a C7 external task (the BPMN states the topic via
+//                        camunda:topic) or a C8 job worker (the job type of
+//                        zeebe:taskDefinition, FEAT-0038). Two declaration styles
+//                        are recognised, both configurable by annotation name
+//                        (FEAT-0035, see core/handler-annotations.js):
+//     - a topic annotation states it — @ExternalTaskSubscription("<topic>"),
+//       @JobWorker(type = "<job type>"), both stock and on by default; the
+//       string is positional or named type / value / topicName, at any position,
+//       and with none the annotated method's name is the topic (the job worker
+//       default);
 //     - a class-name annotation states nothing, and the framework derives the
 //       topic from the annotated class name by lower-casing its first letter
 //       (@Something class CorrectItemABTestDelegate -> topic
@@ -103,6 +107,7 @@ class HandlerLocator {
         if (!content || names.length === 0) {
             return declarations;
         }
+        content = HandlerLocator.#blankComments(content);
         const regex = new RegExp(`@?(?:${names.join('|')})\\b`, 'g');
         let match;
         while ((match = regex.exec(content)) !== null) {
@@ -162,6 +167,32 @@ class HandlerLocator {
         }
         const name = /([A-Za-z_]\w*)\s*$/.exec(header);
         return name ? { topic: name[1], index: i + name.index } : null;
+    }
+
+    // The content with every // and /* */ comment outside string literals turned
+    // into spaces (line breaks kept), so indexes still point into the original:
+    // a comment inside or after an annotation must not read as an argument or a
+    // declaration, and an annotation quoted in a comment declares nothing.
+    static #blankComments(content) {
+        let result = '';
+        let i = 0;
+        while (i < content.length) {
+            if (content[i] === '"') {
+                const end = Math.min(HandlerLocator.#stringEnd(content, i), content.length - 1);
+                result += content.slice(i, end + 1);
+                i = end + 1;
+            } else if (content.startsWith('//', i) || content.startsWith('/*', i)) {
+                const lineComment = content[i + 1] === '/';
+                const close = lineComment ? content.indexOf('\n', i) : content.indexOf('*/', i + 2);
+                const end = close < 0 ? content.length : (lineComment ? close : close + 2);
+                result += content.slice(i, end).replace(/[^\n]/g, ' ');
+                i = end;
+            } else {
+                result += content[i];
+                i++;
+            }
+        }
+        return result;
     }
 
     static #skipWhitespace(content, index) {

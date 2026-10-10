@@ -87,7 +87,13 @@ class BpmnDiffer {
         let loadError = null;
         try {
             await this.#loadVersions();
-            this.#dialect = detectCamundaDialect(this.#versions.branchXml, this.#versions.mrXml);
+            // Edit mode imports only the edited side, so only its own dialect counts:
+            // editing the C7 side of a migration must not write zeebe:* into it.
+            this.#dialect = this.#isEditMode()
+                ? detectCamundaDialect(this.#params.editSide === DifferParams.EDIT_SIDE_TARGET
+                    ? this.#versions.branchXml
+                    : this.#versions.mrXml)
+                : detectCamundaDialect(this.#versions.branchXml, this.#versions.mrXml);
         } catch (error) {
             loadError = error;
         }
@@ -200,6 +206,7 @@ class BpmnDiffer {
                     container.addEventListener('beforeinput', (event) => event.preventDefault(), true);
                 }
             }
+            this.#vetoFeelEditorEdits(document.getElementById(BpmnDifferView.PROPS_ID));
         }
 
         bpmnJSEventBus.on('selection.changed', (event) => {
@@ -404,6 +411,40 @@ class BpmnDiffer {
                 outline.createOutline(element);
             }
         });
+    }
+
+    // Keys that only move the caret or the selection, and copying.
+    static #READ_ONLY_KEYS = new Set([
+        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown',
+        'Tab', 'Escape', 'Shift', 'Control', 'Alt', 'Meta'
+    ]);
+
+    // The panel's FEEL editors (CodeMirror, contenteditable — every FEEL value of the
+    // Zeebe panel) apply edits from their own keydown, paste, cut and drop handlers,
+    // which the beforeinput veto never sees. Stopping those events in the capture
+    // phase, before they reach the editor, keeps it selectable and copyable.
+    #vetoFeelEditorEdits(container) {
+        if (!container) {
+            return;
+        }
+        const inEditor = (event) => event.target instanceof Element && event.target.closest('[contenteditable]');
+        const veto = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
+        container.addEventListener('keydown', (event) => {
+            const copyOrSelectAll = (event.ctrlKey || event.metaKey) && ['c', 'a'].includes(event.key.toLowerCase());
+            if (inEditor(event) && !copyOrSelectAll && !BpmnDiffer.#READ_ONLY_KEYS.has(event.key)) {
+                veto(event);
+            }
+        }, true);
+        for (const type of ['paste', 'cut', 'drop']) {
+            container.addEventListener(type, (event) => {
+                if (inEditor(event)) {
+                    veto(event);
+                }
+            }, true);
+        }
     }
 
     #createModeler() {

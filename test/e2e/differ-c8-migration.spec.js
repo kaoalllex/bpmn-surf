@@ -2,7 +2,7 @@
 
 const { test, expect } = require('@playwright/test');
 const {
-    bootBpmnDiffer, wireDiagnostics, C8_PAYMENT_C7_BPMN, C8_PAYMENT_MIGRATED_BPMN
+    bootBpmnDiffer, wireDiagnostics, defaultBpmnParams, C8_PAYMENT_C7_BPMN, C8_PAYMENT_MIGRATED_BPMN
 } = require('./support/boot-differ');
 
 // A merge request migrating Payment.bpmn from Camunda 7 to 8 in place: the
@@ -30,4 +30,19 @@ test('a 7-vs-8 diff opens on both sides with the Zeebe panel', async ({ page }) 
         .toHaveCount(1);
 
     expect(pageErrors).toEqual([]);
+});
+
+// Edit mode imports only the edited side, so its own dialect decides: editing the
+// C7 side of a migration must not write zeebe:* into a Camunda 7 file.
+test('editing the C7 side of a 7-vs-8 diff uses the Camunda 7 panel', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({ mode: 'edit', editSide: 'target' }),
+        fixtures: { xmlByRef: { 'base-sha': C8_PAYMENT_C7_BPMN, 'mr-sha': C8_PAYMENT_MIGRATED_BPMN } }
+    });
+
+    await page.locator('svg .djs-element[data-element-id="ChargeCustomer"]').click();
+    const title = (name) => page.locator('.bio-properties-panel-group-header-title', { hasText: new RegExp(`^${name}$`) });
+    await expect(title('Implementation')).toHaveCount(1);
+    await expect(title('Task definition')).toHaveCount(0);
 });

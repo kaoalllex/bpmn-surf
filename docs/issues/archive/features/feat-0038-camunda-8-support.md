@@ -376,9 +376,20 @@ check found (`e0d753e`, `e1b8b43`).
   and a C7 badge (`findItems`) opened the C8 `FindItemsWorker` (method `findItems` under
   `type = "find-items"`) once `JobWorker` was a default — the exact match now prefers a hit that
   declares the topic.
-- Seen, not changed: on the C8 side of a 7-vs-8 diff a C7 implementation change asks for the
-  "Implementation" group the Zeebe panel lacks on a service task, so the other groups paint ~3 s
-  later (the highlighter waits out each missing group); `CHANGELOG.md` is left to the release.
+- After a subagent review of the branch: FEEL fields of the Zeebe panel are selectable and
+  copyable in view mode (the CSS `pointer-events: none` on contenteditable is gone; their
+  editing keys, paste, cut and drop are vetoed in the capture phase — CodeMirror edits from
+  its own handlers, which the `beforeinput` veto does not reach); comments inside or after an
+  annotation no longer hide the job type or the method; a `zeebe:` diff takes its element's
+  row before a bare attribute row (`zeebe:property/name` → "Extension properties", not
+  "General"); edit mode takes the dialect of the edited side only (editing the C7 side of a
+  migration no longer writes `zeebe:*` into it); the highlighter and the auto-expand look the
+  groups up side by side, so a group the panel lacks (a C7 change on the C8 side of a
+  migration) no longer delays the others by ~1.35 s each (live, !20: 3 s → 146 ms).
+- `CHANGELOG.md` is left to the release.
 - Deferred: a nested tab opened from a differ tab older than this version gets no
-  `zeebeBpmnModdle`; the topic-annotation regex has no left word boundary (pre-existing).
-- Tests: unit 1615, Layer 2 197 (new: `differ-c8-*`, `popup-datalist`).
+  `zeebeBpmnModdle`; the topic-annotation regex has no left word boundary (pre-existing); the
+  FEEL condition splitter also breaks inside `between … and …` and after a path segment `or`
+  (display only); the method-name default applies to `@ExternalTaskSubscription` too (the
+  spec's one rule).
+- Tests: unit 1620, Layer 2 199 (new: `differ-c8-*`, `popup-datalist`).

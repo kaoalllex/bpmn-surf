@@ -986,6 +986,19 @@ describe('HandlerLocator.extractSubscriptionTopics — job workers', () => {
         assert.deepEqual(topics('// see JobWorker\nfun helper() {}'), []);
     });
 
+    it('ignores comments inside and after the annotation', () => {
+        assert.deepEqual(topics('@JobWorker(\n    name = "w", // worker name\n    type = "x-y")\nfun a() {}'), ['x-y']);
+        assert.deepEqual(topics('@JobWorker(\n    // the job type\n    type = "x-y")\nfun a() {}'), ['x-y']);
+        assert.deepEqual(topics('@JobWorker(/* t */ type = "x-y")\nfun a() {}'), ['x-y']);
+        assert.deepEqual(topics('@ExternalTaskSubscription("t" /* note */)\nclass H'), ['t']);
+        assert.deepEqual(topics('@JobWorker // defaults (to the method)\nfun screenFraud() {}'), ['screenFraud']);
+        assert.deepEqual(topics('// see @JobWorker(type = "old")\nfun helper() {}'), []);
+    });
+
+    it('keeps a // inside a string literal', () => {
+        assert.deepEqual(topics('@JobWorker(type = "http://x")\nfun a() {}'), ['http://x']);
+    });
+
     it('keeps @ExternalTaskSubscription as before', () => {
         assert.deepEqual(topics('@ExternalTaskSubscription("validateOrder")\nclass H'), ['validateOrder']);
         assert.deepEqual(topics('@ExternalTaskSubscription(topicName = "a")'), ['a']);

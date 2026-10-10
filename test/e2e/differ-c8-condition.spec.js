@@ -25,8 +25,11 @@ test('splits a changed FEEL condition into lines and colours the changed ones', 
         .toHaveCSS('background-color', 'rgb(136, 255, 136)');
     await expect(condition.locator('div', { hasText: /loyaltyYears >= 1/ }))
         .toHaveCSS('background-color', 'rgb(136, 255, 136)');
-    // The FEEL editor itself is hidden, not left beside the formatted block.
-    await expect(page.locator('.bio-properties-panel-feel-container').first()).toBeHidden();
+    // The FEEL editor itself is hidden, not left beside the formatted block (counted
+    // first: a missing element would pass toBeHidden too).
+    const feelEditor = page.locator('.bio-properties-panel-feel-container:has([id="bio-properties-panel-conditionExpression"])');
+    await expect(feelEditor).toHaveCount(1);
+    await expect(feelEditor).toBeHidden();
 });
 
 // No version to compare with: the condition text comes from the panel field,

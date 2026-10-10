@@ -421,12 +421,13 @@ class BpmnXmlComparator {
             return res;
         }
 
-        const diffShort = diff.slice(diff.indexOf('/') + 1);
-        const shortRes = BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
-        if (shortRes || !diff.startsWith('zeebe:')) {
-            return shortRes;
+        // A zeebe: element keeps its attributes unprefixed, so its own row decides
+        // before a bare attribute row (`name` is General) could claim the diff.
+        if (diff.startsWith('zeebe:')) {
+            return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diff.split('/')[0]);
         }
-        return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diff.split('/')[0]);
+        const diffShort = diff.slice(diff.indexOf('/') + 1);
+        return BpmnXmlComparator.#DIFF_TO_PROPERTY_GROUP_MAP.get(diffShort);
     }
 
     // For each changed list-based group on this node (In/Out mappings, Inputs/Outputs),

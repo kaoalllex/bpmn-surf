@@ -402,3 +402,21 @@ describe('PropertiesPanelHighlighter.showConditionExpression', () => {
         assert.deepEqual(parts, ['${', '  a &&', '  b', '}']);
     });
 });
+
+describe('PropertiesPanelHighlighter.highlightDiffPropGroups with a group the panel lacks', () => {
+    // A diff can name a group this panel does not render (a C7 change on the C8
+    // side of a migration, a group the panel hides). Its lookup retries ~1.35 s;
+    // the groups that are there must not wait for it.
+    it('paints the groups present without waiting out the missing one', async () => {
+        const scope = createPanelScope();
+        scope.window.console.warn = () => {};
+        const highlighter = createHighlighter(scope);
+        highlighter.setDiffData(new Map([['Task_1', ['Not in this panel', 'General']]]), new Map());
+
+        const done = highlighter.highlightDiffPropGroups('Task_1');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        assert.equal(groupHeader(scope.document, 'General').style.backgroundColor, colorOf(scope.document, HIGHLIGHT_COLOR));
+        await done;
+    });
+});

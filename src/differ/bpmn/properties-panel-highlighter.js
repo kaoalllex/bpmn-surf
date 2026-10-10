@@ -52,11 +52,14 @@ class PropertiesPanelHighlighter {
         }
         const mappingChanges = this.#nodeIdToMappingChanges.get(elementId);
 
-        for (const diffPropGroup of diffPropGroups) {
+        // Looked up side by side: a group this panel does not render (a C7 change on
+        // the C8 side of a migration, a group the panel hides) retries for ~1.35 s,
+        // and the groups that are there must not wait for it.
+        await Promise.all([...new Set(diffPropGroups)].map(async (diffPropGroup) => {
             const groupHeader = await findPropertiesGroupHeader(diffPropGroup);
             if (!groupHeader) {
                 console.warn(`property group header not found in panel, cannot highlight: "${diffPropGroup}" (element ${elementId})`);
-                continue;
+                return;
             }
             // Always highlight the group header (the user's entry point in the group list)
             this.#paint(groupHeader, PropertiesPanelHighlighter.#GROUP_COLOR);
@@ -66,7 +69,7 @@ class PropertiesPanelHighlighter {
             if (descriptors) {
                 await this.#highlightListItems(groupHeader.parentElement, descriptors, elementId, diffPropGroup);
             }
-        }
+        }));
     }
 
     // A replaced element type (or an attribute with no property group of its own but

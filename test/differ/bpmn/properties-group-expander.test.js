@@ -413,3 +413,20 @@ describe('PropertiesGroupExpander.expandRelevantGroups — dialect', () => {
         assert.equal(headers['Form'].clicks, 1);
     });
 });
+
+describe('PropertiesGroupExpander.expandRelevantGroups with a group the panel lacks', () => {
+    it('expands the groups present without waiting out the missing one', async () => {
+        const scope = createScope();
+        const headers = buildPanel(scope, [{ title: 'Forms', open: false }]);
+        const expander = expanderWith(scope, {
+            element: { type: 'bpmn:UserTask', businessObject: {} },
+            diffMap: new Map([['UserTask_1', ['Not in this panel']]])
+        });
+
+        const done = expander.expandRelevantGroups('UserTask_1');
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        assert.equal(headers['Forms'].clicks, 1);
+        await done;
+    });
+});

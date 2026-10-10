@@ -594,12 +594,12 @@ body:not(.differ-edit-mode) .djs-context-pad {
    NB (BUG-0014): plain text <input>/<textarea> are NOT listed here — pointer-events:
    none on them also killed click/select/copy. Their edits are blocked instead by a
    `beforeinput` veto in JS (BpmnDiffer), which leaves selection and copy working.
+   Nor are the FEEL editors (contenteditable, every FEEL value of the Zeebe panel):
+   BpmnDiffer vetoes their editing keys, paste, cut and drop the same way.
    FEAT-0031: scoped to :not(.differ-edit-mode) (rather than a separate mute list
    duplicated with pointer-events: auto for edit mode) so a control added here can
    never silently stay muted in edit mode. */
 body:not(.differ-edit-mode) .bio-properties-panel select,
-body:not(.differ-edit-mode) .bio-properties-panel [contenteditable],
-body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-editor,
 /* toggle switches: the slider/switcher overlays the hidden checkbox */
 body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-toggle-switch__switcher,
 body:not(.differ-edit-mode) .bio-properties-panel .bio-properties-panel-feel-toggle-switch,

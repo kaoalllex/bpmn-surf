@@ -199,13 +199,14 @@ class PropertiesGroupExpander {
         const axisA = this.#nodeIdToDiffsMap.get(elementId) || [];
         const groupNames = new Set([...axisA, ...axisB]);
 
-        for (const groupName of groupNames) {
+        // Side by side, so a group this panel lacks (its lookup retries ~1.35 s)
+        // does not hold up the others.
+        await Promise.all([...groupNames].map(async (groupName) => {
             const groupHeader = await findPropertiesGroupHeader(groupName);
-            if (!groupHeader) {
-                continue;
+            if (groupHeader) {
+                this.#expandGroup(groupHeader);
             }
-            this.#expandGroup(groupHeader);
-        }
+        }));
     }
 
     // Opens the group via a header click ONLY when it is currently collapsed —

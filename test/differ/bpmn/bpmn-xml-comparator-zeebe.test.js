@@ -66,6 +66,8 @@ describe('BpmnXmlComparator zeebe property groups', () => {
             '<zeebe:output source="=valid" target="valid" /><zeebe:output source="=x" target="x" />', 'Output mapping'],
         ['ServiceTask_1', 'value="order-completed"', 'value="other"', 'Headers'],
         ['ServiceTask_1', 'value="team-a"', 'value="team-b"', 'Extension properties'],
+        // the bare `name` row (General) must not win over the element's own row
+        ['ServiceTask_1', 'name="owner"', 'name="owner2"', 'Extension properties'],
         ['ServiceTask_1', 'type="audit-step"', 'type="audit-order-step"', 'Execution listeners'],
         ['CallActivity_1', 'processId="PaymentC8"', 'processId="PaymentV2C8"', 'Called element'],
         ['CallActivity_1', 'propagateAllChildVariables="false"', 'propagateAllChildVariables="true"', 'Output propagation'],
