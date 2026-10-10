@@ -463,6 +463,14 @@
     background-color: #ff8888;
 }
 
+/* listener handler links (FEAT-0019): a row hanging off the element's bottom-left
+   corner, mirroring the implementation badge off the bottom-right one */
+.listener-links {
+    display: flex;
+    gap: 2px;
+    transform: translateX(-100%);
+}
+
 /* message-correlation code link (FEAT-0027) — same minimalist look as .handler-link */
 .correlation-overlay {
     position: relative;

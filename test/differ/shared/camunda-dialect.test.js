@@ -220,3 +220,90 @@ describe('CAMUNDA_DIALECT.C8.handlerKey', () => {
         assert.equal(key({ type: 'external', topic: 'validateOrder', get: () => undefined }, CAMUNDA_DIALECT.C8), null);
     });
 });
+
+describe('listenerKeys', () => {
+    const withExtensions = (...values) => ({ extensionElements: { values } });
+    const keys = (dialect, bo) => Array.from(dialect.listenerKeys(bo), (entry) => ({ ...entry }));
+
+    describe('Camunda 7', () => {
+        const listener = (type, props) => ({ $type: `camunda:${type}`, ...props });
+
+        it('an execution listener with a class → class:<SimpleName>', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, withExtensions(
+                listener('ExecutionListener', { event: 'start', class: 'com.example.AuditDelegate' }))),
+            [{ key: 'class:AuditDelegate', kind: 'execution', event: 'start' }]);
+        });
+
+        it('a delegateExpression → the bean class', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, withExtensions(
+                listener('ExecutionListener', { event: 'take', delegateExpression: '${auditBean}' }))),
+            [{ key: 'class:AuditBean', kind: 'execution', event: 'take' }]);
+        });
+
+        it('several listeners → several entries, in document order; a task listener is kind task', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, withExtensions(
+                listener('TaskListener', { event: 'create', class: 'AssignDelegate' }),
+                { $type: 'camunda:InputOutput' },
+                listener('ExecutionListener', { event: 'end', class: 'AuditDelegate' }))),
+            [
+                { key: 'class:AssignDelegate', kind: 'task', event: 'create' },
+                { key: 'class:AuditDelegate', kind: 'execution', event: 'end' }
+            ]);
+        });
+
+        it('script and expression listeners are skipped', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, withExtensions(
+                listener('ExecutionListener', { event: 'start', expression: '${audit.log(execution)}' }),
+                listener('TaskListener', { event: 'create', script: { scriptFormat: 'groovy', value: 'x' } }))), []);
+        });
+
+        it('no extensionElements / no business object → empty', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, {}), []);
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, null), []);
+        });
+
+        it('reads no Zeebe listener', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C7, withExtensions({ $type: 'zeebe:ExecutionListeners',
+                listeners: [{ $type: 'zeebe:ExecutionListener', eventType: 'start', type: 'audit-step' }] })), []);
+        });
+    });
+
+    describe('Camunda 8', () => {
+        const executionListeners = (...listeners) => ({ $type: 'zeebe:ExecutionListeners',
+            listeners: listeners.map(([eventType, type]) => ({ $type: 'zeebe:ExecutionListener', eventType, type })) });
+        const taskListeners = (...listeners) => ({ $type: 'zeebe:TaskListeners',
+            listeners: listeners.map(([eventType, type]) => ({ $type: 'zeebe:TaskListener', eventType, type })) });
+
+        it('an execution listener → topic:<job type>', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C8, withExtensions(
+                { $type: 'zeebe:TaskDefinition', type: 'validate-order' }, executionListeners(['start', 'audit-step']))),
+            [{ key: 'topic:audit-step', kind: 'execution', event: 'start' }]);
+        });
+
+        it('execution and task listeners together', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C8, withExtensions(
+                executionListeners(['start', 'audit-step'], ['end', 'audit-end']),
+                taskListeners(['completing', 'check-approval']))),
+            [
+                { key: 'topic:audit-step', kind: 'execution', event: 'start' },
+                { key: 'topic:audit-end', kind: 'execution', event: 'end' },
+                { key: 'topic:check-approval', kind: 'task', event: 'completing' }
+            ]);
+        });
+
+        it('a Camunda connector or a FEEL job type yields no key', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C8, withExtensions(
+                executionListeners(['start', 'io.camunda:http-json:1'], ['end', '=jobType'], ['end', '']))), []);
+        });
+
+        it('no listeners / no business object → empty', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C8, withExtensions({ $type: 'zeebe:ExecutionListeners' })), []);
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C8, undefined), []);
+        });
+
+        it('reads no Camunda 7 listener', () => {
+            assert.deepEqual(keys(CAMUNDA_DIALECT.C8, withExtensions(
+                { $type: 'camunda:ExecutionListener', event: 'start', class: 'AuditDelegate' })), []);
+        });
+    });
+});

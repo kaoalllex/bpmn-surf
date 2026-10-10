@@ -20,6 +20,13 @@
 //   another one (navigateOpenerFunc); for an unchanged handler it opens the file
 //   at the currently shown diagram version (MR commit or target branch commit)
 //   in a new tab.
+// - Execution / task listeners (FEAT-0019) are handlers too, and an element can
+//   carry several besides its own implementation: they get a row of "ℓ</>"
+//   badges off the element's bottom-left corner (the implementation badge sits
+//   off the bottom-right one), one per distinct handler key. The row is
+//   permanent when any of them is touched in this MR (each badge coloured by its
+//   own change), otherwise it appears on selection. A pool shows its process's
+//   listeners; a process without a pool has no shape to carry them.
 class HandlerNavigator {
     // Tooltip per change kind; absence (selection badge) falls back to a neutral one.
     static #BADGE_TITLES = {
@@ -43,7 +50,7 @@ class HandlerNavigator {
     // 'added' | 'changed' | 'removed'.
     #changedHandlers = new Map();
     #persistentOverlayIds = [];
-    #selectionOverlayId = null;
+    #selectionOverlayIds = [];
 
     constructor(overlays, elementRegistry, locator, mrIid, getSelectedElementIdFunc, getCurrentRefFunc, openUrlFunc, navigateOpenerFunc,
         getDialectFunc = () => CAMUNDA_DIALECT.C7) {
@@ -77,6 +84,10 @@ class HandlerNavigator {
             if (change) {
                 this.#persistentOverlayIds.push(this.#addBadge(elem.id, key, change.diffType));
             }
+            const listeners = this.#getListeners(elem);
+            if (listeners.some(listener => this.#changedHandlers.has(listener.key))) {
+                this.#persistentOverlayIds.push(this.#addListenerBadges(elem.id, listeners));
+            }
         }
     }
 
@@ -88,10 +99,13 @@ class HandlerNavigator {
         const elementId = this.#getSelectedElementIdFunc();
         const elem = this.#elementRegistry.get(elementId);
         const key = this.#getHandlerKey(elem);
-        if (!key || this.#changedHandlers.has(key)) {
-            return;
+        if (key && !this.#changedHandlers.has(key)) {
+            this.#selectionOverlayIds.push(this.#addBadge(elementId, key, null));
         }
-        this.#selectionOverlayId = this.#addBadge(elementId, key, null);
+        const listeners = this.#getListeners(elem);
+        if (listeners.length > 0 && !listeners.some(listener => this.#changedHandlers.has(listener.key))) {
+            this.#selectionOverlayIds.push(this.#addListenerBadges(elementId, listeners));
+        }
     }
 
     // The namespaced handler key for an element, or null if it references no
@@ -108,6 +122,41 @@ class HandlerNavigator {
             return null;
         }
         return this.#getDialectFunc().handlerKey(elem.businessObject);
+    }
+
+    // The element's listeners grouped by handler key: [{ key, labels }], one
+    // entry per badge. A root element (a process without a pool) has no shape.
+    #getListeners(elem) {
+        if (!elem || elem.labelTarget || !elem.parent) {
+            return [];
+        }
+        const bo = elem.type === 'bpmn:Participant' ? elem.businessObject?.processRef : elem.businessObject;
+        const labelsByKey = new Map();
+        for (const { key, kind, event } of this.#getDialectFunc().listenerKeys(bo)) {
+            const label = `${kind} listener` + (event ? ` (${event})` : '');
+            labelsByKey.set(key, [...(labelsByKey.get(key) || []), label]);
+        }
+        return [...labelsByKey].map(([key, labels]) => ({ key, labels }));
+    }
+
+    // DOM nodes rather than an html string: the titles quote the diagram.
+    #addListenerBadges(elementId, listeners) {
+        const row = document.createElement('div');
+        row.className = 'listener-links';
+        for (const { key, labels } of listeners) {
+            const diffType = this.#changedHandlers.get(key)?.diffType;
+            const badge = document.createElement('div');
+            badge.className = 'handler-link handler-link-listener' + (diffType ? ` handler-link-${diffType}` : '');
+            badge.title = capitalizeFirstLetter(labels.join(', '))
+                + (diffType ? ` ${diffType} in this MR — open its diff` : ' — open the handler code');
+            badge.textContent = 'ℓ</>';
+            badge.addEventListener('click', () => this.#onOpenCode(key));
+            row.appendChild(badge);
+        }
+        return this.#overlays.add(elementId, 'note', {
+            position: { bottom: 0, left: 0 },
+            html: row
+        });
     }
 
     #addBadge(elementId, key, diffType) {
@@ -190,9 +239,9 @@ class HandlerNavigator {
     }
 
     #removeSelectionOverlay() {
-        if (this.#selectionOverlayId) {
-            this.#overlays.remove(this.#selectionOverlayId);
-            this.#selectionOverlayId = null;
+        for (const overlayId of this.#selectionOverlayIds) {
+            this.#overlays.remove(overlayId);
         }
+        this.#selectionOverlayIds = [];
     }
 }

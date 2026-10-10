@@ -78,6 +78,32 @@ function camundaImplementationHolder(bo) {
     return msgDef || bo;
 }
 
+// C7 execution / task listeners (FEAT-0019): a class or a delegate bean names a
+// handler class; an expression (a method call) or a script names none.
+function camundaListenerKeys(bo) {
+    return (bo?.extensionElements?.values ?? [])
+        .filter(value => value.$type === 'camunda:ExecutionListener' || value.$type === 'camunda:TaskListener')
+        .map(listener => ({
+            key: listener.delegateExpression
+                ? HandlerLocator.classKeyFromDelegateExpression(listener.delegateExpression)
+                : HandlerLocator.classKeyFromClassName(listener.class),
+            kind: listener.$type === 'camunda:TaskListener' ? 'task' : 'execution',
+            event: listener.event
+        }))
+        .filter(entry => entry.key);
+}
+
+// C8 listeners are job workers: the job type is the key, as for a task.
+function zeebeListenerKeys(bo) {
+    return ['zeebe:ExecutionListeners', 'zeebe:TaskListeners'].flatMap(type =>
+        (zeebeExtension(bo, type)?.listeners ?? []).map(listener => ({
+            key: jobTypeKey(listener.type),
+            kind: type === 'zeebe:TaskListeners' ? 'task' : 'execution',
+            event: listener.eventType
+        })))
+        .filter(entry => entry.key);
+}
+
 // HandlerLocator is loaded after this file; the key methods call it at use time.
 const CAMUNDA_DIALECT = Object.freeze({
     C7: Object.freeze({
@@ -89,6 +115,8 @@ const CAMUNDA_DIALECT = Object.freeze({
         processCallerTerm: (id) => `calledElement="${id}"`,
         decisionCallerTerm: (id) => `decisionRef="${id}"`,
         handlerKey: (bo) => camundaImplementationKey(bo),
+        // [{ key, kind: 'execution' | 'task', event }] in document order.
+        listenerKeys: (bo) => camundaListenerKeys(bo),
         implementationGroup: () => 'Implementation',
         formGroup: 'Forms'
     }),
@@ -103,6 +131,7 @@ const CAMUNDA_DIALECT = Object.freeze({
         // The zeebe:TaskDefinition sits in the element's own extensionElements —
         // also on a message throw / end event, not on its event definition.
         handlerKey: (bo) => jobTypeKey(zeebeExtension(bo, 'zeebe:TaskDefinition')?.type),
+        listenerKeys: (bo) => zeebeListenerKeys(bo),
         // The Zeebe panel has no Implementation group on a service / send task:
         // its job type is the "Task definition".
         implementationGroup: (elementType) =>
