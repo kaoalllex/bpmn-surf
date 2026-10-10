@@ -462,7 +462,7 @@ step-by-step plan lives in the local `docs/superpowers/plans/`; this is the dura
 - **GitHub Enterprise Server — hybrid detection.** All GitHub URLs come from the page origin;
   REST is `{host}/api/v3` off github.com. `detectPlatformKind` = name (github.com/gitlab.com) →
   the user's per-site choice (`settings.siteKinds`) → page markup → unknown. An unknown site runs
-  nothing, is listed in `chrome.storage.local` `undetectedSites` (icon "!", Home warning) and the
+  nothing and, unless the page is non-HTML or an error response (≥ 400), is listed in `chrome.storage.local` `undetectedSites` (icon "!", Home warning) and the
   popup asks for its type; types travel in the settings export.
 - **Not verified live:** GitHub Enterprise Server (no instance), an unrecognised site (harness hosts
   are fixed).

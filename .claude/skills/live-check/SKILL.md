@@ -200,7 +200,7 @@ pick by kind if one moved.
 | dive-in miss, or anonymous / right after a burst of searches (429) | falls back to github.com code search (`searchPageUrl`); anonymous still finds what the PR's files contain |
 | commit and range views, signed in: `/pull/N/changes/<sha>`, `/changes/<a>..<b>`, and the picker switching between them by click | the button shows exactly the selection (labels `<headline> (<shortSha>)`, the base branch name for the PR base); after a picker switch the button is not stale |
 | classic anonymous: `/pull/N/commits/<sha>`, `/files/<a>..<b>` | the button diffs exactly the shown pair, with short-SHA labels; a REST-fallback page refuses a selection (no button) |
-| a raw `.bpmn` page or a JSON page on GitLab | no `!` on the icon, nothing of ours |
+| a raw `.bpmn` page or a JSON page on GitLab, and GitLab's own 404 page (e.g. a missing MR) on a self-hosted GitLab without a type set | no `!` on the icon, nothing of ours |
 | popup, a self-hosted site: the type select (Auto / GitLab / GitHub) set by hand | the choice survives a reload and an export/import; an unrecognised site shows the hint and the Home warning, and `!` until a type is picked |
 | blob page of a `.bpmn` / `.dmn` | `View schema` / `View decision` split button before Raw; the local-file menu diffs against a file; follows soft navigation between files |
 | popup: remove a site, remove them all, update from 1.3 | the site goes and the tab stops decorating after reload; no site: `!` on the icon and the warnings on Home and Sites; an update that lost gitlab.com: the "Turn on gitlab.com" notice |
