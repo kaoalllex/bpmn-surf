@@ -190,7 +190,8 @@ class BpmnDiffer {
             // never fire `beforeinput`, so copying keeps working. Delegating on the
             // stable panel container (preact re-renders `.bio-properties-panel` inside
             // it) survives re-renders without re-binding. Non-text controls (toggles,
-            // buttons, select, contenteditable/FEEL) stay disabled via CSS — see styles.css.
+            // buttons, select) stay disabled via CSS — see styles.css; the FEEL editors
+            // (contenteditable) get the key/paste veto below instead.
             //
             // BUG-0015: keep canvas label/comment text selectable and copyable while
             // blocking edits. Double-click opens bpmn-js' contenteditable overlay
