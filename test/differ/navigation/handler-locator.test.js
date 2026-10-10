@@ -1030,6 +1030,20 @@ describe('HandlerLocator.resolveLocation — job workers', () => {
         assert.equal(location.line, 7);
     });
 
+    it('prefers the file declaring the topic over a method of the same name with its own type', async () => {
+        // A C8 worker whose method is named like a C7 topic, but whose job type is
+        // stated: it declares "find-items", not "findItems".
+        const worker = {
+            path: 'c8/FindItemsWorker.kt', line: 14,
+            snippet: '    @JobWorker(type = "find-items")\n    fun findItems(@Variable orderId: String): Map<String, Any> {'
+        };
+        const handler = { path: 'c7/FindItemsHandler.kt', line: 10, snippet: '@ExternalTaskSubscription("findItems")\nclass FindItemsHandler' };
+        for (const hits of [[worker, handler], [handler, worker]]) {
+            const location = await new HandlerLocator(clientReturning(hits)).resolveLocation('topic:findItems', 'main');
+            assert.equal(location.filePath, 'c7/FindItemsHandler.kt');
+        }
+    });
+
     it('resolves a kebab-case prefix to its own worker in either order', async () => {
         const own = { path: 'src/FindItemsWorker.kt', line: 14, snippet: '@JobWorker(type = "find-items")' };
         const longer = { path: 'src/FindItemsInCatalogWorker.kt', line: 14, snippet: '@JobWorker(\n    type = "find-items-in-catalog",' };

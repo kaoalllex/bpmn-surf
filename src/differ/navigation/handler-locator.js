@@ -573,9 +573,13 @@ class HandlerLocator {
         // BUG-0027: searching for `FindItems` also matches
         // `FindItemsInCatalog` — we need an exact match.
         const candidates = annotatedItems.length > 0 ? annotatedItems : handlerItems;
-        const exactMatch = candidates.find(i =>
-            i.snippet && HandlerLocator.matchesExactTopic(i.snippet, topic)
-        );
+        // A hit that declares the topic wins over one that merely contains the
+        // word: a job worker whose method shares its name with another topic
+        // (fun findItems(…) under @JobWorker(type = "find-items")) declares no
+        // "findItems".
+        const exactMatch = candidates.find(i => i.snippet
+                && HandlerLocator.#topicDeclarations(i.snippet, this.#annotations.topic).some(d => d.topic === topic))
+            || candidates.find(i => i.snippet && HandlerLocator.matchesExactTopic(i.snippet, topic));
 
         if (!exactMatch) {
             // Nothing declares this exact topic: either the closest hit is a longer
