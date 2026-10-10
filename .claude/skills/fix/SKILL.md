@@ -11,7 +11,7 @@ If a spec/plan for this task already exists in `docs/superpowers/` (from `brains
 1. **Diagnosis** — study the description/stack trace, localize the code, find the root cause. The code has many `console.debug` — logs with timestamps and their call site (`ConsoleLog.install`) help reconstruct the sequence of events, and `ConsoleLog.tail()` in the differ tab's console prints the same selection a feedback report would carry. A blank white differ tab → look in its console for `... file is unavailable in both versions` (the log contains both raw URLs; usually it is an incorrect resolution of the target commit of an old/merged MR, not a transient failure — retries do not help)
 2. **Plan** — minimal change; assess side effects; for a complex fix — confirmation
 3. **Implementation** — only what is needed for the fix; fix ≠ refactor
-4. **Verification** — the error is fixed, nothing else is affected; run `npm test` (unit + structure tests, it also parses every `src/` script); if the bug is in a test-covered class (see `docs/testing.md`) — first add a failing test/fixture, then the fix
+4. **Verification** — the error is fixed, nothing else is affected; run `npm test` (unit + structure tests, it also parses every `src/` script) and the affected e2e specs; check the twin paths (CLAUDE.md); page decoration / navigation / edit-mode changes → the `live-check` skill; if the bug is in a test-covered class (see `docs/testing.md`) — first add a failing test/fixture, then the fix; a non-trivial diff → the `code-reviewer` subagent before `/pr`
 5. **Task tracking** — if the bug relates to a task in `docs/issues/` or deserves one: update or create its file per `docs/issues/README.md`
 
 ## Rules
