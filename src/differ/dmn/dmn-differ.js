@@ -389,7 +389,8 @@ function main() {
         }
         console.debug('showing dmn differ...');
         const rawParams = msg.data.params;
-        const platformClient = createPlatformClient(rawParams.platform);
+        const platformClient = createPlatformClient(rawParams.platform,
+            { changeId: rawParams.changeRequestId, headRef: rawParams.sourceRef });
         await new DmnDiffer(rawParams, platformClient).show();
     });
 }

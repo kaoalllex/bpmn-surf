@@ -988,7 +988,8 @@ function main() {
         }
         console.debug('showing bpmn differ...');
         const rawParams = msg.data.params;
-        const platformClient = createPlatformClient(rawParams.platform);
+        const platformClient = createPlatformClient(rawParams.platform,
+            { changeId: rawParams.changeRequestId, headRef: rawParams.sourceRef });
         await new BpmnDiffer(rawParams, platformClient).show();
     });
 }

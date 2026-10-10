@@ -1,16 +1,18 @@
-// Pure parsing of github.com page URLs and the REST endpoints the GitHub
+// Pure parsing of GitHub page URLs and the REST endpoints the GitHub
 // providers call (REFAC-0004). No DOM, no network — the github mirror of
 // gitlab-url-parser.js.
 class GitHubUrlParser {
-    static #API = 'https://api.github.com';
-    // Whole-PR views only: a commit or range view (an extra path segment) would
-    // be diffed and labelled as the whole PR.
-    static #PULL_FILES = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)\/(?:files|changes)\/?$/;
+    // Whole PR (/files, /changes) or a selection: /changes|/files/<range> and
+    // /commits/<sha>, where <range> is <sha>, <sha>..<sha> or BASE..<sha>.
+    static #PULL_FILES = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)\/(?:(?:files|changes)(?:\/((?:[0-9a-f]{7,40}|BASE)(?:\.\.[0-9a-f]{7,40})?))?|commits\/([0-9a-f]{7,40}))\/?$/;
     static #BLOB = /^\/([^/]+)\/([^/]+)\/blob\/(.+)$/;
 
     parsePullFiles(href) {
         const match = GitHubUrlParser.#PULL_FILES.exec(new URL(href).pathname);
-        return match ? { owner: match[1], repo: match[2], number: Number(match[3]) } : null;
+        if (!match || (match[4] && match[4].startsWith('BASE') && !match[4].includes('..'))) {
+            return null;
+        }
+        return { owner: match[1], repo: match[2], number: Number(match[3]), range: match[4] || match[5] || null };
     }
 
     parseBlob(href) {
@@ -49,11 +51,16 @@ class GitHubUrlParser {
             : null;
     }
 
-    pullApiUrl(owner, repo, number) {
-        return `${GitHubUrlParser.#API}/repos/${owner}/${repo}/pulls/${number}`;
+    // github.com's REST API has its own host; GitHub Enterprise Server serves it under /api/v3.
+    static apiBase(hostUrl) {
+        return hostUrl === 'https://github.com' ? 'https://api.github.com' : `${hostUrl}/api/v3`;
     }
 
-    compareApiUrl(owner, repo, base, head) {
-        return `${GitHubUrlParser.#API}/repos/${owner}/${repo}/compare/${base}...${head}`;
+    pullApiUrl(hostUrl, owner, repo, number) {
+        return `${GitHubUrlParser.apiBase(hostUrl)}/repos/${owner}/${repo}/pulls/${number}`;
+    }
+
+    compareApiUrl(hostUrl, owner, repo, base, head) {
+        return `${GitHubUrlParser.apiBase(hostUrl)}/repos/${owner}/${repo}/compare/${base}...${head}`;
     }
 }

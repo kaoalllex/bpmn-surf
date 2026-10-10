@@ -30,9 +30,10 @@ class GitHubRepoProviderBase extends RepoProvider {
         if (!page) {
             return false;
         }
+        const origin = window.location.origin;
         Object.assign(this.projectInfo, {
-            url: `https://github.com/${page.owner}/${page.repo}`,
-            hostUrl: 'https://github.com',
+            url: `${origin}/${page.owner}/${page.repo}`,
+            hostUrl: origin,
             groupName: page.owner,
             name: page.repo,
             id: `${page.owner}/${page.repo}`
@@ -44,8 +45,8 @@ class GitHubRepoProviderBase extends RepoProvider {
         return !!this.pull;
     }
 
-    /** @returns {Promise<{number, title, headSha, mergeBaseSha, headRef, baseRef}|null>} */
-    async resolvePull(/* {owner, repo, number} */) {
+    /** @returns {Promise<{number, title, headSha, mergeBaseSha, headRef, baseRef, headLabel?, baseLabel?}|null>} */
+    async resolvePull(/* {owner, repo, number, range} */) {
         throw new Error('resolvePull() must be implemented');
     }
 
@@ -79,8 +80,8 @@ class GitHubRepoProviderBase extends RepoProvider {
             return { sourceLabel: null, targetLabel: null };
         }
         return {
-            sourceLabel: this.pull.headRef || shortenCommitId(this.pull.headSha),
-            targetLabel: this.pull.baseRef || shortenCommitId(this.pull.mergeBaseSha)
+            sourceLabel: this.pull.headLabel || this.pull.headRef || shortenCommitId(this.pull.headSha),
+            targetLabel: this.pull.baseLabel || this.pull.baseRef || shortenCommitId(this.pull.mergeBaseSha)
         };
     }
 

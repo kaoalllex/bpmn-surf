@@ -4,41 +4,45 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-// detectPlatformKind takes a location-like { hostname, href } (defaulting to
-// window.location in prod), so the tests feed plain objects — no globals.
-const { detectPlatformKind, PLATFORM_KIND } = createScope();
-
-function loc(href) {
-    return { href, hostname: new URL(href).hostname };
+// detectPlatformKind takes a location-like { hostname, href } and a document
+// (defaulting to window.location / document in prod), so the tests feed a plain
+// object and a parsed page — no globals. A fresh scope per call keeps the
+// per-page override from leaking between cases.
+function detect(href, head = '', body = '', override = null) {
+    const scope = createScope();
+    const doc = new scope.window.DOMParser().parseFromString(`<html><head>${head}</head><body ${body}></body></html>`, 'text/html');
+    if (override) scope.setSiteKindOverride(override);
+    return { kind: scope.detectPlatformKind({ href, hostname: new URL(href).hostname }, doc), K: scope.PLATFORM_KIND };
 }
 
+const GITHUB_HEAD = '<meta property="og:site_name" content="GitHub"><meta name="expected-hostname" content="ghe.example.com">';
+const GITLAB_HEAD = '<meta content="GitLab" property="og:site_name">';
+
 describe('detectPlatformKind', () => {
-    it('detects github.com as github', () => {
-        assert.equal(detectPlatformKind(loc('https://github.com/owner/repo/pull/5/files')), PLATFORM_KIND.GITHUB);
+    it('knows github.com and gitlab.com by name, whatever the page says', () => {
+        assert.equal(detect('https://github.com/o/r/pull/5/files').kind, 'github');
+        assert.equal(detect('https://gitlab.com/g/p/-/merge_requests/1/diffs', GITHUB_HEAD).kind, 'gitlab');
     });
 
-    it('detects the self-managed gitlab host as gitlab', () => {
-        assert.equal(detectPlatformKind(loc('https://gitlab.example.com/group/proj/-/merge_requests/5/diffs')), PLATFORM_KIND.GITLAB);
+    it('reads GitHub Enterprise Server from its markup', () => {
+        assert.equal(detect('https://ghe.example.com/o/r/pull/5/files', GITHUB_HEAD).kind, 'github');
+        assert.equal(detect('https://ghe.example.com/o/r', '<meta name="expected-hostname" content="ghe.example.com">').kind, 'github');
     });
 
-    it('detects gitlab.com as gitlab', () => {
-        assert.equal(detectPlatformKind(loc('https://gitlab.com/group/proj/-/blob/master/a.bpmn')), PLATFORM_KIND.GITLAB);
+    it('reads a self-managed GitLab from og:site_name or body[data-page] (custom branding)', () => {
+        assert.equal(detect('https://git.acme.io/g/p', GITLAB_HEAD).kind, 'gitlab');
+        assert.equal(detect('https://git.acme.io/g/p', '', 'data-page="projects:show"').kind, 'gitlab');
     });
 
-    it('detects any url containing the gitlab substring as gitlab', () => {
-        assert.equal(detectPlatformKind(loc('https://my-gitlab.example.com/group/proj')), PLATFORM_KIND.GITLAB);
+    it('leaves a page that says neither to the user', () => {
+        assert.equal(detect('https://intranet.acme.io/').kind, null);
+        assert.equal(detect('https://my-gitlab.example.com/g/p').kind, null);  // the name alone proves nothing
     });
 
-    it('prefers github over the loose gitlab substring (order matters)', () => {
-        // A github.com URL with "gitlab" in the path must read as github, not
-        // gitlab — the github matcher is checked first.
-        assert.equal(detectPlatformKind(loc('https://github.com/org/gitlab-mirror/pull/1/files')), PLATFORM_KIND.GITHUB);
-    });
-
-    it('treats any other injected host as gitlab', () => {
-        // Content scripts only run where the user granted the host (FEAT-0033),
-        // so a host matching nothing more specific is a configured GitLab that
-        // need not carry the word "gitlab" in its name.
-        assert.equal(detectPlatformKind(loc('https://code.acme.com/group/proj')), PLATFORM_KIND.GITLAB);
+    it('lets the user\'s choice win over the markup on their own hosts, never on github.com/gitlab.com', () => {
+        assert.equal(detect('https://git.acme.io/g/p', GITLAB_HEAD, '', 'github').kind, 'github');
+        assert.equal(detect('https://intranet.acme.io/', '', '', 'gitlab').kind, 'gitlab');
+        assert.equal(detect('https://github.com/o/r', '', '', 'gitlab').kind, 'github');
+        assert.equal(detect('https://git.acme.io/', GITLAB_HEAD, '', 'bogus').kind, 'gitlab');  // invalid override ignored
     });
 });

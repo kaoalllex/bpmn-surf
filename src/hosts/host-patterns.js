@@ -62,3 +62,14 @@ function needsGitlabComNotice(previousVersion, origins) {
     const fromBuiltInRelease = major === 1 && minor < 4;
     return fromBuiltInRelease && !(origins || []).includes(GITLAB_COM);
 }
+
+// Sites whose pages looked like neither GitLab nor GitHub: the content script
+// lists them here (chrome.storage.local, { hosts: [hostname] }) and the user picks
+// the type in the popup. The service worker shows "!" while any is listed.
+const UNDETECTED_SITES_KEY = 'undetectedSites';
+
+// A host the user turned off no longer waits for a type.
+function pruneUndetectedSites(hosts, origins) {
+    const granted = new Set(origins || []);
+    return (hosts || []).filter(host => granted.has(`https://${host}/*`));
+}

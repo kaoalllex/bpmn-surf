@@ -12,6 +12,10 @@ class GitHubApiRepoProvider extends GitHubRepoProviderBase {
     #renames = new Map();
 
     async resolvePull(pr) {
+        // The REST fallback knows only the whole PR; a selection gets no button rather than the whole diff.
+        if (pr.range) {
+            return null;
+        }
         if (this.domScraper.fileBlocks(document).length === 0) {
             return null;
         }
@@ -41,13 +45,13 @@ class GitHubApiRepoProvider extends GitHubRepoProviderBase {
     }
 
     async #fetchPull(owner, repo, number) {
-        const pullBody = await this.loadContent(this.urlParser.pullApiUrl(owner, repo, number), false);
+        const pullBody = await this.loadContent(this.urlParser.pullApiUrl(this.projectInfo.hostUrl, owner, repo, number), false);
         if (!pullBody) {
             throw new Error('not found (404)');
         }
         const pull = JSON.parse(pullBody);
         const compare = JSON.parse(await this.loadContent(
-            this.urlParser.compareApiUrl(owner, repo, pull.base.sha, pull.head.sha), true));
+            this.urlParser.compareApiUrl(this.projectInfo.hostUrl, owner, repo, pull.base.sha, pull.head.sha), true));
         return {
             number,
             title: pull.title,

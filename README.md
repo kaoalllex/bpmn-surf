@@ -61,7 +61,7 @@ something other than `@ExternalTaskSubscription`.
 The buttons appear only where there is a diagram: on `.bpmn` and `.dmn` files in a merge
 request, and on a diagram file in the repository. On GitHub the same buttons sit on the
 **Files changed** tab of a pull request (public and private, signed in or out) and on a
-file page; code search is left to GitHub's own search page.
+file page; navigation (diving into called processes, callers, handlers) works without a token: GitHub's own default-branch code search plus the pull request's own files; signed out, only the PR's files. The commit and range pickers of a pull request are followed. GitHub Enterprise Server is supported by design: add the site like a self-managed GitLab; it is recognised from its pages, or pick its type (GitLab or GitHub) next to the site in the popup (not yet tried on a real instance).
 
 ![The Schema diff and Decision diff buttons on diagram files of a merge request, none on a Kotlin file, and the View schema button with its menu on a repository file](docs/media/buttons.gif)
 

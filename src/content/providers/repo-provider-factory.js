@@ -33,8 +33,8 @@ function createUIRepoProvider() {
     // Detect the page's platform once and let each UI provider decide whether it
     // handles it (REFAC-0004): the factory no longer hardcodes the host->provider
     // mapping. If nothing matches we throw rather than guessing a provider: a
-    // mismatched one could not inject buttons correctly anyway (the content script
-    // only runs on matched hosts, so this never fires in practice).
+    // mismatched one could not inject buttons correctly anyway (main.js starts the
+    // app only once a platform is detected, so this never fires in practice).
     const platformKind = detectPlatformKind();
     const uiProviders = [new GitHubUIRepoProvider(), new GitLabUIRepoProvider()];
     const uiProvider = uiProviders.find(p => p.isAvailable(platformKind));

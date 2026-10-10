@@ -2,7 +2,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const { createScope } = require('#scope');
 
-const { buildSettingsExport, parseSettingsExport, SETTINGS_EXPORT_FORMAT } = createScope();
+const { buildSettingsExport, parseSettingsExport, SETTINGS_EXPORT_FORMAT, normalizeSiteKinds } = createScope();
 
 // The storage helpers (loadSettings / loadHandlerAnnotations / saveHandlerAnnotations)
 // are thin chrome.storage.sync wrappers and are exercised by hand in the popup;
@@ -71,5 +71,34 @@ describe('parseSettingsExport', () => {
         assert.throws(() => parseSettingsExport('null'), /not a settings file/);
         assert.throws(() => parseSettingsExport(file({ format: 99 })), /unsupported format 99/);
         assert.throws(() => parseSettingsExport('{}'), /unsupported format undefined/);
+    });
+});
+
+describe('site kinds in the settings file', () => {
+    it('exports the choice for exported hosts only and reads it back', () => {
+        const file = buildSettingsExport({
+            hosts: ['https://ghe.acme.io/*', 'https://gitlab.com/*'],
+            handlerAnnotations: {},
+            siteKinds: { 'ghe.acme.io': 'github', 'gone.acme.io': 'gitlab' },
+            version: '1.4.0'
+        });
+        assert.deepEqual(file.siteKinds, { 'ghe.acme.io': 'github' });
+        assert.deepEqual(parseSettingsExport(JSON.stringify(file)).siteKinds, { 'ghe.acme.io': 'github' });
+    });
+
+    it('drops invalid entries and reads an older file without the field', () => {
+        const base = { format: SETTINGS_EXPORT_FORMAT, hosts: ['a.acme.io', 'b.acme.io'] };
+        assert.deepEqual(parseSettingsExport(JSON.stringify(base)).siteKinds, {});
+        const bad = { ...base, siteKinds: { 'a.acme.io': 'bitbucket', 'b.acme.io': 'gitlab', 'x.acme.io': 'github', 'bad host': 'gitlab' } };
+        assert.deepEqual(parseSettingsExport(JSON.stringify(bad)).siteKinds, { 'b.acme.io': 'gitlab' });
+    });
+
+    it('keeps only a known kind under a bare lowercase hostname', () => {
+        assert.deepEqual(normalizeSiteKinds({
+            'ok.acme.io': 'github', 'bad host': 'gitlab', 'Upper.acme.io': 'gitlab',
+            'https://url.acme.io/*': 'gitlab', 'x.acme.io': 'bitbucket'
+        }), { 'ok.acme.io': 'github' });
+        assert.deepEqual(normalizeSiteKinds(undefined), {});
+        assert.deepEqual(normalizeSiteKinds('gitlab'), {});
     });
 });

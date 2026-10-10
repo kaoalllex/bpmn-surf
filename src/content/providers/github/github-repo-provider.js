@@ -18,18 +18,18 @@ class GitHubRepoProvider extends GitHubRepoProviderBase {
         return refs ? { number: pr.number, ...refs } : null;
     }
 
-    async #refsOf(doc, { owner, repo, number }) {
-        const refs = this.domScraper.pullRefs(doc, number);
-        const lazy = !refs && this.domScraper.lazyDiffEntry(doc, number);
-        const entries = lazy && await this.#loadDiffEntries(`https://github.com/${owner}/${repo}/pull/${number}`, lazy);
-        return refs || (entries ? this.domScraper.pullRefs(doc, number, entries) : null);
+    async #refsOf(doc, { owner, repo, number, range }) {
+        const refs = this.domScraper.pullRefs(doc, number, null, range);
+        const lazy = !refs && this.domScraper.lazyDiffEntry(doc, number, range);
+        const entries = lazy && await this.#loadDiffEntries(`${this.projectInfo.url}/pull/${number}`, lazy);
+        return refs || (entries ? this.domScraper.pullRefs(doc, number, entries, range) : null);
     }
 
     // GitHub's own page data for one file of a large PR: same origin and the
     // session cookie, so private repositories work and no API quota is spent.
     // The endpoint answers 406 without the headers GitHub's frontend sends.
-    #loadDiffEntries(pullUrl, { path, headSha }) {
-        const url = `${pullUrl}/page_data/diff_entries?paths=${encodeURIComponent(encodeURIComponent(path))}&range=${headSha}`;
+    #loadDiffEntries(pullUrl, { path, range }) {
+        const url = `${pullUrl}/page_data/diff_entries?paths=${encodeURIComponent(encodeURIComponent(path))}&range=${range}`;
         if (!this.#diffEntries.has(url)) {
             const headers = { accept: 'application/json', 'x-requested-with': 'XMLHttpRequest', 'github-verified-fetch': 'true' };
             this.#diffEntries.set(url, this.#fetch(url, { headers })
@@ -50,7 +50,7 @@ class GitHubRepoProvider extends GitHubRepoProviderBase {
     // session cookie — not the API) carries the current one. Once per path:
     // init() runs on every click.
     #refetch(pr) {
-        if (!/\/pull\/\d+\/changes\/?$/.test(location.pathname)) {
+        if (!/\/pull\/\d+\/changes(?:\/[^/]+)?\/?$/.test(location.pathname)) {
             return Promise.resolve(null);
         }
         const key = location.pathname;

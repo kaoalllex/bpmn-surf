@@ -31,6 +31,14 @@ describe('GitHubChangesPayload.read', () => {
         assert.ok(GitHubChangesPayload.read(doc, '7'));
     });
 
+    it('reads the payload of a selected commit or range', () => {
+        const doc = parse(page({
+            pullRequestsChangesWithRangeRoute: CHANGES,
+            pullRequestsLayoutRoute: { pullRequest: { number: 7 } }
+        }));
+        assert.equal(GitHubChangesPayload.read(doc, 7).changes.diffSummaries[0].path, 'a.kt');
+    });
+
     it('ignores a payload that belongs to another pull request', () => {
         const doc = parse(page({
             pullRequestsChangesRoute: CHANGES,

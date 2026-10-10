@@ -30,7 +30,7 @@ the extension is reached on a GitLab page.
    only to the GitLab host of the page; with github.com turned on the extension also requests
    `github.com` (PR pages and raw files, same-origin with the session cookie),
    `raw.githubusercontent.com` (where raw requests redirect) and, for signed-out users only,
-   `api.github.com` (anonymous REST fallback and changed-handler badges); no token, nothing
+   `api.github.com` (anonymous REST fallback and changed-handler badges); the same-origin requests added by the navigation work: `/search?…&type=code` (JSON), raw files of the PR's changed files at its head, and `page_data/diff_entries` with a commit range; self-hosted GitHub Enterprise hosts behave the same on their own domain (REST at `{host}/api/v3`); no token, nothing
    stored or sent elsewhere. Verify each claim against the code at release time.
    - `docs/media/popup.png` still shows the old Sites list with gitlab.com built in — retake it.
    - Item 1's summary already changed on branch `feature/refac-0004-github` ([REFAC-0004] D8:

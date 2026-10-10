@@ -37,24 +37,77 @@ class GitHubDomScraper {
         return blocks;
     }
 
-    // diffEntries: the file diffs of a large PR, loaded for lazyDiffEntry().
-    pullRefs(doc, number, diffEntries = null) {
-        return this.#classicPullRefs(doc) || GitHubDomScraper.#newUiPullRefs(doc, number, diffEntries);
+    // diffEntries: the file diffs of a large PR, loaded for lazyDiffEntry();
+    // range: the selected commit or range from the URL, null for the whole PR.
+    pullRefs(doc, number, diffEntries = null, range = null) {
+        return this.#classicPullRefs(doc, range) || GitHubDomScraper.#newUiPullRefs(doc, number, diffEntries, range);
     }
 
     // A large PR embeds its file list but no file diffs (GitHub loads each from
     // page_data/diff_entries), and only a file diff carries the merge base:
     // names the file with the smallest diff to load, or null when none is needed.
-    lazyDiffEntry(doc, number) {
+    lazyDiffEntry(doc, number, range = null) {
         const page = GitHubChangesPayload.read(doc, number);
-        const comparison = page && page.changes.comparison;
-        const headSha = comparison && comparison.viewing === 'FULL' && comparison.fullDiff && comparison.fullDiff.headOid;
-        const files = (page && page.changes.diffSummaries) || [];
-        if (!GitHubDomScraper.#SHA.test(headSha || '') || (page.changes.diffContents || []).length || !files.length) {
+        if (!page || !GitHubDomScraper.#showsRange(page.changes, range)) {
+            return null;
+        }
+        const files = page.changes.diffSummaries || [];
+        const entryRange = GitHubDomScraper.#entryRange(page.changes, range);
+        if (!entryRange || (page.changes.diffContents || []).length || !files.length) {
             return null;
         }
         const smallest = files.reduce((a, b) => ((b.linesChanged || 0) < (a.linesChanged || 0) ? b : a));
-        return { path: smallest.path, headSha };
+        return { path: smallest.path, range: entryRange };
+    }
+
+    // page_data/diff_entries reads `range=<sha>` as BASE..sha, so a single commit
+    // is named by its parent..itself; a range by the URL (BASE..x included).
+    static #entryRange(changes, range) {
+        if (range && range.includes('..')) {
+            return range;
+        }
+        if (range) {
+            const commit = changes.commit || {};
+            return GitHubDomScraper.#SHA.test(commit.sha1 || '') && GitHubDomScraper.#SHA.test(commit.sha2 || '')
+                ? `${commit.sha1}..${commit.sha2}` : null;
+        }
+        const fullDiff = (changes.comparison || {}).fullDiff;
+        const headSha = fullDiff && fullDiff.headOid;
+        return GitHubDomScraper.#SHA.test(headSha || '') ? headSha : null;
+    }
+
+    // [start, end] of the URL's selection; start is null for a single commit.
+    static #rangeEnds(range) {
+        return range.includes('..') ? range.split('..') : [null, range];
+    }
+
+    // The page keeps the payload of its first load across clicks in the commit
+    // picker, so a payload is read only for the selection the URL names. `viewing`
+    // tells a single commit from the whole PR but not a range: a range that spans
+    // one commit is viewed as COMMIT, so a range is checked by its pair (#showsPair).
+    static #showsRange(changes, range) {
+        const viewing = changes.comparison ? changes.comparison.viewing : 'FULL';
+        if (!range) {
+            return viewing === 'FULL';
+        }
+        const [start, end] = GitHubDomScraper.#rangeEnds(range);
+        return start !== null || (viewing === 'COMMIT' && !!changes.commit && (changes.commit.oid || '').startsWith(end));
+    }
+
+    // The shown pair must be the URL's: a BASE..x range starts at the merge base,
+    // which is not one of the PR's commits.
+    static #showsPair(changes, range, diff) {
+        if (!range) {
+            return true;
+        }
+        const [start, end] = GitHubDomScraper.#rangeEnds(range);
+        if (!diff.newCommitOid.startsWith(end)) {
+            return false;
+        }
+        if (start === 'BASE') {
+            return !(changes.commits || []).some(c => c.oid === diff.oldCommitOid);
+        }
+        return start === null || diff.oldCommitOid.startsWith(start);
     }
 
     // The breadcrumbs' repository link points at /{owner}/{repo}/tree/{ref}:
@@ -74,28 +127,40 @@ class GitHubDomScraper {
         return raw ? raw.closest('[data-component="ButtonGroup"]') : null;
     }
 
-    #classicPullRefs(doc) {
+    #classicPullRefs(doc, range) {
         const loader = doc.querySelector(GitHubDomScraper.#CLASSIC_COMPARISON);
         if (!loader) {
             return null;
         }
-        const url = new URL(loader.getAttribute('src') || loader.getAttribute('data-url'), 'https://github.com');
+        const url = new URL(loader.getAttribute('src') || loader.getAttribute('data-url'), 'https://github.com'); // any base: only the query is read
         const headSha = url.searchParams.get('sha2');
         const mergeBaseSha = url.searchParams.get('sha1');
+        const baseSha = url.searchParams.get('base_sha');
         if (!GitHubDomScraper.#SHA.test(headSha || '') || !GitHubDomScraper.#SHA.test(mergeBaseSha || '')) {
             return null;
         }
-        const refs = [...doc.querySelectorAll('span.commit-ref[title]')];
-        const head = refs.find(span => span.classList.contains('head-ref'));
-        const base = refs.find(span => !span.classList.contains('head-ref'));
+        // A commit's sha1 is its parent and /files/<sha> means BASE..sha, so the end alone checks those.
+        const [start, end] = range ? GitHubDomScraper.#rangeEnds(range) : [];
+        if (range && (!headSha.startsWith(end) || (start && start !== 'BASE' && !mergeBaseSha.startsWith(start)))) {
+            return null;
+        }
+        const spans = [...doc.querySelectorAll('span.commit-ref[title]')];
+        const head = spans.find(span => span.classList.contains('head-ref'));
+        const base = spans.find(span => !span.classList.contains('head-ref'));
         const title = doc.querySelector('bdi.js-issue-title');
-        return {
+        const refs = {
             headSha,
             mergeBaseSha,
             headRef: GitHubDomScraper.#branchOf(head),
             baseRef: GitHubDomScraper.#branchOf(base),
             title: title ? title.textContent.trim() : null
         };
+        // Classic pages carry no commit titles: a selection is labelled by short SHA.
+        return range ? {
+            ...refs,
+            headLabel: shortenCommitId(headSha),
+            baseLabel: mergeBaseSha === baseSha ? (refs.baseRef || shortenCommitId(mergeBaseSha)) : shortenCommitId(mergeBaseSha)
+        } : refs;
     }
 
     // "owner/repo:branch" — a branch name cannot contain ':'.
@@ -113,20 +178,38 @@ class GitHubDomScraper {
 
     // The payload's comparison.baseOid is the base branch tip when the PR was
     // last pushed; the merge base GitHub diffs against is each file's oldCommitOid.
-    static #newUiPullRefs(doc, number, diffEntries) {
+    static #newUiPullRefs(doc, number, diffEntries, range) {
         const page = GitHubChangesPayload.read(doc, number);
-        if (!page || (page.changes.comparison && page.changes.comparison.viewing !== 'FULL')) {
+        if (!page || !GitHubDomScraper.#showsRange(page.changes, range)) {
             return null;
         }
         const diff = (diffEntries || page.changes.diffContents || []).find(c =>
             GitHubDomScraper.#SHA.test(c.oldCommitOid || '') && GitHubDomScraper.#SHA.test(c.newCommitOid || ''));
-        return diff ? {
+        if (!diff || !GitHubDomScraper.#showsPair(page.changes, range, diff)) {
+            return null;
+        }
+        const refs = {
             headSha: diff.newCommitOid,
             mergeBaseSha: diff.oldCommitOid,
             headRef: page.pull.headBranch || null,
             baseRef: page.pull.baseBranch || null,
             title: page.pull.title || null
-        } : null;
+        };
+        return range ? { ...refs, ...GitHubDomScraper.#rangeLabels(page.changes.commits || [], refs) } : refs;
+    }
+
+    // Like a selected commit in a GitLab MR: "<title> (<short sha>)"; a side that
+    // is not one of the PR's commits is the base branch (merge base or the first
+    // commit's parent).
+    static #rangeLabels(commits, refs) {
+        const label = (sha) => {
+            const commit = commits.find(c => c.oid === sha);
+            return commit && commit.messageHeadline && commit.shortOid ? `${commit.messageHeadline} (${commit.shortOid})` : null;
+        };
+        return {
+            headLabel: label(refs.headSha) || shortenCommitId(refs.headSha),
+            baseLabel: label(refs.mergeBaseSha) || refs.baseRef || shortenCommitId(refs.mergeBaseSha)
+        };
     }
 
     // ponytail: a long non-renamed path without "Expand all lines" and a truncated link text gets

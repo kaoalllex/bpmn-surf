@@ -12,8 +12,8 @@ const COMPARE = {
 const PR_URL = 'https://github.com/acme/flows/pull/42/files';
 const RENDERED = [{ path: 'flows/new-name.bpmn', oldPath: null }];
 
-function createProvider({ failWith, blocks = RENDERED, missing = false } = {}) {
-    const scope = createScope({ url: PR_URL });
+function createProvider({ failWith, blocks = RENDERED, missing = false, url = PR_URL } = {}) {
+    const scope = createScope({ url });
     const calls = [];
     const load = async (url) => {
         calls.push(url);
@@ -36,6 +36,12 @@ describe('GitHubApiRepoProvider (fallback)', () => {
         assert.deepEqual(calls, []);
     });
 
+    it('gives a commit or range selection no button and spends no quota', async () => {
+        const { provider, calls } = createProvider({ url: `https://github.com/acme/flows/pull/42/files/${'a'.repeat(40)}..${'b'.repeat(40)}` });
+        assert.equal(await provider.init(), false);
+        assert.deepEqual(calls, []);
+    });
+
     it('diffs the head against the merge base from compare', async () => {
         const { provider, calls } = createProvider();
         assert.equal(await provider.init(), true);
@@ -45,6 +51,15 @@ describe('GitHubApiRepoProvider (fallback)', () => {
         assert.deepEqual(calls, [
             'https://api.github.com/repos/acme/flows/pulls/42',
             `https://api.github.com/repos/acme/flows/compare/${PULL.base.sha}...${PULL.head.sha}`
+        ]);
+    });
+
+    it('requests the GitHub Enterprise Server API of the page host', async () => {
+        const { provider, calls } = createProvider({ url: 'https://ghe.example.com/acme/flows/pull/42/files' });
+        assert.equal(await provider.init(), true);
+        assert.deepEqual(calls, [
+            'https://ghe.example.com/api/v3/repos/acme/flows/pulls/42',
+            `https://ghe.example.com/api/v3/repos/acme/flows/compare/${PULL.base.sha}...${PULL.head.sha}`
         ]);
     });
 

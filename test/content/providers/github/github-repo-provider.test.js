@@ -73,7 +73,7 @@ describe('GitHubRepoProvider (page)', () => {
         const fetchFn = async (url, init) => { fetched.push([url, init.headers['x-requested-with']]); return { ok: true, json: async () => ['entry'] }; };
         const scraper = {
             pullRefs: (doc, number, entries) => (entries && entries[0] === 'entry' ? REFS : null),
-            lazyDiffEntry: () => ({ path: 'My Flows/a.bpmn', headSha: REFS.headSha }),
+            lazyDiffEntry: () => ({ path: 'My Flows/a.bpmn', range: 'x..y' }),
             fileBlocks: () => [],
             findBlobRef: () => null
         };
@@ -83,17 +83,34 @@ describe('GitHubRepoProvider (page)', () => {
         assert.equal(await provider.getTargetCommitId(), REFS.mergeBaseSha);
         await provider.init();
         assert.deepEqual(fetched, [[
-            `https://github.com/acme/flows/pull/42/page_data/diff_entries?paths=My%2520Flows%252Fa.bpmn&range=${REFS.headSha}`,
+            'https://github.com/acme/flows/pull/42/page_data/diff_entries?paths=My%2520Flows%252Fa.bpmn&range=x..y',
             'XMLHttpRequest'
         ]]);
         assert.deepEqual(calls, []);
+    });
+
+    it('takes the project and page data URLs from the page host', async () => {
+        const scope = createScope({ url: 'https://ghe.example.com/acme/flows/pull/42/changes' });
+        const fetched = [];
+        const fetchFn = async (url) => { fetched.push(url); return { ok: true, json: async () => ['entry'] }; };
+        const scraper = {
+            pullRefs: (doc, number, entries) => (entries ? REFS : null),
+            lazyDiffEntry: () => ({ path: 'a.bpmn', range: 'x..y' }),
+            fileBlocks: () => [],
+            findBlobRef: () => null
+        };
+        const provider = new scope.GitHubRepoProvider(async () => null, scraper, fetchFn);
+        assert.equal(await provider.init(), true);
+        assert.equal(provider.getProjectInfo().url, 'https://ghe.example.com/acme/flows');
+        assert.equal(provider.getProjectInfo().hostUrl, 'https://ghe.example.com');
+        assert.deepEqual(fetched, ['https://ghe.example.com/acme/flows/pull/42/page_data/diff_entries?paths=a.bpmn&range=x..y']);
     });
 
     it('fails init when the page data answers with an error', async () => {
         const scope = createScope({ url: PR_URL });
         const scraper = {
             pullRefs: (doc, number, entries) => (entries ? REFS : null),
-            lazyDiffEntry: () => ({ path: 'a.bpmn', headSha: REFS.headSha }),
+            lazyDiffEntry: () => ({ path: 'a.bpmn', range: REFS.headSha }),
             fileBlocks: () => [],
             findBlobRef: () => null
         };
@@ -122,6 +139,41 @@ describe('GitHubRepoProvider (page)', () => {
             const { provider } = createProvider(url);
             assert.equal(await provider.init(), false, url);
         }
+    });
+});
+
+describe('GitHubRepoProvider — a selected commit', () => {
+    const C = 'e'.repeat(40);
+    const URL_C = `https://github.com/acme/flows/pull/42/changes/${C}`;
+
+    it('passes the URL\'s selection to the scraper and labels the sides by it', async () => {
+        const scope = createScope({ url: URL_C });
+        const seen = [];
+        const scraper = {
+            pullRefs: (doc, number, entries, range) => { seen.push(range); return { ...REFS, headLabel: 'second (eeeeeee)', baseLabel: 'main' }; },
+            lazyDiffEntry: () => null, fileBlocks: () => [], findBlobRef: () => null
+        };
+        const provider = new scope.GitHubRepoProvider(async () => null, scraper);
+        assert.equal(await provider.init(), true);
+        assert.equal(seen[0], C);
+        assert.deepEqual({ ...provider.getDiffSideLabels() }, { sourceLabel: 'second (eeeeeee)', targetLabel: 'main' });
+    });
+
+    it('re-fetches the page once when the embedded payload is stale', async () => {
+        const scope = createScope({ url: URL_C });
+        const calls = [];
+        const load = async (url) => { calls.push(url); return '<html><body>fresh</body></html>'; };
+        const scraper = {
+            pullRefs: (doc) => (doc.body.textContent === 'fresh' ? REFS : null),
+            lazyDiffEntry: () => null,
+            fileBlocks: () => [],
+            findBlobRef: () => null
+        };
+        const provider = new scope.GitHubRepoProvider(load, scraper);
+        assert.equal(await provider.init(), true);
+        assert.equal(await provider.getSourceCommitId(), REFS.headSha);
+        await provider.init();
+        assert.deepEqual(calls, [URL_C]);
     });
 });
 

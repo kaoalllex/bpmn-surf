@@ -165,6 +165,7 @@ button:hover { background: var(--pu-accent-dim); }
 .pu-site {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 6px;
     padding: 6px 10px;
@@ -173,6 +174,17 @@ button:hover { background: var(--pu-accent-dim); }
     border-radius: 6px;
 }
 .pu-site-host { flex: 1; overflow-wrap: anywhere; }
+.pu-site-kind {
+    appearance: none;
+    padding: 1px 24px 1px 6px;
+    background: var(--pu-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238AA0B8' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 8px center;
+    font-size: 12px;
+    color: var(--pu-fg);
+    border: 1px solid var(--pu-border);
+    border-radius: 4px;
+}
+.pu-site-undetected .pu-site-host { color: #f2a0a0; }
+.pu-site-note { flex-basis: 100%; font-size: 11.5px; color: var(--pu-muted); }
 .pu-site-remove {
     padding: 0 6px;
     font-size: 16px;
