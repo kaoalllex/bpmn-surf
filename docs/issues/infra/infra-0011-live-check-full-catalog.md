@@ -48,10 +48,47 @@ The areas to add:
 - Related: [INFRA-0008] (automated Layer-3 e2e), which would move part of this
   into CI.
 
+### Gaps found by the 2026-10-11 audit
+
+The live catalog was checked feature by feature (README "Features") against C7 and C8.
+Only what reaches GitLab/GitHub at run time is listed; differ-only areas are Layer-2.
+
+- **Correlation badge.** C8: no scenario at all (`AwaitPayment` → `OrderPaidC8` →
+  `PaymentEventsListener.kt`). C7: only `AwaitPayment` on the demo project; the constant
+  case (`Messages.kt`, Phase 2), the hidden tests group and the config group are unchecked.
+  No C7 ↔ C8 isolation row for **messages** (there is one for topics) — which is how
+  `OrderPaid` matching `OrderPaidC8` reached review (fixed in `827a63c`, unit-tested).
+- **Listener badges (FEAT-0019).** C8: one scenario. C7: none, and the sandbox has no C7
+  diagram with listeners (`camunda:executionListener` class / delegateExpression /
+  expression, `camunda:taskListener`) — the material must be added through the API.
+- **C7 handler badges.** Only three demo tasks; the sandbox's traps (prefix topics
+  `findItems` / `chargeCustomer`, `RefundDelegate` in two packages, `camunda:class`,
+  `camunda:delegateExpression`, `${billingService.settle(execution)}`, the
+  `migrationStep01…30` topics without code) are unchecked. C8 has all of its traps.
+- **Callers list, C7.** Listed on the demo, but opening a caller (call site selected) is not
+  checked; C8 checks it.
+- **Buttons.** `buttons.md` names no material (C7 by default); the blob button on a C8
+  file is not checked (a transient `Cannot find button parent container` error on
+  `order-service-c8/.../OrderMain.bpmn` was logged as an error until `9561f03`). The
+  GitLab "commit vs. its parent" diff has no row (GitHub has one). "Diff with local
+  file…" is checked only up to the menu opening.
+- **GitHub × C8.** Only the release-smoke line "camunda8.md on GitLab and on GitHub"; no
+  row of its own.
+- **Not live at all:** report-a-problem (💬) on a real page, the popup outside the offline
+  screenshots.
+
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-11 · claude-opus-5-5 · branch `feature/camunda-dialects-listener-badges`
+
+Audited the live catalog against the full feature list for C7 and C8 after a review
+found a C7/C8 cross-match in the correlation search that no live row covered; the
+findings are in "Gaps found by the 2026-10-11 audit" above. Nothing added to the catalog
+yet. Next step: a wider audit of unit, Layer-2 and live coverage together (move into
+unit/Layer-2 whatever can be covered there reliably; live stays the final check).
 
 ### 2026-10-10 · claude-opus-5-5 · branch `fix/live-check-c7-baseline`
 

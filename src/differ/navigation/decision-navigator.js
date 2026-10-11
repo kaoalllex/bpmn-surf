@@ -102,7 +102,7 @@ class DecisionNavigator {
 
     #getDecisionRef(businessRuleTaskElement) {
         try {
-            return calledDecisionId(businessRuleTaskElement.businessObject, this.#getDialectFunc());
+            return this.#getDialectFunc().calledDecisionId(businessRuleTaskElement.businessObject);
         } catch (error) {
             console.warn('cannot get decisionRef for business rule task element', error);
             return null;

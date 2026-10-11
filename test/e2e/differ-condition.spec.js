@@ -1,7 +1,9 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
-const { bootBpmnDiffer, wireDiagnostics } = require('./support/boot-differ');
+const {
+    bootBpmnDiffer, wireDiagnostics, BASE_BPMN, CHANGED_FLOW_CONDITION_BPMN
+} = require('./support/boot-differ');
 
 // Flow_2 (Task_1 → EndEvent_1) carries `${approved == true}`. Selecting it makes
 // the differ hide the native condition input and inject div.properties-condition
@@ -33,4 +35,23 @@ test('shows the sequenceFlow condition in the properties panel', async ({ page }
     const condition = page.locator('div.properties-condition');
     await expect(condition).toBeAttached();
     await expect(condition).toContainText('approved');
+});
+
+// The formatted condition colours its tokens (keyword, name) on the text, while the
+// changed line keeps its diff background.
+test('colours the tokens of a changed condition line over its diff background', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        fixtures: { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': CHANGED_FLOW_CONDITION_BPMN } }
+    });
+
+    await page.locator('svg .djs-element[data-element-id="Flow_2"] .djs-hit').click({ force: true });
+
+    const line = page.locator('div.properties-condition div', { hasText: 'approved' });
+    await expect(line).toHaveCSS('background-color', 'rgb(136, 255, 136)');
+    const keyword = line.locator('span.cond-keyword');
+    await expect(keyword).toHaveText('false');
+    await expect(keyword).toHaveCSS('color', 'rgb(85, 0, 136)');
+    await expect(line.locator('span.cond-name')).toHaveText('approved');
+    await expect(line).toHaveText(/^\s*approved == false$/);
 });

@@ -92,7 +92,6 @@ class CallerLocator {
 
     // The attribute a calling diagram names this process with: camunda:calledElement in C7, zeebe:calledElement's processId in C8.
     #callerTerm(id) {
-        const attribute = this.#getDialectFunc() === CAMUNDA_DIALECT.C8 ? 'processId' : 'calledElement';
-        return `${attribute}="${id}"`;
+        return this.#getDialectFunc().processCallerTerm(id);
     }
 }

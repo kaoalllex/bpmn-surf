@@ -206,4 +206,63 @@ describe('ConditionFormatter.format FEEL', () => {
     it('leaves and/or alone in a JUEL expression', () => {
         assert.deepEqual(format('${a and b}'), ['${', '  a and b', '}']);
     });
+
+    it('keeps a single-quoted JUEL string whole', () => {
+        assert.deepEqual(format("${s == 'a && (b)' || t}"), ['${', "  s == 'a && (b)' ||", '  t', '}']);
+    });
+
+    it('a single quote opens no string in FEEL', () => {
+        assert.deepEqual(format("= a' and b"), ["= a' and", 'b']);
+    });
+});
+
+describe('ConditionFormatter.tokenize', () => {
+    const formatter = new ConditionFormatter();
+    const tokens = (line, feel) => Array.from(formatter.tokenize(line, feel), ({ text, kind }) => [text, kind]);
+    const coloured = (line, feel) => tokens(line, feel).filter(([, kind]) => kind);
+
+    it('JUEL: operators, keywords, strings and names', () => {
+        assert.deepEqual(tokens("${a && b eq 'x'}", false), [
+            ['${', null], ['a', 'name'], [' ', null], ['&&', 'keyword'], [' ', null], ['b', 'name'], [' ', null],
+            ['eq', 'keyword'], [' ', null], ["'x'", 'string'], ['}', null]
+        ]);
+    });
+
+    it('JUEL: empty, not, ||, comparisons and literals', () => {
+        assert.deepEqual(coloured('${not empty list || x ge 10 and y == null}', false), [
+            ['not', 'keyword'], ['empty', 'keyword'], ['list', 'name'], ['||', 'keyword'], ['x', 'name'],
+            ['ge', 'keyword'], ['10', 'number'], ['and', 'keyword'], ['y', 'name'], ['null', 'keyword']
+        ]);
+    });
+
+    it('FEEL: keywords, numbers and double-quoted strings', () => {
+        assert.deepEqual(coloured('= amount > 100.5 and status = "open"', true), [
+            ['amount', 'name'], ['100.5', 'number'], ['and', 'keyword'], ['status', 'name'], ['"open"', 'string']
+        ]);
+    });
+
+    it('FEEL: between, some/satisfies, if/then/else, true', () => {
+        assert.deepEqual(coloured('some x in xs satisfies x between 1 and 2', true).map(([text, kind]) => `${text}:${kind}`), [
+            'some:keyword', 'x:name', 'in:keyword', 'xs:name', 'satisfies:keyword', 'x:name', 'between:keyword',
+            '1:number', 'and:keyword', '2:number'
+        ]);
+        assert.deepEqual(coloured('if ok then true else false', true).map(([, kind]) => kind),
+            ['keyword', 'name', 'keyword', 'keyword', 'keyword', 'keyword']);
+    });
+
+    it('a keyword inside a string stays part of the string', () => {
+        assert.deepEqual(coloured('${s == "a and b && c"}', false), [['s', 'name'], ['"a and b && c"', 'string']]);
+        assert.deepEqual(coloured('= s = "say \\"or\\" here"', true), [['s', 'name'], ['"say \\"or\\" here"', 'string']]);
+    });
+
+    it('a name with digits is a name; a JUEL word is a name in FEEL; a single quote is no FEEL string', () => {
+        assert.deepEqual(coloured('${x1 > 2}', false), [['x1', 'name'], ['2', 'number']]);
+        assert.deepEqual(coloured("= eq != 'a'", true), [['eq', 'name'], ['a', 'name']]);
+    });
+
+    it('the tokens join back to the line, indentation included', () => {
+        for (const [line, feel] of [['    ${a && (b || c)}', false], ['  = x.y[1] and f(z, "q")', true], ['', true]]) {
+            assert.equal(tokens(line, feel).map(([text]) => text).join(''), line);
+        }
+    });
 });

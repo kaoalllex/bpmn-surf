@@ -190,26 +190,38 @@ class PropertiesPanelHighlighter {
         if (conditions) { // When comparing target branch and mr branches
             const myCondParts = this.#conditionFormatter.format(conditions[0]);
             const otherCondParts = this.#conditionFormatter.format(conditions[1]);
+            const feel = ConditionFormatter.isFeel(conditions[0]);
 
             for (const part of myCondParts) {
                 const exists = otherCondParts.includes(part);
-                this.#drawConditionPart(parentElem, part, exists);
+                this.#drawConditionPart(parentElem, part, exists, feel);
             }
         } else { // When viewing target branch only
             // A FEEL editor has no .value; the model holds the same text.
             const condition = conditionExpressionElem.value
                 ?? this.#elementRegistry.get(elementId).businessObject.conditionExpression?.body ?? '';
             const myCondParts = this.#conditionFormatter.format(condition);
+            const feel = ConditionFormatter.isFeel(condition);
             for (const part of myCondParts) {
-                this.#drawConditionPart(parentElem, part, true);
+                this.#drawConditionPart(parentElem, part, true, feel);
             }
         }
     }
 
-    #drawConditionPart(parentElem, part, exists) {
+    // The diff colour is the line's background; the syntax colour is on the text.
+    #drawConditionPart(parentElem, part, exists, feel) {
         const elem = document.createElement('div');
         elem.style.whiteSpace = 'pre';
-        elem.textContent = part;
+        for (const { text, kind } of this.#conditionFormatter.tokenize(part, feel)) {
+            if (kind) {
+                const span = document.createElement('span');
+                span.className = `cond-${kind}`;
+                span.textContent = text;
+                elem.appendChild(span);
+            } else {
+                elem.appendChild(document.createTextNode(text));
+            }
+        }
         if (!exists) {
             let color = null;
             if (this.#isBaseSideShownFunc()) {

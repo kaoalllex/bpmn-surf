@@ -2,7 +2,7 @@
 id: REFAC-0017
 title: Camunda 7 / Camunda 8 as two dialect implementations instead of branches
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -85,3 +85,7 @@ behaviour must not change; `registries.test.js` if new files are added.
 
 <!-- Each AI session on the task — a separate entry by the template in docs/issues/README.md.
      Add new entries on top (freshest first). -->
+
+### 2026-10-10 · claude-opus-5-5 · `56e0294` (branch `feature/camunda-dialects-listener-badges`)
+
+`CAMUNDA_DIALECT.C7` / `.C8` are now two frozen objects in `camunda-dialect.js` (one file, so no registry change) with the sketched interface: `id`, `moddleExtensions(params)`, `propertiesProviderModule()`, `calledProcessId` / `calledDecisionId`, `processCallerTerm` / `decisionCallerTerm`, `handlerKey`, `implementationGroup` / `formGroup`. The differ and every component hold the object; the free `calledProcessId(bo, dialect)` / `calledDecisionId(bo, dialect)` and `HandlerLocator.handlerKeyFromBusinessObject` are gone, and the C7/C8 key derivation moved out of `HandlerLocator` (search and resolution stay shared). Tests: only the inputs moved to the object form (the handler-key cases now live in `camunda-dialect.test.js`), assertions unchanged; unit + full Layer-2 green, live C8 dive-in and callers search on the sandbox OK. The same session did FEAT-0019 on these objects (`listenerKeys`) and the two UI items: token colours in the formatted condition (`ConditionFormatter#tokenize`, `3caeb4c`) and the floppy-disk download icon in both differs (`c8a6518`). Nothing remains.

@@ -24,7 +24,9 @@ class GitLabUIRepoProvider extends UIRepoProvider {
 
         const parentContainer = document.querySelector(this.#BRANCH_BTN_PARENT_CONTAINER_SELECTOR);
         if (!parentContainer) {
-            console.error('Cannot find button parent container by selector', this.#BRANCH_BTN_PARENT_CONTAINER_SELECTOR);
+            // Usual on a fresh load: the URL names the file before GitLab renders
+            // the blob header; the DOM observer retries once it does.
+            console.debug('Cannot find button parent container by selector', this.#BRANCH_BTN_PARENT_CONTAINER_SELECTOR);
             return;
         }
 

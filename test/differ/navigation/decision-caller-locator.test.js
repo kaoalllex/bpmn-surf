@@ -4,7 +4,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const { createScope } = require('#scope');
 
-const { DecisionCallerLocator, GitLabPlatformClient } = createScope();
+const { DecisionCallerLocator, GitLabPlatformClient, CAMUNDA_DIALECT } = createScope();
 
 // A GitLab client over a fixed project, so blobSearchPageUrl asserts the real
 // URL format the locator now delegates to (REFAC-0004).
@@ -126,7 +126,7 @@ describe('DecisionCallerLocator search term per Camunda dialect', () => {
 
     it('searches decisionId= in C8', async () => {
         const fake = recordingClient();
-        const locator = new DecisionCallerLocator(fake, () => 'c8');
+        const locator = new DecisionCallerLocator(fake, () => CAMUNDA_DIALECT.C8);
         await locator.resolveCallers(['RiskC8'], 'main', 'self.dmn');
         assert.deepEqual(fake.terms, ['decisionId="RiskC8"']);
         assert.equal(locator.blobSearchPageUrl('RiskC8', 'main'), 'decisionId="RiskC8"');

@@ -67,7 +67,6 @@ class PropertiesGroupExpander {
         }
         const groups = new Set();
         const bo = element.businessObject;
-        const c8 = dialect === CAMUNDA_DIALECT.C8;
 
         // Condition on a sequence flow leaving a gateway.
         if (element.type === 'bpmn:SequenceFlow'
@@ -94,17 +93,14 @@ class PropertiesGroupExpander {
             groups.add('Message');
         }
 
-        // Tasks that carry an implementation. The Zeebe panel has no Implementation
-        // group on a service / send task: its job type is the "Task definition".
+        // Tasks that carry an implementation; the dialect names the group.
         if (PropertiesGroupExpander.#IMPLEMENTATION_TASK_TYPES.has(element.type)) {
-            groups.add(c8 && (element.type === 'bpmn:ServiceTask' || element.type === 'bpmn:SendTask')
-                ? 'Task definition'
-                : 'Implementation');
+            groups.add(dialect.implementationGroup(element.type));
         }
 
         // A UserTask carries the form configuration.
         if (element.type === 'bpmn:UserTask') {
-            groups.add(c8 ? 'Form' : 'Forms');
+            groups.add(dialect.formGroup);
         }
 
         // Multi-instance, on any element carrying its loop characteristics.

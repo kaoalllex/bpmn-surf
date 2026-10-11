@@ -7,11 +7,19 @@
 class ConditionFormatter {
     static #WORD_CHAR = /[\p{L}\p{N}_$]/u;
     static #WHITESPACE_CHAR = /\s/;
+    static #FEEL_KEYWORDS = new Set(['and', 'or', 'not', 'between', 'in', 'if', 'then', 'else',
+        'some', 'every', 'satisfies', 'true', 'false', 'null']);
+    static #JUEL_KEYWORDS = new Set(['and', 'or', 'not', 'eq', 'ne', 'lt', 'gt', 'le', 'ge', 'empty',
+        'true', 'false', 'null']);
+
+    static isFeel(condition) {
+        return condition.trimStart().startsWith('=');
+    }
 
     format(condition) {
         // console.debug('format condition', condition);
 
-        const feel = condition.trimStart().startsWith('=');
+        const feel = ConditionFormatter.isFeel(condition);
         // `between a and b` is one range: its `and` joins nothing
         let inBetween = false;
         const resultArr = [];
@@ -21,7 +29,8 @@ class ConditionFormatter {
         let orOpStarted = false;
         let starting = true;
         let funcParenthesis = false;
-        let insideString = false;
+        // the quote that opened the current string; JUEL also quotes with '
+        let stringQuote = null;
         let escapeFound = false;
         let pendingSpace = false;
         let lastChar = '';
@@ -29,7 +38,7 @@ class ConditionFormatter {
         for (let i = 0; i < condition.length; i++) {
             const symbol = condition[i];
 
-            if (insideString && symbol !== '"' && symbol !== '\\') {
+            if (stringQuote && symbol !== stringQuote && symbol !== '\\') {
                 symbolArr.push(symbol);
                 lastChar = symbol;
                 continue;
@@ -112,11 +121,14 @@ class ConditionFormatter {
                     break;
 
                 case '"':
+                case '\'':
                     symbolArr.push(symbol);
                     if (escapeFound) {
                         escapeFound = false;
-                    } else {
-                        insideString = !insideString;
+                    } else if (stringQuote) {
+                        stringQuote = null;
+                    } else if (symbol === '"' || !feel) {
+                        stringQuote = symbol;
                     }
                     break;
 
@@ -151,6 +163,51 @@ class ConditionFormatter {
         }
 
         return resultArr;
+    }
+
+    // Splits one formatted line into display tokens for syntax colours:
+    // [{ text, kind }], kind 'keyword' | 'string' | 'number' | 'name' | null
+    // (plain); the texts join back to the line. A line, not a parser: a
+    // keyword-looking word is coloured wherever it stands.
+    tokenize(line, feel) {
+        const keywords = feel ? ConditionFormatter.#FEEL_KEYWORDS : ConditionFormatter.#JUEL_KEYWORDS;
+        const quotes = feel ? '"' : '"\'';
+        const tokens = [];
+        const push = (text, kind) => {
+            const last = tokens[tokens.length - 1];
+            if (!kind && last && !last.kind) {
+                last.text += text;
+            } else {
+                tokens.push({ text, kind });
+            }
+        };
+        let i = 0;
+        while (i < line.length) {
+            const rest = line.slice(i);
+            const symbol = line[i];
+            let match;
+            if (quotes.includes(symbol)) {
+                let end = i + 1;
+                while (end < line.length && line[end] !== symbol) {
+                    end += line[end] === '\\' ? 2 : 1;
+                }
+                push(line.slice(i, end + 1), 'string');
+                i = end + 1;
+            } else if (!feel && (rest.startsWith('&&') || rest.startsWith('||'))) {
+                push(rest.slice(0, 2), 'keyword');
+                i += 2;
+            } else if ((match = /^\d+(?:\.\d+)?/.exec(rest))) {
+                push(match[0], 'number');
+                i += match[0].length;
+            } else if ((match = /^[\p{L}_][\p{L}\p{N}_$]*/u.exec(rest))) {
+                push(match[0], keywords.has(match[0]) ? 'keyword' : 'name');
+                i += match[0].length;
+            } else {
+                push(symbol, null);
+                i++;
+            }
+        }
+        return tokens;
     }
 
     // The FEEL keyword (`and`, `or`, `between`) the line ends with, when the next

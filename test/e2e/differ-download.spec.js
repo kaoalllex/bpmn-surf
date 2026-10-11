@@ -30,3 +30,19 @@ test('disables Download when the file is absent in both versions', async ({ page
     await expect(page.locator('.differ-empty-state')).toBeVisible();
     await expect(page.getByTitle(DOWNLOAD_TITLE)).toBeDisabled();
 });
+
+// The icon is a floppy disk drawn by CSS (a mask over currentColor), not a glyph;
+// the button keeps a spelled-out accessible name.
+test('the download button shows a floppy-disk icon', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page);
+
+    const button = page.getByRole('button', { name: DOWNLOAD_TITLE });
+    await expect(button).toHaveText('');
+    const icon = await button.evaluate((element) => {
+        const style = getComputedStyle(element, '::before');
+        return { mask: style.maskImage || style.webkitMaskImage, width: style.width };
+    });
+    expect(icon.mask).toContain('data:image/svg+xml');
+    expect(icon.width).toBe('16px');
+});

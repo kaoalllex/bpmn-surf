@@ -102,7 +102,7 @@ class BpmnDiffer {
             console.warn('camunda 8 diagram, but no zeebe moddle in the params: showing it as camunda 7');
             this.#dialect = CAMUNDA_DIALECT.C7;
         }
-        console.debug('camunda dialect:', this.#dialect);
+        console.debug('camunda dialect:', this.#dialect.id);
 
         this.#bpmnJS = this.#createModeler();
         // console.debug('bpmn js created');
@@ -454,7 +454,6 @@ class BpmnDiffer {
     }
 
     #createModeler() {
-        const c8 = this.#dialect === CAMUNDA_DIALECT.C8;
         return new BpmnJS({
             container: '#' + BpmnDifferView.CANVAS_ID,
             propertiesPanel: {
@@ -463,15 +462,11 @@ class BpmnDiffer {
             additionalModules: [
                 window.BpmnJSPropertiesPanel.BpmnPropertiesPanelModule,
                 window.BpmnJSPropertiesPanel.BpmnPropertiesProviderModule,
-                c8
-                    ? window.BpmnJSPropertiesPanel.ZeebePropertiesProviderModule
-                    : window.BpmnJSPropertiesPanel.CamundaPlatformPropertiesProviderModule
+                this.#dialect.propertiesProviderModule()
             ],
             // One descriptor only: camunda and zeebe both define modelerTemplate,
             // and moddle rejects every bpmn:process when both are registered.
-            moddleExtensions: c8
-                ? { zeebe: this.#params.zeebeBpmnModdle }
-                : { camunda: this.#params.camundaBpmnModdle }
+            moddleExtensions: this.#dialect.moddleExtensions(this.#params)
         });
     }
 
@@ -925,10 +920,10 @@ class BpmnDiffer {
                 return false;
             }
             if (element.type === 'bpmn:CallActivity') {
-                return wanted.has(calledProcessId(businessObject, this.#dialect));
+                return wanted.has(this.#dialect.calledProcessId(businessObject));
             }
             if (element.type === 'bpmn:BusinessRuleTask') {
-                return wanted.has(calledDecisionId(businessObject, this.#dialect));
+                return wanted.has(this.#dialect.calledDecisionId(businessObject));
             }
             return false;
         });

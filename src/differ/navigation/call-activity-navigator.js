@@ -102,7 +102,7 @@ class CallActivityNavigator {
 
     #getCallActivityProcessId(callActivityElement) {
         try {
-            return calledProcessId(callActivityElement.businessObject, this.#getDialectFunc());
+            return this.#getDialectFunc().calledProcessId(callActivityElement.businessObject);
         } catch (error) {
             console.warn('cannot get calledElement for call activity element', error);
             return null;

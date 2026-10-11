@@ -16,6 +16,13 @@
     white-space: nowrap;
 }
 
+/* syntax colours of the formatted condition, after the panel editor's (CodeMirror) */
+/* darker than CodeMirror's, to stay readable (4.5:1) on the red/green diff lines */
+.properties-condition .cond-keyword { color: #508; }
+.properties-condition .cond-string { color: #700; }
+.properties-condition .cond-number { color: #042; }
+.properties-condition .cond-name { color: #036; }
+
 .djs-element.highlight-diff-big .djs-outline {
     visibility: visible;
 
@@ -233,6 +240,18 @@
     font-size: 19px;
     line-height: 1;
     text-align: center;
+}
+
+/* the download button's floppy disk, in the button's text colour */
+.differ-icon-download::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    background-color: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M2 1h10l3 3v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm2 1v4h7V2zm5 .5h1.5V5H9zM3 9v5h10V9z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M2 1h10l3 3v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm2 1v4h7V2zm5 .5h1.5V5H9zM3 9v5h10V9z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 /* primary action — accented by a bolder label */
@@ -461,6 +480,19 @@
 .handler-link-removed {
     border-color: #cc4444;
     background-color: #ff8888;
+}
+
+/* listener handler links (FEAT-0019): a row hanging off the element's bottom-left
+   corner, mirroring the implementation badge off the bottom-right one */
+.listener-links {
+    display: flex;
+    gap: 2px;
+    transform: translateX(-100%);
+}
+
+/* on a flow: centred under the line's middle */
+.listener-links-flow {
+    transform: translate(-50%, 4px);
 }
 
 /* message-correlation code link (FEAT-0027) — same minimalist look as .handler-link */

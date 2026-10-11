@@ -435,91 +435,6 @@ describe('HandlerLocator.classKeyFromDelegateExpression', () => {
     });
 });
 
-describe('HandlerLocator.handlerKeyFromBusinessObject', () => {
-    // Minimal moddle-like BO: get(name) reads camunda attributes; `type`/`topic`
-    // are plain properties (as camunda-moddle defines the external-task fields).
-    function bo({ attrs = {}, type, topic, eventDefinitions } = {}) {
-        return {
-            type,
-            topic,
-            eventDefinitions,
-            get: (name) => attrs[name]
-        };
-    }
-
-    function msgDef(opts) {
-        const def = bo(opts);
-        def.$type = 'bpmn:MessageEventDefinition';
-        return def;
-    }
-
-    function timerDef() {
-        const def = bo({});
-        def.$type = 'bpmn:TimerEventDefinition';
-        return def;
-    }
-
-    it('returns a class key for a service task with camunda:class (regression)', () => {
-        assert.equal(
-            HandlerLocator.handlerKeyFromBusinessObject(bo({ attrs: { 'camunda:class': 'com.foo.ScoreCarDelegate' } })),
-            'class:ScoreCarDelegate'
-        );
-    });
-
-    it('returns a topic key for an external service task (regression)', () => {
-        assert.equal(
-            HandlerLocator.handlerKeyFromBusinessObject(bo({ type: 'external', topic: 'score-car' })),
-            'topic:score-car'
-        );
-    });
-
-    it('returns a class key from a delegateExpression on a service task (regression)', () => {
-        assert.equal(
-            HandlerLocator.handlerKeyFromBusinessObject(bo({ attrs: { 'camunda:delegateExpression': '${scoreCarDelegate}' } })),
-            'class:ScoreCarDelegate'
-        );
-    });
-
-    it('reads camunda:class from a nested messageEventDefinition (message end event)', () => {
-        const event = bo({ eventDefinitions: [msgDef({ attrs: { 'camunda:class': 'com.foo.NotifyDelegate' } })] });
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'class:NotifyDelegate');
-    });
-
-    it('reads a delegateExpression from a nested messageEventDefinition', () => {
-        const event = bo({ eventDefinitions: [msgDef({ attrs: { 'camunda:delegateExpression': '${notifyBean}' } })] });
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'class:NotifyBean');
-    });
-
-    it('reads external type/topic from a nested messageEventDefinition', () => {
-        const event = bo({ eventDefinitions: [msgDef({ type: 'external', topic: 'notify-topic' })] });
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'topic:notify-topic');
-    });
-
-    it('picks the messageEventDefinition among several event definitions', () => {
-        const event = bo({ eventDefinitions: [timerDef(), msgDef({ attrs: { 'camunda:class': 'Notify' } })] });
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), 'class:Notify');
-    });
-
-    it('returns null for a message event with no implementation', () => {
-        const event = bo({ eventDefinitions: [msgDef({})] });
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), null);
-    });
-
-    it('returns null for a non-message event definition (timer/signal)', () => {
-        const event = bo({ eventDefinitions: [timerDef()] });
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(event), null);
-    });
-
-    it('returns null for an element without eventDefinitions or implementation', () => {
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(bo({})), null);
-    });
-
-    it('returns null for a missing business object', () => {
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(null), null);
-        assert.equal(HandlerLocator.handlerKeyFromBusinessObject(undefined), null);
-    });
-});
-
 describe('HandlerLocator.termFromKey', () => {
     it('returns the topic of a topic key', () => {
         assert.equal(HandlerLocator.termFromKey('topic:my-topic'), 'my-topic');
@@ -1073,37 +988,5 @@ describe('HandlerLocator.resolveLocation — job workers', () => {
             const location = await new HandlerLocator(clientReturning(hits)).resolveLocation('topic:find-items', 'main');
             assert.equal(location.filePath, 'src/FindItemsWorker.kt');
         }
-    });
-});
-
-describe('HandlerLocator.handlerKeyFromBusinessObject — Camunda 8', () => {
-    const key = (bo, dialect) => HandlerLocator.handlerKeyFromBusinessObject(bo, dialect);
-    const withJobType = (type, extra = {}) =>
-        ({ ...extra, extensionElements: { values: [{ $type: 'zeebe:TaskDefinition', type }] } });
-
-    it('a service task → topic:<job type>', () => {
-        assert.equal(key(withJobType('find-items'), 'c8'), 'topic:find-items');
-    });
-
-    it('a message throw event: the job type on the event itself', () => {
-        assert.equal(key(withJobType('publish-order-completed',
-            { eventDefinitions: [{ $type: 'bpmn:MessageEventDefinition' }] }), 'c8'), 'topic:publish-order-completed');
-    });
-
-    it('no key for a Camunda connector or a FEEL job type', () => {
-        assert.equal(key(withJobType('io.camunda:http-json:1'), 'c8'), null);
-        assert.equal(key(withJobType('=jobType'), 'c8'), null);
-    });
-
-    it('no key without a task definition', () => {
-        assert.equal(key({ extensionElements: { values: [{ $type: 'zeebe:IoMapping' }] } }, 'c8'), null);
-        assert.equal(key({}, 'c8'), null);
-        assert.equal(key(null, 'c8'), null);
-    });
-
-    it('dialects do not cross', () => {
-        assert.equal(key(withJobType('find-items'), 'c7'), null);
-        assert.equal(key(withJobType('find-items')), null);
-        assert.equal(key({ type: 'external', topic: 'validateOrder', get: () => undefined }, 'c8'), null);
     });
 });

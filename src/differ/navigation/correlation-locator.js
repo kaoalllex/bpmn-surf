@@ -228,8 +228,9 @@ class CorrelationLocator {
             // handler-locator BUG-0013). Keep only hits whose snippet actually
             // contains the searched term, otherwise a correlation keyword on an
             // unrelated line (a handler correlating a DIFFERENT message) is
-            // mistaken for our message's correlation point.
-            if (!item.snippet || !item.snippet.includes(term)) {
+            // mistaken for our message's correlation point. The name must stand
+            // whole: `OrderPaid` must not match inside `OrderPaidC8`.
+            if (!item.snippet || !CorrelationLocator.#mentions(item.snippet, term)) {
                 continue;
             }
             const classification = CorrelationLocator.classifyHit(item, term);
@@ -464,7 +465,14 @@ class CorrelationLocator {
             return startLine;
         }
         const lines = item.snippet.split('\n');
-        const offset = lines.findIndex(line => line.includes(term));
+        const offset = lines.findIndex(line => CorrelationLocator.#mentions(line, term));
         return offset >= 0 ? startLine + offset : startLine;
+    }
+
+    // Whether the text holds the name as a whole word; '.' and '-' continue a
+    // name (`order.paid.v2`, `order-paid-c8`), as in HandlerLocator.matchesExactTopic.
+    static #mentions(text, term) {
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(?<![\\w.-])${escaped}(?![\\w.-])`).test(text);
     }
 }
