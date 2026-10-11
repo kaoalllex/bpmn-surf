@@ -209,9 +209,8 @@ class CorrelationLocator {
 
     /**
      * Turns raw blob-search items into classified, scored hits (excluding the
-     * diagram files). The search term is the literal being searched in this phase
-     * (the message name in Phase 1, the constant name in Phase 2) and anchors the
-     * matched line number within the snippet.
+     * diagram files). The search term is the literal searched for (the message
+     * name, Phase 1) and anchors the matched line number within the snippet.
      * @returns {{path: string, line: number, category: string, constantName: ?string, isTest: boolean, score: number}[]}
      */
     static collectHits(items, term) {
