@@ -87,16 +87,29 @@ test('offers no type select for the public sites', async ({ page }) => {
 });
 
 // An update from 1.3.x that lost gitlab.com leaves the notice key for the popup.
-test('the gitlab.com notice turns gitlab.com on, or is dismissed', async ({ page }) => {
+async function openWithNotice(page) {
     await installChromeStub(page, { seed: { local: { gitlabComNotice: true } } });
     await page.goto('/src/popup/popup.html');
     const notice = page.locator('#gitlabComNotice');
     await expect(notice).toBeVisible();
+    return notice;
+}
+
+test('the gitlab.com notice turns gitlab.com on', async ({ page }) => {
+    const notice = await openWithNotice(page);
 
     await page.locator('#gitlabComOn').click();
+
     await expect(notice).toBeHidden();
     expect((await stubState(page)).requests).toEqual([['https://gitlab.com/*']]);
+});
 
-    await page.locator('#gitlabComDismiss').evaluate((button) => button.click());
-    await expect.poll(async () => (await stubState(page)).local).toEqual({});
+test('the gitlab.com notice can be dismissed', async ({ page }) => {
+    const notice = await openWithNotice(page);
+
+    await page.locator('#gitlabComDismiss').click();
+
+    await expect(notice).toBeHidden();
+    expect((await stubState(page)).local).toEqual({});
+    expect((await stubState(page)).requests).toEqual([]);
 });

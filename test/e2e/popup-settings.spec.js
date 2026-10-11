@@ -69,6 +69,7 @@ test('exports the settings and imports them into a fresh profile', async ({ page
     await expect(fresh.locator('#ioNote')).toHaveText('Annotations imported. The sites still need your permission.');
     expect((await stubState(fresh)).sync.settings.handlerAnnotations).toEqual({ topic: ['JobWorker'], className: [] });
     expect((await stubState(fresh)).requests).toEqual([]);
+    await expect(fresh.locator('#siteList li')).toHaveCount(0);
 
     await grant.click();
     await expect(fresh.locator('#ioNote')).toHaveText('Sites allowed.');

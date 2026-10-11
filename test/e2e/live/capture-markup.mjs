@@ -17,6 +17,12 @@ import { join } from 'node:path';
 import { PROJECT, REPO_ROOT, launchWithExtension } from './support.mjs';
 
 const [mr, blobPath, outDir = join(REPO_ROOT, 'test', 'fixtures', 'gitlab')] = process.argv.slice(2);
+// The fixtures are tracked: capture only the public sandbox, never a project whose
+// paths and names must not land in the repository.
+if (PROJECT !== 'https://gitlab.com/kao.alllex/bpmn-surf-test') {
+    console.error(`capture-markup.mjs captures the sandbox only, not ${PROJECT}`);
+    process.exit(2);
+}
 if (!/^\d+$/.test(mr || '') || !blobPath) {
     console.error('usage: capture-markup.mjs <iid> <blob path> [<outDir>]');
     process.exit(2);

@@ -21,7 +21,7 @@ import { PROJECT, collectExtensionLog, launchWithExtension, signedInAs } from '.
 
 const args = process.argv.slice(2);
 const commit = args.includes('--commit') ? args[args.indexOf('--commit') + 1] : null;
-const mr = args.find(a => /^\d+$/.test(a));
+const mr = args.find((a, i) => /^\d+$/.test(a) && args[i - 1] !== '--commit');
 if (!mr) {
     console.error('usage: mr-button.mjs <iid> [--legacy] [--parallel] [--commit <sha>] [--walk] [--scroll] [--click] [--shots <dir>]');
     process.exit(2);
@@ -151,7 +151,8 @@ if (args.includes('--click') && !(await page.$('.bpmn-surf-file-btn'))) {
     if (!differ) fail('click: no differ tab opened');
     else {
         await differ.waitForTimeout(4000);
-        const side = async () => (await differ.locator('.differ-toolbar span', { hasText: '·' }).first().textContent()).trim();
+        const side = async () => ((await differ.locator('.differ-toolbar span', { hasText: '·' }).first()
+            .textContent({ timeout: 10000 }).catch(() => null)) || 'no side label').trim();
         const shown = await side();
         const switchButton = differ.getByRole('button', { name: 'Switch branch' });
         let other = 'no Switch';
