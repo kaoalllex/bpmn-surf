@@ -402,3 +402,57 @@ describe('GitLabUIRepoProvider.addButton — branch view', () => {
         }
     });
 });
+
+// The same placement on GitLab's own markup, captured from gitlab.com by
+// test/e2e/live/capture-markup.mjs (sandbox MR "C7: model changes", five diagrams
+// and a Kotlin file). Red after a re-capture = GitLab changed its markup.
+describe('GitLabUIRepoProvider on captured gitlab.com markup', () => {
+    const { fixture } = require('#scope');
+
+    function syncOver(markup) {
+        const scope = createScope();
+        scope.document.body.innerHTML = markup;
+        new scope.GitLabUIRepoProvider().syncFileButtons(describeDiagrams(scope));
+        return { scope, buttons: fileButtons(scope.document) };
+    }
+    const names = buttons => buttons.map(b => b.dataset.bpmnSurfFilePath.split('/').pop());
+
+    it('puts one button on every rapid-diffs diagram block, right before the options menu', () => {
+        const { scope, buttons } = syncOver(fixture('gitlab/mr-rapid.html'));
+
+        assert.equal(scope.document.querySelectorAll('diff-file').length, 6);
+        assert.deepEqual(names(buttons), ['Billing.bpmn', 'Delivery.bpmn', 'Fulfillment.bpmn', 'Payment.bpmn', 'OrderMain.bpmn']);
+        for (const button of buttons) {
+            assert.ok(button.parentElement.classList.contains('rd-diff-file-info'));
+            assert.ok(button.nextElementSibling.classList.contains('rd-diff-file-options-menu'), 'right before ⋮');
+            assert.equal(button.closest('diff-file').querySelectorAll('.bpmn-surf-file-btn').length, 1);
+        }
+    });
+
+    it('puts one button in the header of every legacy diagram block, before the options group', () => {
+        const { scope, buttons } = syncOver(fixture('gitlab/mr-legacy.html'));
+
+        const blocks = [...scope.document.querySelectorAll('.diff-file.file-holder[data-path]')];
+        assert.deepEqual(blocks.map(b => b.dataset.path.split('/').pop()),
+            ['Billing.bpmn', 'AuditListener.kt', 'Delivery.bpmn', 'Fulfillment.bpmn', 'Payment.bpmn']);
+        assert.deepEqual(names(buttons), ['Billing.bpmn', 'Delivery.bpmn', 'Fulfillment.bpmn', 'Payment.bpmn']);
+        for (const button of buttons) {
+            assert.ok(button.closest('.js-file-title'), 'in the header');
+            assert.match(button.nextElementSibling.textContent, /Options/, 'right before the ⋮ group');
+        }
+    });
+
+    it('puts the view split button into the blob header, beside GitLab\'s button groups', () => {
+        const scope = createScope();
+        scope.document.body.innerHTML = `<div id="fileHolder">${fixture('gitlab/blob.html')}</div>`;
+        new scope.GitLabUIRepoProvider().addButton({ fileType: scope.FILE_TYPE_BPMN, filePath: 'OrderMain.bpmn', onButtonClickFunc: () => {} });
+
+        const container = byId(scope, '');
+        assert.ok(container, 'the button is added');
+        assert.ok(container.parentElement.classList.contains('file-actions'));
+        assert.ok(container.closest('#fileHolder > .js-file-title'));
+        assert.equal(container.parentElement.firstElementChild, container, 'first in the actions');
+        assert.equal(container.closest('.js-blob-viewer-switcher'), null);
+        assert.equal(container.nextElementSibling.textContent.trim(), 'Blame', 'beside the Blame group');
+    });
+});
