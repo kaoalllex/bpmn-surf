@@ -12,10 +12,14 @@ class ConditionFormatter {
     static #JUEL_KEYWORDS = new Set(['and', 'or', 'not', 'eq', 'ne', 'lt', 'gt', 'le', 'ge', 'empty',
         'true', 'false', 'null']);
 
+    static isFeel(condition) {
+        return condition.trimStart().startsWith('=');
+    }
+
     format(condition) {
         // console.debug('format condition', condition);
 
-        const feel = condition.trimStart().startsWith('=');
+        const feel = ConditionFormatter.isFeel(condition);
         // `between a and b` is one range: its `and` joins nothing
         let inBetween = false;
         const resultArr = [];

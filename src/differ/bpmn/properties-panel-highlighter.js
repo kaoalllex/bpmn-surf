@@ -190,7 +190,7 @@ class PropertiesPanelHighlighter {
         if (conditions) { // When comparing target branch and mr branches
             const myCondParts = this.#conditionFormatter.format(conditions[0]);
             const otherCondParts = this.#conditionFormatter.format(conditions[1]);
-            const feel = PropertiesPanelHighlighter.#isFeel(conditions[0]);
+            const feel = ConditionFormatter.isFeel(conditions[0]);
 
             for (const part of myCondParts) {
                 const exists = otherCondParts.includes(part);
@@ -201,15 +201,11 @@ class PropertiesPanelHighlighter {
             const condition = conditionExpressionElem.value
                 ?? this.#elementRegistry.get(elementId).businessObject.conditionExpression?.body ?? '';
             const myCondParts = this.#conditionFormatter.format(condition);
-            const feel = PropertiesPanelHighlighter.#isFeel(condition);
+            const feel = ConditionFormatter.isFeel(condition);
             for (const part of myCondParts) {
                 this.#drawConditionPart(parentElem, part, true, feel);
             }
         }
-    }
-
-    static #isFeel(condition) {
-        return condition.trimStart().startsWith('=');
     }
 
     // The diff colour is the line's background; the syntax colour is on the text.

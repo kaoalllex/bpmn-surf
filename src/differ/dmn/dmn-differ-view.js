@@ -149,7 +149,7 @@ class DmnDifferView {
         return group;
     }
 
-    // opts: { text, icon, title, ariaLabel, danger, strong, minWidth, disabled, onClick }
+    // opts: { text, icon, iconClass, title, ariaLabel, danger, strong, minWidth, disabled, onClick }
     #button(opts) {
         const button = document.createElement('button');
         button.className = DmnDifferView.BTN_CLASS + ' differ-btn'
