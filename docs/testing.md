@@ -131,6 +131,13 @@ the "changed handler" badge) and `c8/migrate-payment` (!20 / #19, the C7 Payment
 migrated in place). The module README lists the traps (kebab-case job-type prefixes,
 `@JobWorker` without a type, a connector, a process called but defined nowhere).
 
+**Camunda 7 material.** `order-service/` (external tasks) and `billing-service/` (`camunda:class`,
+`camunda:delegateExpression`) are the baseline. `main` of both sandboxes carries Camunda 7
+listeners (`order-service/.../listener/`: class, delegate-expression, expression, process-level
+and task listeners) and a field injection in `Billing.bpmn`; the branch `c7/model-changes`
+(an open MR / PR on each) changes `AuditListener.kt` and one property of every Camunda 7
+properties-panel group. The repository README lists the traps.
+
 `BPMN_SURF_PROJECT=<url>` points the scripts at another project, and
 `BPMN_SURF_ANONYMOUS=1` runs them in a throwaway profile, signed out. The other
 project in use is `gitlab.com/kao.alllex/bpmn-surf-demo`, a **frozen showcase**.
