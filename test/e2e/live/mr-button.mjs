@@ -1,14 +1,16 @@
 // Does every diagram file of an MR carry its own diff button — and only those?
 //
-//   node test/e2e/live/mr-button.mjs <iid> [--legacy] [--parallel] [--walk] [--scroll] [--click] [--shots <dir>]
+//   node test/e2e/live/mr-button.mjs <iid> [--legacy] [--parallel] [--commit <sha>] [--walk] [--scroll] [--click] [--shots <dir>]
 //
 //   --legacy    the legacy diffs UI (?rapid_diffs_disabled=true), what self-managed serves
 //   --parallel  side-by-side compare view (?view=parallel)
+//   --commit    one commit of the MR (?commit_id=<sha>): the diff of that commit against its parent
 //   --walk      click every file in the file tree, twice round, sampling during each switch:
 //               no button may be visible while rapid diffs greys out the previous file
 //   --scroll    wheel down through the diff, checking every block that mounts (the legacy UI
 //               virtual-scrolls all-files mode: blocks mount and unmount as the reader scrolls)
-//   --click     click the first file button and expect the differ tab to open
+//   --click     click the first file button and expect the differ tab to open; prints the
+//               differ's side labels (which versions it compares)
 //   --shots     save a header screenshot of every diagram block into <dir>
 //
 // Exits 1 when a check fails. The diff mode ("Show one file at a time") is the
@@ -18,15 +20,16 @@ import { join } from 'node:path';
 import { PROJECT, collectExtensionLog, launchWithExtension, signedInAs } from './support.mjs';
 
 const args = process.argv.slice(2);
+const commit = args.includes('--commit') ? args[args.indexOf('--commit') + 1] : null;
 const mr = args.find(a => /^\d+$/.test(a));
 if (!mr) {
-    console.error('usage: mr-button.mjs <iid> [--legacy] [--parallel] [--walk] [--scroll] [--click] [--shots <dir>]');
+    console.error('usage: mr-button.mjs <iid> [--legacy] [--parallel] [--commit <sha>] [--walk] [--scroll] [--click] [--shots <dir>]');
     process.exit(2);
 }
 const legacy = args.includes('--legacy');
 const parallel = args.includes('--parallel');
 const shotsDir = args.includes('--shots') ? args[args.indexOf('--shots') + 1] : null;
-const query = [legacy && 'rapid_diffs_disabled=true', parallel && 'view=parallel'].filter(Boolean).join('&');
+const query = [legacy && 'rapid_diffs_disabled=true', parallel && 'view=parallel', commit && `commit_id=${commit}`].filter(Boolean).join('&');
 
 const context = await launchWithExtension();
 const page = await context.newPage();
@@ -146,7 +149,19 @@ if (args.includes('--click') && !(await page.$('.bpmn-surf-file-btn'))) {
     await page.locator('.bpmn-surf-file-btn button').first().click();
     const differ = await tab;
     if (!differ) fail('click: no differ tab opened');
-    else { await differ.waitForTimeout(4000); console.log(`click: differ tab opened, title "${await differ.title()}"`); }
+    else {
+        await differ.waitForTimeout(4000);
+        const side = async () => (await differ.locator('.differ-toolbar span', { hasText: '·' }).first().textContent()).trim();
+        const shown = await side();
+        const switchButton = differ.getByRole('button', { name: 'Switch branch' });
+        let other = 'no Switch';
+        if (await switchButton.isEnabled().catch(() => false)) {
+            await switchButton.click();
+            await differ.waitForTimeout(2000);
+            other = await side();
+        }
+        console.log(`click: differ tab opened, title "${await differ.title()}", sides: ${shown} / ${other}`);
+    }
     const after = await blockHeight();
     if (after < before / 2) fail(`click: the file block collapsed (${Math.round(before)}px -> ${Math.round(after)}px)`);
 }
