@@ -17,10 +17,11 @@
 }
 
 /* syntax colours of the formatted condition, after the panel editor's (CodeMirror) */
-.properties-condition .cond-keyword { color: #708; }
-.properties-condition .cond-string { color: #a11; }
-.properties-condition .cond-number { color: #164; }
-.properties-condition .cond-name { color: #05a; }
+/* darker than CodeMirror's, to stay readable (4.5:1) on the red/green diff lines */
+.properties-condition .cond-keyword { color: #508; }
+.properties-condition .cond-string { color: #700; }
+.properties-condition .cond-number { color: #042; }
+.properties-condition .cond-name { color: #036; }
 
 .djs-element.highlight-diff-big .djs-outline {
     visibility: visible;

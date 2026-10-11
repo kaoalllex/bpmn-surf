@@ -51,7 +51,7 @@ test('colours the tokens of a changed condition line over its diff background', 
     await expect(line).toHaveCSS('background-color', 'rgb(136, 255, 136)');
     const keyword = line.locator('span.cond-keyword');
     await expect(keyword).toHaveText('false');
-    await expect(keyword).toHaveCSS('color', 'rgb(119, 0, 136)');
+    await expect(keyword).toHaveCSS('color', 'rgb(85, 0, 136)');
     await expect(line.locator('span.cond-name')).toHaveText('approved');
     await expect(line).toHaveText(/^\s*approved == false$/);
 });
