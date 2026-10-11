@@ -119,3 +119,175 @@ describe('HandlerNavigator.refreshChangedBadges — labels (BUG-0016)', () => {
         assert.equal(overlays.added.length, 0);
     });
 });
+
+describe('HandlerNavigator — listener badges (FEAT-0019)', () => {
+    let HandlerNavigator;
+
+    beforeEach(() => {
+        ({ HandlerNavigator } = createScope());
+    });
+
+    const listener = (type, props) => ({ $type: `camunda:${type}`, ...props });
+    // A BO with Camunda 7 listeners in its extensionElements and no implementation.
+    const withListeners = (...values) => ({ extensionElements: { values }, get: () => undefined });
+    const ROOT = { id: 'Process_1', type: 'bpmn:Process', businessObject: withListeners() };
+    const shape = (id, businessObject, extra = {}) => ({ id, type: 'bpmn:Task', parent: ROOT, businessObject, ...extra });
+    const changed = (...keys) => new Map(keys.map(key => [key, { filePath: `${key.slice(6)}.kt`, diffType: 'changed' }]));
+
+    function navigator(overlays, elements, { selected = null, locator = null, opened = [], navigated = [] } = {}) {
+        return new HandlerNavigator(overlays, fakeRegistry(elements), locator, '7', () => selected, () => 'ref',
+            (url) => { opened.push(url); return null; }, (url) => { navigated.push(url); return true; });
+    }
+
+    const badgesOf = (overlay) => Array.from(overlay.opts.html.children);
+    const titles = (overlay) => badgesOf(overlay).map(badge => badge.title);
+
+    it('groups the listeners of one class into one badge and skips an expression listener', () => {
+        const task = shape('Task', withListeners(
+            listener('ExecutionListener', { event: 'start', class: 'com.a.AuditDelegate' }),
+            listener('ExecutionListener', { event: 'end', class: 'com.b.AuditDelegate' }),
+            listener('ExecutionListener', { event: 'start', expression: '${audit.log(execution)}' })));
+        const overlays = fakeOverlays();
+        navigator(overlays, [task], { selected: 'Task' }).showOverlayForSelectedElement();
+
+        assert.equal(overlays.added.length, 1);
+        assert.equal(overlays.added[0].elementId, 'Task');
+        assert.deepEqual(titles(overlays.added[0]),
+            ['Execution listener (start), execution listener (end) — open the handler code']);
+        assert.equal(badgesOf(overlays.added[0])[0].textContent, 'ℓ</>');
+        assert.equal(overlays.added[0].opts.html.className, 'listener-links');
+        assert.deepEqual({ ...overlays.added[0].opts.position }, { bottom: 0, left: 0 });
+    });
+
+    it('adds no row for an element whose listeners are all expressions', () => {
+        const task = shape('Task', withListeners(
+            listener('ExecutionListener', { event: 'start', expression: '${audit.log(execution)}' })));
+        const overlays = fakeOverlays();
+        navigator(overlays, [task], { selected: 'Task' }).showOverlayForSelectedElement();
+
+        assert.equal(overlays.added.length, 0);
+    });
+
+    it('makes the row permanent when one listener is changed, colouring only that badge', () => {
+        const task = shape('Task', withListeners(
+            listener('ExecutionListener', { event: 'start', class: 'AuditDelegate' }),
+            listener('TaskListener', { event: 'create', class: 'AssignDelegate' })));
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, [task], { selected: 'Task' });
+        nav.setChangedHandlers(changed('class:AuditDelegate'));
+
+        nav.refreshChangedBadges();
+        assert.equal(overlays.added.length, 1);
+        const [audit, assign] = badgesOf(overlays.added[0]);
+        assert.equal(audit.className, 'handler-link handler-link-listener handler-link-changed');
+        assert.equal(audit.title, 'Execution listener (start) changed in this MR — open its diff');
+        assert.equal(assign.className, 'handler-link handler-link-listener');
+        assert.equal(assign.title, 'Task listener (create) — open the handler code');
+
+        // Already permanent: selecting the element adds no second row.
+        nav.showOverlayForSelectedElement();
+        assert.equal(overlays.added.length, 1);
+    });
+
+    it('shows the row only on selection when no listener is changed', () => {
+        const task = shape('Task', withListeners(listener('ExecutionListener', { event: 'start', class: 'AuditDelegate' })));
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, [task], { selected: 'Task' });
+        nav.setChangedHandlers(changed('class:OtherDelegate'));
+
+        nav.refreshChangedBadges();
+        assert.equal(overlays.added.length, 0);
+
+        nav.showOverlayForSelectedElement();
+        assert.equal(overlays.added.length, 1);
+    });
+
+    it('gives a task changed both as implementation and as listener one badge of each, both coloured', () => {
+        const businessObject = withListeners(listener('ExecutionListener', { event: 'end', class: 'AuditDelegate' }));
+        businessObject.get = (name) => (name === 'camunda:class' ? 'com.a.AuditDelegate' : undefined);
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, [shape('Task', businessObject)]);
+        nav.setChangedHandlers(changed('class:AuditDelegate'));
+
+        nav.refreshChangedBadges();
+
+        assert.equal(overlays.added.length, 2);
+        assert.match(overlays.added[0].opts.html, /class="handler-link handler-link-changed"/);
+        assert.equal(badgesOf(overlays.added[1])[0].className, 'handler-link handler-link-listener handler-link-changed');
+    });
+
+    it('reads a pool\'s listeners from its process', () => {
+        const pool = shape('Pool', { processRef: withListeners(listener('ExecutionListener', { event: 'start', class: 'AuditDelegate' })) },
+            { type: 'bpmn:Participant' });
+        const overlays = fakeOverlays();
+        navigator(overlays, [pool], { selected: 'Pool' }).showOverlayForSelectedElement();
+
+        assert.deepEqual(titles(overlays.added[0]), ['Execution listener (start) — open the handler code']);
+    });
+
+    it('puts the process listeners of a pool-less process on its top-level start event', () => {
+        const root = { ...ROOT, businessObject: withListeners(listener('ExecutionListener', { event: 'end', class: 'ProcessAudit' })) };
+        const start = { id: 'Start', type: 'bpmn:StartEvent', parent: root, businessObject: withListeners() };
+        const subProcess = { id: 'Sub', type: 'bpmn:SubProcess', parent: root, businessObject: withListeners() };
+        const nestedStart = { id: 'NestedStart', type: 'bpmn:StartEvent', parent: subProcess, businessObject: withListeners() };
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, [start, nestedStart]);
+        nav.setChangedHandlers(changed('class:ProcessAudit'));
+
+        nav.refreshChangedBadges();
+
+        assert.deepEqual(overlays.added.map(overlay => overlay.elementId), ['Start']);
+        assert.deepEqual(titles(overlays.added[0]), ['Process execution listener (end) changed in this MR — open its diff']);
+    });
+
+    it('does not lift the process listeners onto a start event inside a pool', () => {
+        const pool = { id: 'Pool', type: 'bpmn:Participant', parent: { id: 'Collab', type: 'bpmn:Collaboration' } };
+        pool.businessObject = { processRef: withListeners(listener('ExecutionListener', { event: 'end', class: 'ProcessAudit' })) };
+        const start = { id: 'Start', type: 'bpmn:StartEvent', parent: pool, businessObject: withListeners() };
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, [pool, start]);
+        nav.setChangedHandlers(changed('class:ProcessAudit'));
+
+        nav.refreshChangedBadges();
+
+        assert.deepEqual(overlays.added.map(overlay => overlay.elementId), ['Pool']);
+    });
+
+    it('sits a flow\'s row at the middle of its middle segment', () => {
+        const flow = shape('Flow', withListeners(listener('ExecutionListener', { event: 'take', delegateExpression: '${stepTimer}' })), {
+            type: 'bpmn:SequenceFlow',
+            waypoints: [{ x: 10, y: 20 }, { x: 110, y: 20 }, { x: 110, y: 120 }, { x: 210, y: 120 }]
+        });
+        const overlays = fakeOverlays();
+        navigator(overlays, [flow], { selected: 'Flow' }).showOverlayForSelectedElement();
+
+        assert.equal(overlays.added[0].opts.html.className, 'listener-links listener-links-flow');
+        assert.deepEqual({ ...overlays.added[0].opts.position }, { left: 100, top: 50 });
+        assert.deepEqual(titles(overlays.added[0]), ['Execution listener (take) — open the handler code']);
+    });
+
+    it('adds nothing for the root element, which has no shape', () => {
+        const overlays = fakeOverlays();
+        const root = { ...ROOT, businessObject: withListeners(listener('ExecutionListener', { event: 'end', class: 'ProcessAudit' })) };
+        navigator(overlays, [root], { selected: 'Process_1' }).showOverlayForSelectedElement();
+
+        assert.equal(overlays.added.length, 0);
+    });
+
+    it('opens the MR diff of a changed listener in the opener tab', async () => {
+        const task = shape('Task', withListeners(listener('ExecutionListener', { event: 'start', class: 'AuditDelegate' })));
+        const overlays = fakeOverlays();
+        const opened = [];
+        const navigated = [];
+        const locator = { mrFileDiffUrl: (filePath, mrIid) => `diff/${mrIid}/${filePath}` };
+        const nav = navigator(overlays, [task], { locator, opened, navigated });
+        nav.setChangedHandlers(changed('class:AuditDelegate'));
+        nav.refreshChangedBadges();
+
+        badgesOf(overlays.added[0])[0].click();
+        await new Promise(resolve => setImmediate(resolve));
+
+        assert.deepEqual(navigated, ['diff/7/AuditDelegate.kt']);
+        assert.deepEqual(opened, []);
+    });
+});
