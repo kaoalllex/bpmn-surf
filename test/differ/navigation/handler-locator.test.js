@@ -990,3 +990,53 @@ describe('HandlerLocator.resolveLocation — job workers', () => {
         }
     });
 });
+
+// The two workers the sandbox's `c8/worker-code` MR changes (trimmed to the lines
+// that carry a key): the "changed handler" badge of their tasks rests on exactly
+// these keys, and each type is a prefix of a longer one in the same module.
+describe('HandlerLocator.extractHandlerKeys — the sandbox c8/worker-code workers', () => {
+    it('reads the job type of the Java worker, not its method name', () => {
+        const content = [
+            '@Component',
+            'public class ChargeCustomerWorker {',
+            '    @JobWorker(type = "charge-customer")',
+            '    public Map<String, Object> charge(@Variable String orderId, @Variable BigDecimal amount) {'
+        ].join('\n');
+        assert.deepEqual(Array.from(HandlerLocator.extractHandlerKeys(content)),
+            ['topic:charge-customer', 'class:ChargeCustomerWorker']);
+    });
+
+    it('reads the job type of the Kotlin worker, not its method name', () => {
+        const content = [
+            '@Component',
+            'class FindItemsWorker(',
+            '    private val itemRepository: ItemRepository',
+            ') {',
+            '    @JobWorker(type = "find-items")',
+            '    fun findItems(@Variable orderId: String): Map<String, Any> {'
+        ].join('\n');
+        assert.deepEqual(Array.from(HandlerLocator.extractHandlerKeys(content)),
+            ['topic:find-items', 'class:FindItemsWorker']);
+    });
+});
+
+// Keys carry the simple class name (see the header of handler-locator.js), so two
+// delegates of one name in different packages — the sandbox's billing-service has
+// delegate/RefundDelegate and legacy/RefundDelegate — both match class:RefundDelegate.
+// A documented limitation: the first exact hit in search order wins.
+describe('HandlerLocator.resolveLocation — one class name in two packages', () => {
+    const clientReturning = (hits) => ({ searchCode: async () => hits });
+    const hit = (pkg) => ({
+        path: `billing-service/src/main/java/com/example/billing/${pkg}/RefundDelegate.java`,
+        line: 5,
+        snippet: 'public class RefundDelegate implements JavaDelegate {'
+    });
+
+    it('resolves to the first of the two in search order, either way round', async () => {
+        for (const [first, second] of [['delegate', 'legacy'], ['legacy', 'delegate']]) {
+            const location = await new HandlerLocator(clientReturning([hit(first), hit(second)]))
+                .resolveLocation('class:RefundDelegate', 'main');
+            assert.equal(location.filePath, hit(first).path);
+        }
+    });
+});
