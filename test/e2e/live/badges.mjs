@@ -90,9 +90,13 @@ async function landing(click) {
     return null;
 }
 
+// null when the tab is not a differ: a dive-in that found nothing opens the code search.
 async function differFileOf(tab) {
-    await tab.locator('a.differ-file-path').waitFor({ timeout: 60000 });
-    return tab.locator('a.differ-file-path').getAttribute('title');
+    const path = tab.locator('a.differ-file-path');
+    if (!(await path.waitFor({ timeout: 60000 }).then(() => true, () => false))) {
+        return null;
+    }
+    return path.getAttribute('title');
 }
 
 for (const target of targets) {
@@ -156,8 +160,9 @@ for (const target of targets) {
         const change = (await badge.getAttribute('class')).match(/handler-link-(added|changed|removed)/)?.[1];
         const title = await badge.getAttribute('title');
         const result = await landing(() => badge.click());
-        if (result?.tab && kind === 'dive-in') {
-            console.log(`${label} [${title}] → differ of ${await differFileOf(result.tab)}`);
+        const differFile = result?.tab && kind === 'dive-in' ? await differFileOf(result.tab) : null;
+        if (differFile) {
+            console.log(`${label} [${title}] → differ of ${differFile}`);
             await result.tab.close();
         } else if (result) {
             console.log(`${label} ${change ? `(${change}) ` : ''}[${title}] → ${result.url}`);

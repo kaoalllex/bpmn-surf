@@ -47,6 +47,9 @@ test('Show full shrinks the table until it fits a short window', async ({ page }
     await expect.poll(fitsWindow).toBe(true);
     const shown = await zoom();
     expect(shown).toBeLessThan(300);
+    // ...and not clipped by its own scroll container: nothing left to scroll to.
+    expect(await container.evaluate((el) => el.scrollHeight <= el.clientHeight && el.scrollWidth <= el.clientWidth))
+        .toBe(true);
 });
 
 // A table that overflows the window even at the minimum zoom must not hang the tab.

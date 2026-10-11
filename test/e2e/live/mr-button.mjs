@@ -75,6 +75,9 @@ const check = (list, label) => {
 const initial = await blocks();
 console.log(`rendered blocks: ${initial.length}, diagrams: ${initial.filter(b => b.diagram).length}`);
 for (const b of initial) console.log(`  ${b.buttons.length ? '[btn]' : '     '} ${b.path}`);
+// Every MR renders at least one block: none means GitLab served something else, e.g.
+// Cloudflare's "Just a moment..." check after a long run of headless visits.
+if (initial.length === 0) fail(`no file block rendered, page title "${await page.title()}"`);
 check(initial, 'initial');
 
 if (shotsDir) {
