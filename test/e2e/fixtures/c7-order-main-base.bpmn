@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_ordermainprocess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <bpmn:message id="Message_OrderPaid" name="OrderPaid" />
+  <bpmn:collaboration id="Collaboration_ordermainprocess">
+    <bpmn:participant id="OrderMainProcess_pool" name="Order origination" processRef="OrderMainProcess" />
+    <bpmn:participant id="Participant_CRM" name="CRM" />
+    <bpmn:participant id="Participant_Kafka" name="Kafka: order.events" />
+    <bpmn:messageFlow id="MFlow_1" sourceRef="Participant_CRM" targetRef="StartOrder" />
+    <bpmn:messageFlow id="MFlow_2" sourceRef="Participant_Kafka" targetRef="AwaitPayment" />
+  </bpmn:collaboration>
+  <bpmn:process id="OrderMainProcess" name="Order origination" isExecutable="true">
+    <bpmn:extensionElements>
+      <camunda:executionListener class="com.example.order.listener.AuditListener" event="end" />
+    </bpmn:extensionElements>
+    <bpmn:serviceTask id="ValidateOrder" name="Validate the order" camunda:asyncBefore="true" camunda:type="external" camunda:topic="validateOrder">
+      <bpmn:extensionElements>
+        <camunda:executionListener class="com.example.order.listener.AuditListener" event="start" />
+        <camunda:executionListener class="com.example.order.listener.AuditListener" event="end" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_om1</bpmn:incoming>
+      <bpmn:outgoing>Flow_om2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CheckFraud" name="Check for fraud" camunda:asyncBefore="true" camunda:type="external" camunda:topic="checkFraud">
+      <bpmn:extensionElements>
+        <camunda:executionListener expression="${auditLog.record(execution)}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_om2</bpmn:incoming>
+      <bpmn:outgoing>Flow_om3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="Fulfillment" name="Fulfillment" camunda:asyncBefore="true" calledElement="FulfillmentProcess">
+      <bpmn:extensionElements>
+        <camunda:in source="orderId" target="orderId" />
+        <camunda:out source="shipmentId" target="shipmentId" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_om3</bpmn:incoming>
+      <bpmn:outgoing>Flow_om4</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Payment" name="Payment" camunda:asyncBefore="true" calledElement="PaymentProcess">
+      <bpmn:extensionElements>
+        <camunda:in source="orderId" target="orderId" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_om4</bpmn:incoming>
+      <bpmn:outgoing>Flow_om5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:receiveTask id="AwaitPayment" name="Wait for the payment" messageRef="Message_OrderPaid">
+      <bpmn:incoming>Flow_om5</bpmn:incoming>
+      <bpmn:outgoing>Flow_om6</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:startEvent id="StartOrder" name="Order received">
+      <bpmn:outgoing>Flow_om1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="PaidGateway" name="Paid?" default="Flow_om8">
+      <bpmn:incoming>Flow_om6</bpmn:incoming>
+      <bpmn:outgoing>Flow_om7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_om8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="NotifyCustomer" name="Notify the customer" camunda:type="external" camunda:topic="notifyCustomer">
+      <bpmn:incoming>Flow_om7</bpmn:incoming>
+      <bpmn:outgoing>Flow_om9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CancelOrder" name="Cancel the order" camunda:type="external" camunda:topic="cancelOrder">
+      <bpmn:incoming>Flow_om8</bpmn:incoming>
+      <bpmn:outgoing>Flow_om10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="OrderDone" name="Order completed">
+      <bpmn:incoming>Flow_om9</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="OrderCancelled" name="Order cancelled">
+      <bpmn:incoming>Flow_om10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_om1" sourceRef="StartOrder" targetRef="ValidateOrder" />
+    <bpmn:sequenceFlow id="Flow_om2" sourceRef="ValidateOrder" targetRef="CheckFraud" />
+    <bpmn:sequenceFlow id="Flow_om3" sourceRef="CheckFraud" targetRef="Fulfillment">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${stepTimer}" event="take" />
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_om4" sourceRef="Fulfillment" targetRef="Payment" />
+    <bpmn:sequenceFlow id="Flow_om5" sourceRef="Payment" targetRef="AwaitPayment" />
+    <bpmn:sequenceFlow id="Flow_om6" sourceRef="AwaitPayment" targetRef="PaidGateway" />
+    <bpmn:sequenceFlow id="Flow_om7" name="yes" sourceRef="PaidGateway" targetRef="NotifyCustomer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${paid}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_om8" name="no" sourceRef="PaidGateway" targetRef="CancelOrder" />
+    <bpmn:sequenceFlow id="Flow_om9" sourceRef="NotifyCustomer" targetRef="OrderDone" />
+    <bpmn:sequenceFlow id="Flow_om10" sourceRef="CancelOrder" targetRef="OrderCancelled" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_ordermainprocess">
+      <bpmndi:BPMNShape id="OrderMainProcess_pool_di" bpmnElement="OrderMainProcess_pool" isHorizontal="true">
+        <dc:Bounds x="130" y="300" width="1440" height="370" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ValidateOrder_di" bpmnElement="ValidateOrder">
+        <dc:Bounds x="285" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CheckFraud_di" bpmnElement="CheckFraud">
+        <dc:Bounds x="465" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fulfillment_di" bpmnElement="Fulfillment">
+        <dc:Bounds x="645" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Payment_di" bpmnElement="Payment">
+        <dc:Bounds x="825" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AwaitPayment_di" bpmnElement="AwaitPayment">
+        <dc:Bounds x="1005" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartOrder_di" bpmnElement="StartOrder">
+        <dc:Bounds x="182" y="382" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="423" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PaidGateway_di" bpmnElement="PaidGateway" isMarkerVisible="true">
+        <dc:Bounds x="1175" y="375" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1185" y="343" width="29" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="NotifyCustomer_di" bpmnElement="NotifyCustomer">
+        <dc:Bounds x="1305" y="360" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CancelOrder_di" bpmnElement="CancelOrder">
+        <dc:Bounds x="1305" y="510" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="OrderDone_di" bpmnElement="OrderDone">
+        <dc:Bounds x="1482" y="382" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1468" y="423" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="OrderCancelled_di" bpmnElement="OrderCancelled">
+        <dc:Bounds x="1482" y="532" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1470" y="573" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_om1_di" bpmnElement="Flow_om1">
+        <di:waypoint x="218" y="400" />
+        <di:waypoint x="285" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om2_di" bpmnElement="Flow_om2">
+        <di:waypoint x="395" y="400" />
+        <di:waypoint x="465" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om3_di" bpmnElement="Flow_om3">
+        <di:waypoint x="575" y="400" />
+        <di:waypoint x="645" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om4_di" bpmnElement="Flow_om4">
+        <di:waypoint x="755" y="400" />
+        <di:waypoint x="825" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om5_di" bpmnElement="Flow_om5">
+        <di:waypoint x="935" y="400" />
+        <di:waypoint x="1005" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om6_di" bpmnElement="Flow_om6">
+        <di:waypoint x="1115" y="400" />
+        <di:waypoint x="1175" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om7_di" bpmnElement="Flow_om7">
+        <di:waypoint x="1225" y="400" />
+        <di:waypoint x="1305" y="400" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1256" y="375" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om8_di" bpmnElement="Flow_om8">
+        <di:waypoint x="1200" y="425" />
+        <di:waypoint x="1200" y="550" />
+        <di:waypoint x="1305" y="550" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1211" y="481" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om9_di" bpmnElement="Flow_om9">
+        <di:waypoint x="1415" y="400" />
+        <di:waypoint x="1482" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_om10_di" bpmnElement="Flow_om10">
+        <di:waypoint x="1415" y="550" />
+        <di:waypoint x="1482" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_Kafka_di" bpmnElement="Participant_Kafka" isHorizontal="true">
+        <dc:Bounds x="130" y="80" width="1440" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_CRM_di" bpmnElement="Participant_CRM" isHorizontal="true">
+        <dc:Bounds x="130" y="180" width="1440" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="MFlow_2_di" bpmnElement="MFlow_2">
+        <di:waypoint x="1060" y="150" />
+        <di:waypoint x="1060" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MFlow_1_di" bpmnElement="MFlow_1">
+        <di:waypoint x="200" y="250" />
+        <di:waypoint x="200" y="380" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

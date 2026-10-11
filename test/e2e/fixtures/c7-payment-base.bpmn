@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_paymentprocess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <bpmn:process id="PaymentProcess" name="Payment" isExecutable="true">
+    <bpmn:startEvent id="StartPayment" name="Payment started">
+      <bpmn:outgoing>Flow_p1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:businessRuleTask id="AssessRisk" name="Assess the payment risk" camunda:resultVariable="riskLevel" camunda:decisionRef="PaymentRiskMatrixV2" camunda:mapDecisionResult="singleEntry">
+      <bpmn:incoming>Flow_p1</bpmn:incoming>
+      <bpmn:outgoing>Flow_p2</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="RiskGateway" name="Risk level?">
+      <bpmn:incoming>Flow_p2</bpmn:incoming>
+      <bpmn:outgoing>Flow_p3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_p4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ChargeCustomer" name="Charge the customer" camunda:type="external" camunda:topic="chargeCustomerWithRetry">
+      <bpmn:incoming>Flow_p3</bpmn:incoming>
+      <bpmn:outgoing>Flow_p5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="Dunning" name="Dunning" calledElement="DunningProcess">
+      <bpmn:incoming>Flow_p4</bpmn:incoming>
+      <bpmn:outgoing>Flow_p7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:businessRuleTask id="CalcFee" name="Calculate the fee" camunda:resultVariable="fee" camunda:decisionRef="FeeSchedule" camunda:mapDecisionResult="singleEntry">
+      <bpmn:incoming>Flow_p5</bpmn:incoming>
+      <bpmn:outgoing>Flow_p6</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:endEvent id="PaymentDone" name="Paid">
+      <bpmn:incoming>Flow_p6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="PaymentRejected" name="Rejected">
+      <bpmn:incoming>Flow_p7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_p1" sourceRef="StartPayment" targetRef="AssessRisk" />
+    <bpmn:sequenceFlow id="Flow_p2" sourceRef="AssessRisk" targetRef="RiskGateway" />
+    <bpmn:sequenceFlow id="Flow_p3" name="low" sourceRef="RiskGateway" targetRef="ChargeCustomer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${riskLevel == "LOW"}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_p4" name="high" sourceRef="RiskGateway" targetRef="Dunning">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${riskLevel == "HIGH"}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_p5" sourceRef="ChargeCustomer" targetRef="CalcFee" />
+    <bpmn:sequenceFlow id="Flow_p6" sourceRef="CalcFee" targetRef="PaymentDone" />
+    <bpmn:sequenceFlow id="Flow_p7" sourceRef="Dunning" targetRef="PaymentRejected" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="PaymentProcess">
+      <bpmndi:BPMNShape id="RiskGateway_di" bpmnElement="RiskGateway" isMarkerVisible="true">
+        <dc:Bounds x="495" y="95" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="493" y="73" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AssessRisk_di" bpmnElement="AssessRisk">
+        <dc:Bounds x="315" y="80" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartPayment_di" bpmnElement="StartPayment">
+        <dc:Bounds x="202" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="179" y="153" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ChargeCustomer_di" bpmnElement="ChargeCustomer">
+        <dc:Bounds x="635" y="80" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Dunning_di" bpmnElement="Dunning">
+        <dc:Bounds x="635" y="230" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CalcFee_di" bpmnElement="CalcFee">
+        <dc:Bounds x="815" y="80" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PaymentRejected_di" bpmnElement="PaymentRejected">
+        <dc:Bounds x="972" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="968" y="303" width="44" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PaymentDone_di" bpmnElement="PaymentDone">
+        <dc:Bounds x="972" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="978" y="153" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_p1_di" bpmnElement="Flow_p1">
+        <di:waypoint x="238" y="120" />
+        <di:waypoint x="315" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p2_di" bpmnElement="Flow_p2">
+        <di:waypoint x="425" y="120" />
+        <di:waypoint x="495" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p3_di" bpmnElement="Flow_p3">
+        <di:waypoint x="545" y="120" />
+        <di:waypoint x="635" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="582" y="95" width="17" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p4_di" bpmnElement="Flow_p4">
+        <di:waypoint x="520" y="145" />
+        <di:waypoint x="520" y="270" />
+        <di:waypoint x="635" y="270" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="527" y="201" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p5_di" bpmnElement="Flow_p5">
+        <di:waypoint x="745" y="120" />
+        <di:waypoint x="815" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p6_di" bpmnElement="Flow_p6">
+        <di:waypoint x="925" y="120" />
+        <di:waypoint x="972" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_p7_di" bpmnElement="Flow_p7">
+        <di:waypoint x="745" y="270" />
+        <di:waypoint x="972" y="270" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

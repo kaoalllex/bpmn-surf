@@ -39,6 +39,16 @@ const C8_FULFILLMENT_CHANGED_BPMN = read('test/e2e/fixtures/c8-fulfillment-chang
 const C8_PAYMENT_C7_BPMN = read('test/e2e/fixtures/c8-payment-c7.bpmn');
 const C8_PAYMENT_MIGRATED_BPMN = read('test/e2e/fixtures/c8-payment-migrated.bpmn');
 const C8_PAYMENT_RISK_DMN = read('test/e2e/fixtures/c8-payment-risk.dmn');
+// Camunda 7 material cut from the sandboxes (main vs c7/model-changes): one change per
+// Camunda 7 properties-panel group.
+const C7_ORDER_MAIN_BASE_BPMN = read('test/e2e/fixtures/c7-order-main-base.bpmn');
+const C7_ORDER_MAIN_CHANGED_BPMN = read('test/e2e/fixtures/c7-order-main-changed.bpmn');
+const C7_PAYMENT_BASE_BPMN = read('test/e2e/fixtures/c7-payment-base.bpmn');
+const C7_PAYMENT_CHANGED_BPMN = read('test/e2e/fixtures/c7-payment-changed.bpmn');
+const C7_DELIVERY_BASE_BPMN = read('test/e2e/fixtures/c7-delivery-base.bpmn');
+const C7_DELIVERY_CHANGED_BPMN = read('test/e2e/fixtures/c7-delivery-changed.bpmn');
+const C7_BILLING_BASE_BPMN = read('test/e2e/fixtures/c7-billing-base.bpmn');
+const C7_BILLING_CHANGED_BPMN = read('test/e2e/fixtures/c7-billing-changed.bpmn');
 const camundaModdle = require(path.join(ROOT, 'libs/camunda-bpmn-moddle/resources/camunda.json'));
 const zeebeModdle = require(path.join(ROOT, 'libs/zeebe-bpmn-moddle/resources/zeebe.json'));
 
@@ -156,6 +166,8 @@ module.exports = {
     C8_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_CHANGED_BPMN, C8_PAYMENT_BASE_BPMN, C8_PAYMENT_CHANGED_BPMN,
     C8_DELIVERY_BASE_BPMN, C8_DELIVERY_CHANGED_BPMN, C8_FULFILLMENT_BASE_BPMN, C8_FULFILLMENT_CHANGED_BPMN,
     C8_PAYMENT_C7_BPMN, C8_PAYMENT_MIGRATED_BPMN, C8_PAYMENT_RISK_DMN,
+    C7_ORDER_MAIN_BASE_BPMN, C7_ORDER_MAIN_CHANGED_BPMN, C7_PAYMENT_BASE_BPMN, C7_PAYMENT_CHANGED_BPMN,
+    C7_DELIVERY_BASE_BPMN, C7_DELIVERY_CHANGED_BPMN, C7_BILLING_BASE_BPMN, C7_BILLING_CHANGED_BPMN,
     defaultBpmnParams, defaultDmnParams,
     wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
 };
