@@ -22,7 +22,7 @@ async function settle() {
 
 const MR_URL = 'https://gitlab.example.com/g/p/-/merge_requests/1/diffs';
 
-function setup({ targetFilePath = async p => p } = {}) {
+function setup({ targetFilePath = async p => p, repoOverrides = {} } = {}) {
     const scope = createScope({ url: MR_URL });
     const w = scope.window;
     w.chrome = {
@@ -65,19 +65,22 @@ function setup({ targetFilePath = async p => p } = {}) {
         getProjectInfo: () => ({ url: 'https://gitlab.example.com/g/p', hostUrl: 'https://gitlab.example.com', groupName: 'g', name: 'p', id: 1 }),
         getTargetFilePath: targetFilePath,
         getBranchFileType: async () => null,
-        extractBranchCommitIdAndFilePath: () => null
+        extractBranchCommitIdAndFilePath: () => null,
+        ...repoOverrides
     };
     const syncs = [];
+    const branchButtons = [];
     const ui = {
         isOwnButtonClick: () => false,
         reset() {},
         removeFileButtons() {},
         isButtonPresent: () => false,
         buttonFilePath: () => null,
-        syncFileButtons: describeFile => syncs.push(describeFile)
+        syncFileButtons: describeFile => syncs.push(describeFile),
+        addButton: button => branchButtons.push(button)
     };
     const app = new scope.App(repo, ui);
-    return { scope, app, sourceCommits, syncs, opened, openedInto, tabs, errors };
+    return { scope, app, sourceCommits, syncs, branchButtons, opened, openedInto, tabs, errors };
 }
 
 describe('App — MR change view', () => {
@@ -150,5 +153,31 @@ describe('App — MR change view', () => {
         assert.equal(opened.length, 0);
         assert.ok(tabs[0].closed, 'the blank tab opened on click is closed');
         assert.ok(errors.some(e => e.includes('changes API down')), errors.join('\n'));
+    });
+});
+
+describe('App — branch view', () => {
+    // "Diff with local file…": the UI provider hands the picked file over as
+    // extParams, which turn the branch view's params into a local-vs-branch diff.
+    it('opens a picked local file against the shown branch commit', async () => {
+        const { scope, app, branchButtons, opened } = setup({
+            repoOverrides: {
+                isChangeViewActive: async () => false,
+                getBranchFileType: async () => scope.FILE_TYPE_BPMN,
+                extractBranchCommitIdAndFilePath: async () => ({ branchCommitId: 'main-sha', filePath: 'd/a.bpmn' })
+            }
+        });
+        app.init();
+        await settle();
+        assert.equal(branchButtons.length, 1);
+
+        await branchButtons[0].onButtonClickFunc({ localFileContent: '<definitions/>', sourceLabel: 'mine.bpmn' });
+
+        assert.equal(opened.length, 1);
+        assert.equal(opened[0].localFileContent, '<definitions/>');
+        assert.equal(opened[0].sourceLabel, 'mine.bpmn');
+        assert.equal(opened[0].targetRef, 'main-sha');
+        assert.equal(opened[0].sourceRef, null);
+        assert.equal(opened[0].filePath, 'd/a.bpmn');
     });
 });

@@ -325,6 +325,25 @@ describe('GitLabUIRepoProvider.addButton — branch view', () => {
         assert.equal(byId(scope, '-menu').hidden, true);
     });
 
+    it('hands the picked file\'s content and name to the click handler', async () => {
+        const scope = createScope();
+        scope.document.body.innerHTML = blobHeaderMarkup();
+        const clicks = [];
+        addBranchButton(scope, scope.FILE_TYPE_BPMN, (extParams) => clicks.push(extParams));
+        const input = byId(scope, '-input');
+        const file = new scope.window.File(['<definitions/>'], 'mine.bpmn');
+        Object.defineProperty(input, 'files', { value: [file] });
+
+        input.dispatchEvent(new scope.window.Event('change'));
+        for (let i = 0; i < 20 && clicks.length === 0; i++) {
+            await new Promise(resolve => setTimeout(resolve, 5));
+        }
+
+        assert.equal(clicks.length, 1);
+        assert.equal(clicks[0].localFileContent, '<definitions/>');
+        assert.equal(clicks[0].sourceLabel, 'mine.bpmn');
+    });
+
     it('closes the menu on Escape and on a click outside, not on a click inside', () => {
         const scope = createScope();
         scope.document.body.innerHTML = blobHeaderMarkup();
