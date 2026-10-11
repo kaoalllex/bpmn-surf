@@ -818,11 +818,24 @@ class BpmnXmlComparator {
             // the multi-instance body's own retries, not the activity's (Job execution)
             return 'bpmn:multiInstanceLoopCharacteristics/' + node.tagName;
         }
+        const listener = BpmnXmlComparator.#listenerOfField(node);
+        if (listener) {
+            return listener.tagName;
+        }
         if (node.parentNode?.tagName === 'camunda:field') {
             // a field's value, not the Implementation's camunda:expression
             return 'camunda:field/' + node.tagName;
         }
         return node.tagName;
+    }
+
+    // The listener a camunda:field (or its value) belongs to, if any: the panel lists
+    // a listener's fields inside its listener entry, not under Field injections.
+    static #listenerOfField(node) {
+        const field = node.tagName === 'camunda:field' ? node
+            : node.parentNode?.tagName === 'camunda:field' ? node.parentNode : null;
+        const owner = field?.parentNode;
+        return owner && ['camunda:executionListener', 'camunda:taskListener'].includes(owner.tagName) ? owner : null;
     }
 
     #getAllNotTextChildren(node) {
@@ -887,6 +900,10 @@ class BpmnXmlComparator {
         this.#getAttributesDiffs(diffs, nodeA.tagName, nodeAAttrs, nodeBAttrs);
         this.#getAttributesDiffs(diffs, nodeB.tagName, nodeBAttrs, nodeAAttrs);
 
+        const listener = BpmnXmlComparator.#listenerOfField(nodeA);
+        if (listener && diffs.length > 0) {
+            return [listener.tagName];
+        }
         if (diffs.length > 0) {
             return diffs;
         } else {

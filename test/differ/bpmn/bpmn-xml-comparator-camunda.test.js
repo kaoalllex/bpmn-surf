@@ -877,4 +877,21 @@ describe('BpmnXmlComparator property groups: listeners, forms, field injections,
         assert.deepEqual(groupsOf(attrField('name="a" stringValue="x"'), delegateTask('')),
             { Delegate_9: ['Field injections'] });
     });
+
+    // The panel lists a listener's fields inside its listener entry, not under Field injections.
+    it('maps a field of a listener to that listener\'s group', () => {
+        const executionField = (inner) => delegateTask(
+            `<camunda:executionListener class="a.L" event="start"><camunda:field name="level">${inner}</camunda:field></camunda:executionListener>`);
+        assert.deepEqual(groupsOf(executionField('<camunda:string>1</camunda:string>'), executionField('<camunda:string>2</camunda:string>')),
+            { Delegate_9: ['Execution listeners'] });
+        const namedField = (name) => delegateTask(
+            `<camunda:executionListener class="a.L" event="start"><camunda:field name="${name}" stringValue="1" /></camunda:executionListener>`);
+        assert.deepEqual(groupsOf(namedField('level'), namedField('depth')),
+            { Delegate_9: ['Execution listeners'] });
+        assert.deepEqual(groupsOf(namedField('level'), delegateTask('<camunda:executionListener class="a.L" event="start"></camunda:executionListener>')),
+            { Delegate_9: ['Execution listeners'] });
+        const taskField = (expr) => userTask('name="Review"',
+            `<camunda:taskListener class="a.L" event="create"><camunda:field name="who"><camunda:expression>${expr}</camunda:expression></camunda:field></camunda:taskListener>`);
+        assert.deepEqual(groupsOf(taskField('${a}'), taskField('${b}')), { UserTask_9: ['Task listeners'] });
+    });
 });
