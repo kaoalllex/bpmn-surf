@@ -2,7 +2,7 @@
 id: INFRA-0011
 title: Extend the live-check skill's catalog to the whole extension
 priority: medium
-status: partial
+status: in-progress
 ---
 
 ## Statement
