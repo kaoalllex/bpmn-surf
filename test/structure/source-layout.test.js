@@ -33,8 +33,7 @@ const UNTESTED_BY_DESIGN = new Set([
     // covered via both GitHub repo providers (REFAC-0004)
     'src/content/providers/github/github-repo-provider-base.js',
     'src/differ/shared/diff-type.js',
-    // chrome.* glue: chrome.* APIs and DOM, neither available under node.
-    'src/background/service-worker.js',
+    // chrome.* glue over the popup's DOM: covered in Layer 2 (popup-*.spec.js).
     'src/popup/popup.js',
     // orchestrators / DOM+lib glue
     'src/differ/bpmn/diff-highlighter.js',
