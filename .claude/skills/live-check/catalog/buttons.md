@@ -22,7 +22,15 @@ node test/e2e/live/mr-button.mjs <iid> --legacy --parallel
 missing): a modified diagram next to code; an added diagram; a deleted one; a
 renamed one; a `.dmn`; bpmn + dmn together; a merged MR; many files (≥25, with
 diagrams among them — exercises lazy rendering and the legacy virtual
-scroller); code only (expect zero buttons).
+scroller); code only (expect zero buttons). The material is Camunda 7 (`order-service/`)
+unless named; add one Camunda 8 MR (`c8/model-changes`, `--click`): the buttons do
+not depend on the dialect, but the C8 blocks once raised a transient
+`Cannot find button parent container` error.
+
+**One commit of an MR**: `mr-button.mjs <iid> --commit <sha> --click` (plain and
+`--legacy`) on an MR with several commits touching one diagram, picking a commit that
+is not the first: the differ's sides are that commit and **its parent**, not the MR
+base (the runner prints both labels).
 
 **Once per diff mode:** `--walk` and `--walk --legacy` on an MR with ≥2 diagrams
 and ≥1 code file (checks that no button is visible while rapid diffs greys out
@@ -32,7 +40,9 @@ opens, the file block does not collapse). In all-files mode also run
 only the blocks near the viewport, so without scrolling most files go unchecked.
 
 **Branch view:** `node test/e2e/live/branch-button.mjs main <path> --shots $S`
-for one `.bpmn` and one `.dmn`.
+for one `.bpmn` and one `.dmn`, one of them in `order-service-c8/`. The script also
+picks the file itself through "Diff with local file…": the differ opens with the
+`Local · <name>` side.
 
 | The runner asserts | You check in the screenshots |
 |---|---|

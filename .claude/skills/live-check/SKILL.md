@@ -27,7 +27,8 @@ with the real bpmn-js and properties panel (`docs/testing.md`, `test/e2e/*.spec.
 | the differ (`src/differ/`) | the Layer-2 spec of that area (`differ-edit-*`, `differ-prop-group-*`, `differ-highlight-*`, `dmn-*`…): add a case that fails without the fix. For a diagram from a report, pull it first (`gitlab-test-project` skill, "From report to repro") |
 | `src/differ/navigation/`, `src/differ/platform/` — dive-in, callers, badges, code search | Layer-2 spec of that area **and** `catalog/differ-navigation.md` (the search is mocked offline) |
 | how differ tabs open — `openDiffer` (`src/core/utils.js`), `src/differ/shared/differ-tab-navigator.js` | `mr-button --click`, `branch-button`, and `catalog/differ-navigation.md` |
-| `src/popup/`, `src/background/`, `src/hosts/` | `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) and the screenshots; the site-warning scenario in `catalog/github.md` |
+| `src/popup/`, `src/background/`, `src/hosts/` | Layer 2 `popup-*.spec.js` and the unit `test/background/service-worker.test.js`; `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) for the look; the real-page rows in `catalog/github.md`; Chrome's permission dialog by hand |
+| the feedback report (`feedback-report.js`, the 💬 button) | Layer 2 `differ-feedback*.spec.js`, then `catalog/feedback.md` (github.com still takes the prefilled form) |
 | a release, a store submission | "Release smoke" below |
 
 Asked for a live check of a differ-only change: say so, run the Layer-2 spec, and
@@ -45,9 +46,11 @@ this set on the release branch, all against fresh MR iids resolved by kind:
    `--click`, many files `--scroll` (plain and `--legacy`). Set the preference back.
 3. Branch view: a `.bpmn` and a `.dmn` on `main`, a file on a branch with a slash.
 4. Search fallback link (`search-page.mjs`) and the popup (`popup-screens.mjs`).
-5. Differ navigation (`record-demo.mjs … --no-video`), ~6 min.
+5. Differ navigation (`record-demo.mjs … --no-video`), ~6 min, and the sandbox's C7 rows
+   of `catalog/differ-navigation.md`.
 6. GitHub, all of `catalog/github.md`.
 6a. Camunda 8, all of `catalog/camunda8.md`, on GitLab and on GitHub.
+6b. Report a problem, `catalog/feedback.md`.
 7. By hand, for the human: adding a site in the popup (Chrome's permission dialog
    cannot be automated), and the upgrade check from the previous store build.
 
@@ -93,9 +96,10 @@ looks wrong (what, where). End with the preference values you restored.
 ## Catalog
 
 One file per area — open only the one the change needs. Camunda 7 is the baseline dialect:
-every file except `camunda8.md` runs on C7 material (the sandbox's `order-service/`, the demo
-project), and `camunda8.md` is the C8 delta, ending with a C7 regression row. C7-specific
-expectations (the C7 panel groups, `camunda:topic` badges) are not catalogued yet — [INFRA-0011].
+every file except `camunda8.md` runs on C7 material (the sandbox's `order-service/` and
+`billing-service/`, the demo project), and `camunda8.md` is the C8 delta, ending with a C7
+regression row. The C7 panel groups are Layer 2 (`differ-c7-prop-groups.spec.js`); the C7
+badges, listeners and message isolation are in `catalog/differ-navigation.md`.
 
 | Area | File |
 |---|---|
@@ -104,10 +108,14 @@ expectations (the C7 panel groups, `camunda:topic` badges) are not catalogued ye
 | Differ navigation (signed in) | [`catalog/differ-navigation.md`](catalog/differ-navigation.md) |
 | GitHub | [`catalog/github.md`](catalog/github.md) |
 | Camunda 8 (FEAT-0038) | [`catalog/camunda8.md`](catalog/camunda8.md) |
+| Report a problem (💬) | [`catalog/feedback.md`](catalog/feedback.md) |
 
-### Other areas
+### Areas with no live rows
 
-Not catalogued yet — see [INFRA-0011].
+Highlighting (BPMN and DMN), the changes table, the properties panel, switch branch,
+search, zoom and edit mode take nothing from the platform but two XML files: their checks
+are the Layer-2 specs (`docs/testing.md`), and a live run adds nothing to them. The popup
+is Layer 2 plus `popup-screens.mjs`.
 
 ## Common mistakes
 

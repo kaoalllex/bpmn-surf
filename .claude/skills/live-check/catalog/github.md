@@ -3,8 +3,9 @@
 Part of the `live-check` skill catalog; the prerequisites and rules are in its `SKILL.md`.
 
 The harness loads a staged copy of the extension with gitlab.com and github.com baked
-in (`docs/testing.md`), so these run without the popup. There is no GitHub script yet:
-drive them with `launchWithExtension()` from `test/e2e/live/support.mjs` or by hand, once
+in (`docs/testing.md`), so these run without the popup. The badge rows of a blob view run
+with `badges.mjs` (`BPMN_SURF_PROJECT=https://github.com/kaoalllex/bpmn-surf-test`, see
+`camunda8.md`); drive the rest with `launchWithExtension()` from `test/e2e/live/support.mjs` or by hand, once
 signed in (`capture-login.mjs --github`, the Google-SSO route in
 `test/e2e/live/README.md`) and once anonymous (`BPMN_SURF_ANONYMOUS=1`), with the
 Network filter on `api.github.com` (the search and raw requests go to github.com itself). Sandbox: `github.com/kaoalllex/bpmn-surf-test` and
