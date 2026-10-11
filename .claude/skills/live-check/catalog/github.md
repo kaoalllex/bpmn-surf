@@ -31,9 +31,9 @@ pick by kind if one moved.
 | commit and range views, signed in: `/pull/N/changes/<sha>`, `/changes/<a>..<b>`, and the picker switching between them by click | the button shows exactly the selection (labels `<headline> (<shortSha>)`, the base branch name for the PR base); after a picker switch the button is not stale |
 | classic anonymous: `/pull/N/commits/<sha>`, `/files/<a>..<b>` | the button diffs exactly the shown pair, with short-SHA labels; a REST-fallback page refuses a selection (no button) |
 | a raw `.bpmn` page or a JSON page on GitLab, and GitLab's own 404 page (e.g. a missing MR) on a self-hosted GitLab without a type set | no `!` on the icon, nothing of ours |
-| popup, a self-hosted site: the type select (Auto / GitLab / GitHub) set by hand | the choice survives a reload and an export/import; an unrecognised site shows the hint and the Home warning, and `!` until a type is picked |
+| a self-hosted site added without a type, on its real pages | `!` on the icon until a type is picked; after picking one and reloading, the buttons appear (the popup itself — the select surviving a reload and an export/import, the hint, the Home warning — is Layer 2: `popup-sites.spec.js`, `popup-settings.spec.js`) |
 | blob page of a `.bpmn` / `.dmn` | `View schema` / `View decision` split button before Raw; the local-file menu diffs against a file; follows soft navigation between files |
-| popup: remove a site, remove them all, update from 1.3 | the site goes and the tab stops decorating after reload; no site: `!` on the icon and the warnings on Home and Sites; an update that lost gitlab.com: the "Turn on gitlab.com" notice |
+| remove a site in the popup, then reload its tab | the tab stops decorating; with no site left, `!` on the icon (the popup's own screens — the warnings, the "Turn on gitlab.com" notice after an update from 1.3 — are Layer 2: `popup-sites.spec.js`) |
 | non-PR GitHub pages (Conversation, Commits, issues, repo root) | nothing injected, no console errors from us |
 
 Open each differ and screenshot the buttons into the scratchpad; the runner-free scenarios
