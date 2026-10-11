@@ -802,3 +802,79 @@ describe('BpmnXmlComparator blind zones (documented current behavior)', () => {
         assertNoDiffs(compare(changed, base));
     });
 });
+
+// Camunda 7 groups the sandbox's c7/model-changes MR exposed (the C7 panel titles
+// them so — differ-c7-prop-groups.spec.js): each change used to name no group.
+describe('BpmnXmlComparator property groups: listeners, forms, field injections, task priority', () => {
+    // Inserts one element before the gateway, in two flavours to compare.
+    const ANCHOR = '    <bpmn:exclusiveGateway id="Gateway_1" name="Approved?" default="Flow_no">';
+    const withElement = (xml) => variant(ANCHOR, `${xml}\n${ANCHOR}`);
+    const groupsOf = (mine, other) => mapToObject(compare(withElement(mine), withElement(other)).nodeIdToDiffsMap);
+
+    const userTask = (attrs, listener) => `    <bpmn:userTask id="UserTask_9" ${attrs}>
+      <bpmn:extensionElements>
+        ${listener}
+      </bpmn:extensionElements>
+    </bpmn:userTask>`;
+    const delegateTask = (field) => `    <bpmn:serviceTask id="Delegate_9" camunda:class="a.Delegate">
+      <bpmn:extensionElements>
+        ${field}
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>`;
+
+    it('maps an external task priority to External task', () => {
+        const changed = variant('camunda:topic="externalTopic">', 'camunda:topic="externalTopic" camunda:taskPriority="5">');
+        assert.deepEqual(mapToObject(compare(changed, base).nodeIdToDiffsMap), { ExternalTask_1: ['External task'] });
+    });
+
+    it('maps a changed execution listener event and class to Execution listeners', () => {
+        assert.deepEqual(mapToObject(compare(variant('event="start" />', 'event="end" />'), base).nodeIdToDiffsMap),
+            { CallActivity_1: ['Execution listeners'] });
+        const withClass = (name) => variant('delegateExpression="${callListener}" event="start"', `class="${name}" event="start"`);
+        assert.deepEqual(mapToObject(compare(withClass('a.One'), withClass('a.Two')).nodeIdToDiffsMap),
+            { CallActivity_1: ['Execution listeners'] });
+        const withExpression = (expr) => variant('delegateExpression="${callListener}" event="start"', `expression="${expr}" event="start"`);
+        assert.deepEqual(mapToObject(compare(withExpression('${a.b()}'), withExpression('${a.c()}')).nodeIdToDiffsMap),
+            { CallActivity_1: ['Execution listeners'] });
+    });
+
+    it('maps task listener changes to Task listeners', () => {
+        const listener = (attrs) => userTask('name="Review"', `<camunda:taskListener ${attrs} />`);
+        assert.deepEqual(groupsOf(listener('class="a.L" event="create"'), listener('class="a.L" event="assignment"')),
+            { UserTask_9: ['Task listeners'] });
+        assert.deepEqual(groupsOf(listener('class="a.L" event="create"'), listener('class="a.M" event="create"')),
+            { UserTask_9: ['Task listeners'] });
+        assert.deepEqual(groupsOf(listener('delegateExpression="${l}" event="create"'), listener('delegateExpression="${m}" event="create"')),
+            { UserTask_9: ['Task listeners'] });
+        assert.deepEqual(groupsOf(listener('expression="${l.a()}" event="create"'), listener('expression="${l.b()}" event="create"')),
+            { UserTask_9: ['Task listeners'] });
+        assert.deepEqual(groupsOf(listener('class="a.L" event="create"'), userTask('name="Review"', '')),
+            { UserTask_9: ['Task listeners'] });
+    });
+
+    it('maps a form key or a form reference to Forms', () => {
+        const task = (attrs) => userTask(attrs, '');
+        assert.deepEqual(groupsOf(task('camunda:formKey="embedded:a.html"'), task('camunda:formKey="embedded:b.html"')),
+            { UserTask_9: ['Forms'] });
+        assert.deepEqual(groupsOf(task('camunda:formRef="a" camunda:formRefBinding="latest"'), task('camunda:formRef="b" camunda:formRefBinding="deployment"')),
+            { UserTask_9: ['Forms', 'Forms'] });
+        assert.deepEqual(groupsOf(task('camunda:formRef="a" camunda:formRefBinding="version" camunda:formRefVersion="1"'),
+            task('camunda:formRef="a" camunda:formRefBinding="version" camunda:formRefVersion="2"')),
+        { UserTask_9: ['Forms'] });
+    });
+
+    it('maps field injections to Field injections, a field expression included', () => {
+        const field = (inner) => delegateTask(`<camunda:field name="currency">${inner}</camunda:field>`);
+        assert.deepEqual(groupsOf(field('<camunda:string>EUR</camunda:string>'), field('<camunda:string>USD</camunda:string>')),
+            { Delegate_9: ['Field injections'] });
+        assert.deepEqual(groupsOf(field('<camunda:expression>${a}</camunda:expression>'), field('<camunda:expression>${b}</camunda:expression>')),
+            { Delegate_9: ['Field injections'] });
+        const attrField = (attrs) => delegateTask(`<camunda:field ${attrs} />`);
+        assert.deepEqual(groupsOf(attrField('name="a" stringValue="x"'), attrField('name="b" stringValue="y"')),
+            { Delegate_9: ['Field injections', 'Field injections'] });
+        assert.deepEqual(groupsOf(attrField('name="a" expression="${x}"'), attrField('name="a" expression="${y}"')),
+            { Delegate_9: ['Field injections'] });
+        assert.deepEqual(groupsOf(attrField('name="a" stringValue="x"'), delegateTask('')),
+            { Delegate_9: ['Field injections'] });
+    });
+});
