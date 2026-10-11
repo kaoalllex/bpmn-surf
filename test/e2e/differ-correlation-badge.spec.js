@@ -38,6 +38,7 @@ test('jumps directly to the single correlation point', async ({ page }) => {
     await expect.poll(async () => await getOpenCalls(page)).toEqual(
         ['http://localhost/blob/mr-sha/src/OrderListener.kt#L14']
     );
-    // Single result skips the dropdown.
+    // Single result skips the dropdown: the menu exists with the badge, hidden.
+    await expect(page.locator('.correlation-menu')).toHaveCount(1);
     await expect(page.locator('.correlation-menu')).toBeHidden();
 });

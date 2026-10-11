@@ -134,6 +134,7 @@ class BpmnXmlComparator {
         ['camunda:expression', 'Implementation'],
         ['camunda:type', 'Implementation'],
         ['camunda:topic', 'Implementation'],
+        ['camunda:taskPriority', 'External task'],
 
         ['bpmn:conditionExpression', 'Condition'],
         ['camunda:variableName', 'Condition'],
@@ -171,7 +172,24 @@ class BpmnXmlComparator {
         ['camunda:errorEventDefinition/expression', 'Errors'],
 
         ['camunda:executionListener', 'Execution listeners'],
+        ['camunda:executionListener/class', 'Execution listeners'],
         ['camunda:executionListener/delegateExpression', 'Execution listeners'],
+        ['camunda:executionListener/expression', 'Execution listeners'],
+        ['camunda:executionListener/event', 'Execution listeners'],
+
+        ['camunda:taskListener', 'Task listeners'],
+        ['camunda:taskListener/class', 'Task listeners'],
+        ['camunda:taskListener/delegateExpression', 'Task listeners'],
+        ['camunda:taskListener/expression', 'Task listeners'],
+        ['camunda:taskListener/event', 'Task listeners'],
+
+        ['camunda:field', 'Field injections'],
+        ['camunda:field/name', 'Field injections'],
+        ['camunda:field/stringValue', 'Field injections'],
+        ['camunda:field/expression', 'Field injections'],
+        // a field's value as a child element (see #diffNameOf)
+        ['camunda:field/camunda:string', 'Field injections'],
+        ['camunda:field/camunda:expression', 'Field injections'],
 
         ['bpmn:timerEventDefinition', 'Timer'],
         ['bpmn:timeDuration', 'Timer'],
@@ -196,6 +214,11 @@ class BpmnXmlComparator {
         ['camunda:property', 'Extension properties'],
         ['camunda:property/name', 'Extension properties'],
         ['camunda:property/value', 'Extension properties'],
+
+        ['camunda:formKey', 'Forms'],
+        ['camunda:formRef', 'Forms'],
+        ['camunda:formRefBinding', 'Forms'],
+        ['camunda:formRefVersion', 'Forms'],
 
         ['camunda:formField', 'Form fields'],
         ['camunda:formField/label', 'Form fields'],
@@ -795,7 +818,24 @@ class BpmnXmlComparator {
             // the multi-instance body's own retries, not the activity's (Job execution)
             return 'bpmn:multiInstanceLoopCharacteristics/' + node.tagName;
         }
+        const listener = BpmnXmlComparator.#listenerOfField(node);
+        if (listener) {
+            return listener.tagName;
+        }
+        if (node.parentNode?.tagName === 'camunda:field') {
+            // a field's value, not the Implementation's camunda:expression
+            return 'camunda:field/' + node.tagName;
+        }
         return node.tagName;
+    }
+
+    // The listener a camunda:field (or its value) belongs to, if any: the panel lists
+    // a listener's fields inside its listener entry, not under Field injections.
+    static #listenerOfField(node) {
+        const field = node.tagName === 'camunda:field' ? node
+            : node.parentNode?.tagName === 'camunda:field' ? node.parentNode : null;
+        const owner = field?.parentNode;
+        return owner && ['camunda:executionListener', 'camunda:taskListener'].includes(owner.tagName) ? owner : null;
     }
 
     #getAllNotTextChildren(node) {
@@ -860,6 +900,10 @@ class BpmnXmlComparator {
         this.#getAttributesDiffs(diffs, nodeA.tagName, nodeAAttrs, nodeBAttrs);
         this.#getAttributesDiffs(diffs, nodeB.tagName, nodeBAttrs, nodeAAttrs);
 
+        const listener = BpmnXmlComparator.#listenerOfField(nodeA);
+        if (listener && diffs.length > 0) {
+            return [listener.tagName];
+        }
         if (diffs.length > 0) {
             return diffs;
         } else {

@@ -18,9 +18,11 @@
 //    declaration (FOO = "<name>") captures the constant name for Phase 2; a
 //    .bpmn/.dmn file is the receiving side and is excluded; .yml/.properties is
 //    config; a test file is kept but deprioritised.
-//  - Phase 2 resolves the captured constant(s): a second search for the constant
-//    name, keeping the hits whose line carries a correlation keyword. This catches
-//    the indirection `correlate(Messages.ORDER_PLACED)` (cases B/C).
+//  - Phase 2 resolves the captured constant(s) within the file that declares them:
+//    the line there that uses the constant to correlate. A constant used from
+//    another file (`correlate(Messages.ORDER_PLACED)`) is not followed: a search
+//    for a generic constant name would flood the result with other messages, so
+//    the declaration itself is offered instead.
 //
 // Designed-in limitations (not fought): a sender in another microservice/project
 // is out of scope (search is scoped to the current project); a dynamic name
@@ -207,9 +209,8 @@ class CorrelationLocator {
 
     /**
      * Turns raw blob-search items into classified, scored hits (excluding the
-     * diagram files). The search term is the literal being searched in this phase
-     * (the message name in Phase 1, the constant name in Phase 2) and anchors the
-     * matched line number within the snippet.
+     * diagram files). The search term is the literal searched for (the message
+     * name, Phase 1) and anchors the matched line number within the snippet.
      * @returns {{path: string, line: number, category: string, constantName: ?string, isTest: boolean, score: number}[]}
      */
     static collectHits(items, term) {

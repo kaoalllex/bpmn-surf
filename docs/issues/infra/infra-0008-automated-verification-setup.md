@@ -50,6 +50,12 @@ console output.
 - Related: `docs/testing.md` (manual checking section to be updated once a
   harness exists); the unit-test harness `test/support/scope.js` is unaffected.
 
+- What Layer 3 would take off the live catalog (from the [INFRA-0011] coverage audit):
+  file detection and button placement on a loaded page (`catalog/buttons.md` — now
+  unit-tested on captured GitLab markup, live for timing/churn), the click → differ tab
+  opening with the right refs (incl. the commit view), SPA re-sync (`--walk`, GitHub soft
+  navigation), the blob view's local-file pick end to end. Code-search answers stay live.
+
 ## Design decisions for Layer 3
 
 Settled while designing the three-layer test architecture (2026-06-25); Layers 1

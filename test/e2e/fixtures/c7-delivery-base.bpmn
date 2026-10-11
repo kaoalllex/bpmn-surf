@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_deliveryprocess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <bpmn:collaboration id="Collaboration_1lx2fka">
+    <bpmn:participant id="Participant_0ww1htb" processRef="DeliveryProcess" />
+  </bpmn:collaboration>
+  <bpmn:process id="DeliveryProcess" name="Delivery" isExecutable="true">
+    <bpmn:startEvent id="StartDelivery" name="Delivery started">
+      <bpmn:outgoing>Flow_d1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="FindItems" name="Find the items" camunda:asyncBefore="true" camunda:type="external" camunda:topic="findItems">
+      <bpmn:incoming>Flow_d1</bpmn:incoming>
+      <bpmn:outgoing>Flow_d2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="FindItemsInCatalog" name="Find the items in the catalog" camunda:asyncBefore="true" camunda:type="external" camunda:topic="findItemsInCatalog">
+      <bpmn:incoming>Flow_d2</bpmn:incoming>
+      <bpmn:outgoing>Flow_d3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="PickCourier" name="Pick a courier" camunda:assignee="${logisticsUser}">
+      <bpmn:extensionElements>
+        <camunda:taskListener class="com.example.order.listener.AssignCourierListener" event="create" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_d3</bpmn:incoming>
+      <bpmn:outgoing>Flow_d4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="DeliveryDone" name="Delivered">
+      <bpmn:incoming>Flow_d4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="EscalateDelivery" name="Escalate the delivery" camunda:asyncBefore="true" camunda:type="external" camunda:topic="escalateDelivery">
+      <bpmn:incoming>Flow_d5</bpmn:incoming>
+      <bpmn:outgoing>Flow_d6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="DeliveryFailed" name="Delivery failed">
+      <bpmn:incoming>Flow_d6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="CourierTimeout" name="No courier in 2 days" cancelActivity="false" attachedToRef="PickCourier">
+      <bpmn:outgoing>Flow_d5</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_01xjcrh">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P2D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_d1" sourceRef="StartDelivery" targetRef="FindItems" />
+    <bpmn:sequenceFlow id="Flow_d2" sourceRef="FindItems" targetRef="FindItemsInCatalog" />
+    <bpmn:sequenceFlow id="Flow_d3" sourceRef="FindItemsInCatalog" targetRef="PickCourier" />
+    <bpmn:sequenceFlow id="Flow_d4" sourceRef="PickCourier" targetRef="DeliveryDone" />
+    <bpmn:sequenceFlow id="Flow_d5" sourceRef="CourierTimeout" targetRef="EscalateDelivery" />
+    <bpmn:sequenceFlow id="Flow_d6" sourceRef="EscalateDelivery" targetRef="DeliveryFailed" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1lx2fka">
+      <bpmndi:BPMNShape id="Participant_0ww1htb_di" bpmnElement="Participant_0ww1htb" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="800" height="340" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartDelivery_di" bpmnElement="StartDelivery">
+        <dc:Bounds x="222" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="201" y="193" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FindItems_di" bpmnElement="FindItems">
+        <dc:Bounds x="335" y="130" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FindItemsInCatalog_di" bpmnElement="FindItemsInCatalog">
+        <dc:Bounds x="515" y="130" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="PickCourier_di" bpmnElement="PickCourier">
+        <dc:Bounds x="695" y="130" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DeliveryDone_di" bpmnElement="DeliveryDone">
+        <dc:Bounds x="872" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="861" y="193" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EscalateDelivery_di" bpmnElement="EscalateDelivery">
+        <dc:Bounds x="695" y="300" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DeliveryFailed_di" bpmnElement="DeliveryFailed">
+        <dc:Bounds x="872" y="322" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="850" y="373" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0srpepl_di" bpmnElement="CourierTimeout">
+        <dc:Bounds x="732" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="664" y="236" width="72" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_d1_di" bpmnElement="Flow_d1">
+        <di:waypoint x="258" y="170" />
+        <di:waypoint x="335" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d2_di" bpmnElement="Flow_d2">
+        <di:waypoint x="445" y="170" />
+        <di:waypoint x="515" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d3_di" bpmnElement="Flow_d3">
+        <di:waypoint x="625" y="170" />
+        <di:waypoint x="695" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d4_di" bpmnElement="Flow_d4">
+        <di:waypoint x="805" y="170" />
+        <di:waypoint x="872" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d5_di" bpmnElement="Flow_d5">
+        <di:waypoint x="750" y="228" />
+        <di:waypoint x="750" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d6_di" bpmnElement="Flow_d6">
+        <di:waypoint x="805" y="340" />
+        <di:waypoint x="872" y="340" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

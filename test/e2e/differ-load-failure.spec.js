@@ -39,6 +39,9 @@ test('a diagram that cannot be loaded says so instead of spinning', async ({ pag
     });
 
     await expect(page.locator('.differ-empty-state-message')).toHaveText(FAILURE);
+    // The overlay stays in the page, hidden: count it first, or a renamed class
+    // would pass the hidden check unseen.
+    await expect(page.locator('.differ-loading-overlay')).toHaveCount(1);
     await expect(page.locator('.differ-loading-overlay')).toBeHidden();
     expect(calls.count).toBe(2);
 });
@@ -52,5 +55,8 @@ test('a decision that cannot be loaded says so instead of spinning', async ({ pa
     });
 
     await expect(page.locator('.differ-empty-state-message')).toHaveText(FAILURE);
+    // The overlay stays in the page, hidden: count it first, or a renamed class
+    // would pass the hidden check unseen.
+    await expect(page.locator('.differ-loading-overlay')).toHaveCount(1);
     await expect(page.locator('.differ-loading-overlay')).toBeHidden();
 });

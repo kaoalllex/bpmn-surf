@@ -2,7 +2,7 @@
 id: INFRA-0011
 title: Extend the live-check skill's catalog to the whole extension
 priority: medium
-status: partial
+status: done
 ---
 
 ## Statement
@@ -77,10 +77,46 @@ Only what reaches GitLab/GitHub at run time is listed; differ-only areas are Lay
 - **Not live at all:** report-a-problem (💬) on a real page, the popup outside the offline
   screenshots.
 
+All of these are closed (work log 2026-10-11, second entry): the badge rows run with
+`test/e2e/live/badges.mjs` (`catalog/differ-navigation.md`, `catalog/camunda8.md`), the
+buttons rows in `catalog/buttons.md`, the 💬 row in `catalog/feedback.md`; the popup moved
+to Layer 2 (`popup-*.spec.js`) and the service worker to a unit test. The differ-only areas
+of the Statement (highlighting, the changes table, the properties panel, switch branch,
+search, edit mode) have no live rows by design: they are Layer 2, listed in the skill's
+"Areas with no live rows".
+
 ## Work log
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-11 · claude-opus-5-5 · branch `infra/infra-0011-coverage-audit`
+
+Coverage audit of unit, Layer 2 and live together (feature × twin axis matrix), then the
+gaps closed at the cheapest reliable layer:
+- unit: the manifest declares no sites (`test/structure/manifest.test.js`), `HandlerNavigator`'s
+  listener badges, the `c8/worker-code` keys and the two-package class collision, the
+  local-file pick into the differ params, the service worker (out of `UNTESTED_BY_DESIGN`),
+  the buttons placed on GitLab markup captured from gitlab.com (`test/fixtures/gitlab/`,
+  `capture-markup.mjs`);
+- Layer 2: DMN twins (`dmn-file-path`, `dmn-modes`, `dmn-zoom`), the popup
+  (`popup-sites`, `popup-settings`), `differ-c7-prop-groups` on fixtures cut from the
+  sandboxes' new `c7/model-changes` MR / PR, positive controls before two hidden-checks;
+- sandbox material (both platforms): C7 listeners on `main` (class, delegate expression,
+  expression, process-level, task listener), a field injection, and `c7/model-changes`
+  (one change per C7 panel group);
+- live: `badges.mjs` (where each badge leads, GitLab and GitHub blob views), `--commit` in
+  `mr-button.mjs`, the Local side in `branch-button.mjs`; the catalog rows listed above,
+  every one run green.
+
+Found on the way and fixed in separate commits: DMN "Show full" always went to 300% and
+could hang on a table that never fits; the comparator painted no group for C7 task
+listeners, an execution listener's class/event/expression, forms, field injections and an
+external task's priority (the sandbox MR showed it, the new spec pins it); a stale comment
+on Phase 2 of the correlation search. Filed [BUG-0050]: a change to the process element
+itself is not shown at all. Left out on purpose: edit-mode search, canvas pan, more cases
+for `master-commit-manager.js` (the DOM fallback path); the content-script side stays unit +
+live until Layer 3 ([INFRA-0008]).
 
 ### 2026-10-11 · claude-opus-5-5 · branch `feature/camunda-dialects-listener-badges`
 

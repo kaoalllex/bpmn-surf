@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_billingprocess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <bpmn:collaboration id="Collaboration_billingprocess">
+    <bpmn:participant id="BillingProcess_pool" name="Billing" processRef="BillingProcess" />
+    <bpmn:participant id="Participant_PSP" name="Payment provider" />
+    <bpmn:messageFlow id="MFlow_b1" sourceRef="Participant_PSP" targetRef="ChargeCard" />
+  </bpmn:collaboration>
+  <bpmn:process id="BillingProcess" name="Billing" isExecutable="true">
+    <bpmn:serviceTask id="SettleLedger" name="Settle the ledger" camunda:delegateExpression="${billingService.settle(execution)}">
+      <bpmn:incoming>Flow_b3</bpmn:incoming>
+      <bpmn:outgoing>Flow_b3b</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="SendReceipt" name="Send the receipt" camunda:delegateExpression="${sendReceiptDelegate}">
+      <bpmn:incoming>Flow_b3b</bpmn:incoming>
+      <bpmn:outgoing>Flow_b4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="DunningCall" name="Dunning" calledElement="DunningProcess">
+      <bpmn:incoming>Flow_b4</bpmn:incoming>
+      <bpmn:outgoing>Flow_b5</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:serviceTask id="IssueInvoice" name="Issue the invoice" camunda:asyncBefore="true" camunda:class="com.example.billing.delegate.IssueInvoiceDelegate">
+      <bpmn:extensionElements>
+        <camunda:field name="currency">
+          <camunda:string>USD</camunda:string>
+        </camunda:field>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_b2</bpmn:incoming>
+      <bpmn:outgoing>Flow_b3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ChargeCard" name="Charge the card (3-D Secure)" camunda:delegateExpression="${chargeCardDelegate}">
+      <bpmn:incoming>Flow_b1</bpmn:incoming>
+      <bpmn:outgoing>Flow_b2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:startEvent id="StartBilling" name="Billing started">
+      <bpmn:outgoing>Flow_b1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="BillingDone" name="Billed">
+      <bpmn:incoming>Flow_b5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_b3" sourceRef="IssueInvoice" targetRef="SettleLedger" />
+    <bpmn:sequenceFlow id="Flow_b3b" sourceRef="SettleLedger" targetRef="SendReceipt" />
+    <bpmn:sequenceFlow id="Flow_b4" sourceRef="SendReceipt" targetRef="DunningCall" />
+    <bpmn:sequenceFlow id="Flow_b5" sourceRef="DunningCall" targetRef="BillingDone" />
+    <bpmn:sequenceFlow id="Flow_b2" sourceRef="ChargeCard" targetRef="IssueInvoice" />
+    <bpmn:sequenceFlow id="Flow_b1" sourceRef="StartBilling" targetRef="ChargeCard" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_billingprocess">
+      <bpmndi:BPMNShape id="BillingProcess_pool_di" bpmnElement="BillingProcess_pool" isHorizontal="true">
+        <dc:Bounds x="170" y="190" width="1020" height="190" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SettleLedger_di" bpmnElement="SettleLedger">
+        <dc:Bounds x="645" y="250" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SendReceipt_di" bpmnElement="SendReceipt">
+        <dc:Bounds x="805" y="250" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DunningCall_di" bpmnElement="DunningCall">
+        <dc:Bounds x="965" y="250" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IssueInvoice_di" bpmnElement="IssueInvoice">
+        <dc:Bounds x="485" y="250" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ChargeCard_di" bpmnElement="ChargeCard">
+        <dc:Bounds x="325" y="250" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartBilling_di" bpmnElement="StartBilling">
+        <dc:Bounds x="222" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="216" y="313" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BillingDone_di" bpmnElement="BillingDone">
+        <dc:Bounds x="1132" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1131" y="313" width="27" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_b1_di" bpmnElement="Flow_b1">
+        <di:waypoint x="258" y="290" />
+        <di:waypoint x="325" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_b2_di" bpmnElement="Flow_b2">
+        <di:waypoint x="435" y="290" />
+        <di:waypoint x="485" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_b3_di" bpmnElement="Flow_b3">
+        <di:waypoint x="595" y="290" />
+        <di:waypoint x="645" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_b3b_di" bpmnElement="Flow_b3b">
+        <di:waypoint x="755" y="290" />
+        <di:waypoint x="805" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_b4_di" bpmnElement="Flow_b4">
+        <di:waypoint x="915" y="290" />
+        <di:waypoint x="965" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_b5_di" bpmnElement="Flow_b5">
+        <di:waypoint x="1075" y="290" />
+        <di:waypoint x="1132" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_PSP_di" bpmnElement="Participant_PSP" isHorizontal="true">
+        <dc:Bounds x="170" y="80" width="1020" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="MFlow_b1_di" bpmnElement="MFlow_b1">
+        <di:waypoint x="380" y="150" />
+        <di:waypoint x="380" y="250" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

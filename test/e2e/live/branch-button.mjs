@@ -4,7 +4,8 @@
 //
 // Checks: the container stands beside GitLab's button groups (not inside the
 // viewer switcher); the main button opens the differ; the caret opens a menu
-// that closes on Escape; "Diff with local file…" takes a file and opens the differ.
+// that closes on Escape; "Diff with local file…" takes a file and opens the differ
+// with it as the "Local" side.
 // Exits 1 when a check fails.
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -66,7 +67,16 @@ if (!picker) fail('menu item: no file chooser');
 else {
     tab = context.waitForEvent('page', { timeout: 15000 }).catch(() => null);
     await picker.setFiles(local);
-    if (!(await tab)) fail('local diff: no differ tab'); else console.log('local diff: differ tab opened');
+    const differ = await tab;
+    if (!differ) fail('local diff: no differ tab');
+    else {
+        // The picked file is the source side, named after the file.
+        const role = `Local · ${path.split('/').pop()}`;
+        const shown = await differ.locator('.differ-toolbar span', { hasText: role }).first()
+            .waitFor({ timeout: 30000 }).then(() => true, () => false);
+        if (!shown) fail(`local diff: the differ does not show "${role}"`);
+        else console.log(`local diff: differ tab opened, "${role}" shown`);
+    }
 }
 
 console.log(failures ? `RESULT: ${failures} failure(s)` : 'RESULT: OK');
