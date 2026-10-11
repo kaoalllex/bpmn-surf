@@ -53,7 +53,7 @@ class DmnTableViewport {
     showFull() {
         this.setZoom(DmnTableViewport.MAX_ZOOM);
 
-        while (!this.#isFullyVisible()) {
+        while (this.#currentZoom > DmnTableViewport.MIN_ZOOM && !this.#isFullyVisible()) {
             this.#changeZoom(-CanvasViewport.IN_OUT_ZOOM_DELTA);
         }
     }
@@ -80,12 +80,11 @@ class DmnTableViewport {
         this.setZoom(newZoom);
     }
 
+    // Measured against the window, not the table container: the CSS zoom scales the
+    // container along with the table, so their ratio never changes with the zoom.
     #isFullyVisible() {
-        const containerHeight = this.#tableContainer.getBoundingClientRect().height;
-        const tableHeight = this.#table.getBoundingClientRect().height;
-        const res = tableHeight <= containerHeight;
-        // console.debug('isFullyVisible = ' + res);
-        return res;
+        const rect = this.#table.getBoundingClientRect();
+        return rect.bottom <= window.innerHeight && rect.right <= window.innerWidth;
     }
 
     #handleWheelEvent(event) {
