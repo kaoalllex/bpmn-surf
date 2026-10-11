@@ -206,6 +206,14 @@ describe('ConditionFormatter.format FEEL', () => {
     it('leaves and/or alone in a JUEL expression', () => {
         assert.deepEqual(format('${a and b}'), ['${', '  a and b', '}']);
     });
+
+    it('keeps a single-quoted JUEL string whole', () => {
+        assert.deepEqual(format("${s == 'a && (b)' || t}"), ['${', "  s == 'a && (b)' ||", '  t', '}']);
+    });
+
+    it('a single quote opens no string in FEEL', () => {
+        assert.deepEqual(format("= a' and b"), ["= a' and", 'b']);
+    });
 });
 
 describe('ConditionFormatter.tokenize', () => {

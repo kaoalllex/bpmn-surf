@@ -25,7 +25,8 @@ class ConditionFormatter {
         let orOpStarted = false;
         let starting = true;
         let funcParenthesis = false;
-        let insideString = false;
+        // the quote that opened the current string; JUEL also quotes with '
+        let stringQuote = null;
         let escapeFound = false;
         let pendingSpace = false;
         let lastChar = '';
@@ -33,7 +34,7 @@ class ConditionFormatter {
         for (let i = 0; i < condition.length; i++) {
             const symbol = condition[i];
 
-            if (insideString && symbol !== '"' && symbol !== '\\') {
+            if (stringQuote && symbol !== stringQuote && symbol !== '\\') {
                 symbolArr.push(symbol);
                 lastChar = symbol;
                 continue;
@@ -116,11 +117,14 @@ class ConditionFormatter {
                     break;
 
                 case '"':
+                case '\'':
                     symbolArr.push(symbol);
                     if (escapeFound) {
                         escapeFound = false;
-                    } else {
-                        insideString = !insideString;
+                    } else if (stringQuote) {
+                        stringQuote = null;
+                    } else if (symbol === '"' || !feel) {
+                        stringQuote = symbol;
                     }
                     break;
 
