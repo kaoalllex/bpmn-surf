@@ -35,7 +35,6 @@ pick by kind if one moved.
 | blob page of a `.bpmn` / `.dmn` | `View schema` / `View decision` split button before Raw; the local-file menu diffs against a file; follows soft navigation between files |
 | popup: remove a site, remove them all, update from 1.3 | the site goes and the tab stops decorating after reload; no site: `!` on the icon and the warnings on Home and Sites; an update that lost gitlab.com: the "Turn on gitlab.com" notice |
 | non-PR GitHub pages (Conversation, Commits, issues, repo root) | nothing injected, no console errors from us |
-| `npm run package -- --store` | the manifest has neither `content_scripts` nor `host_permissions` |
 
 Open each differ and screenshot the buttons into the scratchpad; the runner-free scenarios
 above are judged by you, so say which you ran and which you skipped.
