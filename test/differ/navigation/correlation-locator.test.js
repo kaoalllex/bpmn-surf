@@ -175,6 +175,17 @@ describe('CorrelationLocator.collectHits — exact-term gate', () => {
         assert.equal(CorrelationLocator.collectHits(items, 'FINISH_VERIFICATION_API').length, 1);
     });
 
+    it('drops a hit that only mentions a longer name the term is a prefix of', () => {
+        const items = [
+            { path: 'order-service-c8/.../PaymentEventsListener.kt',
+                snippet: 'zeebeClient.newPublishMessageCommand()\n    .messageName("OrderPaidC8")', line: 14 },
+            { path: 'order-service/.../OrderEventsListener.kt',
+                snippet: 'fun onPaymentReceived() {\n    runtimeService.createMessageCorrelation("OrderPaid")', line: 13 }
+        ];
+        const hits = CorrelationLocator.collectHits(items, 'OrderPaid');
+        assert.deepEqual(plain(hits.map(h => [h.path, h.line])), [['order-service/.../OrderEventsListener.kt', 14]]);
+    });
+
     it('drops an item that has no snippet at all', () => {
         assert.equal(CorrelationLocator.collectHits([{ path: 'a/B.kt' }], 'X').length, 0);
     });
