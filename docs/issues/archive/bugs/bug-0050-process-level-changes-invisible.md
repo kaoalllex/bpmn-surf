@@ -2,7 +2,7 @@
 id: BUG-0050
 title: A change to the process element itself is not shown in the diff
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -35,3 +35,17 @@ collaboration, outside the process, and are not compared either).
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-12 · claude-opus-5-5 · branch `fix/bug-0050-process-level-changes`
+
+`BpmnXmlComparator#compareProcessLevel` compares the main process's own attributes,
+`bpmn:documentation` and `bpmn:extensionElements` (the other side's process is paired by
+id, falling back to the main one), and every participant present on both sides. The
+process's changes go to its pool (`changedShapeIds`) or, without a pool, to the new
+`changedProcessIds` — the canvas root, never painted: `ChangesTableView` lists it (its
+row clears the selection so the panel shows the root), and `BpmnDiffer#highlightRootPanel`
+paints the root panel with nothing selected (deselect, after import, edit recompute).
+New group rows for the process attributes (History cleanup, Candidate starter, Tasklist,
+version tag, isExecutable, process id). Tests: comparator unit tests (C7 + Zeebe),
+`differ-process-level.spec.js` (pool-less, pool, C8 pool, edit mode). Message flows,
+collaboration artifacts and added/removed pools are split off to [BUG-0052].

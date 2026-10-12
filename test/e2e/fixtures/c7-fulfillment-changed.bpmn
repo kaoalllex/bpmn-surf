@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_fulfillmentprocess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+  <bpmn:message id="Message_OrderShipped" name="OrderShipped" />
+  <bpmn:process id="FulfillmentProcess" name="Fulfillment" isExecutable="true">
+    <bpmn:extensionElements>
+      <camunda:executionListener class="com.example.order.listener.FulfillmentAudit" event="end" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartFulfillment" name="Fulfillment started">
+      <bpmn:outgoing>Flow_f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ReserveStock" name="Reserve the stock" camunda:asyncBefore="true" camunda:type="external" camunda:topic="reserveStock">
+      <bpmn:incoming>Flow_f1</bpmn:incoming>
+      <bpmn:outgoing>Flow_f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="Delivery" name="Delivery" camunda:asyncBefore="true" calledElement="DeliveryProcess">
+      <bpmn:extensionElements>
+        <camunda:in source="orderId" target="orderId" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_f2</bpmn:incoming>
+      <bpmn:outgoing>Flow_f3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:intermediateCatchEvent id="AwaitShipment" name="Shipment confirmed">
+      <bpmn:incoming>Flow_f3</bpmn:incoming>
+      <bpmn:outgoing>Flow_f4</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_Shipped" messageRef="Message_OrderShipped" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="FulfillmentDone" name="Fulfilled">
+      <bpmn:incoming>Flow_f4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_f1" sourceRef="StartFulfillment" targetRef="ReserveStock" />
+    <bpmn:sequenceFlow id="Flow_f2" sourceRef="ReserveStock" targetRef="Delivery" />
+    <bpmn:sequenceFlow id="Flow_f3" sourceRef="Delivery" targetRef="AwaitShipment" />
+    <bpmn:sequenceFlow id="Flow_f4" sourceRef="AwaitShipment" targetRef="FulfillmentDone" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="FulfillmentProcess">
+      <bpmndi:BPMNShape id="ReserveStock_di" bpmnElement="ReserveStock">
+        <dc:Bounds x="285" y="80" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Delivery_di" bpmnElement="Delivery">
+        <dc:Bounds x="465" y="80" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AwaitShipment_di" bpmnElement="AwaitShipment">
+        <dc:Bounds x="652" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="621" y="153" width="98" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FulfillmentDone_di" bpmnElement="FulfillmentDone">
+        <dc:Bounds x="762" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="761" y="153" width="38" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartFulfillment_di" bpmnElement="StartFulfillment">
+        <dc:Bounds x="172" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="146" y="153" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_f1_di" bpmnElement="Flow_f1">
+        <di:waypoint x="208" y="120" />
+        <di:waypoint x="285" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f2_di" bpmnElement="Flow_f2">
+        <di:waypoint x="395" y="120" />
+        <di:waypoint x="465" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f3_di" bpmnElement="Flow_f3">
+        <di:waypoint x="575" y="120" />
+        <di:waypoint x="652" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_f4_di" bpmnElement="Flow_f4">
+        <di:waypoint x="688" y="120" />
+        <di:waypoint x="762" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

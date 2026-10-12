@@ -154,3 +154,21 @@ describe('BpmnXmlComparator zeebe defaults and empty containers', () => {
         assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('ServiceTask_2')), ['Task definition']);
     });
 });
+
+describe('BpmnXmlComparator process-level changes (Zeebe)', () => {
+    const PROCESS_OPEN = '<bpmn:process id="ZeebeBase" isExecutable="true">';
+    const withVersionTag = (value) => variant(PROCESS_OPEN,
+        PROCESS_OPEN + `<bpmn:extensionElements><zeebe:versionTag value="${value}" /></bpmn:extensionElements>`);
+
+    it('maps a changed version tag to General', () => {
+        const result = compare(withVersionTag('1.1'), withVersionTag('1.0'));
+        assert.deepEqual(Array.from(result.changedProcessIds), ['ZeebeBase']);
+        assert.deepEqual(Array.from(result.nodeIdToDiffsMap.get('ZeebeBase')), ['General']);
+    });
+
+    it('maps a process-level execution listener to Execution listeners', () => {
+        const changed = variant(PROCESS_OPEN, PROCESS_OPEN
+            + '<bpmn:extensionElements><zeebe:executionListeners><zeebe:executionListener eventType="start" type="audit" /></zeebe:executionListeners></bpmn:extensionElements>');
+        assert.deepEqual(Array.from(compare(changed, base).nodeIdToDiffsMap.get('ZeebeBase')), ['Execution listeners']);
+    });
+});

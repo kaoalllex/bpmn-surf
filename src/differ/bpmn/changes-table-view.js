@@ -17,7 +17,8 @@ class ChangesTableView {
         ['SequenceFlow', 'connection'],
         ['MessageFlow', 'connection'],
         ['DataObjectReference', 'data-object'],
-        ['DataStoreReference', 'data-store']
+        ['DataStoreReference', 'data-store'],
+        ['Process', 'participant']
     ]);
 
     // Event definitions whose bpmn-font name is not the lower-cased definition name
@@ -59,7 +60,7 @@ class ChangesTableView {
 
     fill(diff, diffTypeForMissing) {
         const changedElems = this.#getElemsForTable(
-            [...diff.changedShapeIds, ...diff.changedRowIds], DiffType.CHANGE);
+            [...diff.changedShapeIds, ...diff.changedRowIds, ...diff.changedProcessIds], DiffType.CHANGE);
         const missingElems = this.#getElemsForTable(
             [...diff.missingShapeIds, ...diff.missingRowIds], diffTypeForMissing);
 
@@ -324,6 +325,13 @@ class ChangesTableView {
         this.#selectedElem = this.#elementRegistry.get(elemId);
         if (!this.#selectedElem) {
             console.warn('onRowSelected: bpmn elem not found by id: ' + elemId);
+            return;
+        }
+        if (this.#selectedElem === this.#canvas.getRootElement()) {
+            // A pool-less process: the panel shows it when nothing is selected. No
+            // marker: on the root it would outline every element of the diagram.
+            this.#selectedElem = null;
+            this.#selection.select(null);
             return;
         }
         this.#highlighter.addMarker(this.#selectedElem, DiffHighlighter.BIG_HIGHLIGHTING_MARKER);
