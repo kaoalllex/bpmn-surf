@@ -2,7 +2,7 @@
 id: BUG-0051
 title: A diagram that does not parse opens as a blank canvas with no message
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -23,3 +23,12 @@ unchanged. A fetch failure already says so through `DifferEmptyState`
 - The empty state: `src/differ/shared/differ-empty-state.js`.
 
 ## Work log
+
+### 2026-10-12 · claude-opus-5-5 · branch `fix/bug-0051-unparsable-diagram`
+
+A side whose import fails now shows "This file is not a valid diagram and cannot be shown."
+in `DifferEmptyState`. BPMN: `#importXml`/`#showXml` report the failure, the stale previous
+diagram and its changes are cleared (`#clearDiagram`, shared with `#showAbsentSide`), the
+diff is not painted, Highlight/✎ are disabled; the cover is hidden again on the next
+successful import or absent side (new `BpmnDifferView#hideEmptyState`). DMN: the same message
+from `#showXml`'s catch. E2E cases in `differ-load-failure.spec.js`.

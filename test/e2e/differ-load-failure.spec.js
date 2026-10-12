@@ -60,3 +60,49 @@ test('a decision that cannot be loaded says so instead of spinning', async ({ pa
     await expect(page.locator('.differ-loading-overlay')).toHaveCount(1);
     await expect(page.locator('.differ-loading-overlay')).toBeHidden();
 });
+
+const UNPARSABLE = 'This file is not a valid diagram and cannot be shown.';
+
+// A file cut off mid-document fetches fine but fails the import.
+const truncate = (xml) => xml.slice(0, Math.floor(xml.length / 2));
+
+test('a diagram that does not parse says so', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        fixtures: { xmlByRef: { 'base-sha': BASE_BPMN, 'mr-sha': truncate(ADDED_TASK_BPMN) } }
+    });
+
+    await expect(page.locator('.differ-empty-state-message')).toHaveText(UNPARSABLE);
+    await expect(page.locator('.differ-loading-overlay')).toHaveCount(1);
+    await expect(page.locator('.differ-loading-overlay')).toBeHidden();
+    await expect(page.getByTitle('Edit this diagram in a new tab')).toBeDisabled();
+
+    // The other side parses: switching to it drops the message.
+    await page.getByRole('button', { name: 'Switch branch' }).click();
+    await expect(page.locator(`${CANVAS} svg .djs-element`).first()).toBeVisible();
+    await expect(page.locator('.differ-empty-state')).toBeHidden();
+});
+
+test('a decision that does not parse says so', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootDmnDiffer(page, {
+        params: defaultDmnParams(),
+        fixtures: { xmlByRef: { 'base-sha': BASE_DMN, 'mr-sha': truncate(ADDED_RULE_DMN) } }
+    });
+
+    await expect(page.locator('.differ-empty-state-message')).toHaveText(UNPARSABLE);
+    await expect(page.locator('.differ-loading-overlay')).toHaveCount(1);
+    await expect(page.locator('.differ-loading-overlay')).toBeHidden();
+});
+
+test('switching to a decision that does not parse says so', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootDmnDiffer(page, {
+        params: defaultDmnParams(),
+        fixtures: { xmlByRef: { 'base-sha': truncate(BASE_DMN), 'mr-sha': ADDED_RULE_DMN } }
+    });
+    await expect(page.locator('.differ-empty-state')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Switch branch' }).click();
+    await expect(page.locator('.differ-empty-state-message')).toHaveText(UNPARSABLE);
+});

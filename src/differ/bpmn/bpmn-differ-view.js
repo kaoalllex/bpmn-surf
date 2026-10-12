@@ -258,11 +258,16 @@ class BpmnDifferView {
     }
 
     // Shows a placeholder in the canvas area when the file is absent in both
-    // versions (BUG-0001). The toolbar stays usable (Close/Download).
+    // versions (BUG-0001) or the shown side does not parse. The toolbar stays
+    // usable (Close/Download/Switch).
     showEmptyState(message) {
         this.#canvasCell.style.visibility = 'visible';
         this.#emptyState.show(message);
         this.#loadingOverlay.hide();
+    }
+
+    hideEmptyState() {
+        this.#emptyState.hide();
     }
 
     // Enables/disables the diff Highlight button — disabled on a side that has

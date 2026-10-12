@@ -539,16 +539,22 @@ class BpmnDiffer {
     // highlight, table and selection (UX-0003). The highlight state itself is
     // kept so it re-applies when switching back to the side that has a diagram.
     #showAbsentSide(targetSide) {
-        this.#bpmnJS.clear();
-        this.#selectedElementId = null;
+        this.#clearDiagram();
+        this.#view.hideEmptyState();
         this.#view.setShownFile(this.#shownFileFor(targetSide));
         this.#branchIndicator.setAbsentLabel(targetSide);
+        this.#view.setDownloadButtonEnabled(false);
+    }
+
+    #clearDiagram() {
+        this.#bpmnJS.clear();
+        this.#selectedElementId = null;
         this.#diffHighlighter.setDiffElementIds([]);
         if (this.#changesTableView) {
             this.#changesTableView.clear();
         }
+        this.#searchPanel.rebuildIndex();
         this.#view.setHighlightButtonEnabled(false);
-        this.#view.setDownloadButtonEnabled(false);
         this.#view.setEditButtonEnabled(false);
     }
 
@@ -569,10 +575,13 @@ class BpmnDiffer {
             ? this.#prepareDiffData(branchXml, this.#versions.mrXml)
             : null;
 
-        await this.#showXml(branchXml);
+        const imported = await this.#showXml(branchXml);
         this.#view.setShownFile(this.#shownFileFor(true));
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
+        if (!imported) {
+            return;
+        }
         if (diff) {
             this.#paintDiffs(diff, DiffType.REMOVE);
         } else {
@@ -591,10 +600,13 @@ class BpmnDiffer {
             ? this.#prepareDiffData(mrXml, this.#versions.branchXml)
             : null;
 
-        await this.#showXml(mrXml);
+        const imported = await this.#showXml(mrXml);
         this.#view.setShownFile(this.#shownFileFor(false));
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
+        if (!imported) {
+            return;
+        }
         if (diff) {
             this.#paintDiffs(diff, DiffType.ADD);
         } else {
@@ -618,7 +630,13 @@ class BpmnDiffer {
         const rootId = canvas.getRootElement()?.id;
         const viewbox = canvas.viewbox();
 
-        await this.#importXml(bpmnXml);
+        this.#view.hideEmptyState();
+        if (!await this.#importXml(bpmnXml)) {
+            // A failed parse keeps the previously shown diagram: drop it and its changes.
+            this.#clearDiagram();
+            this.#view.showEmptyState('This file is not a valid diagram and cannot be shown.');
+            return false;
+        }
 
         this.#restoreDrilledRoot(canvas, rootId, viewbox);
 
@@ -634,6 +652,7 @@ class BpmnDiffer {
         // Overlays are dropped on import, so re-add the persistent "changed
         // handler" badges for the freshly imported diagram version.
         this.#handlerNavigator.refreshChangedBadges();
+        return true;
     }
 
     // A drill-down into a collapsed subprocess is a root of its own, and the import
@@ -658,10 +677,11 @@ class BpmnDiffer {
             // console.debug('bpmn schema loaded succesfully', warnings);
         } catch (err) {
             console.error('bpmn schema loading error', ConsoleLog.describeImportError(err));
-            return;
+            return false;
         }
 
         this.#viewport.fit();
+        return true;
     }
 
     #getCurrentSelectedElementId() {
