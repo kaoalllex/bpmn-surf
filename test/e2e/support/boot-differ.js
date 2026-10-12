@@ -49,6 +49,8 @@ const C7_DELIVERY_BASE_BPMN = read('test/e2e/fixtures/c7-delivery-base.bpmn');
 const C7_DELIVERY_CHANGED_BPMN = read('test/e2e/fixtures/c7-delivery-changed.bpmn');
 const C7_BILLING_BASE_BPMN = read('test/e2e/fixtures/c7-billing-base.bpmn');
 const C7_BILLING_CHANGED_BPMN = read('test/e2e/fixtures/c7-billing-changed.bpmn');
+const C7_FULFILLMENT_BASE_BPMN = read('test/e2e/fixtures/c7-fulfillment-base.bpmn');
+const C7_FULFILLMENT_CHANGED_BPMN = read('test/e2e/fixtures/c7-fulfillment-changed.bpmn');
 const camundaModdle = require(path.join(ROOT, 'libs/camunda-bpmn-moddle/resources/camunda.json'));
 const zeebeModdle = require(path.join(ROOT, 'libs/zeebe-bpmn-moddle/resources/zeebe.json'));
 
@@ -168,6 +170,7 @@ module.exports = {
     C8_PAYMENT_C7_BPMN, C8_PAYMENT_MIGRATED_BPMN, C8_PAYMENT_RISK_DMN,
     C7_ORDER_MAIN_BASE_BPMN, C7_ORDER_MAIN_CHANGED_BPMN, C7_PAYMENT_BASE_BPMN, C7_PAYMENT_CHANGED_BPMN,
     C7_DELIVERY_BASE_BPMN, C7_DELIVERY_CHANGED_BPMN, C7_BILLING_BASE_BPMN, C7_BILLING_CHANGED_BPMN,
+    C7_FULFILLMENT_BASE_BPMN, C7_FULFILLMENT_CHANGED_BPMN,
     defaultBpmnParams, defaultDmnParams,
     wireDiagnostics, bootBpmnDiffer, bootDmnDiffer
 };

@@ -3,7 +3,8 @@
 const { test, expect } = require('@playwright/test');
 const {
     bootBpmnDiffer, wireDiagnostics, defaultBpmnParams,
-    C7_PAYMENT_BASE_BPMN, C7_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_CHANGED_BPMN
+    C7_PAYMENT_BASE_BPMN, C7_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_CHANGED_BPMN,
+    C7_FULFILLMENT_BASE_BPMN, C7_FULFILLMENT_CHANGED_BPMN, C8_FULFILLMENT_BASE_BPMN
 } = require('./support/boot-differ');
 
 // BUG-0050: a change to the process element itself. A pool shows its process's groups,
@@ -128,6 +129,11 @@ test('a collaboration: message flows and black-box pools', async ({ page }) => {
     await element(page, 'MFlow_1').click({ force: true });
     await expect(groupHeader(page, 'General')).toHaveCSS('background-color', CHANGED);
 
+    // The other side of the MR lists the same two
+    await page.getByRole('button', { name: /Switch/ }).click();
+    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('2');
+    await expect(rows.filter({ hasText: 'Participant_Kafka' })).toHaveCount(1);
+
     expect(unmapped(warnings)).toEqual([]);
 });
 
@@ -145,4 +151,30 @@ test('a collaboration: an added message flow', async ({ page }) => {
     const row = page.locator('table.changes-table tbody tr', { hasText: 'MFlow_2' });
     await expect(row.locator('.changes-table-badge')).toHaveAttribute('title', 'added');
     await expect(row.locator('.changes-table-type')).toHaveAttribute('title', 'MessageFlow');
+});
+
+// The case BUG-0050 was reported on: the sandbox's pool-less Fulfillment.bpmn, main vs
+// c7/model-changes, whose only change is the process listener's event (start -> end).
+test('the reported case: a process listener of the pool-less Fulfillment', async ({ page }) => {
+    const warnings = await boot(page, C7_FULFILLMENT_BASE_BPMN, C7_FULFILLMENT_CHANGED_BPMN);
+
+    await expect(groupHeader(page, 'Execution listeners')).toHaveCSS('background-color', CHANGED);
+    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('1');
+    await page.getByRole('button', { name: 'Show changes' }).click();
+    await expect(page.locator('table.changes-table tbody tr', { hasText: 'FulfillmentProcess' }).locator('td').nth(2))
+        .toHaveText('Execution listeners');
+
+    expect(unmapped(warnings)).toEqual([]);
+});
+
+test('Camunda 8: a pool-less process paints the root panel', async ({ page }) => {
+    const changed = replaceOnce(C8_FULFILLMENT_BASE_BPMN, '<zeebe:versionTag value="1.0" />', '<zeebe:versionTag value="1.1" />');
+    const warnings = await boot(page, C8_FULFILLMENT_BASE_BPMN, changed);
+
+    await expect(groupHeader(page, 'General')).toHaveCSS('background-color', CHANGED);
+    await page.getByRole('button', { name: 'Show changes' }).click();
+    await expect(page.locator('table.changes-table tbody tr', { hasText: 'FulfillmentC8' }).locator('td').nth(2))
+        .toHaveText('General');
+
+    expect(unmapped(warnings)).toEqual([]);
 });
