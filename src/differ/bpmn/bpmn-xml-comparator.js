@@ -3,12 +3,18 @@
 class BpmnXmlComparator {
     static #PROCESS_TAG_NAME = 'bpmn:process';
     static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
+    static #PARTICIPANT_TAG_NAME = 'bpmn:participant';
     static #MESSAGE_TAG_NAME = 'bpmn:message';
     static #ESCALATION_TAG_NAME = 'bpmn:escalation';
     static #ERROR_TAG_NAME = 'bpmn:error';
     // Children that describe the subprocess itself, not the flow inside it
     static #SUBPROCESS_OWN_CHILD_TAG_NAMES = [
         'bpmn:multiInstanceLoopCharacteristics',
+        'bpmn:extensionElements'
+    ];
+    // Children that describe the process itself, not the flow inside it
+    static #PROCESS_OWN_CHILD_TAG_NAMES = [
+        'bpmn:documentation',
         'bpmn:extensionElements'
     ];
 
@@ -35,6 +41,7 @@ class BpmnXmlComparator {
     static #ATTRIBUTE_DEFAULTS = new Map([
         ['isInterrupting', 'true'],
         ['cancelActivity', 'true'],
+        ['camunda:isStartableInTasklist', 'true'],
         // camunda-bpmn-moddle AsyncCapable
         ['camunda:asyncBefore', 'false'],
         ['camunda:asyncAfter', 'false'],
@@ -228,9 +235,20 @@ class BpmnXmlComparator {
 
         ['bpmn:documentation', 'Documentation'],
 
+        // The process itself: its own panel when it has no pool, the pool's otherwise
+        ['bpmn:process/id', 'General'],
+        ['bpmn:participant/processRef', 'General'],
+        ['isExecutable', 'General'],
+        ['camunda:versionTag', 'General'],
+        ['camunda:historyTimeToLive', 'History cleanup'],
+        ['camunda:candidateStarterGroups', 'Candidate starter'],
+        ['camunda:candidateStarterUsers', 'Candidate starter'],
+        ['camunda:isStartableInTasklist', 'Tasklist'],
+
         // Camunda 8 (zeebe-bpmn-moddle). A zeebe: element keeps its attributes
         // unprefixed, so they fall back to the element's own row
         // (see #findDiffPropertyGroup) unless a row names the attribute.
+        ['zeebe:versionTag', 'General'],
         ['zeebe:taskDefinition', 'Task definition'],
         ['zeebe:jobPriorityDefinition', 'Job priority'],
         ['zeebe:ioMapping', 'Input mapping'],
@@ -284,6 +302,8 @@ class BpmnXmlComparator {
      *   processNode,
      *   missingShapeIds, missingRowIds,
      *   changedShapeIds, changedRowIds,
+     *   changedProcessIds (the main process when it has no pool and its own attributes
+     *     or extensions changed: no shape to paint, only the root panel to show it),
      *   nodeIdToDiffsMap (id -> [property group names]),
      *   nodeIdToConditions (id -> [my condition, other condition]),
      *   nodeIdToMappingChanges (id -> Map(list group name -> [{label, changed}])),
@@ -318,6 +338,7 @@ class BpmnXmlComparator {
             missingRowIds: [],
             changedShapeIds: [],
             changedRowIds: [],
+            changedProcessIds: [],
             nodeIdToDiffsMap: new Map(),
             nodeIdToConditions: new Map(),
             nodeIdToMappingChanges: new Map(),
@@ -349,29 +370,7 @@ class BpmnXmlComparator {
                 const diffs = this.#compareNodes(null, myNode, otherNode);
                 if (diffs) {
                     // console.debug(`nodes with id '${id}' have diffs: `, diffs);
-                    for (const diff of diffs) {
-                        const diffPropGroup = this.#findDiffPropertyGroup(diff);
-                        if (diffPropGroup) {
-                            if (diffPropGroup === BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP) {
-                                continue;
-                            }
-                            if (diffPropGroup === BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP) {
-                                if (!result.typeChangedIds.includes(id)) {
-                                    result.typeChangedIds.push(id);
-                                }
-                                continue;
-                            }
-                            const diffsInMap = result.nodeIdToDiffsMap.get(id);
-                            if (diffsInMap) {
-                                result.nodeIdToDiffsMap.set(id, diffsInMap.concat(diffPropGroup));
-                            } else {
-                                result.nodeIdToDiffsMap.set(id, [diffPropGroup]);
-                            }
-                        } else {
-                            console.warn(`nodes with id '${id}': property group not found for diff: ${diff}`);
-                        }
-                    }
-
+                    this.#addDiffPropertyGroups(id, diffs, result);
                     this.#collectListGroupChanges(id, myNode, otherNode, result);
 
                     if (this.#isNodeRow(myNode)) {
@@ -394,9 +393,91 @@ class BpmnXmlComparator {
             }
         }
 
+        if (myProcessNode) {
+            this.#compareProcessLevel(myDoc, otherDoc, myProcessNode, result);
+        }
+
         result.subProcessWithChangesIds = this.#findSubProcessesWithChanges(myDoc, otherDoc, result);
 
         return result;
+    }
+
+    #addDiffPropertyGroups(id, diffs, result) {
+        for (const diff of diffs) {
+            const diffPropGroup = this.#findDiffPropertyGroup(diff);
+            if (diffPropGroup) {
+                if (diffPropGroup === BpmnXmlComparator.#IGNORED_DIFF_PROPERTY_GROUP) {
+                    continue;
+                }
+                if (diffPropGroup === BpmnXmlComparator.#HEADER_DIFF_PROPERTY_GROUP) {
+                    if (!result.typeChangedIds.includes(id)) {
+                        result.typeChangedIds.push(id);
+                    }
+                    continue;
+                }
+                const diffsInMap = result.nodeIdToDiffsMap.get(id);
+                if (diffsInMap) {
+                    result.nodeIdToDiffsMap.set(id, diffsInMap.concat(diffPropGroup));
+                } else {
+                    result.nodeIdToDiffsMap.set(id, [diffPropGroup]);
+                }
+            } else {
+                console.warn(`nodes with id '${id}': property group not found for diff: ${diff}`);
+            }
+        }
+    }
+
+    // The process element is not among its own [id] descendants, and pools live in
+    // the collaboration, so neither is reached by the walk in compare(). The panel
+    // shows a process's groups on the pool that holds it, so its own changes go to
+    // that pool; a pool-less process is the canvas root and has no shape to paint.
+    // A pool present on one side only is not compared.
+    #compareProcessLevel(myDoc, otherDoc, myProcessNode, result) {
+        const processId = myProcessNode.getAttribute('id');
+        // By id first: isExecutable may have moved to another process of the collaboration
+        const processById = otherDoc.getElementById(processId);
+        const otherProcessNode = processById?.tagName === BpmnXmlComparator.#PROCESS_TAG_NAME
+            ? processById : this.#findMainProcessNode(otherDoc);
+        const participants = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PARTICIPANT_TAG_NAME));
+        const pool = participants.find(node => node.getAttribute('processRef') === processId);
+        const processHolderId = pool ? pool.getAttribute('id') : processId;
+
+        const diffsById = new Map();
+        if (otherProcessNode) {
+            diffsById.set(processHolderId, this.#compareProcessNodes(myProcessNode, otherProcessNode));
+        }
+        for (const participant of participants) {
+            const id = participant.getAttribute('id');
+            const otherParticipant = otherDoc.getElementById(id);
+            if (otherParticipant) {
+                diffsById.set(id, this.#concatDiffs(diffsById.get(id) ?? null,
+                    this.#compareNodes(null, participant, otherParticipant)));
+            }
+        }
+
+        for (const [id, diffs] of diffsById) {
+            if (!diffs) {
+                continue;
+            }
+            this.#addDiffPropertyGroups(id, diffs, result);
+            if (id === processHolderId && otherProcessNode) {
+                this.#collectListGroupChanges(id, myProcessNode, otherProcessNode, result);
+            }
+            (id === processId ? result.changedProcessIds : result.changedShapeIds).push(id);
+        }
+    }
+
+    // Like a subprocess (see #compareNodes): its own attributes and children, not the flow
+    #compareProcessNodes(myProcessNode, otherProcessNode) {
+        let diffs = this.#compareNodesAttributes(myProcessNode, otherProcessNode);
+        if (myProcessNode.getAttribute('id') !== otherProcessNode.getAttribute('id')) {
+            diffs = this.#concatDiffs(diffs, ['bpmn:process/id']);
+        }
+        for (const tagName of BpmnXmlComparator.#PROCESS_OWN_CHILD_TAG_NAMES) {
+            diffs = this.#concatDiffs(diffs,
+                this.#compareChildNodesWithTagName(myProcessNode, otherProcessNode, tagName));
+        }
+        return diffs;
     }
 
     #findMainProcessNode(doc) {

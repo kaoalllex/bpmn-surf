@@ -224,6 +224,7 @@ class BpmnDiffer {
                 // previous element's groups into whatever panel is on screen.
                 this.#selectedElementId = null;
                 this.#propertiesPanelHighlighter.resetHighlighting();
+                this.#highlightRootPanel();
                 return;
             }
             this.#onSelectedElementChanged(event.newSelection[0].id);
@@ -238,8 +239,9 @@ class BpmnDiffer {
                 painter: new EditDiffPainter(bpmnJSCanvas, this.#elementRegistry),
                 propertiesPanelHighlighter: this.#propertiesPanelHighlighter,
                 onColoringPaused: (paused) => this.#view.setEditColoringPaused(paused),
-                onDiffUpdated: () => this.#propertiesPanelHighlighter
-                    .highlightDiffPropGroups(this.#selectedElementId)
+                onDiffUpdated: () => this.#selectedElementId
+                    ? this.#propertiesPanelHighlighter.highlightDiffPropGroups(this.#selectedElementId)
+                    : this.#highlightRootPanel()
             });
 
             // A manual colour changes which elements count as "explicitly coloured",
@@ -648,6 +650,7 @@ class BpmnDiffer {
             this.#selectedElementId = currentSelectedElemId;
         }
         this.#selectElementById();
+        this.#highlightRootPanel();
 
         // Overlays are dropped on import, so re-add the persistent "changed
         // handler" badges for the freshly imported diagram version.
@@ -690,6 +693,15 @@ class BpmnDiffer {
             return null;
         }
         return selectedItems[0].id;
+    }
+
+    // With nothing selected the panel shows the root, which for a pool-less process is
+    // the process itself: BpmnXmlComparator keys its own changes by the root's id.
+    #highlightRootPanel() {
+        if (this.#selection.get().length === 0) {
+            this.#propertiesPanelHighlighter.highlightDiffPropGroups(
+                this.#bpmnJS.get('canvas').getRootElement().id);
+        }
     }
 
     #selectElementById() {

@@ -895,3 +895,70 @@ describe('BpmnXmlComparator property groups: listeners, forms, field injections,
         assert.deepEqual(groupsOf(taskField('${a}'), taskField('${b}')), { UserTask_9: ['Task listeners'] });
     });
 });
+
+// BUG-0050: the process element itself is not among its [id] descendants, and pools
+// live in the collaboration. A pool shows its process's groups in the panel, so the
+// process's own changes belong to the pool; a pool-less process has no shape at all.
+describe('BpmnXmlComparator process-level changes', () => {
+    const PROCESS_OPEN = '<bpmn:process id="Process_camunda" isExecutable="true">';
+    const processAttrs = (attrs) => variant(PROCESS_OPEN, `<bpmn:process id="Process_camunda" isExecutable="true" ${attrs}>`);
+    const processListener = (event) => variant(PROCESS_OPEN, PROCESS_OPEN
+        + `<bpmn:extensionElements><camunda:executionListener class="a.Audit" event="${event}" /></bpmn:extensionElements>`);
+    const withPool = (xml, name = 'Pool') => xml.replace('<bpmn:process ',
+        `<bpmn:collaboration id="Collab_1"><bpmn:participant id="Pool_1" name="${name}" processRef="Process_camunda" /></bpmn:collaboration><bpmn:process `);
+
+    it('reports a pool-less process by its id, not as a shape', () => {
+        const result = compare(processListener('end'), processListener('start'));
+        assert.deepEqual(Array.from(result.changedProcessIds), ['Process_camunda']);
+        assert.deepEqual(Array.from(result.changedShapeIds), []);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Process_camunda: ['Execution listeners'] });
+    });
+
+    it('maps the process attributes to their panel groups', () => {
+        const groupsOf = (attrs) => mapToObject(compare(processAttrs(attrs), base).nodeIdToDiffsMap).Process_camunda;
+        assert.deepEqual(groupsOf('camunda:historyTimeToLive="180"'), ['History cleanup']);
+        assert.deepEqual(groupsOf('camunda:candidateStarterGroups="sales"'), ['Candidate starter']);
+        assert.deepEqual(groupsOf('camunda:candidateStarterUsers="bob"'), ['Candidate starter']);
+        assert.deepEqual(groupsOf('camunda:isStartableInTasklist="false"'), ['Tasklist']);
+        assert.deepEqual(groupsOf('camunda:versionTag="1.1"'), ['General']);
+        assert.deepEqual(groupsOf('camunda:taskPriority="5"'), ['External task']);
+        assert.deepEqual(groupsOf('camunda:jobPriority="5"'), ['Job execution']);
+        assert.deepEqual(groupsOf('name="Renamed"'), ['General']);
+    });
+
+    it('stating the default of isStartableInTasklist is no change', () => {
+        assertNoDiffs(compare(processAttrs('camunda:isStartableInTasklist="true"'), base));
+    });
+
+    it('reports a changed process id', () => {
+        const changed = variant(PROCESS_OPEN, '<bpmn:process id="Process_renamed" isExecutable="true">');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.changedProcessIds), ['Process_renamed']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Process_renamed: ['General'] });
+    });
+
+    it('puts the process changes on the pool that holds it', () => {
+        const result = compare(withPool(processListener('end')), withPool(processListener('start')));
+        assert.deepEqual(Array.from(result.changedProcessIds), []);
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Pool_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Pool_1: ['Execution listeners'] });
+    });
+
+    it('reports a pool whose own attributes changed', () => {
+        const result = compare(withPool(base, 'Renamed'), withPool(base));
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Pool_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Pool_1: ['General'] });
+    });
+
+    it('pairs the process by id when isExecutable moved to another process', () => {
+        const withSecond = (xml, executable) => xml
+            .replace(PROCESS_OPEN, `<bpmn:process id="Process_camunda" isExecutable="${!executable}">`)
+            .replace('<bpmn:process ', `<bpmn:process id="Process_other" name="Other" isExecutable="${executable}" /><bpmn:process `);
+        const result = compare(withSecond(base, false), withSecond(base, true));
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Process_camunda: ['General'] });
+    });
+
+    it('finds no diffs for an identical pool', () => {
+        assertNoDiffs(compare(withPool(base), withPool(base)));
+    });
+});
