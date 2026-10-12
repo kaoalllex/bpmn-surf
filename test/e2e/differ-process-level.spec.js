@@ -80,7 +80,7 @@ test('a pool: the process changes and its own name are painted on the pool', asy
 
     await page.getByRole('button', { name: 'Show changes' }).click();
     const row = page.locator('table.changes-table tbody tr', { hasText: 'OrderMainProcess_pool' });
-    await expect(row.locator('td').nth(2)).toHaveText('Candidate starter, General');
+    await expect(row.locator('td').nth(2)).toHaveText('General, Candidate starter');
 
     expect(unmapped(warnings)).toEqual([]);
 });
@@ -109,4 +109,40 @@ test('edit mode: an edit of the process paints the root panel', async ({ page })
     await expect(groupHeader(page, 'History cleanup')).toHaveCSS('background-color', CHANGED, { timeout: 5000 });
     // The root has no shape: nothing on the canvas takes the diff colour
     await expect(page.locator('svg .djs-element[class*="edit-diff"]')).toHaveCount(0);
+});
+
+// BUG-0052: the collaboration's own content — here a renamed message flow and a
+// renamed black-box pool — is diffed like the process content.
+test('a collaboration: message flows and black-box pools', async ({ page }) => {
+    const changed = replaceOnce(
+        replaceOnce(C7_ORDER_MAIN_BASE_BPMN, '<bpmn:messageFlow id="MFlow_1" ', '<bpmn:messageFlow id="MFlow_1" name="New order" '),
+        'name="Kafka: order.events"', 'name="Kafka: orders"');
+    const warnings = await boot(page, C7_ORDER_MAIN_BASE_BPMN, changed);
+
+    await expect(page.locator('td:has-text("Changed:") + td')).toHaveText('2');
+    await page.getByRole('button', { name: 'Show changes' }).click();
+    const rows = page.locator('table.changes-table tbody tr');
+    await expect(rows.filter({ hasText: 'MFlow_1' }).locator('td').nth(2)).toHaveText('General');
+    await expect(rows.filter({ hasText: 'Participant_Kafka' }).locator('td').nth(2)).toHaveText('General');
+
+    await element(page, 'MFlow_1').click({ force: true });
+    await expect(groupHeader(page, 'General')).toHaveCSS('background-color', CHANGED);
+
+    expect(unmapped(warnings)).toEqual([]);
+});
+
+test('a collaboration: an added message flow', async ({ page }) => {
+    const flow = '<bpmn:messageFlow id="MFlow_2" sourceRef="Participant_Kafka" targetRef="AwaitPayment" />';
+    const edge = '<bpmndi:BPMNEdge id="MFlow_2_di" bpmnElement="MFlow_2">\n'
+        + '        <di:waypoint x="1060" y="150" />\n'
+        + '        <di:waypoint x="1060" y="360" />\n'
+        + '      </bpmndi:BPMNEdge>';
+    const base = replaceOnce(replaceOnce(C7_ORDER_MAIN_BASE_BPMN, flow, ''), edge, '');
+    await boot(page, base, C7_ORDER_MAIN_BASE_BPMN);
+
+    await expect(page.locator('td:has-text("Added:") + td')).toHaveText('1');
+    await page.getByRole('button', { name: 'Show changes' }).click();
+    const row = page.locator('table.changes-table tbody tr', { hasText: 'MFlow_2' });
+    await expect(row.locator('.changes-table-badge')).toHaveAttribute('title', 'added');
+    await expect(row.locator('.changes-table-type')).toHaveAttribute('title', 'MessageFlow');
 });

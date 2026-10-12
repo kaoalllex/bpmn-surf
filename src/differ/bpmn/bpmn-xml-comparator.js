@@ -4,6 +4,7 @@ class BpmnXmlComparator {
     static #PROCESS_TAG_NAME = 'bpmn:process';
     static #SUBPROCESS_TAG_NAME = 'bpmn:subProcess';
     static #PARTICIPANT_TAG_NAME = 'bpmn:participant';
+    static #COLLABORATION_TAG_NAME = 'bpmn:collaboration';
     static #MESSAGE_TAG_NAME = 'bpmn:message';
     static #ESCALATION_TAG_NAME = 'bpmn:escalation';
     static #ERROR_TAG_NAME = 'bpmn:error';
@@ -330,7 +331,13 @@ class BpmnXmlComparator {
         // executable (the properties panel can clear the flag) still has to be diffed,
         // and a file with no process at all yields an empty diff instead of throwing.
         const myProcessNode = this.#findMainProcessNode(myDoc);
-        const myNodesWithIdAttr = myProcessNode ? myProcessNode.querySelectorAll('[id]') : [];
+        // Pools, message flows and the artifacts drawn outside any pool live in the
+        // collaboration, outside the process
+        const myNodesWithIdAttr = [
+            ...(myProcessNode ? myProcessNode.querySelectorAll('[id]') : []),
+            ...Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#COLLABORATION_TAG_NAME))
+                .flatMap(collaboration => Array.from(collaboration.querySelectorAll('[id]')))
+        ];
 
         const result = {
             processNode: myProcessNode,
@@ -427,43 +434,34 @@ class BpmnXmlComparator {
         }
     }
 
-    // The process element is not among its own [id] descendants, and pools live in
-    // the collaboration, so neither is reached by the walk in compare(). The panel
-    // shows a process's groups on the pool that holds it, so its own changes go to
-    // that pool; a pool-less process is the canvas root and has no shape to paint.
-    // A pool present on one side only is not compared.
+    // The process element is not among its own [id] descendants, so the walk in
+    // compare() never reaches it. The panel shows a process's groups on the pool that
+    // holds it, so its own changes go to that pool; a pool-less process is the canvas
+    // root and has no shape to paint.
     #compareProcessLevel(myDoc, otherDoc, myProcessNode, result) {
         const processId = myProcessNode.getAttribute('id');
         // By id first: isExecutable may have moved to another process of the collaboration
         const processById = otherDoc.getElementById(processId);
         const otherProcessNode = processById?.tagName === BpmnXmlComparator.#PROCESS_TAG_NAME
             ? processById : this.#findMainProcessNode(otherDoc);
-        const participants = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PARTICIPANT_TAG_NAME));
-        const pool = participants.find(node => node.getAttribute('processRef') === processId);
-        const processHolderId = pool ? pool.getAttribute('id') : processId;
-
-        const diffsById = new Map();
-        if (otherProcessNode) {
-            diffsById.set(processHolderId, this.#compareProcessNodes(myProcessNode, otherProcessNode));
+        if (!otherProcessNode) {
+            return;
         }
-        for (const participant of participants) {
-            const id = participant.getAttribute('id');
-            const otherParticipant = otherDoc.getElementById(id);
-            if (otherParticipant) {
-                diffsById.set(id, this.#concatDiffs(diffsById.get(id) ?? null,
-                    this.#compareNodes(null, participant, otherParticipant)));
-            }
+        const diffs = this.#compareProcessNodes(myProcessNode, otherProcessNode);
+        if (!diffs) {
+            return;
         }
 
-        for (const [id, diffs] of diffsById) {
-            if (!diffs) {
-                continue;
-            }
-            this.#addDiffPropertyGroups(id, diffs, result);
-            if (id === processHolderId && otherProcessNode) {
-                this.#collectListGroupChanges(id, myProcessNode, otherProcessNode, result);
-            }
-            (id === processId ? result.changedProcessIds : result.changedShapeIds).push(id);
+        const pool = Array.from(myDoc.getElementsByTagName(BpmnXmlComparator.#PARTICIPANT_TAG_NAME))
+            .find(node => node.getAttribute('processRef') === processId);
+        const holderId = pool ? pool.getAttribute('id') : processId;
+        this.#addDiffPropertyGroups(holderId, diffs, result);
+        this.#collectListGroupChanges(holderId, myProcessNode, otherProcessNode, result);
+        if (!pool) {
+            result.changedProcessIds.push(processId);
+        } else if (!result.changedShapeIds.includes(holderId) && !result.missingShapeIds.includes(holderId)) {
+            // A pool added around the process stays added: its groups still show in the panel
+            result.changedShapeIds.push(holderId);
         }
     }
 

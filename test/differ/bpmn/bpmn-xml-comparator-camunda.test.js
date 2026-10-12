@@ -962,3 +962,40 @@ describe('BpmnXmlComparator process-level changes', () => {
         assertNoDiffs(compare(withPool(base), withPool(base)));
     });
 });
+
+// BUG-0052: what lives in the collaboration — pools, message flows, artifacts drawn
+// outside any pool — is compared like the process content.
+describe('BpmnXmlComparator collaboration changes', () => {
+    const collab = (xml, content) => xml.replace('<bpmn:process ',
+        `<bpmn:collaboration id="Collab_1"><bpmn:participant id="Pool_1" name="Pool" processRef="Process_camunda" />${content}</bpmn:collaboration><bpmn:process `);
+    const CRM = '<bpmn:participant id="Pool_CRM" name="CRM" />';
+    const flow = (attrs = '') => `<bpmn:messageFlow id="MFlow_1" ${attrs} sourceRef="Pool_CRM" targetRef="StartEvent_1" />`;
+
+    it('reports a renamed message flow as a changed row', () => {
+        const result = compare(collab(base, CRM + flow('name="Order"')), collab(base, CRM + flow()));
+        assert.deepEqual(Array.from(result.changedRowIds), ['MFlow_1']);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { MFlow_1: ['General'] });
+    });
+
+    it('reports an added message flow and an added black-box pool', () => {
+        const result = compare(collab(base, CRM + flow()), collab(base, ''));
+        assert.deepEqual(Array.from(result.missingShapeIds), ['Pool_CRM']);
+        assert.deepEqual(Array.from(result.missingRowIds), ['MFlow_1']);
+    });
+
+    it('reports a changed text annotation outside any pool', () => {
+        const note = (text) => `<bpmn:textAnnotation id="Note_1"><bpmn:text>${text}</bpmn:text></bpmn:textAnnotation>`;
+        const result = compare(collab(base, note('new')), collab(base, note('old')));
+        assert.deepEqual(Array.from(result.changedShapeIds), ['Note_1']);
+    });
+
+    it('reports a pool wrapped around an existing process as added, not changed', () => {
+        const changed = collab(variant('<bpmn:process id="Process_camunda" isExecutable="true">',
+            '<bpmn:process id="Process_camunda" isExecutable="true" camunda:historyTimeToLive="180">'), '');
+        const result = compare(changed, base);
+        assert.deepEqual(Array.from(result.missingShapeIds), ['Pool_1']);
+        assert.deepEqual(Array.from(result.changedShapeIds), []);
+        assert.deepEqual(Array.from(result.changedProcessIds), []);
+        assert.deepEqual(mapToObject(result.nodeIdToDiffsMap), { Pool_1: ['History cleanup'] });
+    });
+});

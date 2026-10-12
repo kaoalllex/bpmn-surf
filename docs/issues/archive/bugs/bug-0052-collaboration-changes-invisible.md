@@ -2,7 +2,7 @@
 id: BUG-0052
 title: Message flows, collaboration artifacts and added/removed pools are not diffed
 priority: medium
-status: open
+status: done
 ---
 
 ## Statement
@@ -28,3 +28,12 @@ added.
 
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
+
+### 2026-10-12 · claude-opus-5-5 · branch `fix/bug-0050-process-level-changes`
+
+`BpmnXmlComparator.compare` walks the `[id]` descendants of every `bpmn:collaboration`
+along with the main process, so pools, message flows and collaboration artifacts are
+changed/added/removed like any element. `#compareProcessLevel` now only puts the
+process's own changes on its pool (or `changedProcessIds`); a pool added around an
+existing process stays in `missingShapeIds` and only carries the process groups.
+Tests: comparator unit tests, a collaboration case in `differ-process-level.spec.js`.
