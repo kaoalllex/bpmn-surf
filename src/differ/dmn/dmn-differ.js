@@ -180,10 +180,13 @@ class DmnDiffer {
     async #showMr() {
         console.debug('showing mr dmn xml file...');
         const mrXml = requireDefined(this.#versions.mrXml, 'mrDmnXml');
-        await this.#showXml(mrXml);
+        const imported = await this.#showXml(mrXml);
         this.#view.setShownFile(this.#shownFileFor(false));
         this.#branchIndicator.setShownLabel(this.#params.sourceLabel);
 
+        if (!imported) {
+            return;
+        }
         if (this.#versions.branchXml && this.#hasDecisionTable()) {
             this.#highlightDiffs(mrXml, this.#versions.branchXml, DiffType.ADD);
         } else {
@@ -196,10 +199,13 @@ class DmnDiffer {
     async #showBranch() {
         console.debug('showing branch dmn xml file...');
         const branchXml = requireDefined(this.#versions.branchXml, 'branchDmnXml');
-        await this.#showXml(branchXml);
+        const imported = await this.#showXml(branchXml);
         this.#view.setShownFile(this.#shownFileFor(true));
         this.#branchIndicator.setShownLabel(this.#params.targetLabel);
 
+        if (!imported) {
+            return;
+        }
         if (this.#versions.mrXml && this.#hasDecisionTable()) {
             this.#highlightDiffs(branchXml, this.#versions.mrXml, DiffType.REMOVE);
         } else {
@@ -227,18 +233,21 @@ class DmnDiffer {
             // console.debug('dmn schema loaded succesfully', warnings);
         } catch (err) {
             console.error('dmn loading error', ConsoleLog.describeImportError(err));
-            return;
+            // A failed parse keeps the previous side's views: nothing here may be compared.
+            this.#view.showEmptyState('This file is not a valid diagram and cannot be shown.');
+            return false;
         }
         if (!this.#hasDecisionTable()) {
             // A DRD-only file (decisions without a table): the table viewport and
             // the comparator both need a table, so say so instead of hanging.
             console.debug('dmn file has no decision table');
             this.#view.showEmptyState('This file has no decision table to compare');
-            return;
+            return false;
         }
         this.#switchToViewTableMode();
         this.#viewport.fit();
         this.#viewport.scrollTop = scrollTop;
+        return true;
     }
 
     #hasDecisionTable() {
