@@ -124,7 +124,7 @@ describe('GitLabRepoProviderBase.getTargetFilePath', () => {
         };
         const provider = new scope.GitLabRepoProviderBase(load);
         await provider.init();
-        return { provider, calls };
+        return { provider, calls, scope };
     }
 
     it('returns the old path for a renamed file', async () => {
@@ -162,6 +162,19 @@ describe('GitLabRepoProviderBase.getTargetFilePath', () => {
         const provider = new scope.GitLabRepoProviderBase(load);
         await provider.init();
         assert.equal(await provider.getTargetFilePath('a/new.bpmn'), 'a/new.bpmn');
+    });
+
+    it('warns when GitLab cut the file list (overflow), still using what came back', async () => {
+        const { provider, scope } = await createInitialized({
+            overflow: true,
+            changes_count: '1000+',
+            changes: [{ old_path: 'a/old.bpmn', new_path: 'a/new.bpmn', renamed_file: true }]
+        });
+        const warnings = [];
+        scope.window.console.warn = (...args) => warnings.push(args.join(' '));
+        assert.equal(await provider.getTargetFilePath('a/new.bpmn'), 'a/old.bpmn');
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0], /MR !\d+ changes: GitLab cut the file list at 1 files \(changes_count 1000\+\)/);
     });
 
     it('fetches the changes endpoint only once (cached per url)', async () => {

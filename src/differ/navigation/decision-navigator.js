@@ -125,7 +125,7 @@ class DecisionNavigator {
             if (decisionParams) {
                 await this.#openDifferFunc(decisionParams.filePath, decisionParams.fileName);
             } else {
-                console.info('called decision file not found, opening GitLab search for: ' + decisionRef);
+                console.info('called decision file not found, opening the code search page for: ' + decisionRef);
                 this.#openUrlFunc(this.#locator.blobSearchPageUrl(decisionRef, ref));
             }
         } finally {

@@ -59,9 +59,10 @@ class GitLabPlatformClient extends PlatformClient {
     // unrelated files can fill the default page of 20 and push the exact match
     // the locators filter for onto a page that is never read.
     async searchCode(ref, term, options = {}) {
+        const perPage = options.perPage || GitLabPlatformClient.#SEARCH_PAGE_SIZE;
         const url = `${this.#projectHostUrl}/api/v4/projects/${this.#projectId}/search` +
             `?scope=blobs&ref=${encodeURIComponent(ref)}&search=${encodeURIComponent(term)}` +
-            `&per_page=${options.perPage || GitLabPlatformClient.#SEARCH_PAGE_SIZE}`;
+            `&per_page=${perPage}`;
         const content = await this.#load(url, false);
         if (!content) {
             console.debug(`blob search for '${term}' at ref '${ref}': no response`);
@@ -76,6 +77,12 @@ class GitLabPlatformClient extends PlatformClient {
         // is wrong" — an empty result otherwise looks the same either way, and
         // every locator above reports only that it found nothing.
         console.debug(`blob search for '${term}' at ref '${ref}': ${items.length} hit(s)`);
+        // A full page means more pages may exist and are never read: a "not found"
+        // or a wrong pick after this can be the match sitting on the next page.
+        if (items.length >= perPage) {
+            console.warn(`blob search for '${term}' at ref '${ref}': a full page of ${items.length} hits, ` +
+                'later pages are not read — the result may be incomplete');
+        }
         return items;
     }
 
@@ -119,6 +126,10 @@ class GitLabPlatformClient extends PlatformClient {
         }
         const response = JSON.parse(content);
         const changes = (response && response.changes) || [];
+        if (response && response.overflow) {
+            console.warn(`MR !${changeId} changes: GitLab cut the file list at ${changes.length} files` +
+                ` (changes_count ${response.changes_count}) — a changed handler beyond the cut gets no badge`);
+        }
         return changes.map(change => {
             if (change.new_file) {
                 return { path: change.new_path, oldPath: change.old_path, status: 'added' };

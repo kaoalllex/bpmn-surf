@@ -2,7 +2,7 @@
 id: INFRA-0010
 title: Warn on truncated API results and review whether the logs identify user problems
 priority: high
-status: partial
+status: done
 ---
 
 ## Statement
@@ -66,6 +66,21 @@ should be enough to identify the cause without a guessing round-trip. What is le
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-10-12 · claude-opus-5-5 · branch `fix/infra-0010-truncation-warnings`
+
+Items 1–3 done. `GitLabPlatformClient.searchCode` warns on a full page (term, ref, count);
+`GitLabPlatformClient#prChangedFiles` and `GitLabRepoProviderBase#loadRenameMap` warn on
+`overflow` with the iid, the returned count and `changes_count`. GitHub twin: the anonymous
+REST fallback in `GitHubPlatformClient#prChangedFilesFromApi` stops at three pages and now
+warns when it does; `#webSearch` logs why it got no answer (HTTP status, signed out, search
+errors, network error) instead of one guess for all. Log review: the differ page's silent
+`catch` blocks are deliberate UI no-ops (select/scroll/marker on elements that cannot take
+them), the locators already log their misses and fallbacks, and the new warnings are
+promoted into the feedback report by `ConsoleLog.tail`; the call-activity and decision
+fallback messages no longer say "GitLab search" (they run on GitHub too). Not covered: a
+truncated GitHub web-search page and a truncated PR-page payload — neither the page size
+nor a truncation flag is known for those payloads; add a warning once a real payload shows one.
 
 ### 2026-10-05 · claude-opus-5-5 · branch `release/v1.3.0`
 

@@ -109,14 +109,21 @@ class GitHubPlatformClient extends PlatformClient {
     async #webSearch(term) {
         const params = new URLSearchParams({ q: `repo:${this.#repoSlug} ${GitHubPlatformClient.#exact(term)}`, type: 'code' });
         let route = null;
+        let reason;
         try {
             const response = await this.#fetch(`${this.#hostUrl}/search?${params}`, { headers: { accept: 'application/json' } });
             route = response.ok ? ((await response.json()).payload || {}).blackbirdSearchRoute : null;
+            reason = response.ok ? 'no search payload' : `HTTP ${response.status}`;
         } catch (error) {
-            route = null;
+            reason = error.name; // a JSON parse message quotes the body
+        }
+        if (route && !route.logged_in) {
+            reason = 'signed out';
+        } else if (route && (route.errors || []).length) {
+            reason = `search errors: ${JSON.stringify(route.errors)}`;
         }
         if (!route || !route.logged_in || (route.errors || []).length) {
-            console.debug(`blob search for '${term}' on GitHub: no answer (signed out, rate limited or not indexed)`);
+            console.debug(`blob search for '${term}' on GitHub: no answer (${reason})`);
             return [];
         }
         const hits = (route.results || []).flatMap(result => (result.snippets || []).map(snippet => ({
@@ -172,6 +179,10 @@ class GitHubPlatformClient extends PlatformClient {
             files.push(...batch);
             if (batch.length < 100) {
                 break;
+            }
+            if (page === GitHubPlatformClient.#MAX_FILE_PAGES) {
+                console.warn(`bpmn-surf: PR #${changeId}: the file list is read up to ${files.length} files, ` +
+                    'later pages are not read — a changed handler beyond them gets no badge');
             }
         }
         return files.map(file => ({

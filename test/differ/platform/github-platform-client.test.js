@@ -27,7 +27,7 @@ function createClient(pages = {}, { searches = {}, platform = PLATFORM, change =
         if (answer instanceof Error) throw answer;
         return answer || new Response('<html>rate limited</html>', { status: 429 });
     };
-    return { client: new scope.GitHubPlatformClient(platform, load, { fetchFn, ...change }), calls, fetches };
+    return { client: new scope.GitHubPlatformClient(platform, load, { fetchFn, ...change }), calls, fetches, scope };
 }
 
 const filesUrl = (page) => `https://api.github.com/repos/acme/flows/pulls/7/files?per_page=100&page=${page}`;
@@ -120,6 +120,24 @@ describe('GitHubPlatformClient.prChangedFiles — REST fallback (anonymous, clas
         assert.deepEqual(calls, [CHANGES_URL, filesUrl(1), filesUrl(2), filesUrl(3)]);
     });
 
+    it('warns when the page cap leaves later pages unread', async () => {
+        const full = Array.from({ length: 100 }, (_, i) => ({ filename: `f${i}.kt`, status: 'modified' }));
+        const { client, scope } = createClient({ [filesUrl(1)]: full, [filesUrl(2)]: full, [filesUrl(3)]: full });
+        const warnings = [];
+        scope.window.console.warn = (...args) => warnings.push(args.join(' '));
+        await client.prChangedFiles(7);
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0], /PR #7: the file list is read up to 300 files/);
+    });
+
+    it('does not warn when the last page is short', async () => {
+        const { client, scope } = createClient({ [filesUrl(1)]: [{ filename: 'a.kt', status: 'modified' }] });
+        const warnings = [];
+        scope.window.console.warn = (...args) => warnings.push(args.join(' '));
+        await client.prChangedFiles(7);
+        assert.deepEqual(warnings, []);
+    });
+
     it('rejects when neither the page nor the anonymous API has the PR', async () => {
         const { client } = createClient({ [filesUrl(1)]: null });
         await assert.rejects(client.prChangedFiles(7), /not visible to the anonymous GitHub API/);
@@ -144,6 +162,28 @@ const PROCESS_HIT = {
 const Q = (term) => `repo:acme/flows "${term.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 
 describe('GitHubPlatformClient.searchCode (web search, no token)', () => {
+    it('says in the log why the search had no answer', async () => {
+        const { client, scope } = createClient({}, { searches: {
+            [Q('a')]: new Response('<html>rate limited</html>', { status: 429 }),
+            [Q('b')]: searchJson([], { logged_in: false }),
+            [Q('c')]: new TypeError('Failed to fetch'),
+            [Q('d')]: searchJson([], { errors: ['timeout'] }),
+            [Q('e')]: new Response('<html>not json</html>', { status: 200 })
+        } });
+        const debugs = [];
+        scope.window.console.debug = (...args) => debugs.push(args.join(' '));
+        for (const term of ['a', 'b', 'c', 'd', 'e']) {
+            await client.searchCode('main', term);
+        }
+        assert.deepEqual(debugs.filter(line => line.includes('no answer')), [
+            "blob search for 'a' on GitHub: no answer (HTTP 429)",
+            "blob search for 'b' on GitHub: no answer (signed out)",
+            "blob search for 'c' on GitHub: no answer (TypeError)",
+            "blob search for 'd' on GitHub: no answer (search errors: [\"timeout\"])",
+            "blob search for 'e' on GitHub: no answer (SyntaxError)"
+        ]);
+    });
+
     it('asks the search page for JSON with the exact term quoted and normalises each snippet', async () => {
         const term = 'process id="Payment"';
         const { client, fetches } = createClient({}, { searches: { [Q(term)]: searchJson([PROCESS_HIT]) } });
