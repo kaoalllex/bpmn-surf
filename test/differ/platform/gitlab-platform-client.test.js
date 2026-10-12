@@ -31,6 +31,19 @@ function withLoader(payload) {
     return { client: new GitLabPlatformClient(PLATFORM, load), calls };
 }
 
+// Runs `fn` with the scope's console.warn recorded, and returns the warnings.
+async function warningsOf(fn) {
+    const warnings = [];
+    const original = scope.window.console.warn;
+    scope.window.console.warn = (...args) => warnings.push(args.join(' '));
+    try {
+        await fn();
+    } finally {
+        scope.window.console.warn = original;
+    }
+    return warnings;
+}
+
 describe('GitLabPlatformClient URL builders', () => {
     const client = new GitLabPlatformClient(PLATFORM);
 
@@ -111,6 +124,18 @@ describe('GitLabPlatformClient.searchCode', () => {
         const { client } = withLoader(null);
         assert.deepEqual(plain(await client.searchCode('main', 'X')), []);
     });
+
+    it('warns when a full page may hide further hits', async () => {
+        const { client } = withLoader([{ path: 'a.kt', startline: 1, data: 'X' }, { path: 'b.kt', startline: 1, data: 'X' }]);
+        const warnings = await warningsOf(() => client.searchCode('main', 'X', { perPage: 2 }));
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0], /blob search for 'X' at ref 'main': a full page of 2 hits/);
+    });
+
+    it('does not warn below the page size', async () => {
+        const { client } = withLoader([{ path: 'a.kt', startline: 1, data: 'X' }]);
+        assert.deepEqual(await warningsOf(() => client.searchCode('main', 'X', { perPage: 2 })), []);
+    });
 });
 
 describe('GitLabPlatformClient.prChangedFiles', () => {
@@ -167,5 +192,19 @@ describe('GitLabPlatformClient.prChangedFiles', () => {
     it('returns [] when the response carries no changes key', async () => {
         const { client } = withLoader({});
         assert.deepEqual(plain(await client.prChangedFiles(2)), []);
+    });
+
+    it('warns when GitLab cut the file list (overflow)', async () => {
+        const { client } = withLoader({ overflow: true, changes_count: '1000+', changes: [
+            { old_path: 'a.kt', new_path: 'a.kt' }
+        ] });
+        const warnings = await warningsOf(() => client.prChangedFiles(2));
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0], /MR !2 changes: GitLab cut the file list at 1 files \(changes_count 1000\+\)/);
+    });
+
+    it('does not warn for a complete file list', async () => {
+        const { client } = withLoader({ overflow: false, changes_count: '1', changes: [{ old_path: 'a.kt', new_path: 'a.kt' }] });
+        assert.deepEqual(await warningsOf(() => client.prChangedFiles(2)), []);
     });
 });

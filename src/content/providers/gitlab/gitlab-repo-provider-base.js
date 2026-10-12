@@ -174,7 +174,12 @@ class GitLabRepoProviderBase extends RepoProvider {
             return this.#renameMaps.get(url);
         }
         const content = await this.loadContent(url, true);
-        const renameMap = GitLabRepoProviderBase.extractRenameMap(JSON.parse(content));
+        const response = JSON.parse(content);
+        if (response && response.overflow) {
+            console.warn(`MR !${iid} changes: GitLab cut the file list at ${(response.changes || []).length} files` +
+                ` (changes_count ${response.changes_count}) — a diagram renamed beyond the cut shows as added`);
+        }
+        const renameMap = GitLabRepoProviderBase.extractRenameMap(response);
         this.#renameMaps.set(url, renameMap);
         return renameMap;
     }

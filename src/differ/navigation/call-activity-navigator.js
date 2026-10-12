@@ -125,7 +125,7 @@ class CallActivityNavigator {
             if (processParams) {
                 await this.#openDifferFunc(processParams.filePath, processParams.fileName);
             } else {
-                console.info('called process file not found, opening GitLab search for: ' + processId);
+                console.info('called process file not found, opening the code search page for: ' + processId);
                 this.#openUrlFunc(this.#locator.blobSearchPageUrl(processId, ref));
             }
         } finally {
