@@ -123,9 +123,12 @@ describe('DifferTabNavigator cross-tab registry', () => {
 });
 
 describe('DifferTabNavigator#navigateOpenerTab', () => {
-    // Tabs as the differ sees them through window.opener: a differ tab is an
-    // about:blank page, the MR is the GitLab page that opened the first differ.
-    const tab = (href, opener = null) => ({ closed: false, name: '', location: { href }, opener });
+    // Tabs as the differ sees them through window.opener: a differ tab carries the
+    // registry name, the MR is the GitLab page that opened the first differ.
+    const tab = (href, opener = null, name = '') => ({ closed: false, name, location: { href }, opener });
+    const MR_URL = 'https://gitlab.example/p/-/merge_requests/1/diffs';
+    // openDiffer's document.open() gives a differ tab its opener's URL.
+    const differ = (opener) => tab(MR_URL, opener, 'gl-bpmn-diff-tab:p|a.bpmn');
 
     function navigateFrom(opener, url) {
         const scope = createScope();
@@ -150,14 +153,14 @@ describe('DifferTabNavigator#navigateOpenerTab', () => {
         // A differ opened by dive-in: navigating its opener would replace the
         // parent diagram with the GitLab page.
         const mr = tab('https://gitlab.example/p/-/merge_requests/1/diffs');
-        const parentDiffer = tab('about:blank', mr);
+        const parentDiffer = differ(mr);
         const { result, opened } = navigateFrom(parentDiffer, 'https://gitlab.example/p/-/merge_requests/1/diffs#abc');
         assert.equal(result, true);
         assert.equal(opened[0].named, mr);
     });
 
     it('declines when only differ tabs are left above (then a new tab opens)', () => {
-        const parentDiffer = tab('about:blank', null);
+        const parentDiffer = differ(null);
         const { result, opened } = navigateFrom(parentDiffer, 'https://gitlab.example/x');
         assert.equal(result, false);
         assert.equal(opened.length, 0);
