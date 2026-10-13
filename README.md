@@ -93,7 +93,7 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 - Diving from a Call Activity into the called process — and stepping back to the caller
 - A menu of every diagram that calls the one on screen
 - Navigating from a Business Rule Task to the called DMN — and back
-- Jumping to the handler code of a service task (external task, delegate or Camunda 8 job worker) — to its diff when the merge request changed it
+- Jumping to the handler code of a service task (external task, delegate or Camunda 8 job worker): to its file in the repository, or to its diff when the merge or pull request changed it
 - Jumping from a message-catching event/task to where its message is correlated in code
 
 ![Diving into a call activity, whose changed handler opens its diff in the merge request; diving further down; the menu of every diagram that calls this one; and a business rule task opening its DMN decision with the merge request's changes](docs/media/diagrams.gif)
