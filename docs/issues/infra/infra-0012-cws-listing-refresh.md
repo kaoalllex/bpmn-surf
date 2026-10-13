@@ -2,7 +2,7 @@
 id: INFRA-0012
 title: Refresh the Chrome Web Store listing with the next release
 priority: medium
-status: open
+status: in-progress
 ---
 
 ## Statement
@@ -53,3 +53,15 @@ the extension is reached on a GitLab page.
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-privacy-github`
+
+Item 4, the privacy policy: `PRIVACY.md` rewritten for GitHub and checked against the code —
+the same-origin GitHub requests (raw files redirected to `raw.githubusercontent.com`, the
+code search page, the PR page's file list), the anonymous REST fallback (`api.github.com` or
+`/api/v3`: no PR payload when signed out, or refs unreadable from the page), and the storage
+the old text missed (`siteKinds` in `settings`, `chrome.storage.local` `undetectedSites` and
+`gitlabComNotice`). Note for the store's Privacy tab: 1.4.0 drops the built-in gitlab.com
+content script of 1.3.0 (every site is optional now) — a reduction, so the update does not
+disable the extension, but the host-permission justification should no longer say gitlab.com
+is built in. Remaining: items 1–3 and `docs/media/popup.png`.
