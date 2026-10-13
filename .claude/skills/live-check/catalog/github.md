@@ -21,13 +21,13 @@ pick by kind if one moved.
 | sandbox `#4` (DMN), `camunda/camunda-bpm-examples#104` | the differ renders under GitHub's CSP, no `EvalError` in the console |
 | renames: sandbox `#7`, `camunda/camunda-modeler#6197` | both sides open |
 | `#16` (spaces and `#` in the path) | the file opens, both sides load |
-| merged `#2`, closed `#10` | the buttons and the diff work |
+| merged `#2`, closed `#10` | the buttons work; `#2`'s diff works; both sides of `#10` are truncated on purpose, so its differ says the file is not a valid diagram (BUG-0051) |
 | fork PR `camunda/camunda-bpm-examples#260` (no diagrams) | no buttons, no errors from us; a fork PR with a diagram is still to be found |
 | private `bpmn-surf-test-private#1` | signed in: buttons, differ and handler badges, no API request; anonymous: GitHub's own 404, nothing of ours |
 | a changed handler's badge | links to that file's diff in the PR (`#diff-<sha256>`) |
 | dive-in to a called process / decision on the default branch, an unchanged handler (signed in) | opens the file found through github.com's web search (`/search?…&type=code`, JSON), never GitLab's tree walk; no `api.github.com` request |
 | a handler added in the PR (not on the default branch) | found through the PR's own files read at the head, opens its raw file |
-| callers list | the files that call the diagram, default branch plus the PR's files |
+| callers list | the files that call the diagram, default branch plus the PR's files; anonymous: the PR's own callers, or "Couldn't check the calling diagrams." with a repository-search link — never "No diagram calls this one" |
 | dive-in miss, or anonymous / right after a burst of searches (429) | falls back to github.com code search (`searchPageUrl`); anonymous still finds what the PR's files contain |
 | commit and range views, signed in: `/pull/N/changes/<sha>`, `/changes/<a>..<b>`, and the picker switching between them by click | the button shows exactly the selection (labels `<headline> (<shortSha>)`, the base branch name for the PR base); after a picker switch the button is not stale |
 | classic anonymous: `/pull/N/commits/<sha>`, `/files/<a>..<b>` | the button diffs exactly the shown pair, with short-SHA labels; a REST-fallback page refuses a selection (no button) |

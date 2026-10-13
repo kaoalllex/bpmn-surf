@@ -68,7 +68,7 @@ class FeedbackReport {
             // does not carry a privacy notice nobody needs any more.
             '<!-- No diagram content is included. Everything above can still identify',
             '     your work: your host, the project path, branch names and commit ids,',
-            '     the merge request, file paths and links, and names from the diagram',
+            '     the merge or pull request, file paths and links, and names from the diagram',
             '     (process and element ids, topic and message names). Review it, and',
             '     edit or delete anything you would rather not share. -->'
         ].join('\n');
@@ -133,9 +133,10 @@ class FeedbackReport {
     }
 
     static #pageDescription(context) {
+        const [noun, sigil] = context.platformKind === 'github' ? ['pull request', '#'] : ['merge request', '!'];
         const page = context.changeRequestId
-            ? `merge request !${FeedbackReport.#cell(context.changeRequestId)}`
-            : 'branch view (no merge request)';
+            ? `${noun} ${sigil}${FeedbackReport.#cell(context.changeRequestId)}`
+            : `branch view (no ${noun})`;
         // An edit tab owns one side and its toolbar is a different one, so a report
         // that only said "merge request !123" would describe the wrong screen
         // (FEAT-0031 edit mode). View mode is the default and stays unannotated.

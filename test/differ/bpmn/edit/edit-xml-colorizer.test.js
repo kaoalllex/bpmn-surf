@@ -45,6 +45,22 @@ describe('EditXmlColorizer', () => {
         assert.doesNotMatch(out, /Task_1_di[^>]*background-color/);
     });
 
+    it('strokes a pool and a lane instead of filling them, as the canvas does', () => {
+        const pooled = XML
+            .replace('<bpmn:process id="Process_1" isExecutable="true">',
+                '<bpmn:collaboration id="C_1"><bpmn:participant id="Pool_1" processRef="Process_1" /></bpmn:collaboration>'
+                + '<bpmn:process id="Process_1" isExecutable="true"><bpmn:laneSet id="LS_1"><bpmn:lane id="Lane_1" /></bpmn:laneSet>')
+            .replace('<bpmndi:BPMNShape id="Task_1_di"',
+                '<bpmndi:BPMNShape id="Pool_1_di" bpmnElement="Pool_1" /><bpmndi:BPMNShape id="Lane_1_di" bpmnElement="Lane_1" />'
+                + '<bpmndi:BPMNShape id="Task_1_di"');
+        const out = EditXmlColorizer.apply(pooled, new Map([
+            ['Pool_1', entry(DiffType.CHANGE)], ['Lane_1', entry(DiffType.ADD)], ['Task_1', entry(DiffType.ADD)]]));
+        assert.match(out, /Pool_1_di[^>]*color:border-color="#0000aa"/);
+        assert.match(out, /Lane_1_di[^>]*color:border-color="#00aa00"/);
+        assert.doesNotMatch(out, /(Pool|Lane)_1_di[^>]*background-color/);
+        assert.match(out, /Task_1_di[^>]*color:background-color="#88ff88"/);
+    });
+
     it('declares both colour namespaces on the root', () => {
         // bpmn-js emits these declarations only when the MODEL carries such
         // attributes; we add them after the export, so we must declare them

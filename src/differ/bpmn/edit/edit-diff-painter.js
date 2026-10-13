@@ -45,6 +45,8 @@ class EditDiffPainter {
                 markers = [marker, EditDiffPainter.OUTLINE_MARKER];
             } else if (entry.strokeOnly) {
                 markers = [marker + EditDiffPainter.STROKE_MARKER_SUFFIX];
+            } else if (DiffType.STROKED_SHAPE_TYPES.includes(element.type)) {
+                markers = [marker + EditDiffPainter.STROKE_MARKER_SUFFIX, DiffType.STROKED_SHAPE_MARKER];
             }
             for (const each of markers) {
                 this.#addMarker(element, each);

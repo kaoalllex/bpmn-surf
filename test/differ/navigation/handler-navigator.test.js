@@ -108,6 +108,18 @@ describe('HandlerNavigator.refreshChangedBadges — labels (BUG-0016)', () => {
         assert.equal(overlays.added.length, 0);
     });
 
+    it('names the change in the platform\'s own term', () => {
+        const host = { id: 'Task', businessObject: bo({ attrs: { 'camunda:class': 'Foo' } }) };
+        const overlays = fakeOverlays();
+        const nav = new HandlerNavigator(overlays, fakeRegistry([host]), null, null, () => null, () => null,
+            () => null, () => false, undefined, 'PR');
+        nav.setChangedHandlers(new Map([['class:Foo', { filePath: 'a.kt', diffType: 'added' }]]));
+
+        nav.refreshChangedBadges();
+
+        assert.match(overlays.added[0].opts.html, /title="Handler added in this PR — open its diff"/);
+    });
+
     it('adds nothing when no handler is changed', () => {
         const host = { id: 'Task', businessObject: bo({ attrs: { 'camunda:class': 'Foo' } }) };
         const overlays = fakeOverlays();
@@ -134,9 +146,9 @@ describe('HandlerNavigator — listener badges (FEAT-0019)', () => {
     const shape = (id, businessObject, extra = {}) => ({ id, type: 'bpmn:Task', parent: ROOT, businessObject, ...extra });
     const changed = (...keys) => new Map(keys.map(key => [key, { filePath: `${key.slice(6)}.kt`, diffType: 'changed' }]));
 
-    function navigator(overlays, elements, { selected = null, locator = null, opened = [], navigated = [] } = {}) {
+    function navigator(overlays, elements, { selected = null, locator = null, opened = [], navigated = [], changeTerm } = {}) {
         return new HandlerNavigator(overlays, fakeRegistry(elements), locator, '7', () => selected, () => 'ref',
-            (url) => { opened.push(url); return null; }, (url) => { navigated.push(url); return true; });
+            (url) => { opened.push(url); return null; }, (url) => { navigated.push(url); return true; }, undefined, changeTerm);
     }
 
     const badgesOf = (overlay) => Array.from(overlay.opts.html.children);
@@ -187,6 +199,16 @@ describe('HandlerNavigator — listener badges (FEAT-0019)', () => {
         // Already permanent: selecting the element adds no second row.
         nav.showOverlayForSelectedElement();
         assert.equal(overlays.added.length, 1);
+    });
+
+    it('names the change in the platform\'s own term', () => {
+        const task = shape('Task', withListeners(listener('ExecutionListener', { event: 'start', class: 'AuditDelegate' })));
+        const overlays = fakeOverlays();
+        const nav = navigator(overlays, [task], { changeTerm: 'PR' });
+        nav.setChangedHandlers(changed('class:AuditDelegate'));
+
+        nav.refreshChangedBadges();
+        assert.deepEqual(titles(overlays.added[0]), ['Execution listener (start) changed in this PR — open its diff']);
     });
 
     it('shows the row only on selection when no listener is changed', () => {

@@ -120,9 +120,9 @@ describe('GitLabPlatformClient.searchCode', () => {
         ]);
     });
 
-    it('returns [] when the loader yields nothing', async () => {
+    it('rejects when the loader yields nothing', async () => {
         const { client } = withLoader(null);
-        assert.deepEqual(plain(await client.searchCode('main', 'X')), []);
+        await assert.rejects(client.searchCode('main', 'X'), /no response/);
     });
 
     it('warns when a full page may hide further hits', async () => {

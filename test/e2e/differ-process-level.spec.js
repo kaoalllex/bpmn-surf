@@ -89,6 +89,12 @@ test('a pool: the process changes and its own name are painted on the pool', asy
 test('Camunda 8: a changed version tag is painted on the pool', async ({ page }) => {
     const warnings = await boot(page, C8_ORDER_MAIN_BASE_BPMN, C8_ORDER_MAIN_CHANGED_BPMN);
 
+    // The pool takes a thick border, not the fill: the changed tasks inside must stay visible.
+    const poolRect = element(page, 'Participant_Order').locator('.djs-visual > rect').first();
+    await expect(poolRect).toHaveCSS('stroke', 'rgb(0, 0, 170)');
+    await expect(poolRect).toHaveCSS('stroke-width', '4px');
+    await expect(poolRect).not.toHaveCSS('fill', CHANGED);
+
     await element(page, 'Participant_Order').click({ force: true });
     await expect(groupHeader(page, 'General')).toHaveCSS('background-color', CHANGED);
 
@@ -110,6 +116,30 @@ test('edit mode: an edit of the process paints the root panel', async ({ page })
     await expect(groupHeader(page, 'History cleanup')).toHaveCSS('background-color', CHANGED, { timeout: 5000 });
     // The root has no shape: nothing on the canvas takes the diff colour
     await expect(page.locator('svg .djs-element[class*="edit-diff"]')).toHaveCount(0);
+});
+
+test('edit mode: the MR diff strokes the pool, as the view does', async ({ page }) => {
+    wireDiagnostics(page);
+    await bootBpmnDiffer(page, {
+        params: defaultBpmnParams({ mode: 'edit', editSide: 'source' }),
+        fixtures: { xmlByRef: { 'base-sha': C8_ORDER_MAIN_BASE_BPMN, 'mr-sha': C8_ORDER_MAIN_CHANGED_BPMN } }
+    });
+
+    const poolRect = element(page, 'Participant_Order').locator('.djs-visual > rect').first();
+    await expect(poolRect).toHaveCSS('stroke', 'rgb(0, 0, 170)', { timeout: 5000 });
+    await expect(poolRect).toHaveCSS('stroke-width', '4px');
+    await expect(poolRect).not.toHaveCSS('fill', CHANGED);
+
+    // The downloaded file looks the way the canvas does
+    const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.getByTitle('Download the edited .bpmn').click()
+    ]);
+    const chunks = [];
+    for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+    const xml = Buffer.concat(chunks).toString('utf8');
+    expect(xml).toMatch(/id="Participant_Order_di"[^>]*color:border-color="#0000aa"/);
+    expect(xml).not.toMatch(/id="Participant_Order_di"[^>]*background-color/);
 });
 
 // BUG-0052: the collaboration's own content — here a renamed message flow and a
