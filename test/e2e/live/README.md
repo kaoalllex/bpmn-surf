@@ -37,6 +37,9 @@ gitlab.com, so they are as available as it is.
 showcase**, not a test bed. Its links are published: the Chrome Web Store reviewer test
 instructions, the README GIF and the store/README screenshots all point at it or were
 recorded from it. The sandbox stays the mutable place for repros and new test material.
+`https://github.com/kaoalllex/bpmn-surf-demo` is its GitHub copy (same files and history,
+pull request #1 = merge request !1, a README worded for GitHub), linked from the README and
+frozen the same way.
 
 It holds a small Camunda 7 order service:
 - `OrderMain.bpmn`: a collapsed subprocess, a call activity into `Payment.bpmn`, and a

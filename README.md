@@ -4,11 +4,13 @@ Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas 
 
 ![A merge request in GitLab: Schema diff opens the diagram diff with added, changed and removed elements, the ☼ highlight, Switch branch and the changed property groups](docs/media/hero.gif)
 
-Try it on the public [demo merge request](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
-once the extension is [installed](#installation). The diffs, diving into called processes and a changed
+Try it on the public demo — a [merge request on GitLab](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
+or a [pull request on GitHub](https://github.com/kaoalllex/bpmn-surf-demo/pull/1) — once the extension is
+[installed](#installation). The diffs, diving into called processes and a changed
 handler's diff work signed out. Jumping to an unchanged handler's code, to message
-correlation and to a called decision, and listing the callers of a diagram, use GitLab code
-search, which on gitlab.com needs a signed-in account.
+correlation and to a called decision, and listing the callers of a diagram, use the
+platform's code search, which on gitlab.com and github.com needs a signed-in account; on
+GitHub, diving in signed out finds only the diagrams the pull request itself changes.
 
 ## Requirements
 
@@ -72,7 +74,7 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 - Visual diff of two BPMN/DMN versions in a merge request (MR branch vs. target branch), opened from a **Schema diff** / **Decision diff** button that appears on the MR page
 - Diff of a selected MR commit against its parent
 - Diff of a repository file against a local version (**Diff with local file…** in the menu of the **View schema** button)
-- Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified — with a ☼ toggle to turn it off
+- Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified — always on; the ☼ toggle also outlines every changed element, so a small one is not missed
 - Switching between the shown versions (the **Switch branch** button) — the target branch is shown by name, not by hash — and downloading either of them
 - A clear indication when a schema is absent in one of the versions
 - A list of the changes — elements and connections, with what changed in each; click an entry to jump to its element. The list follows the level on screen: a collapsed subprocess with changes inside is one entry, and the list inside it shows its own changes
@@ -91,7 +93,7 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 - Diving from a Call Activity into the called process — and stepping back to the caller
 - A menu of every diagram that calls the one on screen
 - Navigating from a Business Rule Task to the called DMN — and back
-- Jumping to the handler code of a service task (external task, delegate or Camunda 8 job worker) — to its diff when the merge request changed it
+- Jumping to the handler code of a service task (external task, delegate or Camunda 8 job worker): to its file in the repository, or to its diff when the merge or pull request changed it
 - Jumping from a message-catching event/task to where its message is correlated in code
 
 ![Diving into a call activity, whose changed handler opens its diff in the merge request; diving further down; the menu of every diagram that calls this one; and a business rule task opening its DMN decision with the merge request's changes](docs/media/diagrams.gif)
