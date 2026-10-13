@@ -129,6 +129,17 @@ test('edit mode: the MR diff strokes the pool, as the view does', async ({ page 
     await expect(poolRect).toHaveCSS('stroke', 'rgb(0, 0, 170)', { timeout: 5000 });
     await expect(poolRect).toHaveCSS('stroke-width', '4px');
     await expect(poolRect).not.toHaveCSS('fill', CHANGED);
+
+    // The downloaded file looks the way the canvas does
+    const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.getByTitle('Download the edited .bpmn').click()
+    ]);
+    const chunks = [];
+    for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+    const xml = Buffer.concat(chunks).toString('utf8');
+    expect(xml).toMatch(/id="Participant_Order_di"[^>]*color:border-color="#0000aa"/);
+    expect(xml).not.toMatch(/id="Participant_Order_di"[^>]*background-color/);
 });
 
 // BUG-0052: the collaboration's own content — here a renamed message flow and a

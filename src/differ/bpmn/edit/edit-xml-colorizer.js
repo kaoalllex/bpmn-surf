@@ -13,15 +13,12 @@
 class EditXmlColorizer {
     static COLOR_NS = 'http://www.omg.org/spec/BPMN/non-normative/color/1.0';
     static BIOC_NS = 'http://bpmn.io/schema/bpmn/biocolor/1.0';
+    static #BPMN_NS = 'http://www.omg.org/spec/BPMN/20100524/MODEL';
 
     // xml: the string from saveXML(); colorById: the EditColorResolver map.
     // Entries flagged outlineOnly are skipped: that element already carries its
     // own colour in the model and it must win (it only gets a dashed outline on
     // screen, which is a screen-only affordance).
-    static #isStrokedShape(node) {
-        return Boolean(node) && DiffType.STROKED_SHAPE_TYPES.some(type => type.toLowerCase() === `bpmn:${node.localName.toLowerCase()}`);
-    }
-
     static apply(xml, colorById) {
         if (!colorById || colorById.size === 0) {
             return xml;
@@ -35,14 +32,16 @@ class EditXmlColorizer {
             ...doc.getElementsByTagName('bpmndi:BPMNShape'),
             ...doc.getElementsByTagName('bpmndi:BPMNEdge')
         ];
+        // The XML elements of DiffType.STROKED_SHAPE_TYPES: pools and lanes.
+        const strokedIds = new Set(['participant', 'lane'].flatMap(name =>
+            Array.from(doc.getElementsByTagNameNS(EditXmlColorizer.#BPMN_NS, name), node => node.getAttribute('id'))));
         for (const di of diElements) {
             const entry = colorById.get(di.getAttribute('bpmnElement'));
             if (!entry || entry.outlineOnly) {
                 continue;
             }
             // A subprocess that only contains a change, a pool and a lane take the stroke, as on screen.
-            if (di.tagName === 'bpmndi:BPMNEdge' || entry.strokeOnly
-                || EditXmlColorizer.#isStrokedShape(doc.getElementById(di.getAttribute('bpmnElement')))) {
+            if (di.tagName === 'bpmndi:BPMNEdge' || entry.strokeOnly || strokedIds.has(di.getAttribute('bpmnElement'))) {
                 di.setAttribute('color:border-color', entry.diffType.rowColor);
                 di.setAttribute('bioc:stroke', entry.diffType.rowColor);
             } else {
