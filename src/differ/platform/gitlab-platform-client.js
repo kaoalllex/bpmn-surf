@@ -65,8 +65,7 @@ class GitLabPlatformClient extends PlatformClient {
             `&per_page=${perPage}`;
         const content = await this.#load(url, false);
         if (!content) {
-            console.debug(`blob search for '${term}' at ref '${ref}': no response`);
-            return [];
+            throw new Error(`blob search for '${term}' at ref '${ref}': no response`);
         }
         const items = JSON.parse(content).map(item => ({
             path: item.path,

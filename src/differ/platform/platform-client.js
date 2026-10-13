@@ -33,6 +33,7 @@ class PlatformClient {
     /**
      * Searches the project's code for a term at a ref and returns normalised
      * hits. One page of the platform's maximum size unless `options.perPage` asks otherwise.
+     * Rejects when the search gives no answer, so callers can tell it from no hits.
      * @returns {Promise<Array<{path: string, line: number, snippet: string}>>}
      */
     async searchCode(ref, term, options = {}) {

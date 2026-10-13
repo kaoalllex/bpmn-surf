@@ -162,20 +162,19 @@ const PROCESS_HIT = {
 const Q = (term) => `repo:acme/flows "${term.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 
 describe('GitHubPlatformClient.searchCode (web search, no token)', () => {
-    it('says in the log why the search had no answer', async () => {
-        const { client, scope } = createClient({}, { searches: {
+    it('says in the rejection why the search had no answer', async () => {
+        const { client } = createClient({}, { searches: {
             [Q('a')]: new Response('<html>rate limited</html>', { status: 429 }),
             [Q('b')]: searchJson([], { logged_in: false }),
             [Q('c')]: new TypeError('Failed to fetch'),
             [Q('d')]: searchJson([], { errors: ['timeout'] }),
             [Q('e')]: new Response('<html>not json</html>', { status: 200 })
         } });
-        const debugs = [];
-        scope.window.console.debug = (...args) => debugs.push(args.join(' '));
+        const reasons = [];
         for (const term of ['a', 'b', 'c', 'd', 'e']) {
-            await client.searchCode('main', term);
+            await client.searchCode('main', term).catch(error => reasons.push(error.message));
         }
-        assert.deepEqual(debugs.filter(line => line.includes('no answer')), [
+        assert.deepEqual(reasons, [
             "blob search for 'a' on GitHub: no answer (HTTP 429)",
             "blob search for 'b' on GitHub: no answer (signed out)",
             "blob search for 'c' on GitHub: no answer (TypeError)",
@@ -212,9 +211,9 @@ describe('GitHubPlatformClient.searchCode (web search, no token)', () => {
         ['a signed-out answer', searchJson([PROCESS_HIT], { logged_in: false })],
         ['a repository still being indexed', searchJson([], { errors: [{ type: 'ERROR_TYPE_MISSING_INACCESSIBLE_REPO_ORG' }] })]
     ]) {
-        it(`resolves to no hits — never rejects — on ${name}`, async () => {
+        it(`rejects — never claims no hits — on ${name}`, async () => {
             const { client } = createClient({}, { searches: { [Q('Payment')]: answer } });
-            assert.deepEqual(JSON.parse(JSON.stringify(await client.searchCode('r', 'Payment'))), []);
+            await assert.rejects(client.searchCode('r', 'Payment'), /no answer/);
         });
     }
 

@@ -52,14 +52,19 @@ class GitHubPlatformClient extends PlatformClient {
 
     // The default-branch index cannot know what the PR itself adds or edits, so
     // the files the PR changes are read at the PR head and searched here; web
-    // hits on those paths are stale and dropped.
+    // hits on those paths are stale and dropped. A web search with no answer
+    // still yields the PR's own hits; with none of those either it rejects, so
+    // "nothing matches" is never claimed from a search that did not run.
     async searchCode(ref, term) {
-        const [web, pr] = await Promise.all([this.#webSearch(term), this.#prSide(ref)]);
-        if (!pr) {
-            return web;
+        const [web, { value: pr }] = await Promise.allSettled([this.#webSearch(term), this.#prSide(ref)]);
+        const own = pr ? pr.files.flatMap(({ path, text }) => GitHubPlatformClient.#grep(path, text, term)) : [];
+        if (web.status === 'rejected') {
+            if (own.length === 0) {
+                throw web.reason;
+            }
+            return own;
         }
-        const own = pr.files.flatMap(({ path, text }) => GitHubPlatformClient.#grep(path, text, term));
-        return [...own, ...web.filter(hit => !pr.changedPaths.has(hit.path))];
+        return pr ? [...own, ...web.value.filter(hit => !pr.changedPaths.has(hit.path))] : web.value;
     }
 
     #prSide(ref) {
@@ -105,7 +110,8 @@ class GitHubPlatformClient extends PlatformClient {
 
     // GitHub's code search page answers JSON to a same-origin request that asks
     // for it: no token, the session cookie decides what is visible. Signed out it
-    // finds nothing; it indexes the default branch only, so the ref is not sent.
+    // answers nothing, which rejects like a 429; it indexes the default branch
+    // only, so the ref is not sent.
     async #webSearch(term) {
         const params = new URLSearchParams({ q: `repo:${this.#repoSlug} ${GitHubPlatformClient.#exact(term)}`, type: 'code' });
         let route = null;
@@ -123,8 +129,7 @@ class GitHubPlatformClient extends PlatformClient {
             reason = `search errors: ${JSON.stringify(route.errors)}`;
         }
         if (!route || !route.logged_in || (route.errors || []).length) {
-            console.debug(`blob search for '${term}' on GitHub: no answer (${reason})`);
-            return [];
+            throw new Error(`blob search for '${term}' on GitHub: no answer (${reason})`);
         }
         const hits = (route.results || []).flatMap(result => (result.snippets || []).map(snippet => ({
             path: result.path,
