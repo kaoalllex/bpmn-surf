@@ -243,8 +243,9 @@ class DifferTabNavigator {
 
     // The nearest ancestor tab that is not a differ. A differ reached by dive-in
     // was opened by another differ, and navigating that one would replace the
-    // parent diagram with the GitLab page (BUG-0047). Differ tabs are the
-    // about:blank pages openDiffer creates.
+    // parent diagram with the GitLab page (BUG-0047). A differ tab is told by the
+    // registry name every differ takes, not by its URL: openDiffer's
+    // document.open() gives the about:blank tab the URL of the page that opened it.
     static #originTab() {
         let tab = window.opener;
         while (tab && !tab.closed && DifferTabNavigator.#isDifferTab(tab)) {
@@ -255,7 +256,7 @@ class DifferTabNavigator {
 
     static #isDifferTab(tab) {
         try {
-            return tab.location.href === 'about:blank';
+            return tab.name.startsWith(DifferTabNavigator.TAB_NAME_PREFIX);
         } catch (error) {
             return false; // a cross-origin page is not one of ours
         }

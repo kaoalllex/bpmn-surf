@@ -2,7 +2,7 @@
 id: INFRA-0013
 title: record-demo.mjs — the "diagrams" tour times out on the changed-handler step
 priority: low
-status: open
+status: done
 ---
 
 ## Statement
@@ -26,3 +26,16 @@ release smoke's step 5 (`live-check` skill).
 
 <!-- Each AI session on the task — a separate entry by the template in docs/issues/README.md.
      Add new entries on top (freshest first). -->
+
+### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0013-record-demo-handler-wait`
+
+Not the script: an extension regression, unreleased (since `d533870`, FEAT-0038, after
+1.3.0). That change made `openDiffer` rewrite the new tab with `document.open()`, which by
+the HTML spec gives the about:blank tab the URL of the page that opened it. So
+`DifferTabNavigator#isDifferTab` (`location.href === 'about:blank'`) no longer recognised a
+parent differ, and a changed-handler badge in a dived-into differ navigated the parent
+diagram's tab to the MR file instead of the MR tab (BUG-0047 again); the MR tab's URL never
+changed, hence the timeout. Fix: a differ tab is recognised by the registry name every differ
+takes (`TAB_NAME_PREFIX`); the unit test's parent differ now carries the MR URL as it does
+live. Live: `record-demo.mjs 1 … --no-video --clip diagrams,code` → both OK; `npm test`
+and the handler/listener badge e2e specs green. `record-demo.mjs` itself is unchanged.
