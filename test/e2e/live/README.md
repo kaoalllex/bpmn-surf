@@ -70,8 +70,9 @@ media (`record-demo.mjs`) and re-checking the reviewer instructions signed out
 (`BPMN_SURF_ANONYMOUS=1`).
 
 After a re-recording, copy the GIFs into `docs/media/` under the same names. The README's
-`popup.png` is the Sites and annotations screens of `popup-screens.mjs`, cropped and set side
-by side. The five 1280×800 screenshots are the store's. Store assets, including the promo
+`popup.png` is the Sites and annotations screens of the popup (as `popup-screens.mjs` renders
+them, with github.com, gitlab.com and a self-managed host granted and the default
+annotations), cropped to 380×560 and set side by side. The five 1280×800 screenshots are the store's. Store assets, including the promo
 tile and its own small diagram, are kept with the owner's store notes, not in this repository.
 
 The project access token (`~/.config/bpmn-surf-demo-token`, Maintainer, scope `api`) is

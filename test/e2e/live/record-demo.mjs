@@ -532,13 +532,14 @@ async function tap(page, locator) {
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 async function screenshots() {
-    const { diff } = await openDiff();
+    const { mr, diff } = await openDiff();
     await tap(diff, element(diff, 'ValidateOrder'));
     await pause(1500);
     await shot(diff, '1-bpmn-diff.png');
-    await tap(diff, element(diff, 'Flow_yes'));
-    await pause(1500);
-    await shot(diff, '2-condition.png');
+    await mr.bringToFront();                                  // where it starts: the button on the MR's diagram file
+    await pause(800);
+    await shot(mr, '2-buttons.png');
+    await diff.bringToFront();
     await tap(diff, element(diff, 'Payment'));
     await pause(800);
     const paymentOpened = toNewTab()();

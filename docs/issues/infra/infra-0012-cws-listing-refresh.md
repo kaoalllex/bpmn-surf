@@ -54,6 +54,14 @@ the extension is reached on a GitLab page.
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
 
+### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`
+
+Items 1–3 and the popup picture: the name and summary in `manifest.json`, the store texts in
+the local `CWS-bpmn-surf.md`. Screenshots (item 3): `record-demo.mjs` shoots `2-buttons.png` (the MR page with the
+"Schema diff" button) in place of `2-condition.png`. `docs/media/popup.png` retaken (three
+sites, default annotations); the README gains the listener-badge line FEAT-0019 left out.
+Remaining: re-record the screenshots, then the owner uploads texts and screenshots.
+
 ### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-privacy-github`
 
 Item 4, the privacy policy: `PRIVACY.md` rewritten for GitHub and checked against the code —
