@@ -18,6 +18,10 @@ class EditXmlColorizer {
     // Entries flagged outlineOnly are skipped: that element already carries its
     // own colour in the model and it must win (it only gets a dashed outline on
     // screen, which is a screen-only affordance).
+    static #isStrokedShape(node) {
+        return Boolean(node) && DiffType.STROKED_SHAPE_TYPES.some(type => type.toLowerCase() === `bpmn:${node.localName.toLowerCase()}`);
+    }
+
     static apply(xml, colorById) {
         if (!colorById || colorById.size === 0) {
             return xml;
@@ -36,8 +40,9 @@ class EditXmlColorizer {
             if (!entry || entry.outlineOnly) {
                 continue;
             }
-            // A subprocess that only contains a change takes the stroke, as on screen.
-            if (di.tagName === 'bpmndi:BPMNEdge' || entry.strokeOnly) {
+            // A subprocess that only contains a change, a pool and a lane take the stroke, as on screen.
+            if (di.tagName === 'bpmndi:BPMNEdge' || entry.strokeOnly
+                || EditXmlColorizer.#isStrokedShape(doc.getElementById(di.getAttribute('bpmnElement')))) {
                 di.setAttribute('color:border-color', entry.diffType.rowColor);
                 di.setAttribute('bioc:stroke', entry.diffType.rowColor);
             } else {

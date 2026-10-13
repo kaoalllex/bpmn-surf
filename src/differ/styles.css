@@ -731,6 +731,23 @@ th {
 .djs-shape.edit-diff-changed-stroke .djs-visual text {
     fill: #0000aa !important;
 }
+/* A pool or lane (DiffType.STROKED_SHAPE_TYPES) takes any diff colour as its stroke. */
+.djs-shape.edit-diff-added-stroke .djs-visual > :first-child {
+    stroke: #00aa00 !important;
+}
+.djs-shape.edit-diff-added-stroke .djs-visual text {
+    fill: #00aa00 !important;
+}
+.djs-shape.edit-diff-removed-stroke .djs-visual > :first-child {
+    stroke: #aa0000 !important;
+}
+.djs-shape.edit-diff-removed-stroke .djs-visual text {
+    fill: #aa0000 !important;
+}
+/* Both modes: a pool's or lane's diff border is thick enough to read at a glance. */
+.djs-shape.diff-stroked-shape .djs-visual > :first-child {
+    stroke-width: 4px !important;
+}
 
 .djs-element.edit-diff-outline .djs-outline {
     visibility: visible;

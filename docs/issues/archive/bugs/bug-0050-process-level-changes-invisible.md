@@ -36,6 +36,16 @@ collaboration, outside the process, and are not compared either).
 <!-- Each AI session on the task is a separate entry following the template below.
      Add new entries on top (most recent first). -->
 
+### 2026-10-13 · claude-opus-5-5 · branch `fix/live-smoke-1.4.0`
+
+The 1.4.0 release smoke (sandbox MR !18, C8 `OrderMain.bpmn`): a process-level change
+filled the whole pool with the "changed" colour, so the changed tasks inside it (the same
+colour) disappeared into it. Pools and lanes (`DiffType.STROKED_SHAPE_TYPES`) now take the
+diff's row colour as a 4px border instead of the fill, in every colour layer: the view
+(`DiffHighlighter#paint`), the edit-mode markers (`EditDiffPainter`, new `*-stroke` CSS for
+added/removed) and the downloaded XML (`EditXmlColorizer`). Tests: painter and colorizer
+unit tests, `differ-process-level.spec.js` (view and edit mode).
+
 ### 2026-10-12 · claude-opus-5-5 · branch `fix/bug-0050-process-level-changes`
 
 `BpmnXmlComparator#compareProcessLevel` compares the main process's own attributes,

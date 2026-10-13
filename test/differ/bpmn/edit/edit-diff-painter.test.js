@@ -48,6 +48,18 @@ describe('EditDiffPainter', () => {
         assert.deepEqual([...canvas.markers.get('Sub')], ['edit-diff-changed-stroke']);
     });
 
+    it('strokes a pool or lane in any diff colour, with the thick-border marker', () => {
+        const canvas = fakeCanvas();
+        const types = { Pool: 'bpmn:Participant', Lane: 'bpmn:Lane' };
+        const painter = new EditDiffPainter(canvas, { get: (id) => ({ id, type: types[id] }) });
+        painter.paint(EditColorResolver.resolve([
+            { ids: ['Pool'], diffType: DiffType.CHANGE },
+            { ids: ['Lane'], diffType: DiffType.REMOVE }
+        ]));
+        assert.deepEqual([...canvas.markers.get('Pool')], ['edit-diff-changed-stroke', 'diff-stroked-shape']);
+        assert.deepEqual([...canvas.markers.get('Lane')], ['edit-diff-removed-stroke', 'diff-stroked-shape']);
+    });
+
     it('adds the outline modifier for an explicitly coloured element', () => {
         const canvas = fakeCanvas();
         const painter = new EditDiffPainter(canvas, fakeRegistry(['A']));

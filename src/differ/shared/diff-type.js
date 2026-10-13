@@ -15,4 +15,8 @@ class DiffType {
         shapeColor: '#ff8888',
         rowColor: '#aa0000'
     }
+    // BPMN pools and lanes take the row colour as a thick border (the marker, see
+    // styles.css) instead of the fill, which would bury the changes inside them.
+    static STROKED_SHAPE_TYPES = ['bpmn:Participant', 'bpmn:Lane'];
+    static STROKED_SHAPE_MARKER = 'diff-stroked-shape';
 }

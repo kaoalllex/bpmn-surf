@@ -33,10 +33,12 @@ class DiffHighlighter {
     }
 
     paint(diffType, shapeIdList, rowIdList) {
+        const strokedShapes = [];
         if (shapeIdList.length > 0) {
-            const shapes = shapeIdList
-                .map(id => this.#elementRegistry.get(id))
-                .filter(item => item);
+            const shapes = [];
+            for (const shape of shapeIdList.map(id => this.#elementRegistry.get(id)).filter(item => item)) {
+                (DiffType.STROKED_SHAPE_TYPES.includes(shape.type) ? strokedShapes : shapes).push(shape);
+            }
             this.#modeling.setColor(shapes, { fill: diffType.shapeColor });
 
             // Paint the TextAnnotation elements because setColor() does not work for them
@@ -56,12 +58,13 @@ class DiffHighlighter {
                 }
             }
         }
-        if (rowIdList.length > 0) {
+        if (rowIdList.length > 0 || strokedShapes.length > 0) {
             const rows = rowIdList
                 .map(id => this.#elementRegistry.get(id))
                 .filter(item => item);
-            this.#modeling.setColor(rows, { stroke: diffType.rowColor });
+            this.#modeling.setColor([...rows, ...strokedShapes], { stroke: diffType.rowColor });
         }
+        strokedShapes.forEach(shape => this.addMarker(shape, DiffType.STROKED_SHAPE_MARKER));
     }
 
     setEnabled(enabled) {
