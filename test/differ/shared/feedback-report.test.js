@@ -48,6 +48,12 @@ describe('FeedbackReport.buildBody', () => {
         assert.ok(out.includes('branch view (no merge request)'), out);
     });
 
+    it('names a GitHub pull request in GitHub\'s terms', () => {
+        const github = { ...context, platformKind: 'github' };
+        assert.ok(FeedbackReport.buildBody(github, emptyLog).includes('pull request #123'));
+        assert.ok(FeedbackReport.buildBody({ ...github, changeRequestId: undefined }, emptyLog).includes('branch view (no pull request)'));
+    });
+
     it('names the edit mode and the side being edited (FEAT-0031)', () => {
         const out = FeedbackReport.buildBody({ ...context, editSide: 'target' }, emptyLog);
         assert.ok(out.includes('merge request !123 — **edit mode**, editing the target side'), out);
@@ -129,7 +135,7 @@ describe('FeedbackReport.buildBody', () => {
         assert.ok(body.includes('<!-- No diagram content is included.'), body);
         // It must name what is really there, not a comfortable subset.
         for (const named of ['your host', 'branch names and commit ids',
-            'the merge request', 'file paths and links', 'process and element ids']) {
+            'the merge or pull request', 'file paths and links', 'process and element ids']) {
             assert.ok(body.includes(named), `the notice does not mention ${named}`);
         }
         assert.ok(body.trimEnd().endsWith('-->'), body);

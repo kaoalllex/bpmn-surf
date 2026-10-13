@@ -29,13 +29,6 @@
 //   its middle. A pool shows its process's listeners; a process without a pool
 //   has no shape, so its top-level start events carry them.
 class HandlerNavigator {
-    // Tooltip per change kind; absence (selection badge) falls back to a neutral one.
-    static #BADGE_TITLES = {
-        added: 'Handler added in this MR — open its diff',
-        changed: 'Handler changed in this MR — open its diff',
-        removed: 'Handler removed in this MR — open its diff'
-    };
-
     #overlays;
     #elementRegistry;
     #locator;
@@ -45,6 +38,7 @@ class HandlerNavigator {
     #openUrlFunc;
     #navigateOpenerFunc;
     #getDialectFunc;
+    #changeTerm;
 
     // Map "key -> {filePath, diffType}" of handlers touched in this MR
     // (key = topic:<topic> or class:<Name>); diffType is
@@ -54,7 +48,7 @@ class HandlerNavigator {
     #selectionOverlayIds = [];
 
     constructor(overlays, elementRegistry, locator, mrIid, getSelectedElementIdFunc, getCurrentRefFunc, openUrlFunc, navigateOpenerFunc,
-        getDialectFunc = () => CAMUNDA_DIALECT.C7) {
+        getDialectFunc = () => CAMUNDA_DIALECT.C7, changeTerm = 'MR') {
         this.#overlays = overlays;
         this.#elementRegistry = elementRegistry;
         this.#locator = locator;
@@ -64,6 +58,7 @@ class HandlerNavigator {
         this.#openUrlFunc = openUrlFunc;
         this.#navigateOpenerFunc = navigateOpenerFunc;
         this.#getDialectFunc = getDialectFunc;
+        this.#changeTerm = changeTerm;
     }
 
     setChangedHandlers(changedHandlers) {
@@ -170,7 +165,7 @@ class HandlerNavigator {
             const badge = document.createElement('div');
             badge.className = 'handler-link handler-link-listener' + (diffType ? ` handler-link-${diffType}` : '');
             badge.title = capitalizeFirstLetter(labels.join(', '))
-                + (diffType ? ` ${diffType} in this MR — open its diff` : ' — open the handler code');
+                + (diffType ? ` ${diffType} in this ${this.#changeTerm} — open its diff` : ' — open the handler code');
             badge.textContent = 'ℓ</>';
             badge.addEventListener('click', () => this.#onOpenCode(key));
             row.appendChild(badge);
@@ -183,7 +178,7 @@ class HandlerNavigator {
 
     #addBadge(elementId, key, diffType) {
         const cssClass = diffType ? `handler-link handler-link-${diffType}` : 'handler-link';
-        const title = HandlerNavigator.#BADGE_TITLES[diffType] || 'Open the handler code';
+        const title = diffType ? `Handler ${diffType} in this ${this.#changeTerm} — open its diff` : 'Open the handler code';
 
         const overlayId = this.#overlays.add(elementId, 'note', {
             position: { bottom: 0, right: 0 },
