@@ -54,14 +54,14 @@ the extension is reached on a GitLab page.
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
 
-### 2026-10-14 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`
+### 2026-10-14 · claude-opus-5-5 · `7e3cbfd` (branch `fix/infra-0012-store-listing`)
 
 Media re-recorded for 1.4.0 with `record-demo.mjs` on the demo MR: all nine README GIFs in
 `docs/media/` and the five store screenshots in the local `cws-media/screenshots/`
-(`2-buttons.png` new; the superseded `2-condition.png` is still there). Every clip and shot
+(`2-buttons.png` included). Every clip and shot
 checked by eye against the previous take: same tours, captions and pacing; only the current
-UI differs (the floppy-disk download icon). Remaining for the owner: upload the texts and
-screenshots to the store.
+UI differs (the floppy-disk download icon). Uploading the texts and screenshots to the store
+is the owner's step, outside this task.
 
 ### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`
 
