@@ -62,8 +62,9 @@ clip checked by eye against the previous take: same tours, captions and pacing; 
 current UI differs (the floppy-disk download icon). The store shots were reworked so each
 one points at its subject: `2-buttons.png` stacks the GitHub PR and the GitLab MR with the
 button ringed, `1-bpmn-diff.png` collapses the unchanged Implementation group,
-`3-callers.png` rings the callers menu, and `4-dmn-diff.png` stacks the changed table over
-the original one. Uploading the texts and screenshots to the store is the owner's step,
+`3-callers.png` rings the callers menu, `4-dmn-diff.png` stacks the changed table over the
+original one, and `5-edit-mode.png` shows the whole diagram with the added task's context pad
+and the toolbar's editing groups ringed. Uploading the texts and screenshots to the store is the owner's step,
 outside this task.
 
 ### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`

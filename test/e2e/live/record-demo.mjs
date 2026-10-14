@@ -476,14 +476,6 @@ const CLIPS = {
         await pause(400);
         await click(edit, button(edit, 'Colour the selection orange'));
         await pause(1300);
-        if (shotsWanted) {
-            onScreen(null);                                    // the screenshot is not part of the clip
-            await edit.mouse.click(SIZE.width / 3, SIZE.height - 60);
-            await pause(800);
-            await shot(edit, '5-edit-mode.png');
-            await cursor(edit);
-            onScreen(edit);
-        }
         // The download carries the diff colours only while they are on; off, it
         // holds just the edits and the pool's own colour, which the local-diff
         // clip then compares cleanly.
@@ -493,6 +485,18 @@ const CLIPS = {
         await click(edit, button(edit, 'Download the edited .bpmn'));
         await (await download).saveAs(EDITED);
         await pause(1200);
+        if (shotsWanted) {
+            onScreen(null);                                    // the screenshot is not part of the clip
+            await click(edit, button(edit, 'Colour the edits — off'));   // back on, after the download
+            await click(edit, button(edit, 'Fit view'));
+            await click(edit, button(edit, 'Zoom out'));      // the whole diagram clear of the palette
+            await pause(600);
+            // Mid-edit: the added task's context pad, and the toolbar's editing groups.
+            await tap(edit, edit.locator('svg .djs-element.djs-shape', { hasText: 'Refund the payment' }).first());
+            await pad('replace').waitFor();
+            await frame(edit, edit.locator('.differ-coloring-btn').locator('..'), button(edit, 'Undo (Ctrl+Z)').locator('..'));
+            await shot(edit, '5-edit-mode.png');
+        }
         await finishClip('edit', 800);
     },
 
@@ -534,8 +538,10 @@ async function tap(page, locator) {
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 // An orange ring around what a shot is about, drawn into the page.
-async function frame(page, locator) {
-    const { x, y, width: w, height: h } = await locator.boundingBox();
+async function frame(page, ...locators) {
+    const boxes = await Promise.all(locators.map(l => l.boundingBox()));
+    const x = Math.min(...boxes.map(b => b.x)), y = Math.min(...boxes.map(b => b.y));
+    const w = Math.max(...boxes.map(b => b.x + b.width)) - x, h = Math.max(...boxes.map(b => b.y + b.height)) - y;
     await page.evaluate(({ x, y, w, h }) => {
         const ring = document.createElement('div');
         ring.className = 'demo-frame';
