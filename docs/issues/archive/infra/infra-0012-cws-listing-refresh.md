@@ -57,11 +57,14 @@ the extension is reached on a GitLab page.
 ### 2026-10-14 · claude-opus-5-5 · `7e3cbfd` (branch `fix/infra-0012-store-listing`)
 
 Media re-recorded for 1.4.0 with `record-demo.mjs` on the demo MR: all nine README GIFs in
-`docs/media/` and the five store screenshots in the local `cws-media/screenshots/`
-(`2-buttons.png` included). Every clip and shot
-checked by eye against the previous take: same tours, captions and pacing; only the current
-UI differs (the floppy-disk download icon). Uploading the texts and screenshots to the store
-is the owner's step, outside this task.
+`docs/media/` and the five store screenshots in the local `cws-media/screenshots/`. Every
+clip checked by eye against the previous take: same tours, captions and pacing; only the
+current UI differs (the floppy-disk download icon). The store shots were reworked so each
+one points at its subject: `2-buttons.png` stacks the GitHub PR and the GitLab MR with the
+button ringed, `1-bpmn-diff.png` collapses the unchanged Implementation group,
+`3-callers.png` rings the callers menu, and `4-dmn-diff.png` stacks the changed table over
+the original one. Uploading the texts and screenshots to the store is the owner's step,
+outside this task.
 
 ### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`
 

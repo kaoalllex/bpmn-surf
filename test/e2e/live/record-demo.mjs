@@ -6,7 +6,8 @@
 // <iid> is the showcase MR ("Express checkout and stricter payment risk"; resolve
 // it by title, see README.md). Needs the signed-in profile (handler, correlation
 // and caller navigation use code search), "Show one file at a time" on (the clips
-// pick files in the tree), and ffmpeg on PATH.
+// pick files in the tree), and ffmpeg on PATH. The buttons shot also opens PR #1 of
+// the demo's GitHub copy (GITHUB_PR), the same change as the showcase MR.
 //
 // Writes <outDir>/<clip>.gif for every clip in CLIPS (all of them unless --clip),
 // <outDir>/screenshots/*.png at 1280×800 (unless --no-shots) and <outDir>/edited.bpmn
@@ -40,6 +41,7 @@ const KOTLIN = 'order-service/src/main/kotlin/com/example/order/handler/ApplyExp
 const BRANCH = 'feature/express-checkout';
 const EDITED = join(OUT, 'edited.bpmn');
 const BLOB_BUTTON = '#btn_77844bf3d4e842caa0d88194431197c0';
+const GITHUB_PR = 'https://github.com/kaoalllex/bpmn-surf-demo/pull/1/files';  // the frozen GitHub copy of the showcase MR
 rmSync(join(OUT, 'video'), { recursive: true, force: true });
 mkdirSync(join(OUT, 'screenshots'), { recursive: true });
 
@@ -531,14 +533,65 @@ async function tap(page, locator) {
     const box = await locator.boundingBox();
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
+// An orange ring around what a shot is about, drawn into the page.
+async function frame(page, locator) {
+    const { x, y, width: w, height: h } = await locator.boundingBox();
+    await page.evaluate(({ x, y, w, h }) => {
+        const ring = document.createElement('div');
+        ring.className = 'demo-frame';
+        ring.style.cssText = `position:fixed;left:${x - 7}px;top:${y - 7}px;width:${w + 8}px;height:${h + 8}px;`
+            + 'border:3px solid #f97316;border-radius:10px;z-index:2147483647;pointer-events:none';
+        document.body.appendChild(ring);
+    }, { x, y, w, h });
+}
+const unframe = page => page.evaluate(() => document.querySelectorAll('.demo-frame').forEach(r => r.remove()));
+// The top 1280×400 of a page, as one half of a stacked shot.
+async function half(page) {
+    await page.mouse.move(-10, -10);
+    await page.evaluate(() => document.getElementById('demo-cursor')?.remove());
+    await pause(400);
+    return page.screenshot({ clip: { x: 0, y: 0, width: SIZE.width, height: SIZE.height / 2 } });
+}
+// Two halves one above the other, each with an optional label in its corner.
+async function stack(name, [top, topLabel], [bottom, bottomLabel]) {
+    const page = await context.newPage();
+    await page.setViewportSize(SIZE);
+    const pane = (png, label) => `<div class="pane"><img src="data:image/png;base64,${png.toString('base64')}">`
+        + (label ? `<span>${label}</span>` : '') + '</div>';
+    await page.setContent(`<style>
+        body { margin: 0 } .pane { position: relative; height: 400px } .pane + .pane { border-top: 2px solid #c9ccd1 }
+        img { display: block } .pane + .pane img { margin-top: -2px }
+        span { position: absolute; right: 16px; bottom: 14px; padding: 5px 14px; border-radius: 14px;
+               background: #1f2328; color: #fff; font: 600 15px/18px system-ui, sans-serif }
+        </style>${pane(top, topLabel)}${pane(bottom, bottomLabel)}`);
+    await page.screenshot({ path: join(OUT, 'screenshots', name) });
+    await page.close();
+}
 async function screenshots() {
     const { mr, diff } = await openDiff();
     await tap(diff, element(diff, 'ValidateOrder'));
     await pause(1500);
+    // Collapsed, it leaves room for the changed groups below it.
+    await diff.locator('.bio-properties-panel-group-header', { hasText: 'Implementation' }).first().click();
+    await pause(600);
     await shot(diff, '1-bpmn-diff.png');
-    await mr.bringToFront();                                  // where it starts: the button on the MR's diagram file
+    // Where it starts: the button on a diagram file of a pull request and of a merge request.
+    const gh = await context.newPage();
+    await gh.goto(GITHUB_PR, { waitUntil: 'domcontentloaded' });
+    const ghButton = gh.locator(`.bpmn-surf-file-btn[data-bpmn-surf-file-path="${BPMN}"] button`);
+    await ghButton.waitFor({ timeout: 30000 });
+    await pause(3000);
+    await ghButton.evaluate(b => b.scrollIntoView({ block: 'start' }));
+    await gh.mouse.wheel(0, -110);                            // the file header clear of the sticky PR header
+    await pause(1500);
+    await frame(gh, ghButton);
+    const ghHalf = await half(gh);
+    await gh.close();
+    await mr.bringToFront();
     await pause(800);
-    await shot(mr, '2-buttons.png');
+    await frame(mr, fileButton(mr, 'Schema diff'));
+    await stack('2-buttons.png', [ghHalf, 'GitHub'], [await half(mr), 'GitLab']);
+    await unframe(mr);
     await diff.bringToFront();
     await tap(diff, element(diff, 'Payment'));
     await pause(800);
@@ -549,7 +602,9 @@ async function screenshots() {
     await payment.locator('.differ-back-caret').click();
     await payment.locator('.differ-back-menu-item').nth(1).waitFor({ timeout: 30000 });
     await pause(800);
+    await frame(payment, payment.locator('.differ-back-menu'));
     await shot(payment, '3-callers.png');
+    await unframe(payment);
     await payment.keyboard.press('Escape');
     await tap(payment, element(payment, 'AssessRisk'));
     await pause(800);
@@ -559,7 +614,11 @@ async function screenshots() {
     await dmn.bringToFront();
     for (let i = 0; i < 2; i++) await button(dmn, 'Zoom in').click();
     await pause(800);
-    await shot(dmn, '4-dmn-diff.png');
+    // The table fills half the height: the changed side above, the original below.
+    const changed = await half(dmn);
+    await dmn.getByRole('button', { name: 'Switch branch' }).click();
+    await pause(1500);
+    await stack('4-dmn-diff.png', [changed], [await half(dmn)]);
     for (const page of context.pages()) await page.close();
     spans = [];
 }
