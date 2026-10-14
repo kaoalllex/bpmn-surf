@@ -2,7 +2,7 @@
 id: INFRA-0012
 title: Refresh the Chrome Web Store listing with the next release
 priority: medium
-status: in-progress
+status: done
 ---
 
 ## Statement
@@ -53,6 +53,15 @@ the extension is reached on a GitLab page.
 
 <!-- Each AI session on the task — a separate entry by the template below.
      Add new entries on top (freshest first). -->
+
+### 2026-10-14 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`
+
+Media re-recorded for 1.4.0 with `record-demo.mjs` on the demo MR: all nine README GIFs in
+`docs/media/` and the five store screenshots in the local `cws-media/screenshots/`
+(`2-buttons.png` new; the superseded `2-condition.png` is still there). Every clip and shot
+checked by eye against the previous take: same tours, captions and pacing; only the current
+UI differs (the floppy-disk download icon). Remaining for the owner: upload the texts and
+screenshots to the store.
 
 ### 2026-10-13 · claude-opus-5-5 · branch `fix/infra-0012-store-listing`
 
