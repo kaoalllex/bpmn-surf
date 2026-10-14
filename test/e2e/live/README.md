@@ -21,7 +21,7 @@ gitlab.com, so they are as available as it is.
 | `search-page.mjs [--shots <dir>]` | Does GitLab still serve the "search in the repository" fallback URL that `GitLabPlatformClient#searchPageUrl` builds — 200, scoped to the project, honouring a ref with a slash? Picks its sample file from the sandbox at run time |
 | `capture-login.mjs [--github]` | One-time sign-in, so the others run as you instead of anonymously. `--github` signs in to github.com instead of GitLab |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
-| `record-demo.mjs <iid> <outDir> [--clip <name>,…] [--no-shots] [--no-video]` | Records the README GIFs (one per clip: `hero`, `buttons`, `details`, `subprocess`, `code`, `diagrams`, `search`, `edit`, `local`) and the five store screenshots from the demo project's showcase MR. Each clip is a paced tour with a visible pointer. Every tab records its own video, and ffmpeg (must be on PATH) cuts out and joins the on-screen spans. `--clip` re-records only the named clips (`local` reads the `edit` clip's download). Needs the signed-in profile and "Show one file at a time" on. GitLab's layout cookies are switched for the run and restored. When a clip breaks, every open tab is saved as `failed-<clip>-<n>.png`. `--no-video` walks the same tours without recording (no GIF, no ffmpeg): the live check of the differ's navigation |
+| `record-demo.mjs <iid> <outDir> [--clip <name>,…] [--no-shots] [--no-video]` | Records the README GIFs (one per clip: `hero`, `buttons`, `details`, `subprocess`, `code`, `diagrams`, `search`, `edit`, `local`) and the five store screenshots from the demo project's showcase MR (the buttons shot pairs its GitHub copy's PR #1 with it). Each clip is a paced tour with a visible pointer. Every tab records its own video, and ffmpeg (must be on PATH) cuts out and joins the on-screen spans. `--clip` re-records only the named clips (`local` reads the `edit` clip's download). Needs the signed-in profile and "Show one file at a time" on. GitLab's layout cookies are switched for the run and restored. When a clip breaks, every open tab is saved as `failed-<clip>-<n>.png`. `--no-video` walks the same tours without recording (no GIF, no ffmpeg): the live check of the differ's navigation |
 | `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots; then re-renders the site warnings (no site, the gitlab.com notice, gitlab.com + github.com) and prints `warning-visible=` per warning. Needs no network |
 
 ## Environment
@@ -70,9 +70,11 @@ media (`record-demo.mjs`) and re-checking the reviewer instructions signed out
 (`BPMN_SURF_ANONYMOUS=1`).
 
 After a re-recording, copy the GIFs into `docs/media/` under the same names. The README's
-`popup.png` is the Sites and annotations screens of `popup-screens.mjs`, cropped and set side
-by side. The five 1280×800 screenshots are the store's. Store assets, including the promo
-tile and its own small diagram, are kept with the owner's store notes, not in this repository.
+`popup.png` is the Sites and annotations screens of the popup (as `popup-screens.mjs` renders
+them, with github.com, gitlab.com and a self-managed host granted and the default
+annotations), cropped to 380×560 and set side by side. The five 1280×800 screenshots are the
+store's. Store assets, including the promo tile and its own small diagram, are kept with the
+owner's store notes, not in this repository.
 
 The project access token (`~/.config/bpmn-surf-demo-token`, Maintainer, scope `api`) is
 only for content changes the owner asked for.
