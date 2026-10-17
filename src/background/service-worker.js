@@ -31,13 +31,23 @@ async function reconcileHostRegistrations() {
             await chrome.scripting.unregisterContentScripts({ ids: [USER_HOSTS_SCRIPT_ID] });
         }
         if (matches.length) {
-            await chrome.scripting.registerContentScripts([{
+            const script = {
                 id: USER_HOSTS_SCRIPT_ID,
                 matches: matches,
                 js: declared.js,
                 css: declared.css,
                 runAt: 'document_idle'
-            }]);
+            };
+            try {
+                await chrome.scripting.registerContentScripts([script]);
+            } catch (e) {
+                // Right after "Reload" over an older build the lookup above may miss the
+                // registration Chrome restores; left alone it would keep the old file list.
+                if (!/Duplicate script ID/.test(e.message)) {
+                    throw e;
+                }
+                await chrome.scripting.updateContentScripts([script]);
+            }
         }
     } catch (e) {
         console.error('bpmn-surf: could not update the content script registration', e);
