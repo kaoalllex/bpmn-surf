@@ -102,7 +102,7 @@ blinking). `mr-button.mjs <iid>` checks that every diagram block carries exactly
 one correct button and that none churn; `branch-button.mjs` covers the blob
 view; `search-page.mjs` checks that GitLab still serves the fallback search URL
 the navigation locators open; `badges.mjs` prints where every navigation badge of a
-diagram leads on the real code search (GitLab, or a GitHub blob view). The scenarios and the procedure live in the
+diagram leads on the real code search (GitLab, or a GitHub blob view), and with `--shots` saves how they look; `dmn-layout.mjs` walks a decision table's zoom and Show full on the real page. The scenarios and the procedure live in the
 `live-check` project skill (`.claude/skills/live-check/SKILL.md`).
 `capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
 per-user "Show one file at a time" preference; without it everything runs
