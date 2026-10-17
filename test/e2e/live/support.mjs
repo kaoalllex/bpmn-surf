@@ -209,12 +209,15 @@ export function checkBlocks(list, label, fail) {
 export async function idleChurn(page, ms = 3000) {
     await page.evaluate(() => {
         window.__bpmnSurfChurn = 0;
-        new MutationObserver(ms => ms.forEach(m => [...m.addedNodes, ...m.removedNodes]
-            .forEach(n => { if (n.classList?.contains('bpmn-surf-file-btn')) window.__bpmnSurfChurn++; })))
-            .observe(document.body, { childList: true, subtree: true });
+        window.__bpmnSurfChurnObserver = new MutationObserver(ms => ms.forEach(m => [...m.addedNodes, ...m.removedNodes]
+            .forEach(n => { if (n.classList?.contains('bpmn-surf-file-btn')) window.__bpmnSurfChurn++; })));
+        window.__bpmnSurfChurnObserver.observe(document.body, { childList: true, subtree: true });
     });
     await page.waitForTimeout(ms);
-    return page.evaluate(() => window.__bpmnSurfChurn);
+    return page.evaluate(() => {
+        window.__bpmnSurfChurnObserver.disconnect();
+        return window.__bpmnSurfChurn;
+    });
 }
 
 /** The differ tab's two side labels: the one shown, then the other after Switch branch. */
