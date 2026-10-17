@@ -470,6 +470,8 @@
     background-color: #efefef;
     font-family: monospace;
     font-size: 15.6px;
+    /* fixed, so a fallback-font glyph (⤵) or the loading spinner never changes the badge height */
+    line-height: 1.2;
     white-space: nowrap;
     user-select: none;
     cursor: pointer;
