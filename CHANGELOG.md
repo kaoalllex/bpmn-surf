@@ -21,6 +21,7 @@ notes. Updated on release (the `release` skill).
 - INFRA-0010: warn when a code search or an MR/PR file list is truncated; a code search with no answer falls back to the repository search link instead of claiming no hits
 - INFRA-0013: a changed-handler badge in a dived-into differ tab opens the file in the MR tab, not in the parent diagram's tab
 - Badges and the problem report name the change request in the platform's own term (MR on GitLab, PR on GitHub)
+- Element badges look like the toolbar buttons — larger, darker border, darken on hover; a listener gets its own badge captioned by its event (`start </>`, `complete </>`), stacked in a column
 
 ## 1.3.0
 
