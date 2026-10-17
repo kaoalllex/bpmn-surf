@@ -503,15 +503,18 @@
     border-color: #cc4444;
     background-color: #ff8888;
 }
-.handler-link-added:hover {
+.handler-link-added:hover,
+.handler-link-added:active {
     border-color: #44cc44;
     background-color: #66dd66;
 }
-.handler-link-changed:hover {
+.handler-link-changed:hover,
+.handler-link-changed:active {
     border-color: #4444cc;
     background-color: #6666ee;
 }
-.handler-link-removed:hover {
+.handler-link-removed:hover,
+.handler-link-removed:active {
     border-color: #cc4444;
     background-color: #ee6666;
 }
