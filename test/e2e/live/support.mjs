@@ -3,10 +3,18 @@
 import { chromium } from '@playwright/test';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+
+// One wall-time line per run, to see where a smoke's time goes.
+process.once('exit', () => console.log(`TIME: ${basename(process.argv[1] || '?')} ${process.uptime().toFixed(1)} s`));
+
+/** True when the module at `url` was run directly (`node <it>`), not imported by smoke.mjs. */
+export function isMain(url) {
+    return !!process.argv[1] && resolve(process.argv[1]) === fileURLToPath(url);
+}
 // The sandbox unless BPMN_SURF_PROJECT names another project — the frozen
 // showcase, for one, whose rules differ (README.md, "The demo project").
 export const PROJECT = process.env.BPMN_SURF_PROJECT || 'https://gitlab.com/kao.alllex/bpmn-surf-test';
@@ -32,7 +40,15 @@ const LIVE_HOSTS = ['https://gitlab.com/*', 'https://github.com/*'];
 // it from REPO_ROOT did.
 const STAGED_EXTENSION = join(tmpdir(), 'bpmn-surf-live-extension');
 
+// Once per process: smoke.mjs launches several browsers, and the copy must not be
+// replaced under one that has it loaded.
+let staged = false;
+
 function stageExtension() {
+    if (staged) {
+        return STAGED_EXTENSION;
+    }
+    staged = true;
     rmSync(STAGED_EXTENSION, { recursive: true, force: true });
     for (const entry of ['manifest.json', 'src', 'libs', 'icons']) {
         cpSync(join(REPO_ROOT, entry), join(STAGED_EXTENSION, entry), { recursive: true });
@@ -65,13 +81,13 @@ async function waitForContentScripts(context) {
  * into an ordinary one. The extension is a staged copy with gitlab.com and
  * github.com baked in; this resolves once its content scripts are registered.
  *
- * Uses the signed-in profile when there is one, a throwaway profile otherwise —
- * so everything still runs anonymously, which is enough for a public project
- * except for per-user preferences. Only one script at a time: Chromium locks the
- * profile directory.
+ * Uses the signed-in profile when there is one (and `anonymous` is not set), a
+ * throwaway profile otherwise — so everything still runs anonymously, which is
+ * enough for a public project except for per-user preferences. Only one script at a
+ * time: Chromium locks the profile directory.
  */
-export async function launchWithExtension({ headless = true, withExtension = true, ...contextOptions } = {}) {
-    const dir = hasProfile() ? PROFILE_DIR : mkdtempSync(join(tmpdir(), 'bpmn-surf-'));
+export async function launchWithExtension({ headless = true, withExtension = true, anonymous = false, ...contextOptions } = {}) {
+    const dir = !anonymous && hasProfile() ? PROFILE_DIR : mkdtempSync(join(tmpdir(), 'bpmn-surf-'));
     const extension = withExtension ? stageExtension() : null;
     const args = extension
         ? [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`]
@@ -136,8 +152,83 @@ export async function openDiffer(context, { mr, ref, path, width = 1500, height 
     const differ = await differOpened;
     await differ.setViewportSize({ width, height });
     await differ.locator('svg .djs-element, .tjs-table').first().waitFor({ timeout: 60000 });
-    await differ.waitForTimeout(3000);
+    // Highlights and permanent badges land after the first paint.
+    await settle(() => differ.evaluate(() => document.querySelectorAll('.djs-element, .djs-overlay, .tjs-table td').length),
+        { quietMs: 1000, timeout: 10000 });
     return { source, differ };
+}
+
+const nonEmpty = v => !!v && (!Array.isArray(v) || v.length > 0);
+
+/** settle()'s readiness for a list of file blocks: rendered, and every diagram block decorated. */
+export const decorated = blocks => blocks.length > 0 && blocks.every(b => !b.diagram || b.buttons.length > 0);
+
+/**
+ * Polls `snapshot()` (any JSON-able value) until `ready` holds and the value has not
+ * changed for `quietMs` — the page has finished rendering and we have finished
+ * decorating it. Resolves with the last value, settled or not once `timeout` runs out
+ * (a check that fails waits the whole timeout).
+ */
+export async function settle(snapshot, { ready = nonEmpty, quietMs = 2000, timeout = 30000, interval = 250 } = {}) {
+    const t0 = Date.now();
+    let last;
+    let lastKey;
+    let since = Date.now();
+    while (Date.now() - t0 < timeout) {
+        last = await snapshot();
+        const key = JSON.stringify(last);
+        if (key !== lastKey) {
+            lastKey = key;
+            since = Date.now();
+        } else if (ready(last) && Date.now() - since >= quietMs) {
+            return last;
+        }
+        await new Promise(r => setTimeout(r, interval));
+    }
+    return last;
+}
+
+/**
+ * The per-block contract shared by mr-button.mjs and pr-button.mjs: a diagram block
+ * carries exactly one button, for its own file, with the right label; any other
+ * block carries none. Blocks are { path, diagram, buttons: [{ path, text }] }.
+ */
+export function checkBlocks(list, label, fail) {
+    for (const b of list) {
+        if (b.diagram && b.buttons.length !== 1) fail(`${label}: ${b.path} has ${b.buttons.length} buttons, expected 1`);
+        if (!b.diagram && b.buttons.length) fail(`${label}: ${b.path} is not a diagram but has a button`);
+        for (const btn of b.buttons) {
+            if (btn.path !== b.path) fail(`${label}: button for ${btn.path} sits on ${b.path}`);
+            const expected = b.path.endsWith('.dmn') ? 'Decision diff' : 'Schema diff';
+            if (btn.text !== expected) fail(`${label}: ${b.path} says "${btn.text}", expected "${expected}"`);
+        }
+    }
+}
+
+/** How many of our file buttons are inserted or removed while the page sits idle for `ms`. */
+export async function idleChurn(page, ms = 3000) {
+    await page.evaluate(() => {
+        window.__bpmnSurfChurn = 0;
+        new MutationObserver(ms => ms.forEach(m => [...m.addedNodes, ...m.removedNodes]
+            .forEach(n => { if (n.classList?.contains('bpmn-surf-file-btn')) window.__bpmnSurfChurn++; })))
+            .observe(document.body, { childList: true, subtree: true });
+    });
+    await page.waitForTimeout(ms);
+    return page.evaluate(() => window.__bpmnSurfChurn);
+}
+
+/** The differ tab's two side labels: the one shown, then the other after Switch branch. */
+export async function differSides(differ) {
+    const side = async () => ((await differ.locator('.differ-toolbar span', { hasText: '·' }).first()
+        .textContent({ timeout: 30000 }).catch(() => null)) || 'no side label').trim();
+    const shown = await side();
+    const switchButton = differ.getByRole('button', { name: 'Switch branch' });
+    let other = 'no Switch';
+    if (await switchButton.isEnabled().catch(() => false)) {
+        await switchButton.click();
+        other = await settle(async () => { const s = await side(); return s !== shown && s; }, { quietMs: 0, timeout: 10000 }) || shown;
+    }
+    return { shown, other };
 }
 
 /** The extension's own console output, filtered to the lines worth reading. */

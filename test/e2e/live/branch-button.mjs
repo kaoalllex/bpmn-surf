@@ -26,7 +26,7 @@ const context = await launchWithExtension();
 const page = await context.newPage();
 await page.setViewportSize({ width: 1500, height: 1000 });
 await page.goto(`${PROJECT}/-/blob/${ref}/${path}`, { waitUntil: 'domcontentloaded' });
-await page.waitForTimeout(9000);
+await page.locator(`#${ID}-btn`).waitFor({ timeout: 30000 }).catch(() => {});
 
 const placement = await page.evaluate(id => {
     const c = document.getElementById(id);
