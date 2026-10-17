@@ -82,7 +82,7 @@ It works in an `rsync`ed copy of the tree (never the repo — a crash would leav
 
 ## CI
 
-`.github/workflows/test.yml` runs on every pull request into master and every push to master: `npm ci`, `npm test`, then `npm run test:e2e` (Layer 2 in Chromium). A newer push to the same ref cancels the superseded run. On failure the run uploads `playwright-report/` as the `playwright-report` artifact (kept 7 days). There are no retries: a flaky test fails the run and stays visible. The live harness never runs in CI (see below).
+`.github/workflows/test.yml` runs on every pull request into master and every push to master: `npm ci`, `npm test`, then `npm run test:e2e` (Layer 2 in Chromium). A newer push to the same ref cancels the superseded run. On failure the run uploads `playwright-report/` as the `playwright-report` artifact (kept 7 days). There are no retries: a flaky test fails the run and stays visible. Playwright runs one worker per core there (`workers` in `playwright.config.js`; its default, half the cores, left two of the runner's four idle and took 2.6 min). The live harness never runs in CI (see below).
 
 Run the same thing locally before pushing:
 
