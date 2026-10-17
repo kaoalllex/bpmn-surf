@@ -99,9 +99,10 @@ sandbox — see `test/e2e/live/README.md`. Not tests: outside `npm test` and
 Use them for anything that depends on GitLab's own markup or on timing, which is
 where the diff button keeps breaking (the button showing for the wrong file, or
 blinking). `mr-button.mjs <iid>` checks that every diagram block carries exactly
-one correct button and that none churn; `branch-button.mjs` covers the blob
+one correct button and that none churn, `pr-button.mjs <number>` the same on a GitHub
+PR (both Files changed UIs, soft navigation, commit and range views); `branch-button.mjs` covers the blob
 view; `search-page.mjs` checks that GitLab still serves the fallback search URL
-the navigation locators open; `badges.mjs` prints where every navigation badge of a
+the navigation locators open; `smoke.mjs` runs the scripted part of the release smoke in one go, with a summary table; `badges.mjs` prints where every navigation badge of a
 diagram leads on the real code search (GitLab, or a GitHub blob view), and with `--shots` saves how they look; `dmn-layout.mjs` walks a decision table's zoom and Show full on the real page. The scenarios and the procedure live in the
 `live-check` project skill (`.claude/skills/live-check/SKILL.md`).
 `capture-login.mjs` stores a GitLab session in `~/.config` when a case needs the
@@ -118,11 +119,11 @@ scripts. The staged manifest differs from the store one on purpose.
 **GitHub sandbox.** `github.com/kaoalllex/bpmn-surf-test` (public) and
 `github.com/kaoalllex/bpmn-surf-test-private` (private) are the mutable test material,
 the counterpart of the GitLab sandbox; public pull requests of other projects serve as
-real-world samples (large PRs, forks, GitHub's CSP). There are no GitHub-specific
-scripts yet: the GitHub scenarios of the `live-check` skill are driven by hand (or an
-ad-hoc Playwright script on `launchWithExtension()`), signed in and anonymous
-(`BPMN_SURF_ANONYMOUS=1`), with the Network panel filtered to `api.github.com` — a
-signed-in run must make no request there (the search, raw and `page_data` requests go to github.com itself).
+real-world samples (large PRs, forks, GitHub's CSP). `pr-button.mjs` drives the PR
+buttons, signed in and anonymous (`BPMN_SURF_ANONYMOUS=1`), and counts the
+`api.github.com/repos/…` requests — a signed-in run must make none (the search, raw and
+`page_data` requests go to github.com itself); `badges.mjs` runs on a GitHub blob view.
+The rest of the GitHub scenarios of the `live-check` skill are driven by hand.
 
 **Camunda 8 material.** Both sandboxes (`gitlab.com/kao.alllex/bpmn-surf-test`,
 `github.com/kaoalllex/bpmn-surf-test`) carry `order-service-c8/`, the Camunda 8 twin of

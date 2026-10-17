@@ -23,10 +23,10 @@ with the real bpmn-js and properties panel (`docs/testing.md`, `test/e2e/*.spec.
 
 | The change is in | Check it with |
 |---|---|
-| `src/content/` — buttons, file detection, placement, SPA navigation | the unit tests on captured GitLab markup (`gitlab-ui-repo-provider.test.js`; red after `capture-markup.mjs` = GitLab moved its markup), then `catalog/buttons.md` (GitLab); `src/content/providers/github/`, `src/differ/platform/github-platform-client.js`, `src/core/github-changes-payload.js` — `catalog/github.md` |
+| `src/content/` — buttons, file detection, placement, SPA navigation | the unit tests on captured GitLab markup (`gitlab-ui-repo-provider.test.js`; red after `capture-markup.mjs` = GitLab moved its markup), then `catalog/buttons.md` (GitLab); `src/content/providers/github/`, `src/differ/platform/github-platform-client.js`, `src/core/github-changes-payload.js` — the unit tests on captured GitHub markup (`github-dom-scraper.test.js`; `capture-markup.mjs --github`), `pr-button.mjs`, then `catalog/github.md` |
 | the differ (`src/differ/`) | the Layer-2 spec of that area (`differ-edit-*`, `differ-prop-group-*`, `differ-highlight-*`, `dmn-*`…): add a case that fails without the fix. For a diagram from a report, pull it first (`gitlab-test-project` skill, "From report to repro") |
 | `src/differ/navigation/`, `src/differ/platform/` — dive-in, callers, badges, code search | Layer-2 spec of that area **and** `catalog/differ-navigation.md` (the search is mocked offline) |
-| how differ tabs open — `openDiffer` (`src/core/utils.js`), `src/differ/shared/differ-tab-navigator.js` | `mr-button --click`, `branch-button`, and `catalog/differ-navigation.md` |
+| how differ tabs open — `openDiffer` (`src/core/utils.js`), `src/differ/shared/differ-tab-navigator.js` | `mr-button --click`, `pr-button --click`, `branch-button`, and `catalog/differ-navigation.md` |
 | `src/popup/`, `src/background/`, `src/hosts/` | Layer 2 `popup-*.spec.js` and the unit `test/background/service-worker.test.js`; `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) for the look; the real-page rows in `catalog/github.md`; Chrome's permission dialog by hand |
 | the feedback report (`feedback-report.js`, the 💬 button) | Layer 2 `differ-feedback*.spec.js`, then `catalog/feedback.md` (github.com still takes the prefilled form) |
 | a release, a store submission | "Release smoke" below |
@@ -37,25 +37,35 @@ report that as the check, not an empty live run.
 ## Release smoke
 
 Before every release (the `release/vX.Y.Z` PR) and before a store submission, run
-this set on the release branch, all against fresh MR iids resolved by kind:
+this set on the release branch, all against fresh MR iids and PR numbers resolved by kind:
 
-1. MR buttons, "Show one file at a time" **on**: bpmn + code (plain and `--legacy`);
-   bpmn + dmn, `--click` (plain and `--legacy`); a `.dmn` `--click`; an added, a deleted
-   and a renamed diagram; a nested-subprocess change `--click`; code only.
-2. The same with the setting **off**: bpmn + code (plain and `--legacy`), bpmn + dmn
-   `--click`, many files `--scroll` (plain and `--legacy`). Set the preference back.
-3. Branch view: a `.bpmn` and a `.dmn` on `main`, a file on a branch with a slash.
-3a. Decision table layout: `dmn-layout.mjs --mr <the large-table MR> --shots <dir> x <its .dmn>`
-   (`RESULT: OK`, then look at the shots: the table spans the window, the cells read).
-4. Search fallback link (`search-page.mjs`) and the popup (`popup-screens.mjs`).
-5. Differ navigation (`record-demo.mjs … --no-video`), ~6 min, and the sandbox's C7 rows
-   of `catalog/differ-navigation.md`, run with `--shots`: look at the badges (one look,
-   one height, a listener column per element) and at the many-handlers MR's fitted shot
-   (twenty permanent badges on one large diagram, none covering another).
-6. GitHub, all of `catalog/github.md`.
-6a. Camunda 8, all of `catalog/camunda8.md`, on GitLab and on GitHub.
-6b. Report a problem, `catalog/feedback.md`.
-7. By hand, for the human: adding a site in the popup (Chrome's permission dialog
+1. The scripted part, ~7 min: `node test/e2e/live/smoke.mjs --shots <scratchpad>/smoke`.
+   It resolves the material and runs, ending with one summary row per cell:
+   - MR buttons, "Show one file at a time" **on**: bpmn + code (plain and `--legacy`);
+     bpmn + dmn, `--click` (plain and `--legacy`); a `.dmn` `--click`; an added, a deleted
+     and a renamed diagram; a subprocess change `--click`; code only;
+   - the same with the setting **off**: bpmn + code (plain and `--legacy`), bpmn + dmn
+     `--click`, many files `--scroll` (plain and `--legacy`); the preference is restored;
+   - branch view: a `.bpmn` and a `.dmn` on `main`, a diagram on a branch with a slash;
+     the decision-table layout (`dmn-layout.mjs` on the large-table MR); the search
+     fallback link (`search-page.mjs`);
+   - GitHub signed in: bpmn + code, `.dmn`, rename, the special-characters path reached by
+     soft navigation, all `--click`; the narrow window (1150 px); many files `--scroll`;
+     code only; a merged PR `--click`, a closed one; a commit and a range `--click`;
+     `bpmn-io/dmn-js#852` `--scroll`. Anonymous: bpmn + code and the commit and range
+     `--click` on the classic page.
+   Then look at the shots: the buttons, and the decision table spanning the window with
+   readable cells. A `SKIP` row means the sandbox has no MR/PR of that kind any more.
+2. The popup: `popup-screens.mjs <scratchpad>`.
+3. Differ navigation: the sandbox's C7 rows of `catalog/differ-navigation.md` (`badges.mjs`),
+   run with `--shots`: look at the badges (one look, one height, a listener column per
+   element) and at the many-handlers MR's fitted shot (twenty permanent badges on one
+   large diagram, none covering another). The demo tours (`record-demo.mjs --no-video`)
+   are for re-recording the media, not part of the smoke.
+4. GitHub: the rows of `catalog/github.md` that `smoke.mjs` does not run (marked there).
+4a. Camunda 8, all of `catalog/camunda8.md`, on GitLab and on GitHub.
+4b. Report a problem, `catalog/feedback.md`.
+5. By hand, for the human: adding a site in the popup (Chrome's permission dialog
    cannot be automated), and the upgrade check from the previous store build.
 
 ## Prerequisites
@@ -120,7 +130,7 @@ Highlighting (BPMN and DMN), the changes table, the properties panel, switch bra
 search, zoom and edit mode take nothing from the platform but two XML files: their checks
 are the Layer-2 specs (`docs/testing.md`), and a live run adds nothing to them. The popup
 is Layer 2 plus `popup-screens.mjs`. The one exception is the release smoke's look at a
-decision table on the real page (`dmn-layout.mjs`, step 3a): cheap, and the owner wants
+decision table on the real page (`dmn-layout.mjs`, in `smoke.mjs`): cheap, and the owner wants
 it seen before a release.
 
 ## Common mistakes
@@ -130,7 +140,7 @@ it seen before a release.
   setting.
 - Judging from `RESULT: OK` alone: it says nothing about how the button looks.
 - Calling a `page.goto` timeout a FAIL: gitlab.com and github.com stall now and then.
-  Re-run that one script once; only a second timeout is a finding.
+  Re-run that one script once (`smoke.mjs` does it itself); only a second timeout is a finding.
 - Expecting `mr-button.mjs --shots` to save anything in "Show one file at a time" mode on an
   MR whose first file is code: only that file is rendered, so there is no diagram block to
   shoot. For shots in that mode pick an MR whose first file is a diagram.
