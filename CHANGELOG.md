@@ -4,6 +4,25 @@ Format: one section per version, header `## <version>`. The latest are at the to
 This file is the human-readable change history and the source of the GitHub release
 notes. Updated on release (the `release` skill).
 
+## 1.4.0
+
+- REFAC-0004: GitHub support — diff and view buttons on pull requests (both Files changed UIs), commits, commit ranges and the blob view; code search through GitHub's web search, no token needed; GitHub Enterprise by design
+- FEAT-0038: Camunda 8 (Zeebe) support — diff parity, dive-in/dive-out through called processes and decisions, handler badges for job types and `@JobWorker`
+- FEAT-0019: handler badges for execution and task listeners; syntax colours in the formatted condition; a floppy-disk icon for the download button
+- Paint the Camunda 7 listener, form, field-injection and task-priority groups in the properties panel
+- REFAC-0004: no built-in sites — every site, gitlab.com included, is turned on in the popup; users updating from 1.3 get a notice. A self-hosted site is recognised as GitLab or GitHub from the page, or the popup asks for its type
+- BUG-0050, BUG-0052: show changes to the process element, pools, lanes, message flows and artifacts; a changed pool or lane takes a thick border instead of a fill that hid the changes inside it
+- BUG-0051: a diagram that does not parse says so instead of showing a blank canvas with zero changes
+- UX-0004 (3 of 4 points): highlight a changed error code, multi-instance retry and async flags, interrupting flags in the properties panel; explicit default values are no longer reported as changes
+- DMN: the table spans the window's width at every zoom and its rows scroll inside the window; Show full fits the table to the window, never enlarges one that already fits, and no longer hangs
+- The injected buttons keep their label on one line in a narrow file header
+- A reload over an older build no longer fails on a duplicate content-script registration
+- A message name matches only whole in the correlation search (OrderPaid no longer finds OrderPaidC8)
+- INFRA-0010: warn when a code search or an MR/PR file list is truncated; a code search with no answer falls back to the repository search link instead of claiming no hits
+- INFRA-0013: a changed-handler badge in a dived-into differ tab opens the file in the MR tab, not in the parent diagram's tab
+- Badges and the problem report name the change request in the platform's own term (MR on GitLab, PR on GitHub)
+- Element badges look like the toolbar buttons — larger, darker border, darken on hover; a listener gets its own badge captioned by its event (`start </>`, `complete </>`), stacked in a column
+
 ## 1.3.0
 
 - FEAT-0033: add self-managed GitLab hosts from the popup, no file editing

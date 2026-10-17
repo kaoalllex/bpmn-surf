@@ -21,13 +21,14 @@
 //   at the currently shown diagram version (MR commit or target branch commit)
 //   in a new tab.
 // - Execution / task listeners (FEAT-0019) are handlers too, and an element can
-//   carry several besides its own implementation: they get a row of "ℓ</>"
-//   badges off the element's bottom-left corner (the implementation badge sits
-//   off the bottom-right one), one per distinct handler key. The row is
-//   permanent when any of them is touched in this MR (each badge coloured by its
-//   own change), otherwise it appears on selection. A flow carries its row at
-//   its middle. A pool shows its process's listeners; a process without a pool
-//   has no shape, so its top-level start events carry them.
+//   carry several besides its own implementation: they get a column of
+//   "<event> </>" badges off the element's bottom-left corner (the
+//   implementation badge sits off the bottom-right one), one per listener — two
+//   listeners of one class get a badge each. The column is permanent when any of
+//   them is touched in this MR (each badge coloured by its own change),
+//   otherwise it appears on selection. A flow carries its column at its middle.
+//   A pool shows its process's listeners; a process without a pool has no
+//   shape, so its top-level start events carry them.
 class HandlerNavigator {
     #overlays;
     #elementRegistry;
@@ -120,24 +121,27 @@ class HandlerNavigator {
         return this.#getDialectFunc().handlerKey(elem.businessObject);
     }
 
-    // The element's listeners grouped by handler key: [{ key, labels }], one
+    // The element's listeners in document order: [{ key, label, caption }], one
     // entry per badge. A root element (a process without a pool) has no shape.
     #getListeners(elem) {
         if (!elem || elem.labelTarget || !elem.parent) {
             return [];
         }
-        const labelsByKey = new Map();
+        const listeners = [];
         const collect = (bo, prefix) => {
             for (const { key, kind, event } of this.#getDialectFunc().listenerKeys(bo)) {
-                const label = `${prefix}${kind} listener` + (event ? ` (${event})` : '');
-                labelsByKey.set(key, [...(labelsByKey.get(key) || []), label]);
+                listeners.push({
+                    key,
+                    label: `${prefix}${kind} listener` + (event ? ` (${event})` : ''),
+                    caption: prefix + (event || 'listener')
+                });
             }
         };
         collect(elem.type === 'bpmn:Participant' ? elem.businessObject?.processRef : elem.businessObject, '');
         if (elem.type === 'bpmn:StartEvent' && elem.parent.type === 'bpmn:Process' && !elem.parent.parent) {
             collect(elem.parent.businessObject, 'process ');
         }
-        return [...labelsByKey].map(([key, labels]) => ({ key, labels }));
+        return listeners;
     }
 
     // Off a shape's bottom-left corner; on a flow, at the middle of its middle
@@ -160,13 +164,16 @@ class HandlerNavigator {
     #addListenerBadges(elem, listeners) {
         const row = document.createElement('div');
         row.className = elem.waypoints ? 'listener-links listener-links-flow' : 'listener-links';
-        for (const { key, labels } of listeners) {
+        for (const { key, label, caption } of listeners) {
             const diffType = this.#changedHandlers.get(key)?.diffType;
             const badge = document.createElement('div');
             badge.className = 'handler-link handler-link-listener' + (diffType ? ` handler-link-${diffType}` : '');
-            badge.title = capitalizeFirstLetter(labels.join(', '))
+            badge.title = capitalizeFirstLetter(label)
                 + (diffType ? ` ${diffType} in this ${this.#changeTerm} — open its diff` : ' — open the handler code');
-            badge.textContent = 'ℓ</>';
+            const event = document.createElement('span');
+            event.className = 'handler-link-event';
+            event.textContent = caption;
+            badge.append(event, ' </>');
             badge.addEventListener('click', () => this.#onOpenCode(key));
             row.appendChild(badge);
         }

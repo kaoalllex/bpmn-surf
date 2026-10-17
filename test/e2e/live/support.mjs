@@ -109,6 +109,37 @@ export async function githubSignedInAs(page) {
     }
 }
 
+/**
+ * Opens <path> in the differ: from MR !<mr>'s "Schema diff" button (the MR side
+ * shown) when `mr` is given, else from the blob view of <ref> — on GitLab or, with
+ * BPMN_SURF_PROJECT on github.com, on GitHub. Resolves once the diagram or the
+ * decision table is drawn, with the source tab and the differ tab.
+ */
+export async function openDiffer(context, { mr, ref, path, width = 1500, height = 1000 }) {
+    const github = new URL(PROJECT).hostname === 'github.com';
+    const source = await context.newPage();
+    await source.setViewportSize({ width: 1500, height: 1000 });
+    const differOpened = context.waitForEvent('page', { timeout: 60000 });
+    if (mr) {
+        await source.goto(`${PROJECT}/-/merge_requests/${mr}/diffs`, { waitUntil: 'domcontentloaded' });
+        const button = source.locator(`.bpmn-surf-file-btn[data-bpmn-surf-file-path="${path}"] button`).first();
+        await button.waitFor({ timeout: 60000 });
+        await button.click();
+    } else {
+        await source.goto(`${PROJECT}${github ? '' : '/-'}/blob/${ref}/${path}`, { waitUntil: 'domcontentloaded' });
+        const button = github
+            ? source.locator('#bpmn-surf-gh-branch button').first()
+            : source.locator('#btn_77844bf3d4e842caa0d88194431197c0-btn');
+        await button.waitFor({ timeout: 60000 });
+        await button.click();
+    }
+    const differ = await differOpened;
+    await differ.setViewportSize({ width, height });
+    await differ.locator('svg .djs-element, .tjs-table').first().waitFor({ timeout: 60000 });
+    await differ.waitForTimeout(3000);
+    return { source, differ };
+}
+
 /** The extension's own console output, filtered to the lines worth reading. */
 export function collectExtensionLog(page, pattern = /selected file|button|diff-file|cannot|not selected/i) {
     const lines = [];

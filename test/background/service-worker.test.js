@@ -13,7 +13,7 @@ const CONTENT_SCRIPTS = JSON.parse(read('src/hosts/content-scripts.json'));
 const GITLAB_COM = 'https://gitlab.com/*';
 const GITHUB_COM = 'https://github.com/*';
 
-function startWorker({ origins = [], local = {}, registered = [] } = {}) {
+function startWorker({ origins = [], local = {}, registered = [], hidden = [] } = {}) {
     const state = { origins, local: { ...local }, registered: [...registered], badge: null, errors: [] };
     const listeners = {};
     const event = (name) => ({ addListener: (fn) => { listeners[name] = fn; } });
@@ -33,7 +33,16 @@ function startWorker({ origins = [], local = {}, registered = [] } = {}) {
             unregisterContentScripts: async ({ ids }) => {
                 state.registered = state.registered.filter(s => !ids.includes(s.id));
             },
-            registerContentScripts: async (scripts) => { state.registered.push(...scripts); }
+            registerContentScripts: async (scripts) => {
+                if (scripts.some(s => state.registered.some(r => r.id === s.id) || hidden.some(r => r.id === s.id))) {
+                    throw new Error(`Duplicate script ID '${scripts[0].id}'`);
+                }
+                state.registered.push(...scripts);
+            },
+            updateContentScripts: async (scripts) => {
+                state.registered = [...state.registered.filter(r => !scripts.some(s => s.id === r.id)), ...scripts];
+                hidden.length = 0;
+            }
         },
         storage: {
             local: {
@@ -91,6 +100,19 @@ describe('service worker — content-script registration', () => {
 
         assert.equal(state.registered.length, 1);
         assert.deepEqual(plain(state.registered[0].matches), [GITHUB_COM]);
+    });
+
+    // Seen after "Reload" over an unpacked 1.3.0: the lookup found nothing, yet the
+    // registration call reported the id as taken.
+    it('updates the registration the lookup missed instead of failing on a duplicate id', async () => {
+        const stale = { id: 'bpmn-surf-user-hosts', matches: ['https://git.acme.com/*'], js: ['old.js'] };
+        const { state, listeners } = startWorker({ origins: ['https://git.acme.com/*'], hidden: [stale] });
+
+        await listeners.onStartup();
+
+        assert.deepEqual(state.errors, []);
+        assert.equal(state.registered.length, 1);
+        assert.deepEqual(plain(state.registered[0].js), CONTENT_SCRIPTS.js);
     });
 
     it('registers nothing and shows "!" when no site is granted', async () => {

@@ -23,9 +23,12 @@ class DmnTableViewport {
 
     fit() {
         if (!this.#tableContainer) {
+            // Pinned to the window (the table cell around it would grow with the
+            // rows), so the table container's own scrollbars stay on screen.
             const container = document.getElementsByClassName('tjs-container')[0];
-            container.style.width = window.innerWidth - 10;
-            container.style.height = window.innerHeight - 40;
+            const top = Math.ceil(container.getBoundingClientRect().top);
+            container.style.width = 'calc(100vw - 10px)';
+            container.style.height = `calc(100vh - ${top + 4}px)`;
 
             this.#tableContainer = container.getElementsByClassName('tjs-table-container')[0];
             this.#tableContainer.style.overflow = 'scroll';
@@ -50,9 +53,9 @@ class DmnTableViewport {
         this.#changeZoom(-CanvasViewport.IN_OUT_ZOOM_DELTA);
     }
 
+    // Shrinks from the current zoom until the whole table is in the window; a table
+    // that already fits stays as it is.
     showFull() {
-        this.setZoom(DmnTableViewport.MAX_ZOOM);
-
         while (this.#currentZoom > DmnTableViewport.MIN_ZOOM && !this.#isFullyVisible()) {
             this.#changeZoom(-CanvasViewport.IN_OUT_ZOOM_DELTA);
         }

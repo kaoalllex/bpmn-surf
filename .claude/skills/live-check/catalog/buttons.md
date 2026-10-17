@@ -49,4 +49,5 @@ picks the file itself through "Diff with local file…": the differ opens with t
 | one button per diagram block, none elsewhere, path = block path | icon and label legible, accent visible |
 | label by file type | button right before ⋮, same spot on every file |
 | no churn while idle; none visible during the grey-out | header wraps no worse than GitLab's own layout |
+| — | the label stays on one line in a narrow file header (window ~1000–1200 px), the button no taller than its neighbours |
 | differ tab opens; block not collapsed; split menu opens/closes | branch button beside Blame, not glued to it; menu readable |

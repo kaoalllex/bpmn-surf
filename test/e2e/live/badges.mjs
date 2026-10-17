@@ -10,6 +10,10 @@
 //               <ref> is then ignored. Without it the blob view of <ref> is used.
 //   --open <n>  for `callers`, also open the n-th caller (1-based) and report the
 //               element it selects
+//   --shots <dir>  save the fitted diagram before any selection as <dir>/<file>-fitted.png
+//               (the permanent badges of an MR, and how crowded they get), then each
+//               selected element with its badges, before any click, as
+//               <dir>/<file>-<elementId>-<badge>.png — the look is judged there
 //
 // BPMN_SURF_PROJECT=https://github.com/<owner>/<repo> runs it on a GitHub blob view
 // (signed in with capture-login.mjs --github); --mr is GitLab-only.
@@ -19,16 +23,19 @@
 // the menu it opens (several correlation points, the callers list), the file a
 // dive-in opens, or `no badge`. It asserts nothing: the catalog row holds the
 // expected answer. Needs the signed-in profile (code search answers only a session).
-import { PROJECT, githubSignedInAs, launchWithExtension, signedInAs } from './support.mjs';
+import { mkdirSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { PROJECT, githubSignedInAs, launchWithExtension, openDiffer, signedInAs } from './support.mjs';
 
 const args = process.argv.slice(2);
 const option = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
 const mr = option('--mr');
 const openCaller = option('--open');
-const positional = args.filter((a, i) => !a.startsWith('--') && !['--mr', '--open'].includes(args[i - 1]));
+const shots = option('--shots');
+const positional = args.filter((a, i) => !a.startsWith('--') && !['--mr', '--open', '--shots'].includes(args[i - 1]));
 const [ref, path, ...targets] = positional;
 if (!path || targets.length === 0) {
-    console.error('usage: badges.mjs [--mr <iid>] [--open <n>] <ref> <path> <elementId>[:<badge>] …');
+    console.error('usage: badges.mjs [--mr <iid>] [--open <n>] [--shots <dir>] <ref> <path> <elementId>[:<badge>] …');
     process.exit(2);
 }
 
@@ -46,29 +53,14 @@ if (github && mr) {
 }
 
 const context = await launchWithExtension();
-const source = await context.newPage();
-await source.setViewportSize({ width: 1500, height: 1000 });
-
-const differOpened = context.waitForEvent('page', { timeout: 60000 });
-if (mr) {
-    await source.goto(`${PROJECT}/-/merge_requests/${mr}/diffs`, { waitUntil: 'domcontentloaded' });
-    const button = source.locator(`.bpmn-surf-file-btn[data-bpmn-surf-file-path="${path}"] button`).first();
-    await button.waitFor({ timeout: 60000 });
-    await button.click();
-} else {
-    await source.goto(`${PROJECT}${github ? '' : '/-'}/blob/${ref}/${path}`, { waitUntil: 'domcontentloaded' });
-    const button = github
-        ? source.locator('#bpmn-surf-gh-branch button').first()
-        : source.locator('#btn_77844bf3d4e842caa0d88194431197c0-btn');
-    await button.waitFor({ timeout: 60000 });
-    await button.click();
-}
+const { source, differ } = await openDiffer(context, { mr, ref, path });
 const user = github ? await githubSignedInAs(source) : await signedInAs(source);
 console.log(`${mr ? `MR !${mr}` : ref} ${path}  signed in: ${user || 'no'}`);
-const differ = await differOpened;
-await differ.setViewportSize({ width: 1500, height: 1000 });
-await differ.locator('svg .djs-element, .tjs-table').first().waitFor({ timeout: 60000 });
-await differ.waitForTimeout(3000);
+const fileName = basename(path).replace(/\.\w+$/, '');
+if (shots) {
+    mkdirSync(shots, { recursive: true });
+    await differ.screenshot({ path: join(shots, `${fileName}-fitted.png`) });
+}
 
 const menuRows = (menu) => menu.locator('.differ-back-menu-item, .differ-back-menu-message, .differ-back-menu-link')
     .evaluateAll((rows) => rows.map((row) => row.textContent.replace(/\s+/g, ' ').trim()));
@@ -88,6 +80,16 @@ async function landing(click) {
         return { url: `MR tab → ${source.url()}` };
     }
     return null;
+}
+
+// The element and a margin around it, where its badges hang, clamped to the viewport.
+async function shoot(element, name) {
+    const box = await element.boundingBox();
+    const view = differ.viewportSize();
+    const x = Math.max(0, box.x - 250);
+    const y = Math.max(0, box.y - 120);
+    const clip = { x, y, width: Math.min(view.width, box.x + box.width + 250) - x, height: Math.min(view.height, box.y + box.height + 250) - y };
+    await differ.screenshot({ path: join(shots, name), clip });
 }
 
 // null when the tab is not a differ: a dive-in that found nothing opens the code search.
@@ -125,6 +127,9 @@ for (const target of targets) {
     }
     await element.click({ force: true });
     await differ.waitForTimeout(800);
+    if (shots) {
+        await shoot(element, `${fileName}-${id}-${kind}.png`);
+    }
 
     if (kind === 'callers') {
         await differ.locator('.differ-back-caret').click();

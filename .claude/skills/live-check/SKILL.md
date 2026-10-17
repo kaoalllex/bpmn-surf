@@ -45,9 +45,13 @@ this set on the release branch, all against fresh MR iids resolved by kind:
 2. The same with the setting **off**: bpmn + code (plain and `--legacy`), bpmn + dmn
    `--click`, many files `--scroll` (plain and `--legacy`). Set the preference back.
 3. Branch view: a `.bpmn` and a `.dmn` on `main`, a file on a branch with a slash.
+3a. Decision table layout: `dmn-layout.mjs --mr <the large-table MR> --shots <dir> x <its .dmn>`
+   (`RESULT: OK`, then look at the shots: the table spans the window, the cells read).
 4. Search fallback link (`search-page.mjs`) and the popup (`popup-screens.mjs`).
 5. Differ navigation (`record-demo.mjs … --no-video`), ~6 min, and the sandbox's C7 rows
-   of `catalog/differ-navigation.md`.
+   of `catalog/differ-navigation.md`, run with `--shots`: look at the badges (one look,
+   one height, a listener column per element) and at the many-handlers MR's fitted shot
+   (twenty permanent badges on one large diagram, none covering another).
 6. GitHub, all of `catalog/github.md`.
 6a. Camunda 8, all of `catalog/camunda8.md`, on GitLab and on GitHub.
 6b. Report a problem, `catalog/feedback.md`.
@@ -115,7 +119,9 @@ badges, listeners and message isolation are in `catalog/differ-navigation.md`.
 Highlighting (BPMN and DMN), the changes table, the properties panel, switch branch,
 search, zoom and edit mode take nothing from the platform but two XML files: their checks
 are the Layer-2 specs (`docs/testing.md`), and a live run adds nothing to them. The popup
-is Layer 2 plus `popup-screens.mjs`.
+is Layer 2 plus `popup-screens.mjs`. The one exception is the release smoke's look at a
+decision table on the real page (`dmn-layout.mjs`, step 3a): cheap, and the owner wants
+it seen before a release.
 
 ## Common mistakes
 
@@ -123,6 +129,11 @@ is Layer 2 plus `popup-screens.mjs`.
 - Leaving "Show one file at a time" flipped: it is the human's own account
   setting.
 - Judging from `RESULT: OK` alone: it says nothing about how the button looks.
+- Calling a `page.goto` timeout a FAIL: gitlab.com and github.com stall now and then.
+  Re-run that one script once; only a second timeout is a finding.
+- Expecting `mr-button.mjs --shots` to save anything in "Show one file at a time" mode on an
+  MR whose first file is code: only that file is rendered, so there is no diagram block to
+  shoot. For shots in that mode pick an MR whose first file is a diagram.
 - Looping over flag sets in zsh with an unquoted `$flags`: zsh does not split
   it, the script gets one unknown argument and silently runs the plain rapid
   cell. Loop in `bash -c` or spell each command out. Check the `ui=` in the
