@@ -277,12 +277,30 @@ describe('GitHubDomScraper — new UI captures', () => {
 });
 
 describe('GitHubDomScraper — classic capture', () => {
-    it('agrees with the hand-built markup on a real page', () => {
+    it('reads sandbox #7 (rename) as GitHub diffs it', () => {
         const { document, scraper } = scrape(fixture('github/pr-files-classic.html'));
-        assert.ok(scraper.fileBlocks(document).length >= 1);
-        // Sandbox #9 after main moved ahead: sha1 is the merge base, not main's tip.
-        assert.equal(scraper.pullRefs(document, 9).mergeBaseSha, '276bf8af3be77a7e93a999922234f9eae75d5726');
-        assert.equal(scraper.pullRefs(document, 9).headSha, '69e462e326cc41e1e60b1ba505e18c35355a6ce1');
+        const bpmn = [...scraper.fileBlocks(document)].filter(b => b.path.endsWith('.bpmn'));
+        assert.deepEqual(bpmn.map(b => [b.path, b.oldPath]), [[
+            'order-service/src/main/resources/bpmn/order/fulfillment/LastMileDelivery.bpmn',
+            'order-service/src/main/resources/bpmn/order/fulfillment/Delivery.bpmn'
+        ]]);
+        assert.equal(bpmn[0].before, null);
+        // main has moved ahead since: sha1 is the merge base, not main's tip.
+        assert.deepEqual({ ...scraper.pullRefs(document, 7) }, {
+            mergeBaseSha: '276bf8af3be77a7e93a999922234f9eae75d5726',
+            headSha: '1dbe0b175b7d4cef7f2fd56cadf5c9bc5cc3fd95',
+            headRef: 'refactor/rename-delivery',
+            baseRef: 'main',
+            title: 'refactor: rename Delivery to LastMileDelivery'
+        });
+    });
+});
+
+describe('GitHubDomScraper — blob capture', () => {
+    it('reads the slashed head branch and finds the Raw button group', () => {
+        const { document, scraper } = scrape(fixture('github/blob.html'));
+        assert.equal(scraper.findBlobRef(document, 'kaoalllex', 'bpmn-surf-test'), 'refactor/rename-delivery');
+        assert.ok(scraper.blobActionsAnchor(document).querySelector('a[data-testid="raw-button"]'));
     });
 });
 
