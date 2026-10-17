@@ -53,9 +53,9 @@ class DmnTableViewport {
         this.#changeZoom(-CanvasViewport.IN_OUT_ZOOM_DELTA);
     }
 
+    // Shrinks from the current zoom until the whole table is in the window; a table
+    // that already fits stays as it is.
     showFull() {
-        this.setZoom(DmnTableViewport.MAX_ZOOM);
-
         while (this.#currentZoom > DmnTableViewport.MIN_ZOOM && !this.#isFullyVisible()) {
             this.#changeZoom(-CanvasViewport.IN_OUT_ZOOM_DELTA);
         }
