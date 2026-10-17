@@ -77,7 +77,7 @@ annotations), cropped to 380×560 and set side by side. The five 1280×800 scree
 store's. Store assets, including the promo tile and its own small diagram, are kept with the
 owner's store notes, not in this repository.
 
-The project access token (`~/.config/bpmn-surf-demo-token`, Maintainer, scope `api`) is
+The project access token (Maintainer, scope `api`; its file is named in the owner's local notes of the `gitlab-test-project` skill) is
 only for content changes the owner asked for.
 
 Scripts and docs resolve the MR by its title at run time. Only published text (the root

@@ -8,7 +8,7 @@ navigation or to the platform client's search gets a live run on top of Layer-2.
 The demo tours cover all of it; walk them without recording, into the scratchpad:
 
 ```bash
-T=$(cat ~/.config/bpmn-surf-demo-token)   # resolve the showcase MR by title
+T=$(cat <demo token file>)   # named in gitlab-test-project's local.md; resolve the showcase MR by title
 BPMN_SURF_PROJECT=https://gitlab.com/kao.alllex/bpmn-surf-demo \
   node test/e2e/live/record-demo.mjs <iid> <scratchpad>/demo --no-video
 ```
