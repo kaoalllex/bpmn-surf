@@ -6,9 +6,9 @@ const {
 } = require('./support/boot-differ');
 const { installHandlerOpenCapture, getNavigated } = require('./support/handler-open-capture');
 
-// Execution / task listener badges (FEAT-0019): a row of ℓ</> badges off the
-// element's bottom-left corner, one per distinct handler key, next to (not
-// instead of) the implementation badge off the bottom-right one.
+// Execution / task listener badges (FEAT-0019): a column of "<event> </>" badges
+// off the element's bottom-left corner, one per listener, next to (not instead
+// of) the implementation badge off the bottom-right one.
 const same = (xml) => ({ 'mr-sha': xml, 'base-sha': xml });
 const element = (page, id) => page.locator(`svg .djs-element[data-element-id="${id}"]`);
 const overlaysOf = (page, id) => page.locator(`.djs-overlays[data-container-id="${id}"]`);
@@ -48,16 +48,20 @@ test('a changed listener class paints a permanent badge beside the implementatio
     expect(implementationBox.x).toBeGreaterThanOrEqual(shapeBox.x + shapeBox.width - 1);
 });
 
-test('two listeners of one class share one badge; an expression listener gets none', async ({ page }) => {
+test('two listeners of one class get a badge each, stacked; an expression listener gets none', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, { fixtures: { xmlByRef: same(LISTENER_BADGES_BPMN) } });
 
     await element(page, 'Approve').click();
-    const badge = listenerBadgesOn(page, 'Approve');
-    await expect(badge).toHaveCount(1);
-    await expect(badge).toHaveAttribute('title',
-        'Task listener (create), task listener (complete) — open the handler code');
-    await expect(badge).not.toHaveClass(/handler-link-(added|changed|removed)/);
+    const badges = listenerBadgesOn(page, 'Approve');
+    await expect(badges).toHaveCount(2);
+    await expect(badges).toHaveText(['create </>', 'complete </>']);
+    await expect(badges.first()).toHaveAttribute('title', 'Task listener (create) — open the handler code');
+    await expect(badges.last()).toHaveAttribute('title', 'Task listener (complete) — open the handler code');
+    await expect(badges.first()).not.toHaveClass(/handler-link-(added|changed|removed)/);
+    const create = await badges.first().boundingBox();
+    const complete = await badges.last().boundingBox();
+    expect(complete.y).toBeGreaterThanOrEqual(create.y + create.height);
 });
 
 test('a sequence flow listener shows on selection; a plain task gets no listener badge', async ({ page }) => {
@@ -86,7 +90,7 @@ test('an unchanged listener badge opens the listener class at the shown ref', as
     await installHandlerOpenCapture(page);
 
     await element(page, 'Approve').click();
-    await listenerBadgesOn(page, 'Approve').click();
+    await listenerBadgesOn(page, 'Approve').first().click();
 
     await expect.poll(async () => await getNavigated(page)).toEqual(
         ['http://localhost/blob/mr-sha/src/ApprovalListener.kt#L3']
@@ -132,7 +136,7 @@ test('a pool shows the listeners of its process', async ({ page }) => {
         'Execution listener (start) — open the handler code');
 });
 
-test('a flow listener row sits on the flow, clear of its source and target shapes', async ({ page }) => {
+test('a flow listener column sits on the flow, clear of its source and target shapes', async ({ page }) => {
     wireDiagnostics(page);
     await bootBpmnDiffer(page, { fixtures: { xmlByRef: same(LISTENER_BADGES_BPMN) } });
 

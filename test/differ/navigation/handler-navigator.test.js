@@ -154,7 +154,7 @@ describe('HandlerNavigator — listener badges (FEAT-0019)', () => {
     const badgesOf = (overlay) => Array.from(overlay.opts.html.children);
     const titles = (overlay) => badgesOf(overlay).map(badge => badge.title);
 
-    it('groups the listeners of one class into one badge and skips an expression listener', () => {
+    it('gives each listener its own badge captioned by its event, even two of one class, and skips an expression listener', () => {
         const task = shape('Task', withListeners(
             listener('ExecutionListener', { event: 'start', class: 'com.a.AuditDelegate' }),
             listener('ExecutionListener', { event: 'end', class: 'com.b.AuditDelegate' }),
@@ -165,8 +165,9 @@ describe('HandlerNavigator — listener badges (FEAT-0019)', () => {
         assert.equal(overlays.added.length, 1);
         assert.equal(overlays.added[0].elementId, 'Task');
         assert.deepEqual(titles(overlays.added[0]),
-            ['Execution listener (start), execution listener (end) — open the handler code']);
-        assert.equal(badgesOf(overlays.added[0])[0].textContent, 'ℓ</>');
+            ['Execution listener (start) — open the handler code', 'Execution listener (end) — open the handler code']);
+        assert.deepEqual(badgesOf(overlays.added[0]).map(badge => badge.textContent), ['start </>', 'end </>']);
+        assert.equal(badgesOf(overlays.added[0])[0].firstChild.className, 'handler-link-event');
         assert.equal(overlays.added[0].opts.html.className, 'listener-links');
         assert.deepEqual({ ...overlays.added[0].opts.position }, { bottom: 0, left: 0 });
     });
@@ -260,6 +261,7 @@ describe('HandlerNavigator — listener badges (FEAT-0019)', () => {
 
         assert.deepEqual(overlays.added.map(overlay => overlay.elementId), ['Start']);
         assert.deepEqual(titles(overlays.added[0]), ['Process execution listener (end) changed in this MR — open its diff']);
+        assert.equal(badgesOf(overlays.added[0])[0].textContent, 'process end </>');
     });
 
     it('does not lift the process listeners onto a start event inside a pool', () => {

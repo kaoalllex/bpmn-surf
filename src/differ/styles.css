@@ -458,28 +458,34 @@
     color: hsl(0, 0%, 45%);
 }
 
-/* call activity "dive in" link — same minimalist look as .handler-link */
-.dive-in-call-activity {
-    padding: 2px 5px 1px;
-    border: 1px solid hsl(0, 0%, 70%);
-    border-radius: 2px;
-    background-color: hsl(0, 0%, 92%);
+/* element badges — handler code, listener, call activity / decision "dive in",
+   message correlation — styled like the toolbar buttons, 1.2 × Chrome's 13px
+   monospace default */
+.dive-in-call-activity,
+.handler-link,
+.correlation-link {
+    padding: 2px 7px 1px;
+    border: 1px solid #767676;
+    border-radius: 3px;
+    background-color: #efefef;
     font-family: monospace;
+    font-size: 15.6px;
     white-space: nowrap;
     user-select: none;
     cursor: pointer;
 }
 
-/* service task handler code link */
-.handler-link {
-    padding: 2px 5px 1px;
-    border: 1px solid hsl(0, 0%, 70%);
-    border-radius: 2px;
-    background-color: hsl(0, 0%, 92%);
-    font-family: monospace;
-    white-space: nowrap;
-    user-select: none;
-    cursor: pointer;
+.dive-in-call-activity:hover,
+.handler-link:hover,
+.correlation-link:hover {
+    border-color: #4f4f4f;
+    background-color: #dcdcdc;
+}
+
+.dive-in-call-activity:active,
+.handler-link:active,
+.correlation-link:active {
+    background-color: #f5f5f5;
 }
 
 /* handler touched in this MR — colours match DiffType (diff-type.js) */
@@ -495,37 +501,52 @@
     border-color: #cc4444;
     background-color: #ff8888;
 }
+.handler-link-added:hover {
+    border-color: #44cc44;
+    background-color: #66dd66;
+}
+.handler-link-changed:hover {
+    border-color: #4444cc;
+    background-color: #6666ee;
+}
+.handler-link-removed:hover {
+    border-color: #cc4444;
+    background-color: #ee6666;
+}
 
-/* listener handler links (FEAT-0019): a row hanging off the element's bottom-left
-   corner, mirroring the implementation badge off the bottom-right one */
+/* listener handler links (FEAT-0019): a column hanging off the element's
+   bottom-left corner, mirroring the implementation badge off the bottom-right
+   one; the gap keeps it off an event's centred label */
 .listener-links {
     display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 2px;
-    transform: translateX(-100%);
+    transform: translateX(calc(-100% - 4px));
 }
 
 /* on a flow: centred under the line's middle */
 .listener-links-flow {
+    align-items: center;
     transform: translate(-50%, 4px);
 }
 
-/* message-correlation code link (FEAT-0027) — same minimalist look as .handler-link */
+/* a listener badge's event name: a caption to its </> */
+.handler-link-event {
+    font-family: sans-serif;
+    font-size: 0.85em;
+}
+
+/* message-correlation code link (FEAT-0027) */
 .correlation-overlay {
     position: relative;
 }
 
-.correlation-link {
-    padding: 2px 5px 1px;
-    border: 1px solid hsl(0, 0%, 70%);
-    border-radius: 2px;
-    background-color: hsl(0, 0%, 92%);
-    font-family: monospace;
-    white-space: nowrap;
-    user-select: none;
-    cursor: pointer;
-}
-
-.correlation-link-loading {
+.correlation-link-loading,
+.correlation-link-loading:hover,
+.correlation-link-loading:active {
+    border-color: #767676;
+    background-color: #efefef;
     cursor: default;
 }
 
