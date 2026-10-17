@@ -374,6 +374,20 @@
     font-size: 14px;
 }
 
+/* The table spans the window at every zoom (the zoom scales the text and the row
+   height, not the width): dmn-js's fixed 192px per column would push a wide
+   table past the window, so the columns share the width and long values wrap. */
+.dmn-decision-table-container .tjs-table {
+    table-layout: auto;
+}
+.dmn-decision-table-container thead th {
+    width: auto;
+}
+.dmn-decision-table-container th,
+.dmn-decision-table-container td {
+    overflow-wrap: anywhere;
+}
+
 
 /* spinner (UX-0008) — one keyframe reused by the inline dive-in badge spinner
    and the full-screen differ render overlay below */
