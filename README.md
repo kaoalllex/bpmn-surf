@@ -1,21 +1,22 @@
 # bpmn-surf
 
-Browser extension for viewing and comparing BPMN and DMN diagrams: open schemas straight from a repository, follow call activities and decision references across files (and back), and review changes in GitLab merge requests and GitHub pull requests.
+Browser extension that shows BPMN and DMN files in GitLab and GitHub as diagrams. See what a merge or pull request changed, open any diagram straight from the repository, follow called processes and decisions across files, and jump from a task to its code.
 
 ![A merge request in GitLab: Schema diff opens the diagram diff with added, changed and removed elements, the ☼ highlight, Switch branch and the changed property groups](docs/media/hero.gif)
 
-Try it on the public demo — a [merge request on GitLab](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
-or a [pull request on GitHub](https://github.com/kaoalllex/bpmn-surf-demo/pull/1) — once the extension is
-[installed](#installation). The diffs, diving into called processes and a changed
-handler's diff work signed out. Jumping to an unchanged handler's code, to message
-correlation and to a called decision, and listing the callers of a diagram, use the
-platform's code search, which on gitlab.com and github.com needs a signed-in account; on
-GitHub, diving in signed out finds only the diagrams the pull request itself changes.
+Try it on the public demo once the extension is [installed](#installation): a
+[merge request on GitLab](https://gitlab.com/kao.alllex/bpmn-surf-demo/-/merge_requests/1)
+or a [pull request on GitHub](https://github.com/kaoalllex/bpmn-surf-demo/pull/1).
+
+- Signed out, you get the diffs, diving into called processes and the diff of a changed handler.
+- Signed in, you also get the jumps that use the platform's code search: to an unchanged
+  handler, to the code that correlates a message, to a called decision, and the list of a
+  diagram's callers. gitlab.com and github.com allow code search only to signed-in users.
+- On GitHub, signed out, diving in finds only the diagrams the pull request itself changes.
 
 ## Requirements
 
-- Google Chrome
-- Other Chromium browsers with support for Chrome Extension Manifest V3
+Google Chrome, or another Chromium browser that supports Manifest V3 extensions.
 
 ## Installation
 
@@ -44,43 +45,52 @@ your own GitLab from the extension popup — no file editing:
 3. Confirm the access request Chrome shows
 4. Reload the tabs you already had open
 
-If you updated from 1.3 and the buttons are gone from `gitlab.com`, the popup offers
-**Turn on gitlab.com**. A build made for a team can bake its hosts in, so they need no
-popup step (`npm run package -- gitlab.internal.example`).
+Updated from 1.3 and the buttons are gone from `gitlab.com`? The popup offers
+**Turn on gitlab.com**.
 
-Only `https` hosts are accepted. The host is kept as a Chrome permission, so it survives
-updates and re-installs; remove it with the `×` next to it in the popup. Chrome may keep
-showing a removed host under `chrome://extensions` → Details → Site access — that record is
-its own, the extension no longer runs there.
+Only `https` hosts are accepted. A site stays on across updates and re-installs; remove it
+with the `×` next to it in the popup. Chrome may still list a removed host under
+`chrome://extensions` → Details → Site access, but the extension no longer runs there.
 
-The same popup sets which annotations mark task handlers, if your project uses something
-other than `@ExternalTaskSubscription` (Camunda 7) and `@JobWorker` (Camunda 8) — for
-example `@ZeebeWorker`.
+For a team, `npm run package -- gitlab.internal.example` builds a package with the hosts
+already on, so nobody needs the popup step.
+
+If your task handlers use an annotation other than `@ExternalTaskSubscription` (Camunda 7)
+or `@JobWorker` (Camunda 8), for example `@ZeebeWorker`, set it in the same popup. Export
+the settings to a file to hand them to a colleague, who imports them in their popup.
 
 ![The popup: the Sites list with github.com, gitlab.com and a self-managed host added, and the handler annotation settings](docs/media/popup.png)
 
 ## Features
 
-The buttons appear only where there is a diagram: on `.bpmn` and `.dmn` files in a merge
-request, and on a diagram file in the repository. On GitHub the same buttons sit on the
-**Files changed** tab of a pull request (public and private, signed in or out) and on a
-file page; navigation (diving into called processes, callers, handlers) works without a token: GitHub's own default-branch code search plus the pull request's own files; signed out, only the PR's files. The commit and range pickers of a pull request are followed. GitHub Enterprise Server is supported by design: add the site like a self-managed GitLab; it is recognised from its pages, or pick its type (GitLab or GitHub) next to the site in the popup (not yet tried on a real instance).
+Buttons appear only on diagrams: on `.bpmn` and `.dmn` files in a merge request, and on a
+diagram file in the repository. Camunda 7 and Camunda 8 (Zeebe) diagrams are both
+supported: the properties panel, the change highlighting and the readable conditions
+(JUEL, FEEL) follow the engine the diagram targets.
+
+On GitHub the buttons sit on the **Files changed** tab of a pull request (public or
+private, signed in or out) and on a file page, and they follow the pull request's commit
+and range pickers. Navigation needs no token: it uses GitHub's code search on the default
+branch plus the pull request's own files (signed out, only the pull request's files).
+
+GitHub Enterprise Server is added like a self-managed GitLab. Its type is recognised from
+its pages, or you pick GitLab or GitHub next to the site in the popup.
 
 ![The Schema diff and Decision diff buttons on diagram files of a merge request, none on a Kotlin file, and the View schema button with its menu on a repository file](docs/media/buttons.gif)
 
 **Comparing changes**
 
-- Camunda 7 and Camunda 8 (Zeebe) diagrams alike: the properties panel, the change highlighting and the readable conditions (JUEL and FEEL) follow the engine the diagram targets
-- Visual diff of two BPMN/DMN versions in a merge request (MR branch vs. target branch), opened from a **Schema diff** / **Decision diff** button that appears on the MR page
-- Diff of a selected MR commit against its parent
-- Diff of a repository file against a local version (**Diff with local file…** in the menu of the **View schema** button)
-- Highlighting changes: 🟩 added, 🟥 removed, 🟦 modified — always on; the ☼ toggle also outlines every changed element, so a small one is not missed
-- Switching between the shown versions (the **Switch branch** button) — the target branch is shown by name, not by hash — and downloading either of them
-- A clear indication when a schema is absent in one of the versions
-- A list of the changes — elements and connections, with what changed in each; click an entry to jump to its element. The list follows the level on screen: a collapsed subprocess with changes inside is one entry, and the list inside it shows its own changes
-- Highlighting of the properties-panel groups affected by a change; an element whose type changed is marked in the panel header
-- Inside an element, highlighting the specific changed In/Out mapping and Input/Output entries, and the changed lines of a sequence-flow condition
+- The **Schema diff** / **Decision diff** button on a merge request opens a visual diff of the merge request's version against the target branch
+- Colours: 🟩 added, 🟥 removed, 🟦 changed. The ☼ toggle also outlines every changed element, so a small one is not missed
+- Changes to the process itself, pools, lanes, message flows and artifacts are shown too
+- A list of changes: each changed element and connection, with what changed in it. Click a row to jump to the element. The list follows the level on screen: a collapsed subprocess with changes inside is one row, and inside it the list shows its own changes
 - A collapsed subprocess is outlined when something inside it changed
+- The properties panel highlights what changed: the affected groups, single In/Out mappings and Inputs/Outputs, the changed lines of a sequence-flow condition. A changed element type is marked in the panel header
+- In a DMN decision table, the changed cells and rules are highlighted
+- **Switch branch** flips between the two versions (the target branch is shown by name); either one can be downloaded
+- A clear message when the diagram does not exist in one of the versions
+- Diff of a single commit picked in the merge or pull request; on GitHub, also of a range of commits
+- Diff of a repository file against a local file (**Diff with local file…** in the menu of the **View schema** button)
 
 ![A row of the list of changes selects its element; the panel header marks a task's new type; a sequence-flow condition with only the changed lines highlighted](docs/media/details.gif)
 
@@ -88,14 +98,14 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 
 **Browsing & navigation**
 
-- Viewing a BPMN schema or DMN decision from a repository file, without a diff — opened from a **View schema** / **View decision** button next to the file name
-- A clickable file path in the header (opens the file in the repository)
-- Diving from a Call Activity into the called process — and stepping back to the caller
-- A menu of every diagram that calls the one on screen
-- Navigating from a Business Rule Task to the called DMN — and back
-- Jumping to the handler code of a service task (external task, delegate or Camunda 8 job worker): to its file in the repository, or to its diff when the merge or pull request changed it
-- The same for Camunda 7 execution and task listeners (a class or a delegate)
-- Jumping from a message-catching event/task to where its message is correlated in code
+- The **View schema** / **View decision** button next to a repository file opens it as a diagram, without a diff
+- The file path in the header opens the file in the repository
+- Dive from a call activity into the called process, and step back
+- A menu lists every diagram that calls the one on screen
+- Go from a business rule task to its DMN decision, and back
+- A badge on a service task opens its handler code (external task, delegate or Camunda 8 job worker): the file in the repository, or its diff when the merge or pull request changed it
+- Execution and task listeners get a badge each, captioned by the listener's event (a Camunda 7 class or delegate, a Camunda 8 job worker)
+- A badge on a message-catching event or task opens the code that correlates the message
 
 ![Diving into a call activity, whose changed handler opens its diff in the merge request; diving further down; the menu of every diagram that calls this one; and a business rule task opening its DMN decision with the merge request's changes](docs/media/diagrams.gif)
 
@@ -103,19 +113,18 @@ file page; navigation (diving into called processes, callers, handlers) works wi
 
 **Reading a diagram**
 
-- A properties panel with element details, including readable sequence-flow conditions
-- The properties panel auto-expands the groups relevant to the selected element, and can be resized or hidden
-- Searching for an element on the canvas (Ctrl/Cmd+F)
-- Viewport controls: zoom/pan and **Fit view**
+- A properties panel with the element's details and readable sequence-flow conditions. It opens the groups relevant to the selected element and can be resized or hidden
+- Ctrl/Cmd+F finds elements by name, id or any parameter value
+- Zoom, pan and **Fit view**
 
 ![Ctrl/Cmd+F search stepping through the matches, then zooming in and fitting the view](docs/media/search.gif)
 
 **Editing a BPMN schema**
 
-- Opening the schema currently on screen in an **edit mode** (the **✎** button) — in a separate tab; nothing is ever written back to the repository
-- Canvas editing: palette, context pad, undo/redo — plus an editable properties panel (names, implementation, topics, conditions, In/Out mappings, Inputs/Outputs)
-- Edits are coloured against the version you started from (🟩 added, 🟦 changed), with a toggle to turn the colouring off, and manual colours for individual elements
-- Downloading the result as a single `.bpmn` file
+- The **✎** button opens the diagram on screen in an edit mode, in a separate tab. Nothing is ever written back to the repository
+- Edit on the canvas (palette, context pad, undo/redo) and in the properties panel (names, implementation, topics, conditions, In/Out mappings, Inputs/Outputs)
+- Edits are coloured against the version you started from (🟩 added, 🟦 changed); the colouring can be turned off, and any element can be coloured by hand
+- Download the result as a `.bpmn` file
 
 ![Edit mode: deleting an end event, appending a task, changing a task's type, renaming it, toggling the colouring, colouring a pool and downloading the result](docs/media/edit.gif)
 
