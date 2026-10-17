@@ -32,6 +32,8 @@
     border-color: var(--bpmn-surf-accent);
     color: var(--bpmn-surf-accent);
     font-weight: 600;
+    /* A narrow file header squeezes the label onto two lines otherwise. */
+    white-space: nowrap;
 }
 
 .bpmn-surf-btn-accent:hover {
@@ -106,6 +108,7 @@ html.gl-dark .bpmn-surf-btn-accent {
 .bpmn-surf-gh-file-btn,
 .bpmn-surf-gh-split {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     margin-right: 8px;
 }
