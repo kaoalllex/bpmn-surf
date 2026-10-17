@@ -14,7 +14,8 @@ notes. Updated on release (the `release` skill).
 - BUG-0050, BUG-0052: show changes to the process element, pools, lanes, message flows and artifacts; a changed pool or lane takes a thick border instead of a fill that hid the changes inside it
 - BUG-0051: a diagram that does not parse says so instead of showing a blank canvas with zero changes
 - UX-0004 (3 of 4 points): highlight a changed error code, multi-instance retry and async flags, interrupting flags in the properties panel; explicit default values are no longer reported as changes
-- DMN: the table spans the window's width at every zoom and its rows scroll inside the window; Show full fits the table to the window and no longer hangs
+- DMN: the table spans the window's width at every zoom and its rows scroll inside the window; Show full fits the table to the window, never enlarges one that already fits, and no longer hangs
+- The injected buttons keep their label on one line in a narrow file header
 - A reload over an older build no longer fails on a duplicate content-script registration
 - A message name matches only whole in the correlation search (OrderPaid no longer finds OrderPaidC8)
 - INFRA-0010: warn when a code search or an MR/PR file list is truncated; a code search with no answer falls back to the repository search link instead of claiming no hits

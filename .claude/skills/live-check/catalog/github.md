@@ -16,6 +16,7 @@ pick by kind if one moved.
 |---|---|
 | sandbox `#9` `/changes` signed in, `/files` anonymous | one `Schema diff` / `Decision diff` button per diagram file, none elsewhere; signed in: **zero** `api.github.com` requests while opening the page, clicking a button and the differ's handler badges; anonymous: one `pulls/{n}/files` per differ |
 | `#9` after `main` moved | the target side equals GitHub's own diff (merge base, not the base tip) |
+| a diagram PR's Files changed, window ~1100–1200 px wide with the file tree open (`setViewportSize` on a `launchWithExtension()` page) | the label stays on one line: the button is as tall as GitHub's own (28 px, not 48), its right edge inside the file header |
 | `#16` Conversation → Files changed (soft navigation) | the button appears and resolves the right PR (no stale payload) |
 | `bpmn-io/dmn-js#852` (101 files, 6 `.dmn`), scroll | buttons follow the blocks, no blinking, none on code files; signed in: the page embeds no file diffs, so the merge base comes from one `page_data/diff_entries` request — still zero `api.github.com` |
 | sandbox `#4` (DMN), `camunda/camunda-bpm-examples#104` | the differ renders under GitHub's CSP, no `EvalError` in the console |
