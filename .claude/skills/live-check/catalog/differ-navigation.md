@@ -5,7 +5,9 @@ Part of the `live-check` skill catalog; the prerequisites and rules are in its `
 Dive-in, the callers list, the decision badge, handler and correlation badges use
 GitLab code search, which answers only a signed-in session — so a change to
 navigation or to the platform client's search gets a live run on top of Layer-2.
-The demo tours cover all of it; walk them without recording, into the scratchpad:
+The release smoke walks the sandbox rows below (`badges.mjs`). The demo tours cover the
+happy path too; walk them without recording before a re-recording of the media (or when
+a change touches every kind of navigation at once), into the scratchpad:
 
 ```bash
 T=$(cat <demo token file>)   # named in gitlab-test-project's local.md; resolve the showcase MR by title
@@ -34,6 +36,7 @@ script at a time; `O=order-service/src/main/resources/bpmn/order`.
 | `badges.mjs main $O/listeners/ListenerShowcase.bpmn OrderReceived:listener CheckStock:listener Flow_2:listener ApproveOrder:listener WaitCooling:listener LogOutcome:listener OrderApproved:listener` | one stacked badge per listener, in document order: `process start`/`process end` on the start event (`AuditListener.kt`, `FulfillmentAudit.kt`); CheckStock's three `start` and one `end`; `take` → `StepTimer.kt`; ApproveOrder's `start`, `create`, `assignment`, `update`, `complete`, `delete`, `timeout`; the expression-only LogOutcome → `no badge` |
 | `badges.mjs main billing-service/src/main/resources/bpmn/billing/Billing.bpmn IssueInvoice SettleLedger SendReceipt ChargeCard` | `camunda:class` and `${bean}` delegates open their classes; `${billingService.settle(execution)}` → `no badge` |
 | `badges.mjs --open 2 main billing-service/src/main/resources/bpmn/billing/Dunning.bpmn Refund WriteOff AwaitResolution:correlation StartDunning:callers` | `${refundDelegate}` → `delegate/RefundDelegate.java`, the first of the two classes of that name in search order (a documented limitation, unit-pinned); `DunningResolved` → `DunningKafkaListener.java`; callers → `Billing.bpmn \| Payment.bpmn` (across modules), the second opened with `Dunning` selected |
+| `badges.mjs main $O/payment/Payment.bpmn AssessRisk:dive-in CalcFee:dive-in` | the decision badges open the DMN differ of `dmn/payment/PaymentRiskMatrixV2.dmn` and `dmn/payment/FeeSchedule.dmn` (found by `decisionRef`) |
 | `badges.mjs main legacy/LegacyMigration.bpmn Step01 Step02` | topics without code → the code-search page |
 | `badges.mjs --mr <test/many-handlers> --shots <dir> x legacy/LegacyMigration.bpmn Step01 Step02` | the MR adds handlers for `migrationStep01…20`: both badges `(added)` and → the MR tab, that handler's diff; `LegacyMigration-fitted.png` shows the 18 permanent green badges (steps 7 and 14 are gateways) at the fitted zoom, none covering a shape or another badge |
 | `badges.mjs --mr <c7/model-changes> x $O/OrderMain.bpmn ValidateOrder:listener OrderMainProcess_pool:listener Flow_om3:listener` | the changed `AuditListener` badges are permanent and `(changed)`, titled "… changed in this MR — open its diff", and send the MR tab to the file's diff; the unchanged `StepTimer` opens its blob at the MR head |

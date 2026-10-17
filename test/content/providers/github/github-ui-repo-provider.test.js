@@ -2,7 +2,7 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
-const { createScope } = require('#scope');
+const { createScope, fixture } = require('#scope');
 
 function setup(html, blocks) {
     const scope = createScope({ url: 'https://github.com/acme/flows/pull/42/files' });
@@ -105,5 +105,34 @@ describe('GitHubUIRepoProvider — blob', () => {
         const { scope, ui } = setup('');
         ui.addButton({ fileType: scope.FILE_TYPE_BPMN, filePath: 'a.bpmn', onButtonClickFunc: () => {} });
         assert.equal(ui.isButtonPresent(), false);
+    });
+});
+
+// GitHub's own markup, captured by capture-markup.mjs --github: red after a re-capture
+// means GitHub moved what the scraper reads.
+describe('GitHubUIRepoProvider — on captured GitHub markup', () => {
+    const RENAMED = 'order-service/src/main/resources/bpmn/order/fulfillment/LastMileDelivery.bpmn';
+    const over = (name) => {
+        const scope = createScope({ url: 'https://github.com/kaoalllex/bpmn-surf-test/pull/7/files' });
+        scope.document.body.innerHTML = fixture(name);
+        return { scope, ui: new scope.GitHubUIRepoProvider(new scope.GitHubDomScraper()) };
+    };
+
+    for (const name of ['github/pr-changes-new-ui.html', 'github/pr-files-classic.html']) {
+        it(`puts one button in the diagram's own header (${name})`, () => {
+            const { scope, ui } = over(name);
+            ui.syncFileButtons(describeFile(scope));
+            const buttons = [...scope.document.querySelectorAll('.bpmn-surf-file-btn')];
+            assert.deepEqual(buttons.map(b => b.dataset.bpmnSurfFilePath), [RENAMED]);
+            const header = buttons[0].closest('[data-diff-header-wrapper], div.file-header[data-path]');
+            assert.ok(header, 'the button sits inside a file header');
+        });
+    }
+
+    it('puts the blob button just before the Raw button group', () => {
+        const { scope, ui } = over('github/blob.html');
+        ui.addButton({ fileType: new scope.FileTypeDetector().detect(RENAMED), filePath: RENAMED, onButtonClickFunc: () => {} });
+        const container = scope.document.getElementById('bpmn-surf-gh-branch');
+        assert.equal(container.nextElementSibling.getAttribute('data-component'), 'ButtonGroup');
     });
 });
