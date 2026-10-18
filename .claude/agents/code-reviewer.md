@@ -15,6 +15,7 @@ Get the changes via `git diff` (or `git diff HEAD` / the range specified in the 
 - New `permissions`/`host_permissions` in `manifest.json` without the user's agreement, or reordering `utils.js#loadScripts` without a load-dependency reason. Not a violation: editing the manifest's composition — e.g. a new differ-page file added to `web_accessible_resources` and to `loadScripts` before `bpmn-differ.js`
 - New runtime dependencies, TypeScript, frameworks, build tools (exception: the approved dev dependencies already in `package.json#devDependencies` — test tooling and the library packages for `sync:libs`; a new one is a finding)
 - Behavior/UX changes as part of a refactor or fix
+- A browser check outside the places `docs/conventions.md` allows ("Browser differences"): a user-agent or browser-name test anywhere, or a capability `if` for Chrome/Firefox in a feature file instead of a `utils.js` helper
 
 ## Style (docs/conventions.md)
 - PascalCase classes, camelCase functions/variables, SCREAMING_SNAKE_CASE constants
