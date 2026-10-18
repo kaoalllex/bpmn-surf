@@ -302,8 +302,8 @@ class App {
             return;
         }
         // Open the tab while the click still counts as a user gesture: the awaits
-        // below can outlast it, and Chrome then blocks the tab (BUG-0005).
-        const newWindow = window.open('about:blank');
+        // below can outlast it, and the browser then blocks the tab (BUG-0005).
+        const newWindow = openBlankTab();
         try {
             const params = await this.#buildDiffParams(
                 filePath,
@@ -420,7 +420,7 @@ class App {
         if (this.#extensionWasReloaded()) {
             return;
         }
-        const newWindow = openedWindow || window.open('about:blank');
+        const newWindow = openedWindow || openBlankTab();
 
         // The branch button carries a closure over the blob it was built for, and
         // GitLab can switch the blob before our debounced re-check rebuilds it. A

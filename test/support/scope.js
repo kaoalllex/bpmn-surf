@@ -161,7 +161,7 @@ const EXPORTED_NAMES = [
     'parseXml',
     'getFileNameFromPath', 'getFileNameWithoutExtensionFromPath', 'shortenCommitId',
     'capitalizeFirstLetter', 'getTitle', 'requireDefined', 'doWithAttempts',
-    'findPropertiesGroupHeader', 'plural',
+    'findPropertiesGroupHeader', 'plural', 'openBlankTab',
     // the console ring subsystem (console-log.js)
     'ConsoleLog'
 ];

@@ -22,8 +22,17 @@
 #
 #     npm run package -- --store
 #
+# The store zip is also the Microsoft Edge Add-ons upload, unchanged.
+#
+# `--firefox` builds the addons.mozilla.org upload: the store layout with the
+# staged manifest rewritten for Firefox (scripts/firefox-manifest.js), so the
+# tracked manifest.json stays the single source:
+#
+#     npm run package -- --firefox
+#
 # Requires the system `zip`. Output: dist/bpmn-surf-<version>.zip,
-# or dist/bpmn-surf-<version>-store.zip with --store
+# dist/bpmn-surf-<version>-store.zip with --store,
+# dist/bpmn-surf-<version>-firefox.zip with --firefox
 #
 set -euo pipefail
 
@@ -37,8 +46,10 @@ if [ -z "$version" ]; then
 fi
 
 store=false
-if [ "${1:-}" = "--store" ]; then
+firefox=false
+if [ "${1:-}" = "--store" ] || [ "${1:-}" = "--firefox" ]; then
     store=true
+    [ "$1" = "--firefox" ] && firefox=true
     shift
     if [ "$#" -gt 0 ]; then
         echo "package: a store build is public, it takes no hosts: $*" >&2
@@ -49,7 +60,9 @@ fi
 name="bpmn-surf"
 stage="dist/$name"
 zip_name="$name-$version.zip"
-if [ "$store" = true ]; then
+if [ "$firefox" = true ]; then
+    zip_name="$name-$version-firefox.zip"
+elif [ "$store" = true ]; then
     zip_name="$name-$version-store.zip"
 fi
 
@@ -72,6 +85,10 @@ if [ "$#" -gt 0 ]; then
         fs.writeFileSync(file, JSON.stringify(manifest, null, 4));
     ' "$stage/manifest.json" "$@"
     echo "package: baked hosts into host_permissions: $*"
+fi
+
+if [ "$firefox" = true ]; then
+    node scripts/firefox-manifest.js "$stage/manifest.json"
 fi
 cp -R src "$stage/"
 cp -R libs "$stage/"

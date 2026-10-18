@@ -96,3 +96,30 @@ describe('doWithAttempts', () => {
         assert.equal(calls, 3);
     });
 });
+
+describe('openBlankTab', () => {
+    it('opens the tab itself outside a Firefox content script', () => {
+        const scope = createScope();
+        const opened = {};
+        scope.window.open = (url) => (opened.url = url, opened);
+        assert.equal(scope.openBlankTab(), opened);
+        assert.equal(opened.url, 'about:blank');
+    });
+
+    it('has the page open it in a Firefox content script and Xray-wraps the result', () => {
+        const scope = createScope();
+        const pageTab = {};
+        scope.window.open = () => assert.fail('the content script must not open the tab itself');
+        scope.window.wrappedJSObject = { open: (url) => (pageTab.url = url, pageTab) };
+        scope.window.XPCNativeWrapper = (tab) => ({ xray: tab });
+        assert.deepEqual(scope.openBlankTab(), { xray: pageTab });
+        assert.equal(pageTab.url, 'about:blank');
+    });
+
+    it('passes a blocked pop-up on as null', () => {
+        const scope = createScope();
+        scope.window.wrappedJSObject = { open: () => null };
+        scope.window.XPCNativeWrapper = () => assert.fail('nothing to wrap');
+        assert.equal(scope.openBlankTab(), null);
+    });
+});
