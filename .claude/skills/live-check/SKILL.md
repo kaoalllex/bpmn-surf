@@ -26,7 +26,8 @@ with the real bpmn-js and properties panel (`docs/testing.md`, `test/e2e/*.spec.
 | `src/content/` — buttons, file detection, placement, SPA navigation | the unit tests on captured GitLab markup (`gitlab-ui-repo-provider.test.js`; red after `capture-markup.mjs` = GitLab moved its markup), then `catalog/buttons.md` (GitLab); `src/content/providers/github/`, `src/differ/platform/github-platform-client.js`, `src/core/github-changes-payload.js` — the unit tests on captured GitHub markup (`github-dom-scraper.test.js`; `capture-markup.mjs --github`), `pr-button.mjs`, then `catalog/github.md` |
 | the differ (`src/differ/`) | the Layer-2 spec of that area (`differ-edit-*`, `differ-prop-group-*`, `differ-highlight-*`, `dmn-*`…): add a case that fails without the fix. For a diagram from a report, pull it first (`gitlab-test-project` skill, "From report to repro") |
 | `src/differ/navigation/`, `src/differ/platform/` — dive-in, callers, badges, code search | Layer-2 spec of that area **and** `catalog/differ-navigation.md` (the search is mocked offline) |
-| how differ tabs open — `openDiffer` (`src/core/utils.js`), `src/differ/shared/differ-tab-navigator.js` | `mr-button --click`, `pr-button --click`, `branch-button`, and `catalog/differ-navigation.md` |
+| how differ tabs open — `openDiffer`/`openBlankTab` (`src/core/utils.js`), `src/differ/shared/differ-tab-navigator.js` | `mr-button --click`, `pr-button --click`, `branch-button`, `catalog/differ-navigation.md`, and `firefox-smoke.mjs` |
+| a browser difference — `scripts/firefox-manifest.js`, the capability checks `docs/conventions.md` allows | `firefox-smoke.mjs`; Edge runs the Chrome build, nothing to add |
 | `src/popup/`, `src/background/`, `src/hosts/` | Layer 2 `popup-*.spec.js` and the unit `test/background/service-worker.test.js`; `node test/e2e/live/popup-screens.mjs <scratchpad>` (offline) for the look; the real-page rows in `catalog/github.md`; Chrome's permission dialog by hand |
 | the feedback report (`feedback-report.js`, the 💬 button) | Layer 2 `differ-feedback*.spec.js`, then `catalog/feedback.md` (github.com still takes the prefilled form) |
 | a release, a store submission | "Release smoke" below |
@@ -65,6 +66,7 @@ this set on the release branch, all against fresh MR iids and PR numbers resolve
 4. GitHub: the rows of `catalog/github.md` that `smoke.mjs` does not run (marked there).
 4a. Camunda 8, all of `catalog/camunda8.md`, on GitLab and on GitHub.
 4b. Report a problem, `catalog/feedback.md`.
+4c. Firefox: `node test/e2e/live/firefox-smoke.mjs --shots <scratchpad>/firefox` (~1.5 min, needs a local Firefox; before an AMO upload too).
 5. By hand, for the human: adding a site in the popup (Chrome's permission dialog
    cannot be automated), and the upgrade check from the previous store build.
 

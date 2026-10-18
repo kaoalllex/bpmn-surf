@@ -25,6 +25,7 @@ gitlab.com, so they are as available as it is.
 | `capture-login.mjs [--github]` | One-time sign-in, so the others run as you instead of anonymously. `--github` signs in to github.com instead of GitLab |
 | `diff-mode.mjs [on\|off]` | Reads, and on request sets, the account's "Show one file at a time" preference |
 | `record-demo.mjs <iid> <outDir> [--clip <name>,…] [--no-shots] [--no-video]` | Records the README GIFs (one per clip: `hero`, `buttons`, `details`, `subprocess`, `code`, `diagrams`, `search`, `edit`, `local`) and the five store screenshots from the demo project's showcase MR (the buttons shot pairs its GitHub copy's PR #1 with it). Each clip is a paced tour with a visible pointer. Every tab records its own video, and ffmpeg (must be on PATH) cuts out and joins the on-screen spans. `--clip` re-records only the named clips (`local` reads the `edit` clip's download). Needs the signed-in profile and "Show one file at a time" on. GitLab's layout cookies are switched for the run and restored. When a clip breaks, every open tab is saved as `failed-<clip>-<n>.png`. `--no-video` walks the same tours without recording (no GIF, no ffmpeg): the check before a re-recording; the release smoke walks the badge rows instead |
+| `firefox-smoke.mjs [--only gitlab,github] [--headed] [--shots <dir>]` | The Firefox build (`scripts/firefox-manifest.js`, gitlab.com and github.com baked into `host_permissions`) in a real Firefox, driven over WebDriver BiDi (Playwright cannot load a Firefox extension), signed out on the frozen demo project: the three file buttons on MR !1 and PR #1, the BPMN and DMN differs, dive-in, the edit tab and the blob button. Needs a local Firefox (`BPMN_SURF_FIREFOX=<binary>` if not in /Applications). Exit 3 = gitlab.com or github.com served its rate-limit page to the anonymous run: re-run later, not a finding |
 | `popup-screens.mjs [dir]` | Renders every popup screen, reports height and overflow, saves screenshots; then re-renders the site warnings (no site, the gitlab.com notice, gitlab.com + github.com) and prints `warning-visible=` per warning. Needs no network |
 
 ## Environment
@@ -32,6 +33,7 @@ gitlab.com, so they are as available as it is.
 | Variable | Effect |
 |----------|--------|
 | `BPMN_SURF_PROJECT=<project URL>` | The project every script opens instead of the sandbox |
+| `BPMN_SURF_FIREFOX=<binary>` | The Firefox `firefox-smoke.mjs` starts (default: `/Applications/Firefox.app`) |
 | `BPMN_SURF_ANONYMOUS=1` | A throwaway profile instead of the signed-in one: what a visitor without a GitLab account sees. The signed-in profile is not touched (`launchWithExtension({ anonymous: true })` does the same for one browser) |
 
 ## The demo project

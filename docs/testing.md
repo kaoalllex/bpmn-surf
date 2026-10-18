@@ -97,6 +97,11 @@ Scripts that drive the real extension in a real browser against the public test
 sandbox — see `test/e2e/live/README.md`. Not tests: outside `npm test` and
 `playwright test`, never in CI, since they talk to gitlab.com.
 
+Every other suite runs in Chromium; Firefox is covered by `firefox-smoke.mjs` (the
+Firefox build in a real Firefox over WebDriver BiDi) and by unit tests of its two
+pieces: `test/structure/firefox-manifest.test.js` (the AMO manifest) and the
+`openBlankTab` cases in `test/core/utils.test.js`. Edge runs the Chrome build.
+
 Use them for anything that depends on GitLab's own markup or on timing, which is
 where the diff button keeps breaking (the button showing for the wrong file, or
 blinking). `mr-button.mjs <iid>` checks that every diagram block carries exactly
