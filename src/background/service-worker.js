@@ -12,7 +12,11 @@
 // The toolbar icon shows "!" while no site is on, the gitlab.com notice waits or
 // a site's type is unknown.
 
-importScripts('/src/hosts/host-patterns.js');
+// Firefox runs this as an event page: no importScripts there, and the Firefox
+// build's manifest loads host-patterns.js ahead of this file (scripts/package.sh).
+if (typeof importScripts === 'function') {
+    importScripts('/src/hosts/host-patterns.js');
+}
 
 const USER_HOSTS_SCRIPT_ID = 'bpmn-surf-user-hosts';
 // Amber: "!" asks for the user's action (a warning), the default grey-blue goes unnoticed.
