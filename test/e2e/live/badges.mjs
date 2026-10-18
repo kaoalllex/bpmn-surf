@@ -73,7 +73,11 @@ async function landing(click) {
     await click();
     const tab = await newTab;
     if (tab) {
-        await tab.waitForURL((url) => url.href !== 'about:blank', { timeout: 30000 }).catch(() => {});
+        // A differ tab stays on about:blank: its file path tells it apart from a tab still loading.
+        await Promise.any([
+            tab.waitForURL((url) => url.href !== 'about:blank', { timeout: 30000 }),
+            tab.locator('a.differ-file-path').waitFor({ timeout: 30000 })
+        ]).catch(() => {});
         return { tab, url: tab.url() };
     }
     if (source.url() !== before) {
@@ -142,7 +146,7 @@ for (const target of targets) {
             const result = await landing(() => menu.locator('.differ-back-menu-item').nth(Number(openCaller) - 1).click());
             if (result?.tab) {
                 await result.tab.locator('svg .djs-element').first().waitFor({ timeout: 60000 });
-                await result.tab.waitForTimeout(3000);
+                await result.tab.locator('svg .djs-element.selected').first().waitFor({ timeout: 10000 }).catch(() => {});
                 const selected = await result.tab.locator('svg .djs-element.selected').evaluateAll((els) => els.map((e) => e.dataset.elementId));
                 console.log(`  caller ${openCaller} → ${await differFileOf(result.tab)}, selected: ${selected.join(', ') || 'none'}`);
             } else {
