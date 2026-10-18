@@ -193,14 +193,24 @@ function downloadTextFile(content, fileName) {
     URL.revokeObjectURL(link.href);
 }
 
+// A tab a Firefox content script opens gets no origin it can write into; one the
+// page itself opens inherits the page's origin, as every tab does in Chrome.
+function openBlankTab() {
+    if (!window.wrappedJSObject) {
+        return window.open('about:blank');
+    }
+    const opened = window.wrappedJSObject.open('about:blank');
+    return opened && XPCNativeWrapper(opened);
+}
+
 // openedWindow: an about:blank tab the caller opened on click, before its own
 // awaits — window.open after a long await is blocked as a popup (BUG-0005).
 async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc, openedWindow) {
     console.debug('opening differ...');
-    const newWindow = openedWindow || window.open('about:blank');
+    const newWindow = openedWindow || openBlankTab();
     if (!newWindow) {
         console.error('failed to open new window');
-        alert('Chrome blocked the new tab. Allow pop-ups for this site or click again.');
+        alert('The browser blocked the new tab. Allow pop-ups for this site or click again.');
         return false;
     }
 
@@ -208,9 +218,12 @@ async function openDiffer(params, extParams, msgId, getResourceUrlByNameFunc, op
     // standards mode) misbehaves — a CodeMirror `min-height: 100%` resolved
     // against the window. Rewriting the blank document with a doctype switches it
     // to standards mode; the window, and so its inherited origin, stay the same.
-    newWindow.document.open();
-    newWindow.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>');
-    newWindow.document.close();
+    // Firefox refuses document.open to a content script through its Xray view of the
+    // tab; the page's own document (wrappedJSObject) allows it.
+    const blankDocument = newWindow.document.wrappedJSObject || newWindow.document;
+    blankDocument.open();
+    blankDocument.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>');
+    blankDocument.close();
 
     console.debug('setting title...');
     newWindow.document.title = getTitle(params.fileName);
