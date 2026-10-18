@@ -16,7 +16,7 @@ or a [pull request on GitHub](https://github.com/kaoalllex/bpmn-surf-demo/pull/1
 
 ## Requirements
 
-Google Chrome or another Chromium browser that supports Manifest V3 extensions, or Firefox 140+ (desktop).
+Google Chrome or another Chromium browser that supports Manifest V3 extensions, or Firefox (desktop).
 
 ## Installation
 
