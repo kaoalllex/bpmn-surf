@@ -16,11 +16,12 @@ or a [pull request on GitHub](https://github.com/kaoalllex/bpmn-surf-demo/pull/1
 
 ## Requirements
 
-Google Chrome, or another Chromium browser that supports Manifest V3 extensions.
+Google Chrome or another Chromium browser that supports Manifest V3 extensions, or Firefox 140+ (desktop).
 
 ## Installation
 
-Install **bpmn-surf** from the [Chrome Web Store](https://chromewebstore.google.com/detail/bpmn-surf/baaoelmjlbfjhhkgbfkilgnefegbaldp) — Chrome keeps it up to date.
+Install **bpmn-surf** from the [Chrome Web Store](https://chromewebstore.google.com/detail/bpmn-surf/baaoelmjlbfjhhkgbfkilgnefegbaldp) or from [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/bpmn-surf/) — the browser keeps it up to date.
+In Microsoft Edge, install it from the Chrome Web Store: Edge offers to allow extensions from other stores.
 
 ### From source
 
@@ -42,7 +43,7 @@ your own GitLab from the extension popup — no file editing:
 1. Click the bpmn-surf icon in the browser toolbar (it shows `!` while no site is on)
 2. Under **Sites**, type the host (`github.com`, `gitlab.com`, `gitlab.mycompany.com`; a
    pasted merge or pull request link works too) and click **Add**
-3. Confirm the access request Chrome shows
+3. Confirm the access request the browser shows
 4. Reload the tabs you already had open
 
 Updated from 1.3 and the buttons are gone from `gitlab.com`? The popup offers
