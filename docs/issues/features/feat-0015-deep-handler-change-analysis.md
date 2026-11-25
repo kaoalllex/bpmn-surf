@@ -21,6 +21,7 @@ We need to account for changes in the transitive dependencies of the handler cla
   - Where to stop so as not to scan half the repository (filters by package/module, limits).
   - Performance and caching: the "class → file" resolution is already cached in the locator; cache the dependency graph similarly.
 - Low priority: an expensive feature with an unclear benefit/cost ratio; do it after the basic support for delegates and Java from [FEAT-0003]/[FEAT-0004].
+- Related: [FEAT-0044] analyses *how* the handler file itself changed; both feed the handler-code analyzer of the review findings core [FEAT-0040].
 
 ## Work log
 

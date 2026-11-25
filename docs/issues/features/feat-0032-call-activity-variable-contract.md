@@ -61,6 +61,15 @@ Most of the machinery already exists:
 Related: [FEAT-0014] highlights the derived "Process variables" group on scope changes —
 adjacent but within a single file; this task is about the boundary between two files.
 
+**As an analyzer of [FEAT-0040].** Level 2 generalises to treating a process as a function
+with inputs and outputs: a background "process contract" analyzer derives each process's
+contract (variables it reads that no one inside it sets; variables it hands back) for both
+versions, and reports a changed contract as findings both on the changed process and on the
+call activities of its callers — the latter in other files, so a finding's owner carries a
+file and ref and navigation goes there (the dive-in / back navigation already exists).
+Levels per finding kind come from the review profile. The "variables read/written" extraction
+can be shared with [FEAT-0044] (handler code).
+
 ## Open questions
 
 - **Where does level 1 render?** A properties-panel group on the Call Activity, an overlay
