@@ -26,6 +26,33 @@ as absorbed.
 
 ## Context
 
+### As an analyzer of the review findings core ([FEAT-0040])
+
+The validator becomes a synchronous analyzer of [FEAT-0040]: its violations are findings,
+its rules a "Modelling rules" section of the same profile tree (on/off, level, reset,
+export/import), and its rules share the element selector and value tests with
+[FEAT-0042] (FEAT-0042 rules describe a *change*, these describe a *state*). Requirements
+added by that design:
+
+- **A single diagram first**: list the violations of the shown process/decision table.
+  Then, in a merge request diff, split them into **new** (head only), **fixed** (base only)
+  and **existing** (both): new ones shown like flags, fixed ones listed, existing ones hidden
+  behind a toggle. The classification is base→head, independent of the side on screen.
+- **Violation identity**: rule id + owner element id (+ entry key for entry-level rules) —
+  not the rendered message. A changed element id is fixed + new. A load failure or an
+  unsupported baseline is not an empty model.
+- **Default rules** are a small named list, each with dialect, scope, level, enabled state
+  and a passing and a failing example. Team conventions (e.g. "service tasks run with
+  asynchronous continuations before and after", "user tasks have a candidate group" —
+  direct assignment is equally valid) ship as **opt-in examples**, not as defaults. A DMN
+  example: "every input column has a non-blank label", off by default.
+- **Local by default**: the REST delegation of phase 2 is opt-in, off by default, limited to
+  a host the user configures, and the UI states that the diagram is sent there.
+- **Edit mode**: say whether validation follows the live edits or the opened snapshot.
+- Reading a repository's `.bpmnlintrc` to mirror bpmnlint's built-in rules is a separate
+  decision (bpmnlint's custom rules are JavaScript and cannot be loaded); results of bpmnlint
+  run in CI can arrive through [IDEA-0006] instead.
+
 ### Phases
 
 - **v1 (this task, local):** the rules engine, a default set of local rules,

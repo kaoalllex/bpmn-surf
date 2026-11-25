@@ -76,6 +76,13 @@ What was done in this session: the essence of the change, key files, what remain
    grep -rn "^title:\|^status:\|^priority:" docs/issues --exclude-dir=archive
    ```
    Remove `--exclude-dir=archive` to also capture the closed ones.
+7. **Public GitHub issues.** Work users should see, discuss and vote on also gets an issue in
+   the GitHub repository, labelled `roadmap` (plus `bug` / `enhancement`). The issue is short
+   and user-facing — the problem and the expected result, no implementation details — and
+   ends with `Tracked internally as <CODE>`. The task file stays the full description and
+   carries the link as the first line of its `Context`: `GitHub: [#51](<issue url>)`. Not
+   every task gets an issue; internal refactors and infra usually do not. When the task is
+   done, the PR that closes it references the issue (`Closes #51`).
 
 ## Related materials
 
